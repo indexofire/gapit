@@ -16,7 +16,7 @@
 
 **Done when**: all gates pass on the skeleton; `gaita --version` works.
 
-## Phase 1 — Database layer (`fasta.py`, `db.py`, `config.py`)
+## Phase 1 — Database layer (`fasta.py`, `db.py`, `config.py`) — ✅ DONE (2026-09-15)
 
 **Goal**: gaita understands an abricate datadir.
 
