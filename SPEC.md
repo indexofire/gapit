@@ -1,0 +1,179 @@
+# SPEC.md — abricate behavior specification (parity contract for gaita)
+
+> Distilled from abricate **1.4.0**, master commit
+> [`e2064df7d193ad783d4c188d4ce79706faf9eb75`](https://github.com/tseemann/abricate/commit/e2064df7d193ad783d4c188d4ce79706faf9eb75)
+> (2026-07-17). abricate is a single 530-line Perl script (`bin/abricate`) plus a DB builder
+> (`bin/abricate-get_db`); there are no perl5 libraries.
+>
+> **Parity principle**: where gaita and this document disagree with intuition, abricate wins.
+> Every rule below is a parity requirement unless marked `[gaita-extension]`.
+
+## 1. CLI surface
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `--db` | str | `ncbi` | subdir of datadir |
+| `--datadir` | path | `<script-dir>/../db` | gaita: default to env var `GAITA_DATADIR`, then platform data dir |
+| `--minid` | float | **80** | `0 < minid <= 100`; enforced only via blastn `-perc_identity` |
+| `--mincov` | float | **80** | `0 <= mincov <= 100`; post-filter on unrounded float |
+| `--threads` | int | 1 | passed to `-num_threads` |
+| `--fofn` | path | — | file-of-filenames; **replaces** positional args |
+| `--quiet` | flag | off | silences stderr only |
+| `--csv` | flag | off | field separator `,` instead of tab |
+| `--noheader` | flag | off | suppress `#FILE ...` header row |
+| `--nopath` | flag | off | basename the FILE column |
+| `--summary` | flag | off | summary-matrix mode (§7), args are report files |
+| `--identity` | flag | off | summary cells show %IDENTITY instead of %COVERAGE |
+| `--list` / `--setupdb` / `--check` / `--version` / `--help` | modes | — | |
+| `--debug` | flag | off | verbose stderr |
+| `--format` `[gaita-extension]` | enum | `tsv` | `tsv\|csv\|json\|md`; supersedes upstream's validated-but-unimplemented `--outfmt` (`bed gff json` are accepted upstream but do nothing) |
+
+Mode precedence (upstream): `--summary` → `--check` → dep check → `--list`/`--setupdb` → BLAST
+version gate (`blastn -version` must be ≥ 2.2.30; we require modern BLAST+ ≥ 2.7 via conda) → run.
+
+Exit codes (upstream): `0` ok; `1` any runtime error; `5` unknown option; BLAST/any2fasta pipeline
+failure propagated verbatim. **gaita mapping** `[gaita-extension]`: `2` usage, `3` missing
+dependency, `4` db error, `5` input error, `1` unexpected — stdout TSV stays byte-compatible;
+exit-code integers are gaita's own contract (documented in AGENTS.md §5).
+
+## 2. Database layout
+
+- DB = directory `<datadir>/<name>/` containing `sequences` (FASTA) + BLAST index files
+  (`sequences.n*` / `sequences.p*`) built beside it.
+- **Header convention**: `>DB~~~GENE~~~ACCESSION~~~RESISTANCE<space>PRODUCT`
+  (`~~~` = IDSEP). Fields may be missing; RESISTANCE is `;`-separated, sorted, spaces→`_`.
+  RESISTANCE is baked into the ID at DB-build time; **no sidecar metadata is consulted at
+  screening time**.
+- `--setupdb`: for every subdir with readable `sequences`, run `makeblastdb`; afterwards require
+  `sequences.nin` or `sequences.pin` to exist.
+- **mol_type heuristic** (replicate exactly): concatenate non-header lines, delete `[AGTC]`
+  (case-insensitive); if remaining length > 50% of total → `prot`, else `nucl`. Then
+  `makeblastdb -in <path> -title <name> -dbtype <type> -logfile /dev/null`.
+- DB introspection: `blastdbcmd -info -db <prefix>`; DBTYPE = `prot` iff output contains
+  `total residues` else `nucl`. DBTYPE selects **blastn vs blastx** at screening time.
+
+## 3. Screening pipeline
+
+Per input file (upstream wraps in `bash -c 'set -euo pipefail; ...'`; gaita uses argv lists, no
+shell):
+
+```
+any2fasta -q -u <file>  |  blastn -task blastn -dust no -perc_identity <minid> \
+  -db <datadir>/<db>/sequences \
+  -outfmt "6 qseqid qstart qend qlen sseqid sstart send slen sstrand evalue length pident gaps gapopen stitle" \
+  -num_threads <threads> -evalue 1E-20 -culling_limit 1 -max_target_seqs 10000
+```
+
+- **outfmt 6 fields, exact order (15)**: `qseqid qstart qend qlen sseqid sstart send slen sstrand
+  evalue length pident gaps gapopen stitle`. A row with ≠15 columns is a hard error.
+- Protein DBs use `blastx -task blastx-fast -seg no` **without `-perc_identity`**, and `--minid`
+  is then silently ignored (upstream quirk — reproduce, with a stderr note).
+- `any2fasta -q -u` normalizes `.fa/.faa/.gbk/.embl`, gz, bz2 → FASTA on stdout.
+
+## 4. Hit processing (the core algorithm)
+
+For each BLAST row, in order:
+
+1. **Minus-strand normalize**: if `sstrand == "minus"`, swap `sstart`/`send` (subject coords only;
+   `qstart`/`qend` are always ascending and never swapped).
+2. **Dedup (the only "merge")**: drop the row if `qseqid~qstart~qend` was already seen for this
+   input file. First row wins; BLAST emits best hits first. The key **ignores strand**.
+   There is **no interval-overlap merging, no gap tolerance, no best-gene choice** — two genes
+   overlapping at different query spans are both reported (upstream README caveat). gaita MUST NOT
+   add merging to the default path; any future merge mode goes behind a flag, off by default.
+3. **Coverage filter**: `pct_cov = 100 * (length - gaps) / slen` (ungapped aligned columns over
+   full subject/gene length). Keep iff `pct_cov >= mincov` — comparison on the **unrounded**
+   float; display is `%.2f`. (A 79.996% hit displays `80.00` but is discarded. Replicate exactly.)
+4. **Identity**: `%IDENTITY = pident` as printed by BLAST (`%.2f`). Never post-filtered.
+5. **Subject ID parse**: split `sseqid` on `~~~` → `(database, gene, accession, resistance)`.
+   No `~~~` at all → `gene = sseqid`, `accession = ""`, `database = --db` value. Partial fields →
+   empty strings.
+6. **Product cleanup**: `stitle or "n/a"`; strip all `,` and `\t`; if it contains `~~~`, drop the
+   leading whitespace-delimited token (makeblastdb prefixes stitle with the ID; upstream issue #95).
+
+### COVERAGE_MAP (minimap) — replicate this arithmetic exactly
+
+```
+WIDTH = 15 - (1 if gapopen > 0 else 0)     # broken maps: 14 boxes + '/'
+scale = slen / WIDTH                        # float division
+x = int(sstart / scale); y = int(send / scale)
+for i in 0 .. WIDTH-1:
+    char = '=' if x <= i <= y else '.'
+    if gapopen > 0 and i == int(WIDTH/2): append '/' after char
+```
+
+Result is always 15 chars. Note the `int()` truncation quirks (e.g. a full-length hit on a long
+gene may leave box 0 as `.` since coords are 1-based) — do not "fix" them.
+
+### Row assembly & ordering
+
+| Column | Value |
+|---|---|
+| FILE | path as given (basename if `--nopath`) |
+| SEQUENCE, START, END | `qseqid`, `qstart`, `qend` (query coords) |
+| STRAND | `-` if `sstrand == "minus"` else `+` (blastx: always `+`) |
+| GENE / DATABASE / ACCESSION / RESISTANCE | `~~~` fields 2/1/3/4 (fallbacks per step 5) |
+| COVERAGE | `sstart-send/slen` (subject coords, ascending) |
+| COVERAGE_MAP | minimap above |
+| GAPS | `gapopen/gaps` |
+| %COVERAGE / %IDENTITY | `%.2f` |
+| PRODUCT | cleaned stitle |
+
+Rows are sorted by SEQUENCE (lexicographic) then START (numeric) with a **stable** sort, and
+emitted per input file after that file finishes. Files are processed sequentially in argument
+order; a single header row precedes all output (even if a later file errors — upstream has no
+atomicity; gaita buffers per file but preserves row order).
+
+## 5. TSV/CSV output
+
+- Header (unless `--noheader`), printed once:
+  `#FILE SEQUENCE START END STRAND GENE COVERAGE COVERAGE_MAP GAPS %COVERAGE %IDENTITY DATABASE ACCESSION PRODUCT RESISTANCE`
+- Separator: tab, or `,` with `--csv` (gaita: `--format csv`). Line = `join(sep, fields) + "\n"`.
+- stdout = data only; all chatter (Processing/Found N genes/Tips) to stderr.
+
+## 6. Summary mode (`--summary`)
+
+Input: ≥1 abricate-format report files.
+
+- **Dutch mode**: with exactly 1 input file, matrix rows are keyed by that report's FILE column;
+  with >1 files, rows are keyed by input filename (basename if `--nopath`).
+- First encountered row anywhere is treated as the header map; lines whose col0 starts with `#`
+  are skipped afterwards. Split on the active separator (`--csv` must match the reports' format).
+- Duplicate input filenames: warn + skip. Zero-hit files still appear (non-dutch) with
+  `NUM_FOUND 0`.
+- Gene universe = union of all GENE values, sorted lexicographically.
+- Output: `#FILE  NUM_FOUND  <gene…>`; cell = each hit's %COVERAGE (or %IDENTITY with
+  `--identity`) `;`-joined in file order; absent = `.`. NUM_FOUND = count of **distinct genes**.
+
+## 7. Edge cases & quirks (parity-critical)
+
+- **Input types**: fa/gz/bz2/gbk/embl via any2fasta. Invalid input → pipeline failure → nonzero
+  exit (gaita: exit 5 + JSON error envelope).
+- **Empty FASTA** → zero hits; header still printed; success exit.
+- **Circular contigs**: no special handling (linear).
+- **Partial `~~~` headers**: missing trailing fields → empty strings.
+- **`--csv` + summary**: summary must be told the separator; mixing breaks upstream — gaita
+  detects format per file instead `[gaita-extension]`.
+- **Determinism**: stable sort; fixed BLAST params; no timestamps in data payloads. (Upstream
+  MOTD/`srand` is stderr-only and dropped in gaita.)
+- **blastx**: no sstrand → STRAND `+`; minid unenforced (quirk kept, documented).
+- Known upstream caveats we inherit: no mutational resistance; gap reporting incomplete;
+  overlapping genes both reported; possible coverage-calculation issues.
+
+## 8. Bundled databases
+
+12 DBs ship in abricate's `db/` (all `nucl` as distributed): `ncbi` (default, AMRFinderPlus core
+AMR), `card` (protein-homolog models only; ACC carries `start-end` coords; multi-class
+RESISTANCE), `resfinder` (plain ACC; gene has `_copy` suffix), `argannot`, `plasmidfinder`,
+`megares` (SNP-confirmation entries excluded), `ecoh`, `vfdb`, `ecoli_vf`, `bacmet2`, `victors`,
+`upec_expec_vf`; plus `db/abricate/` — a cd-hit-est recipe, not a DB. Disabled getters:
+`ncbibetalactamase`, `serotypefinder`.
+
+gaita v1.0 reads any abricate-format datadir (including abricate's own). A `gaita db fetch`
+reimplementation of `abricate-get_db` is post-1.0 (see PLAN.md).
+
+## 9. License note
+
+abricate is GPL-2.0. gaita is a behavioral reimplementation (no Perl code copied); to keep DB
+handling and redistribution unambiguous, gaita is licensed GPL-2.0-compatible. Bundled DB content
+retains its original upstream licenses.

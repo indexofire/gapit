@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gaita"
+version = "0.1.0"
+description = "Mass screening of contigs for antimicrobial resistance and virulence genes — agent-first Python reimplementation of abricate"
+readme = "PLAN.md"
+authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]
+requires-python = ">=3.11"
+license = "GPL-2.0-only"
+keywords = ["bioinformatics", "AMR", "virulence", "blast", "genomics"]
+dependencies = [
+  "typer>=0.12",
+  "pydantic>=2.7",
+  "rich>=13",
+]
+
+[project.scripts]
+gaita = "gaita.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gaita"]
+
+[tool.ruff]
+src = ["src"]
+target-version = "py311"
+line-length = 100
+exclude = [".pixi", "dist", "build"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "C4", "SIM", "RET", "RUF"]
+
+[tool.basedpyright]
+typeCheckingMode = "strict"
+include = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
