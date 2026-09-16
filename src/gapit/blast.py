@@ -9,7 +9,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from gapit.db import Database, blast_db_info
-from gapit.errors import DependencyError, GaitaError, InputError
+from gapit.errors import DependencyError, GapitError, InputError
 from gapit.hits import process_rows
 from gapit.report import Report, ScreeningParams
 
@@ -60,7 +60,7 @@ def parse_blast_row(line: str) -> BlastRow:
     hard error (upstream wording)."""
     fields = line.split("\t")
     if len(fields) != 15:
-        raise GaitaError("can not find sequence data", code="BLAST_PARSE_FAILED")
+        raise GapitError("can not find sequence data", code="BLAST_PARSE_FAILED")
     return BlastRow(
         qseqid=fields[0],
         qstart=int(fields[1]),
@@ -86,7 +86,9 @@ def ensure_blast() -> None:
         result = subprocess.run(["blastn", "-version"], check=False, capture_output=True, text=True)
     except FileNotFoundError as exc:
         raise DependencyError(
-            "required binary not found on PATH: blastn", code="MISSING_DEPENDENCY"
+            "required binary not found on PATH: blastn",
+            code="MISSING_DEPENDENCY",
+            context={"binary": "blastn"},
         ) from exc
     if result.returncode != 0:
         raise DependencyError(
@@ -117,7 +119,9 @@ def _pipeline(query: Path, argv: list[str]) -> str:
         )
     except FileNotFoundError as exc:
         raise DependencyError(
-            "required binary not found on PATH: any2fasta", code="MISSING_DEPENDENCY"
+            "required binary not found on PATH: any2fasta",
+            code="MISSING_DEPENDENCY",
+            context={"binary": "any2fasta"},
         ) from exc
     try:
         blast = subprocess.Popen(
@@ -125,7 +129,9 @@ def _pipeline(query: Path, argv: list[str]) -> str:
         )
     except FileNotFoundError as exc:
         raise DependencyError(
-            f"required binary not found on PATH: {argv[0]}", code="MISSING_DEPENDENCY"
+            f"required binary not found on PATH: {argv[0]}",
+            code="MISSING_DEPENDENCY",
+            context={"binary": argv[0]},
         ) from exc
     if any2fasta.stdout is not None:
         any2fasta.stdout.close()  # blast owns the read end now; SIGPIPE propagates
@@ -137,14 +143,16 @@ def _pipeline(query: Path, argv: list[str]) -> str:
     # blast first: if it crashed, its stderr names the real cause (any2fasta
     # may merely have taken the SIGPIPE).
     if blast.returncode != 0:
-        raise GaitaError(
+        raise GapitError(
             f"{argv[0]} failed: {blast_err.decode('utf-8', 'replace').strip()}",
             code="BLAST_FAILED",
+            context={"binary": argv[0]},
         )
     if any2fasta_rc != 0:
         raise InputError(
             f"invalid input file {query}: {any2fasta_err.decode('utf-8', 'replace').strip()}",
             code="INVALID_INPUT",
+            context={"file": str(query)},
         )
     return blast_out.decode("utf-8")
 

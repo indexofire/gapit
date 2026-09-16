@@ -41,7 +41,7 @@ matches `abricate --list` output.
 **Done when**: unit tests cover every formula and quirk in SPEC §4/§7 (incl. the 79.996% filter
 case, partial `~~~` headers, minus-strand dedup-collapse).
 
-## Phase 3 — TSV/CSV output + parity harness
+## Phase 3 — TSV/CSV output + parity harness — ✅ DONE (2026-09-15; parity 6/6 byte-identical)
 
 **Goal**: byte-compatible drop-in replacement.
 
@@ -54,7 +54,7 @@ case, partial `~~~` headers, minus-strand dedup-collapse).
 
 **Done when**: parity diff is empty on the corpus. **This is the v1.0 release gate.**
 
-## Phase 4 — Agent outputs (`formats/json.py`, `formats/md.py`, `errors.py`)
+## Phase 4 — Agent outputs (`formats/json.py`, `formats/md.py`, `errors.py`) — ✅ DONE (2026-09-16)
 
 **Goal**: the reason gapit exists.
 
@@ -68,7 +68,22 @@ case, partial `~~~` headers, minus-strand dedup-collapse).
 **Done when**: golden files for JSON/MD; `gapit schema` output validates against the models;
 error paths produce the envelope (tests force each exit code).
 
-## Phase 5 — Summary mode (`summary.py`)
+## Phase 5 — FASTQ support (minimap2) — ✅ DONE (2026-09-16)
+
+**Goal**: screen raw reads, not just assemblies (abricate cannot; decided 2026-09-15).
+
+- Backend: **minimap2 only** — `-ax sr` for short reads, `map-ont`/`map-hifi` for long reads;
+  bwa/bowtie2 are NOT needed (srst2 needs bowtie2+samtools for SNP-level allele calling, which
+  is out of gapit's mission: presence + confidence, not allele typing).
+- PAF output parsing (no samtools dependency; mirrors blast.py's boundary-parse architecture).
+- Per-gene metrics from read pileup: coverage breadth (fraction of gene covered ≥1×), mean
+  depth, mapped read count; presence call = breadth ≥ threshold (default 90%, srst2-style,
+  configurable). v1 uses primary alignments only; homologous multi-mapping is documented.
+- CLI: `gapit screen --reads R1.fq.gz [R2.fq.gz] --read-type sr|map-ont|map-hifi`.
+- Output: Report model gains a reads evidence block; TSV stays abricate-compatible (contigs
+  only); reads mode is JSON/MD-first (`gapit.report/1` extension, documented).
+
+## Phase 6 — Summary mode (`summary.py`)
 
 **Goal**: `gapit summary` matrix, parity with `abricate --summary`.
 
@@ -78,14 +93,14 @@ error paths produce the envelope (tests force each exit code).
 
 **Done when**: matrix parity against `abricate --summary` on the Phase-3 corpus; golden JSON/MD.
 
-## Phase 6 — DB acquisition (`gapit db fetch`) — post-1.0
+## Phase 7 — DB acquisition (`gapit db fetch`) — post-1.0
 
 - Reimplement `abricate-get_db` per DB (ncbi, card, resfinder, argannot, plasmidfinder, megares,
   ecoh, vfdb, ecoli_vf, bacmet2, victors, upec_expec_vf) with the documented transforms
   (SPEC §8). Until then, gapit consumes abricate-built datadirs.
 - Optional: ship a pixi-packaged snapshot of the bundled DBs.
 
-## Phase 7 — Hardening & distribution — post-1.0
+## Phase 8 — Hardening & distribution — post-1.0
 
 - Conda/pixi package recipe; shell completions; `--debug` parity of stderr diagnostics.
 - Performance pass (multi-file parallelism across inputs; threads >1 determinism check vs
@@ -104,8 +119,8 @@ error paths produce the envelope (tests force each exit code).
 
 1. **Protein DBs (blastx path)**: reproduce upstream's ignored-`--minid` quirk (current plan:
    yes, with stderr note) — decide before Phase 2 closes.
-2. **JSON field naming for COVERAGE_MAP / GAPS**: keep abricate strings (`coverage_map`,
-   `gaps = "openings/gaps"`) vs structured objects — decide in Phase 4; v1 keeps the strings for
-   1:1 mapping, structured views can land in `gapit.report/2`.
+2. ~~**JSON field naming for COVERAGE_MAP / GAPS**~~ — RESOLVED (2026-09-15): v1 keeps the
+   abricate strings (`coverage_map`, `gaps = "openings/gaps"`) for 1:1 mapping; structured
+   views deferred to `gapit.report/2`.
 3. **CSV + summary format mixing**: gapit auto-detects separator per report file
    `[gapit-extension]`; confirm no parity test relies on the broken upstream behavior.

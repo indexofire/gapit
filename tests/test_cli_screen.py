@@ -1,5 +1,6 @@
 """Integration tests: gapit screen CLI over the real pipeline on tinyamr fixtures."""
 
+import json
 import shutil
 from pathlib import Path
 
@@ -102,7 +103,7 @@ def test_quiet_silences_stderr_diagnostics(datadir: Path) -> None:
 def test_invalid_minid_exits_2(datadir: Path) -> None:
     result = screen(datadir, "--minid", "0", str(CONTIGS / "full.fa"))
     assert result.exit_code == 2
-    assert "ERROR" in result.stderr
+    assert json.loads(result.stderr)["code"] == "USAGE_ERROR"
 
 
 def test_invalid_mincov_exits_2(datadir: Path) -> None:
@@ -118,7 +119,7 @@ def test_invalid_threads_exits_2(datadir: Path) -> None:
 def test_missing_input_file_exits_5(datadir: Path) -> None:
     result = screen(datadir, str(datadir / "nope.fa"))
     assert result.exit_code == 5
-    assert "ERROR" in result.stderr
+    assert json.loads(result.stderr)["code"] == "INPUT_NOT_FOUND"
 
 
 def test_junk_input_exits_5(datadir: Path, tmp_path: Path) -> None:
@@ -131,14 +132,16 @@ def test_junk_input_exits_5(datadir: Path, tmp_path: Path) -> None:
 def test_unknown_db_exits_4_and_lists_available(datadir: Path) -> None:
     result = screen(datadir, "--db", "nope", str(CONTIGS / "full.fa"))
     assert result.exit_code == 4
-    assert "tinyamr" in result.stderr
-    assert "Available" in result.stderr
+    envelope = json.loads(result.stderr)
+    assert envelope["code"] == "DATABASE_NOT_FOUND"
+    assert "tinyamr" in envelope["message"]
+    assert "Available" in envelope["message"]
 
 
 def test_no_input_files_exits_2(datadir: Path) -> None:
     result = screen(datadir)
     assert result.exit_code == 2
-    assert "ERROR" in result.stderr
+    assert json.loads(result.stderr)["code"] == "USAGE_ERROR"
 
 
 def test_debug_echoes_blast_argv(datadir: Path) -> None:

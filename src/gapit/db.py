@@ -87,6 +87,7 @@ def _run(argv: list[str]) -> subprocess.CompletedProcess[str]:
         raise DependencyError(
             f"required binary not found on PATH: {argv[0]}",
             code="MISSING_DEPENDENCY",
+            context={"binary": argv[0]},
         ) from exc
 
 
@@ -147,6 +148,7 @@ def blast_db_info(db_prefix: Path) -> BlastDbInfo:
         raise DatabaseError(
             f"Database {db_prefix} is not indexed, please try: gapit setupdb",
             code="DATABASE_NOT_INDEXED",
+            context={"db": str(db_prefix)},
         )
     return parse_blastdbcmd_info(result.stdout)
 
@@ -177,6 +179,7 @@ def list_databases(datadir: Path, *, setupdb: bool) -> list[DatabaseInfo]:
             raise DatabaseError(
                 f"Database {database.name} is not indexed, please try: gapit setupdb",
                 code="DATABASE_NOT_INDEXED",
+                context={"db": database.name},
             )
         info = blast_db_info(sequences)
         infos.append(

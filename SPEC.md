@@ -13,7 +13,7 @@
 | Option | Type | Default | Notes |
 |---|---|---|---|
 | `--db` | str | `ncbi` | subdir of datadir |
-| `--datadir` | path | `<script-dir>/../db` | gapit: default to env var `GAITA_DATADIR`, then platform data dir |
+| `--datadir` | path | `<script-dir>/../db` | gapit: default to env var `GAPIT_DATADIR`, then platform data dir |
 | `--minid` | float | **80** | `0 < minid <= 100`; enforced only via blastn `-perc_identity` |
 | `--mincov` | float | **80** | `0 <= mincov <= 100`; post-filter on unrounded float |
 | `--threads` | int | 1 | passed to `-num_threads` |
@@ -177,3 +177,37 @@ reimplementation of `abricate-get_db` is post-1.0 (see PLAN.md).
 abricate is GPL-2.0. gapit is a behavioral reimplementation (no Perl code copied); to keep DB
 handling and redistribution unambiguous, gapit is licensed GPL-2.0-compatible. Bundled DB content
 retains its original upstream licenses.
+
+## 10. Read screening (FASTQ) — gapit extension
+
+abricate cannot screen raw reads; gapit can. Design decisions (2026-09-15):
+
+- **Backend: minimap2 only.** `-x sr` (short/paired reads), `-x map-ont`, `-x map-hifi`.
+  bwa/bowtie2 are deliberately excluded: srst2 needs them for SNP-level allele calling, which is
+  outside gapit's mission (presence + confidence). One backend covers all read types, and PAF
+  output needs no samtools.
+- **Invocation**: `gapit screen --r1 R1[,R1b…] [--r2 R2[,R2b…]] --read-type
+  sr|map-ont|map-hifi` (comma-separated file lists, one entry per lane; `--r2` count must equal
+  `--r1` count — lane i pairs r1[i]/r2[i]) — mutually exclusive with positional contig files.
+  Pipeline: one `minimap2 -x <preset> -t <threads> <datadir>/<db>/sequences R1 [R2]` run per
+  lane → PAF on stdout; all lanes' rows are aggregated as one sample. The db
+  `sequences` FASTA is used directly (minimap2 indexes in memory; no `.mmi` persisted in v1).
+- **PAF parsing**: 12 required fields (`qname qlen qstart qend strand tname tlen tstart tend
+  nmatch alen mapq`) + optional tags. Keep primary alignments only (`tp:A:P`; records lacking a
+  `tp` tag are kept). A row with <12 fields is a hard error.
+- **Per-gene aggregation** over a per-base coverage array of length `tlen`:
+  `breadth_pct = 100 * covered_bases / tlen` (covered = ≥1 aligned base, union of all primary
+  alignments' `tstart..tend`), `mean_depth = sum(per-base depth) / tlen`,
+  `reads_mapped` = distinct query names with ≥1 primary alignment on the gene.
+- **Presence call**: `present = breadth_pct >= min_breadth`, `--min-breadth` default **90.0**
+  (srst2-style). `--minid`/`--mincov` do NOT apply to reads mode.
+- **Output**: `--format json` (default in reads mode) emits `gapit.reads/1`; `--format md` the
+  Markdown form; `--format tsv|csv` in reads mode is a usage error (exit 2). Genes with zero
+  mapped reads are omitted; entries sorted by `breadth_pct` descending, then gene name.
+  `gapit.report/1` (contig mode) is unchanged and frozen. `gapit schema reads` introspects the
+  new document.
+- **Known limits** (document, do not fix in v1): homologous gene families share multi-mapping
+  reads — primary-only assignment may misassign closely related alleles; no SNP-level allele
+  calling; no per-read identity/MAPQ filtering. Empirically, `minimap2 -x sr` soft-clips ~5 nt
+  at each alignment end, so genes under ~100 nt can cap below the 90% breadth threshold — reads
+  mode targets normal-length genes (hundreds of nt+); calibrate `--min-breadth` for tiny DBs.

@@ -16,6 +16,7 @@ gapit = "gapit"
 python = "3.14.*"
 blast = ">=2.15"
 any2fasta = ">=0.4"
+minimap2 = ">=2.24"
 
 [pypi-options]
 index-url = "https://pypi.tuna.tsinghua.edu.cn/simple"

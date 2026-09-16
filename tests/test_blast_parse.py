@@ -3,7 +3,7 @@
 import pytest
 
 from gapit.blast import BLAST_FIELDS, BlastRow, ensure_blast, parse_blast_row
-from gapit.errors import GaitaError
+from gapit.errors import GapitError
 
 # Captured verbatim from the real pipeline (any2fasta | blastn, BLAST+ 2.17).
 CANONICAL = (
@@ -60,7 +60,7 @@ def test_row_with_14_fields_fails() -> None:
     """Given a line missing the stitle column, When parsed, Then BLAST_PARSE_FAILED
     with the upstream wording."""
     fields = CANONICAL.split("\t")
-    with pytest.raises(GaitaError) as excinfo:
+    with pytest.raises(GapitError) as excinfo:
         parse_blast_row("\t".join(fields[:14]))
     assert excinfo.value.code == "BLAST_PARSE_FAILED"
     assert str(excinfo.value) == "can not find sequence data"
@@ -68,7 +68,7 @@ def test_row_with_14_fields_fails() -> None:
 
 def test_row_with_16_fields_fails() -> None:
     """Given a line with an extra column, When parsed, Then BLAST_PARSE_FAILED."""
-    with pytest.raises(GaitaError) as excinfo:
+    with pytest.raises(GapitError) as excinfo:
         parse_blast_row(CANONICAL + "\textra")
     assert excinfo.value.code == "BLAST_PARSE_FAILED"
 

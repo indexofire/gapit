@@ -1,18 +1,24 @@
 """gapit command-line interface (typer entrypoint)."""
 
-import enum
 import json
 from collections.abc import Callable
 from pathlib import Path
-from typing import Annotated, NoReturn
+from typing import Annotated
 
 import typer
+from pydantic import BaseModel
 
 from gapit import __version__, config, db
-from gapit.blast import screen_file
-from gapit.errors import DatabaseError, GaitaError, InputError
-from gapit.formats.tsv import format_tsv
-from gapit.report import Report, ScreeningParams
+from gapit.errors import ErrorEnvelope, GapitError, render_error
+from gapit.formats.json import (
+    ListDocument,
+    ListEntryDocument,
+    ReadsDocument,
+    ReportDocument,
+    VersionDocument,
+)
+from gapit.reads import ReadTypeEnum
+from gapit.screening import OutputFormat, run_screen, run_screen_reads, usage_fail
 
 app = typer.Typer(
     name="gapit",
@@ -29,10 +35,17 @@ def main(
         bool | None,
         typer.Option("--version", help="Show version and exit."),
     ] = None,
+    as_json: Annotated[
+        bool,
+        typer.Option("--json", help="With --version: emit gapit.version/1 JSON."),
+    ] = False,
 ) -> None:
     """Mass screening of contigs for AMR and virulence genes."""
     if show_version:
-        typer.echo(f"gapit {__version__}")
+        if as_json:
+            typer.echo(VersionDocument(version=__version__).model_dump_json(by_alias=True))
+        else:
+            typer.echo(f"gapit {__version__}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
         typer.echo(ctx.get_help())
@@ -43,36 +56,36 @@ Datadir = Annotated[
     Path | None,
     typer.Option(
         "--datadir",
-        help="Database directory (default: $GAITA_DATADIR, then ~/.local/share/gapit/db).",
+        help="Database directory (default: $GAPIT_DATADIR, then ~/.local/share/gapit/db).",
     ),
 ]
 
 
 def _dispatch(action: Callable[[], None]) -> None:
-    """Run a command body, mapping GaitaError to `ERROR: ...` on stderr + its exit code."""
+    """Run a command body; any failure renders the gapit.error/1 envelope on
+    stderr and exits with the documented code (UNEXPECTED/1 for non-GapitError)."""
     try:
         action()
-    except GaitaError as exc:
-        typer.echo(f"ERROR: {exc}", err=True)
-        raise typer.Exit(code=exc.exit_code) from exc
+    except Exception as exc:
+        typer.echo(render_error(exc), err=True)
+        raise typer.Exit(code=exc.exit_code if isinstance(exc, GapitError) else 1) from exc
 
 
 def _list(datadir: Path | None, as_json: bool) -> None:
     infos = db.list_databases(config.resolve_datadir(datadir), setupdb=False)
     if as_json:
-        payload = {
-            "schema": "gapit.list/1",
-            "databases": [
-                {
-                    "name": info.name,
-                    "sequences": info.n_sequences,
-                    "dbtype": info.dbtype,
-                    "date": info.date,
-                }
+        document = ListDocument(
+            databases=[
+                ListEntryDocument(
+                    name=info.name,
+                    sequences=info.n_sequences,
+                    dbtype=info.dbtype,
+                    date=info.date,
+                )
                 for info in infos
-            ],
-        }
-        typer.echo(json.dumps(payload, indent=2))
+            ]
+        )
+        typer.echo(document.model_dump_json(indent=2, by_alias=True))
         return
     typer.echo("DATABASE\tSEQUENCES\tDBTYPE\tDATE")
     for info in infos:
@@ -106,95 +119,31 @@ def setupdb(datadir: Datadir = None) -> None:
     _dispatch(lambda: _setupdb(datadir))
 
 
-class OutputFormat(enum.Enum):
-    """Screen output formats (JSON/Markdown arrive in Phase 4)."""
-
-    tsv = "tsv"
-    csv = "csv"
-
-
-def _usage_fail(message: str) -> NoReturn:
-    """Report a usage error on stderr and exit 2."""
-    typer.echo(f"ERROR: {message}", err=True)
-    raise typer.Exit(code=2)
-
-
-def _resolve_inputs(files: list[Path] | None, fofn: Path | None) -> list[Path]:
-    """Input files: --fofn (lines stripped, empties dropped) REPLACES positionals."""
-    if fofn is not None:
-        if not fofn.is_file():
-            raise InputError(f"--fofn file not found: {fofn}", code="INPUT_NOT_FOUND")
-        inputs = [
-            Path(line.strip())
-            for line in fofn.read_text(encoding="utf-8").splitlines()
-            if line.strip()
-        ]
-    elif files:
-        inputs = list(files)
-    else:
-        _usage_fail("no input files given (positional FILEs or --fofn)")
-    for path in inputs:
-        if not path.is_file():
-            raise InputError(f"input file not found or unreadable: {path}", code="INPUT_NOT_FOUND")
-    return inputs
-
-
-def _find_database(datadir: Path, name: str) -> db.Database:
-    """Look up a database by name under the datadir; unknown names list what exists."""
-    databases = db.discover_databases(datadir)
-    for database in databases:
-        if database.name == name:
-            return database
-    available = ", ".join(entry.name for entry in databases) or "(none)"
-    raise DatabaseError(
-        f"Database {name} is not in {datadir}. Available: {available}",
-        code="DATABASE_NOT_FOUND",
-    )
-
-
-def _screen(
-    files: list[Path] | None,
-    db_name: str,
-    datadir: Path | None,
-    minid: float,
-    mincov: float,
-    threads: int,
-    fofn: Path | None,
-    quiet: bool,
-    csv_flag: bool,
-    noheader: bool,
-    nopath: bool,
-    debug: bool,
-    output_format: OutputFormat,
-) -> None:
-    """Screen each input file in order; buffer reports; print once at the end."""
-    if not 0.0 < minid <= 100.0:
-        _usage_fail(f"--minid must be in (0, 100]: got {minid}")
-    if not 0.0 <= mincov <= 100.0:
-        _usage_fail(f"--mincov must be in [0, 100]: got {mincov}")
-    if threads < 1:
-        _usage_fail(f"--threads must be >= 1: got {threads}")
-    inputs = _resolve_inputs(files, fofn)
-    params = ScreeningParams(db=db_name, minid=minid, mincov=mincov, threads=threads)
-    database = _find_database(config.resolve_datadir(datadir), db_name)
-    reports: list[Report] = []
-    for path in inputs:
-        if not quiet:
-            typer.echo(f"Processing: {path}", err=True)
-        report = screen_file(path, database, params, debug=debug)
-        if not quiet:
-            typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
-        reports.append(report)
-    as_csv = csv_flag or output_format is OutputFormat.csv
-    typer.echo(format_tsv(reports, csv=as_csv, noheader=noheader, nopath=nopath), nl=False)
-
-
 @app.command("screen")
 def screen(
     files: Annotated[
         list[Path] | None,
-        typer.Argument(help="Input FASTA/GBK/EMBL file(s) to screen."),
+        typer.Argument(help="Input FASTA/GBK/EMBL contig file(s) to screen."),
     ] = None,
+    r1: Annotated[
+        str | None,
+        typer.Option("--r1", help="Comma-separated FASTQ R1 file(s), one per lane (reads mode)."),
+    ] = None,
+    r2: Annotated[
+        str | None,
+        typer.Option("--r2", help="Comma-separated mate FASTQ file(s); must match --r1 count."),
+    ] = None,
+    read_type: Annotated[
+        ReadTypeEnum,
+        typer.Option(
+            "--read-type",
+            help="minimap2 preset for reads mode (sr, map-ont, map-hifi).",
+        ),
+    ] = ReadTypeEnum.sr,
+    min_breadth: Annotated[
+        float,
+        typer.Option("--min-breadth", help="Reads mode: minimum %breadth for presence."),
+    ] = 90.0,
     db: Annotated[
         str, typer.Option("--db", help="Database to screen against (datadir subdir).")
     ] = "ncbi",
@@ -216,24 +165,66 @@ def screen(
     nopath: Annotated[bool, typer.Option("--nopath", help="Basename the FILE column.")] = False,
     debug: Annotated[bool, typer.Option("--debug", help="Verbose stderr diagnostics.")] = False,
     output_format: Annotated[
-        OutputFormat, typer.Option("--format", help="Output format.")
-    ] = OutputFormat.tsv,
+        OutputFormat | None,
+        typer.Option("--format", help="Output format (reads mode defaults to json)."),
+    ] = None,
 ) -> None:
-    """Screen contig files for AMR/virulence genes (abricate-compatible TSV)."""
-    _dispatch(
-        lambda: _screen(
-            files,
-            db,
-            datadir,
-            minid,
-            mincov,
-            threads,
-            fofn,
-            quiet,
-            csv_flag,
-            noheader,
-            nopath,
-            debug,
-            output_format,
-        )
-    )
+    """Screen contig files or FASTQ reads (R1 and R2 comma-lists, one lane
+    each) for AMR/virulence genes."""
+
+    def run() -> None:
+        if (r1 is not None or r2 is not None) and files:
+            usage_fail("--r1/--r2 and positional contig FILEs are mutually exclusive")
+        if r2 is not None and r1 is None:
+            usage_fail("--r2 requires --r1")
+        if r1 is not None or r2 is not None:
+            run_screen_reads(
+                r1 or "", r2, db, datadir, read_type, min_breadth, threads, output_format, quiet
+            )
+        else:
+            run_screen(
+                files,
+                db,
+                datadir,
+                minid,
+                mincov,
+                threads,
+                fofn,
+                quiet,
+                csv_flag,
+                noheader,
+                nopath,
+                debug,
+                output_format or OutputFormat.tsv,
+            )
+
+    _dispatch(run)
+
+
+_SCHEMA_MODELS: dict[str, type[BaseModel]] = {
+    "report": ReportDocument,
+    "reads": ReadsDocument,
+    "list": ListDocument,
+    "error": ErrorEnvelope,
+    "version": VersionDocument,
+}
+
+
+@app.command("schema")
+def schema(
+    name: Annotated[
+        str,
+        typer.Argument(help="Document to introspect: report, reads, list, error, or version."),
+    ],
+) -> None:
+    """Print the JSON Schema of a gapit output document."""
+
+    def run() -> None:
+        model = _SCHEMA_MODELS.get(name)
+        if model is None:
+            usage_fail(
+                f"unknown schema name: {name} (choose from: report, reads, list, error, version)"
+            )
+        typer.echo(json.dumps(model.model_json_schema(by_alias=True), indent=2))
+
+    _dispatch(run)

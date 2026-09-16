@@ -35,6 +35,7 @@ def _finalize(path: Path, pending: tuple[str, str, list[str]]) -> FastaRecord:
         raise InputError(
             f"{path}: record {seqid!r} has an empty sequence",
             code="INVALID_FASTA",
+            context={"file": str(path)},
         )
     return FastaRecord(id=seqid, description=description, sequence="".join(chunks))
 
@@ -57,6 +58,7 @@ def iter_fasta(path: Path) -> Iterator[FastaRecord]:
                     raise InputError(
                         f"{path}: content before first '>' header at line {lineno}",
                         code="INVALID_FASTA",
+                        context={"file": str(path)},
                     )
                 pending[2].append(line)
                 continue

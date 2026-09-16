@@ -1,0 +1,131 @@
+{
+  "schema": "gapit.report/1",
+  "tool": {
+    "name": "gapit",
+    "version": "0.1.0"
+  },
+  "created_at": "2026-09-17T12:00:00Z",
+  "params": {
+    "db": "tinyamr",
+    "minid": 80.0,
+    "mincov": 80.0,
+    "threads": 1
+  },
+  "files": [
+    {
+      "file": "full.fa",
+      "hits": [
+        {
+          "sequence": "contig1",
+          "start": 1,
+          "end": 79,
+          "strand": "+",
+          "gene": "tetA",
+          "coverage": "1-79/79",
+          "coverage_map": "===============",
+          "gaps": "0/0",
+          "coverage_pct": 100.0,
+          "identity_pct": 100.0,
+          "database": "tinyamr",
+          "accession": "NC_000913.3:100-900",
+          "product": "tetracycline efflux pump TetA",
+          "resistance": "TETRACYCLINE"
+        }
+      ]
+    },
+    {
+      "file": "gap.fa",
+      "hits": [
+        {
+          "sequence": "contig1",
+          "start": 1,
+          "end": 97,
+          "strand": "+",
+          "gene": "sul1",
+          "coverage": "1-94/94",
+          "coverage_map": "========/======",
+          "gaps": "1/3",
+          "coverage_pct": 100.0,
+          "identity_pct": 96.91,
+          "database": "tinyamr",
+          "accession": "U12338.4:1-940",
+          "product": "sulfonamide-resistant dihydropteroate synthase Sul1",
+          "resistance": "SULFONAMIDE"
+        }
+      ]
+    },
+    {
+      "file": "none.fa",
+      "hits": []
+    },
+    {
+      "file": "sort.fa",
+      "hits": [
+        {
+          "sequence": "contigA",
+          "start": 1,
+          "end": 79,
+          "strand": "+",
+          "gene": "tetA",
+          "coverage": "1-79/79",
+          "coverage_map": "===============",
+          "gaps": "0/0",
+          "coverage_pct": 100.0,
+          "identity_pct": 100.0,
+          "database": "tinyamr",
+          "accession": "NC_000913.3:100-900",
+          "product": "tetracycline efflux pump TetA",
+          "resistance": "TETRACYCLINE"
+        },
+        {
+          "sequence": "contigB",
+          "start": 1,
+          "end": 88,
+          "strand": "+",
+          "gene": "blaTEM-1",
+          "coverage": "1-88/88",
+          "coverage_map": "===============",
+          "gaps": "0/0",
+          "coverage_pct": 100.0,
+          "identity_pct": 100.0,
+          "database": "tinyamr",
+          "accession": "J01749.1:1-861",
+          "product": "class A beta-lactamase TEM-1",
+          "resistance": "BETA-LACTAM"
+        },
+        {
+          "sequence": "contigC",
+          "start": 1,
+          "end": 79,
+          "strand": "+",
+          "gene": "tetA",
+          "coverage": "1-79/79",
+          "coverage_map": "===============",
+          "gaps": "0/0",
+          "coverage_pct": 100.0,
+          "identity_pct": 100.0,
+          "database": "tinyamr",
+          "accession": "NC_000913.3:100-900",
+          "product": "tetracycline efflux pump TetA",
+          "resistance": "TETRACYCLINE"
+        },
+        {
+          "sequence": "contigC",
+          "start": 90,
+          "end": 183,
+          "strand": "+",
+          "gene": "sul1",
+          "coverage": "1-94/94",
+          "coverage_map": "===============",
+          "gaps": "0/0",
+          "coverage_pct": 100.0,
+          "identity_pct": 100.0,
+          "database": "tinyamr",
+          "accession": "U12338.4:1-940",
+          "product": "sulfonamide-resistant dihydropteroate synthase Sul1",
+          "resistance": "SULFONAMIDE"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 """Phase 0 smoke tests: package version and CLI entrypoint."""
 
+import json
+
 from typer.testing import CliRunner
 
 from gapit import __version__
@@ -16,4 +18,18 @@ def test_version_is_semver() -> None:
 def test_cli_version_flag() -> None:
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert __version__ in result.stdout
+    assert result.stdout == f"gapit {__version__}\n"
+
+
+def test_cli_version_json() -> None:
+    """Given --version --json, When run, Then one compact line with the
+    gapit.version/1 contract."""
+    result = runner.invoke(app, ["--version", "--json"])
+    assert result.exit_code == 0
+    assert "\n" not in result.stdout.rstrip("\n")
+    payload = json.loads(result.stdout)
+    assert payload == {
+        "schema": "gapit.version/1",
+        "name": "gapit",
+        "version": __version__,
+    }

@@ -4,6 +4,7 @@ Exercises the real makeblastdb/blastdbcmd binaries from the pixi environment;
 each test copies the committed fixture into its own tmp datadir (isolated).
 """
 
+import json
 import re
 import shutil
 from pathlib import Path
@@ -41,20 +42,22 @@ def make_datadir(tmp_path: Path) -> Path:
 
 
 def test_list_before_setupdb_exits_4(tmp_path: Path) -> None:
-    """Given an unindexed fixture datadir, When listed, Then exit 4 with an
-    ERROR line on stderr and no table on stdout."""
+    """Given an unindexed fixture datadir, When listed, Then exit 4 with a
+    gapit.error/1 envelope on stderr and no table on stdout."""
     datadir = make_datadir(tmp_path)
     result = runner.invoke(app, ["list", "--datadir", str(datadir)])
     assert result.exit_code == 4
     assert result.stdout == ""
-    assert "ERROR:" in result.stderr
-    assert "not indexed" in result.stderr
+    envelope = json.loads(result.stderr)
+    assert envelope["code"] == "DATABASE_NOT_INDEXED"
+    assert "not indexed" in envelope["message"]
 
 
 def test_list_with_missing_datadir_exits_4(tmp_path: Path) -> None:
     result = runner.invoke(app, ["list", "--datadir", str(tmp_path / "nope")])
     assert result.exit_code == 4
-    assert "ERROR:" in result.stderr
+    envelope = json.loads(result.stderr)
+    assert envelope["code"] == "DATADIR_NOT_FOUND"
 
 
 def test_setupdb_then_list_roundtrip(tmp_path: Path) -> None:

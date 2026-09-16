@@ -22,9 +22,10 @@ are we?** It replaces abricate (Perl) with a modern, typed, testable Python tool
   for PyPI).
 - **Python**: 3.14 in the pixi dev env (current stable); the package declares
   `requires-python = ">=3.11"` and CI tests 3.11 / 3.13 / 3.14.
-- **External binaries**: BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and
-  `any2fasta` (input normalization: gbk/embl/gz/bz2), all from conda-forge. Invoked only via
-  `subprocess` with an argument list — never `shell=True`.
+- **External binaries**: BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`),
+  `any2fasta` (input normalization: gbk/embl/gz/bz2), and `minimap2` (FASTQ read screening,
+  SPEC.md §10), all from conda-forge/bioconda. Invoked only via `subprocess` with an argument
+  list — never `shell=True`.
 - **Core libraries**: `typer` (CLI), `pydantic` v2 (data models / JSON schema), `rich` (terminal
   output). No biopython — FASTA I/O is a small streaming parser we own.
 - **Quality gates**: `ruff` (lint + format), `basedpyright` (strict mode), `pytest`.
@@ -60,6 +61,8 @@ gapit/
 │   ├── hits.py          # Hit model, identity/coverage computation, filtering, dedup
 │   ├── minimap.py       # COVERAGE_MAP construction (exact abricate arithmetic)
 │   ├── report.py        # Report model: the canonical in-memory result
+│   ├── screening.py     # the screen use-case: validation, orchestration, format dispatch
+│   ├── reads.py         # FASTQ mode: minimap2 PAF parsing, coverage breadth/depth, presence
 │   ├── summary.py       # multi-file summary matrix
 │   ├── formats/
 │   │   ├── tsv.py       # abricate-compatible TSV/CSV
