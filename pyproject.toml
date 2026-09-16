@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gaita"
+name = "gapit"
 version = "0.1.0"
 description = "Mass screening of contigs for antimicrobial resistance and virulence genes — agent-first Python reimplementation of abricate"
 readme = "PLAN.md"
@@ -18,10 +18,10 @@ dependencies = [
 ]
 
 [project.scripts]
-gaita = "gaita.cli:app"
+gapit = "gapit.cli:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/gaita"]
+packages = ["src/gapit"]
 
 [tool.ruff]
 src = ["src"]

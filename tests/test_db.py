@@ -1,11 +1,11 @@
-"""Unit tests for database discovery and blastdbcmd output parsing (gaita.db)."""
+"""Unit tests for database discovery and blastdbcmd output parsing (gapit.db)."""
 
 from pathlib import Path
 
 import pytest
 
-from gaita.db import discover_databases, list_databases, parse_blastdbcmd_info
-from gaita.errors import DatabaseError
+from gapit.db import discover_databases, list_databases, parse_blastdbcmd_info
+from gapit.errors import DatabaseError
 
 # Captured verbatim from `blastdbcmd -info -db <fixture>/sequences` (BLAST+ 2.17,
 # tab-indented, "Longest sequence" sharing the Date line is authentic).
@@ -80,10 +80,10 @@ def test_discover_databases_sorted_by_name(tmp_path: Path) -> None:
 
 def test_list_databases_without_setupdb_raises_not_indexed(tmp_path: Path) -> None:
     """Given a discovered db without a BLAST index, When listed, Then DatabaseError
-    (exit 4) pointing at `gaita setupdb`."""
+    (exit 4) pointing at `gapit setupdb`."""
     write_sequences(tmp_path / "tinyamr")
     with pytest.raises(DatabaseError) as excinfo:
         list_databases(tmp_path, setupdb=False)
     assert "not indexed" in str(excinfo.value)
-    assert "gaita setupdb" in str(excinfo.value)
+    assert "gapit setupdb" in str(excinfo.value)
     assert excinfo.value.exit_code == 4

@@ -2,8 +2,8 @@
 
 from typer.testing import CliRunner
 
-from gaita import __version__
-from gaita.cli import app
+from gapit import __version__
+from gapit.cli import app
 
 runner = CliRunner()
 

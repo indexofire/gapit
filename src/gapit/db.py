@@ -8,8 +8,8 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from gaita.errors import DatabaseError, DependencyError
-from gaita.fasta import iter_fasta
+from gapit.errors import DatabaseError, DependencyError
+from gapit.fasta import iter_fasta
 
 IDSEP = "~~~"
 
@@ -41,7 +41,7 @@ class Database(BaseModel, frozen=True):
 
 
 class DatabaseInfo(BaseModel, frozen=True):
-    """One row of ``gaita list`` output."""
+    """One row of ``gapit list`` output."""
 
     name: str
     n_sequences: int
@@ -145,7 +145,7 @@ def blast_db_info(db_prefix: Path) -> BlastDbInfo:
     result = _run(["blastdbcmd", "-info", "-db", str(db_prefix)])
     if result.returncode != 0:
         raise DatabaseError(
-            f"Database {db_prefix} is not indexed, please try: gaita setupdb",
+            f"Database {db_prefix} is not indexed, please try: gapit setupdb",
             code="DATABASE_NOT_INDEXED",
         )
     return parse_blastdbcmd_info(result.stdout)
@@ -175,7 +175,7 @@ def list_databases(datadir: Path, *, setupdb: bool) -> list[DatabaseInfo]:
         )
         if not index_exists:
             raise DatabaseError(
-                f"Database {database.name} is not indexed, please try: gaita setupdb",
+                f"Database {database.name} is not indexed, please try: gapit setupdb",
                 code="DATABASE_NOT_INDEXED",
             )
         info = blast_db_info(sequences)

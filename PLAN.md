@@ -1,4 +1,4 @@
-# PLAN.md — gaita development roadmap
+# PLAN.md — gapit development roadmap
 
 > Phase-gated. Each phase ends green on `pixi run lint && pixi run typecheck && pixi run test`.
 > Behavior targets come from `SPEC.md`; engineering rules from `AGENTS.md`.
@@ -11,24 +11,24 @@
   dev: `ruff`, `basedpyright`, `pytest`.
 - Package metadata: `requires-python = ">=3.11"` (develop on 3.14, support 3.11+; CI matrix
   3.11 / 3.13 / 3.14).
-- pixi tasks: `lint`, `fmt`, `typecheck`, `test`, `gaita`. src-layout package with `py.typed`.
-- `gaita --version` prints and exits 0.
+- pixi tasks: `lint`, `fmt`, `typecheck`, `test`, `gapit`. src-layout package with `py.typed`.
+- `gapit --version` prints and exits 0.
 
-**Done when**: all gates pass on the skeleton; `gaita --version` works.
+**Done when**: all gates pass on the skeleton; `gapit --version` works.
 
 ## Phase 1 — Database layer (`fasta.py`, `db.py`, `config.py`) — ✅ DONE (2026-09-15)
 
-**Goal**: gaita understands an abricate datadir.
+**Goal**: gapit understands an abricate datadir.
 
 - Streaming FASTA reader (plain + gz/bz2 via `any2fasta` fallback), strict header model.
 - DB discovery (`<datadir>/<name>/sequences`), `~~~` header parsing with upstream fallback rules
   (SPEC §4 step 5), `mol_type` heuristic (SPEC §2), `makeblastdb` wrapper (argv list).
-- CLI: `gaita list` (DATABASE/SEQUENCES/DBTYPE/DATE table + `--json`), `gaita setupdb`.
+- CLI: `gapit list` (DATABASE/SEQUENCES/DBTYPE/DATE table + `--json`), `gapit setupdb`.
 
-**Done when**: unit tests for header parsing/mol_type; `gaita list` against a fixture datadir
+**Done when**: unit tests for header parsing/mol_type; `gapit list` against a fixture datadir
 matches `abricate --list` output.
 
-## Phase 2 — Screening core (`blast.py`, `hits.py`, `minimap.py`, `report.py`)
+## Phase 2 — Screening core (`blast.py`, `hits.py`, `minimap.py`, `report.py`) — ✅ DONE (2026-09-15)
 
 **Goal**: the parity engine. TDD: tests written from SPEC.md first.
 
@@ -47,7 +47,7 @@ case, partial `~~~` headers, minus-strand dedup-collapse).
 
 - `formats/tsv.py`: header rules, `--noheader`, `--nopath`, `--csv`, per-file buffering with
   preserved row order.
-- `pixi run parity`: run real abricate (conda) and gaita over a small committed genome corpus
+- `pixi run parity`: run real abricate (conda) and gapit over a small committed genome corpus
   against ≥2 DBs (ncbi + card); diff gene calls byte-for-byte (TSV) modulo the FILE column.
 - CLI flags complete for screening: `--db --datadir --minid --mincov --threads --fofn --quiet
   --csv --noheader --nopath --debug`.
@@ -56,33 +56,33 @@ case, partial `~~~` headers, minus-strand dedup-collapse).
 
 ## Phase 4 — Agent outputs (`formats/json.py`, `formats/md.py`, `errors.py`)
 
-**Goal**: the reason gaita exists.
+**Goal**: the reason gapit exists.
 
-- `--format json|md` on the screening path; top-level `"schema": "gaita.report/1"`,
+- `--format json|md` on the screening path; top-level `"schema": "gapit.report/1"`,
   snake_case keys, explicit units (`identity_pct`, `coverage_pct`).
 - Markdown: YAML frontmatter (version, db, params, ISO-8601 UTC) + stable tables.
-- Typed errors → JSON envelope `gaita.error/1` on stderr + documented exit codes (SPEC §1).
-- Self-description: `gaita schema report|summary|error` (prints JSON Schema from the pydantic
-  models), `gaita list --json`, `gaita --version --json`.
+- Typed errors → JSON envelope `gapit.error/1` on stderr + documented exit codes (SPEC §1).
+- Self-description: `gapit schema report|summary|error` (prints JSON Schema from the pydantic
+  models), `gapit list --json`, `gapit --version --json`.
 
-**Done when**: golden files for JSON/MD; `gaita schema` output validates against the models;
+**Done when**: golden files for JSON/MD; `gapit schema` output validates against the models;
 error paths produce the envelope (tests force each exit code).
 
 ## Phase 5 — Summary mode (`summary.py`)
 
-**Goal**: `gaita summary` matrix, parity with `abricate --summary`.
+**Goal**: `gapit summary` matrix, parity with `abricate --summary`.
 
 - Dutch mode (single multi-FILE report), union-of-genes columns, `;`-joined cells, `.` absent,
   `NUM_FOUND` distinct-gene count, `--identity`, zero-hit files included.
-- Matrix also emitted as JSON (`gaita.summary/1`) and Markdown `[gaita-extension]`.
+- Matrix also emitted as JSON (`gapit.summary/1`) and Markdown `[gapit-extension]`.
 
 **Done when**: matrix parity against `abricate --summary` on the Phase-3 corpus; golden JSON/MD.
 
-## Phase 6 — DB acquisition (`gaita db fetch`) — post-1.0
+## Phase 6 — DB acquisition (`gapit db fetch`) — post-1.0
 
 - Reimplement `abricate-get_db` per DB (ncbi, card, resfinder, argannot, plasmidfinder, megares,
   ecoh, vfdb, ecoli_vf, bacmet2, victors, upec_expec_vf) with the documented transforms
-  (SPEC §8). Until then, gaita consumes abricate-built datadirs.
+  (SPEC §8). Until then, gapit consumes abricate-built datadirs.
 - Optional: ship a pixi-packaged snapshot of the bundled DBs.
 
 ## Phase 7 — Hardening & distribution — post-1.0
@@ -106,6 +106,6 @@ error paths produce the envelope (tests force each exit code).
    yes, with stderr note) — decide before Phase 2 closes.
 2. **JSON field naming for COVERAGE_MAP / GAPS**: keep abricate strings (`coverage_map`,
    `gaps = "openings/gaps"`) vs structured objects — decide in Phase 4; v1 keeps the strings for
-   1:1 mapping, structured views can land in `gaita.report/2`.
-3. **CSV + summary format mixing**: gaita auto-detects separator per report file
-   `[gaita-extension]`; confirm no parity test relies on the broken upstream behavior.
+   1:1 mapping, structured views can land in `gapit.report/2`.
+3. **CSV + summary format mixing**: gapit auto-detects separator per report file
+   `[gapit-extension]`; confirm no parity test relies on the broken upstream behavior.

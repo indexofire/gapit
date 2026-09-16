@@ -1,4 +1,4 @@
-# AGENTS.md — gaita
+# AGENTS.md — gapit
 
 > Python reimplementation of [abricate](https://github.com/tseemann/abricate): mass screening of
 > contigs for antimicrobial resistance and virulence genes. **Agent-first**: every output is
@@ -6,7 +6,7 @@
 
 ## 1. Mission
 
-`gaita` answers one question: **which known genes are present in this assembly, and how confident
+`gapit` answers one question: **which known genes are present in this assembly, and how confident
 are we?** It replaces abricate (Perl) with a modern, typed, testable Python tool that:
 
 1. Produces byte-compatible TSV with abricate (drop-in replacement for existing pipelines).
@@ -37,7 +37,7 @@ pixi run fmt         # ruff format
 pixi run typecheck   # basedpyright --strict
 pixi run test        # pytest (unit, offline)
 pixi run parity      # golden-file diff against real abricate (requires abricate in env)
-pixi run gaita       # the CLI itself
+pixi run gapit       # the CLI itself
 ```
 
 Every change must leave `lint`, `typecheck`, and `test` green.
@@ -45,12 +45,12 @@ Every change must leave `lint`, `typecheck`, and `test` green.
 ## 3. Repository layout (target)
 
 ```
-gaita/
+gapit/
 ├── AGENTS.md            # this file
 ├── PLAN.md              # development roadmap (phase-gated)
 ├── SPEC.md              # distilled abricate behavior spec (source of truth for parity)
 ├── pixi.toml
-├── src/gaita/
+├── src/gapit/
 │   ├── __init__.py
 │   ├── cli.py           # typer entrypoint: screen / summary / setupdb / list / schema
 │   ├── config.py        # datadir resolution, defaults, env vars
@@ -63,7 +63,7 @@ gaita/
 │   ├── summary.py       # multi-file summary matrix
 │   ├── formats/
 │   │   ├── tsv.py       # abricate-compatible TSV/CSV
-│   │   ├── json.py      # versioned JSON (schema: gaita.report/1)
+│   │   ├── json.py      # versioned JSON (schema: gapit.report/1)
 │   │   └── md.py        # Markdown (human + agent readable, YAML frontmatter)
 │   ├── errors.py        # typed errors + JSON error envelope
 │   └── py.typed
@@ -90,19 +90,19 @@ One file, one responsibility. Target ≤ 250 LOC per module; split before it hur
 
 ## 5. The agent-facing output contract (design center)
 
-This is what distinguishes gaita from abricate. Treat it as a public API.
+This is what distinguishes gapit from abricate. Treat it as a public API.
 
 - **Formats**: `--format tsv|csv|json|md` (default `tsv` for abricate compatibility).
-- **JSON**: top-level `"schema": "gaita.report/1"`; schema introspectable via
-  `gaita schema report | summary | error`. Keys are snake_case, units explicit (`identity_pct`,
+- **JSON**: top-level `"schema": "gapit.report/1"`; schema introspectable via
+  `gapit schema report | summary | error`. Keys are snake_case, units explicit (`identity_pct`,
   `coverage_pct`). Semver the schema; never rename or retype a field in a minor bump.
 - **Markdown**: YAML frontmatter (tool version, db, params, ISO-8601 UTC timestamp) + tables a
   human can read and an agent can regex reliably.
 - **Errors**: failures print a JSON envelope to stderr
-  `{"schema": "gaita.error/1", "code": "...", "message": "...", "context": {...}}` and exit with a
+  `{"schema": "gapit.error/1", "code": "...", "message": "...", "context": {...}}` and exit with a
   documented non-zero code (2 = usage, 3 = missing dependency, 4 = db error, 5 = input error).
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
-- **Self-description**: `gaita --version --json`, `gaita list --json`, `gaita schema` — an agent
+- **Self-description**: `gapit --version --json`, `gapit list --json`, `gapit schema` — an agent
   must be able to discover everything without reading docs.
 
 ## 6. Testing strategy
@@ -110,7 +110,7 @@ This is what distinguishes gaita from abricate. Treat it as a public API.
 - **Unit**: pure functions (coverage %, merge rules, header parsing) — no I/O beyond `tests/data`.
 - **Golden files**: fixed tiny db + fixed contigs → expected TSV/JSON/MD committed; regenerate via
   `pixi run golden --update`, review diffs like code.
-- **Parity harness**: `pixi run parity` runs real abricate (conda) and gaita over a small genome
+- **Parity harness**: `pixi run parity` runs real abricate (conda) and gapit over a small genome
   corpus and diffs the gene calls (file, gene, %identity, %coverage). Parity on the corpus is the
   release gate for v1.0.
 - Tests must run offline and fast (< 30 s) except `parity`, which is opt-in.

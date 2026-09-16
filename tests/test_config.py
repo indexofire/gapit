@@ -1,11 +1,11 @@
-"""Unit tests for datadir resolution precedence (gaita.config)."""
+"""Unit tests for datadir resolution precedence (gapit.config)."""
 
 from pathlib import Path
 
 import pytest
 
-from gaita.config import resolve_datadir
-from gaita.errors import DatabaseError
+from gapit.config import resolve_datadir
+from gapit.errors import DatabaseError
 
 
 def make_datadir(path: Path) -> Path:
@@ -29,7 +29,7 @@ def test_env_var_used_when_no_cli_value(tmp_path: Path, monkeypatch: pytest.Monk
 def test_default_datadir_when_unset(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("GAITA_DATADIR", raising=False)
     monkeypatch.setenv("HOME", str(tmp_path))
-    default_dir = make_datadir(tmp_path / ".local" / "share" / "gaita" / "db")
+    default_dir = make_datadir(tmp_path / ".local" / "share" / "gapit" / "db")
     assert resolve_datadir(None) == default_dir.resolve()
 
 

@@ -8,7 +8,7 @@ from typing import IO
 
 from pydantic import BaseModel
 
-from gaita.errors import InputError
+from gapit.errors import InputError
 
 
 class FastaRecord(BaseModel, frozen=True):

@@ -4,7 +4,7 @@ Rule (replicate exactly): delete [AGTC] case-insensitively; if the remaining
 length is STRICTLY greater than 50% of the original, the db is protein.
 """
 
-from gaita.db import mol_type
+from gapit.db import mol_type
 
 
 def test_pure_acgt_is_nucl() -> None:

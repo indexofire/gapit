@@ -1,19 +1,19 @@
-# SPEC.md — abricate behavior specification (parity contract for gaita)
+# SPEC.md — abricate behavior specification (parity contract for gapit)
 
 > Distilled from abricate **1.4.0**, master commit
 > [`e2064df7d193ad783d4c188d4ce79706faf9eb75`](https://github.com/tseemann/abricate/commit/e2064df7d193ad783d4c188d4ce79706faf9eb75)
 > (2026-07-17). abricate is a single 530-line Perl script (`bin/abricate`) plus a DB builder
 > (`bin/abricate-get_db`); there are no perl5 libraries.
 >
-> **Parity principle**: where gaita and this document disagree with intuition, abricate wins.
-> Every rule below is a parity requirement unless marked `[gaita-extension]`.
+> **Parity principle**: where gapit and this document disagree with intuition, abricate wins.
+> Every rule below is a parity requirement unless marked `[gapit-extension]`.
 
 ## 1. CLI surface
 
 | Option | Type | Default | Notes |
 |---|---|---|---|
 | `--db` | str | `ncbi` | subdir of datadir |
-| `--datadir` | path | `<script-dir>/../db` | gaita: default to env var `GAITA_DATADIR`, then platform data dir |
+| `--datadir` | path | `<script-dir>/../db` | gapit: default to env var `GAITA_DATADIR`, then platform data dir |
 | `--minid` | float | **80** | `0 < minid <= 100`; enforced only via blastn `-perc_identity` |
 | `--mincov` | float | **80** | `0 <= mincov <= 100`; post-filter on unrounded float |
 | `--threads` | int | 1 | passed to `-num_threads` |
@@ -26,15 +26,15 @@
 | `--identity` | flag | off | summary cells show %IDENTITY instead of %COVERAGE |
 | `--list` / `--setupdb` / `--check` / `--version` / `--help` | modes | — | |
 | `--debug` | flag | off | verbose stderr |
-| `--format` `[gaita-extension]` | enum | `tsv` | `tsv\|csv\|json\|md`; supersedes upstream's validated-but-unimplemented `--outfmt` (`bed gff json` are accepted upstream but do nothing) |
+| `--format` `[gapit-extension]` | enum | `tsv` | `tsv\|csv\|json\|md`; supersedes upstream's validated-but-unimplemented `--outfmt` (`bed gff json` are accepted upstream but do nothing) |
 
 Mode precedence (upstream): `--summary` → `--check` → dep check → `--list`/`--setupdb` → BLAST
 version gate (`blastn -version` must be ≥ 2.2.30; we require modern BLAST+ ≥ 2.7 via conda) → run.
 
 Exit codes (upstream): `0` ok; `1` any runtime error; `5` unknown option; BLAST/any2fasta pipeline
-failure propagated verbatim. **gaita mapping** `[gaita-extension]`: `2` usage, `3` missing
+failure propagated verbatim. **gapit mapping** `[gapit-extension]`: `2` usage, `3` missing
 dependency, `4` db error, `5` input error, `1` unexpected — stdout TSV stays byte-compatible;
-exit-code integers are gaita's own contract (documented in AGENTS.md §5).
+exit-code integers are gapit's own contract (documented in AGENTS.md §5).
 
 ## 2. Database layout
 
@@ -54,7 +54,7 @@ exit-code integers are gaita's own contract (documented in AGENTS.md §5).
 
 ## 3. Screening pipeline
 
-Per input file (upstream wraps in `bash -c 'set -euo pipefail; ...'`; gaita uses argv lists, no
+Per input file (upstream wraps in `bash -c 'set -euo pipefail; ...'`; gapit uses argv lists, no
 shell):
 
 ```
@@ -79,7 +79,7 @@ For each BLAST row, in order:
 2. **Dedup (the only "merge")**: drop the row if `qseqid~qstart~qend` was already seen for this
    input file. First row wins; BLAST emits best hits first. The key **ignores strand**.
    There is **no interval-overlap merging, no gap tolerance, no best-gene choice** — two genes
-   overlapping at different query spans are both reported (upstream README caveat). gaita MUST NOT
+   overlapping at different query spans are both reported (upstream README caveat). gapit MUST NOT
    add merging to the default path; any future merge mode goes behind a flag, off by default.
 3. **Coverage filter**: `pct_cov = 100 * (length - gaps) / slen` (ungapped aligned columns over
    full subject/gene length). Keep iff `pct_cov >= mincov` — comparison on the **unrounded**
@@ -122,13 +122,13 @@ gene may leave box 0 as `.` since coords are 1-based) — do not "fix" them.
 Rows are sorted by SEQUENCE (lexicographic) then START (numeric) with a **stable** sort, and
 emitted per input file after that file finishes. Files are processed sequentially in argument
 order; a single header row precedes all output (even if a later file errors — upstream has no
-atomicity; gaita buffers per file but preserves row order).
+atomicity; gapit buffers per file but preserves row order).
 
 ## 5. TSV/CSV output
 
 - Header (unless `--noheader`), printed once:
   `#FILE SEQUENCE START END STRAND GENE COVERAGE COVERAGE_MAP GAPS %COVERAGE %IDENTITY DATABASE ACCESSION PRODUCT RESISTANCE`
-- Separator: tab, or `,` with `--csv` (gaita: `--format csv`). Line = `join(sep, fields) + "\n"`.
+- Separator: tab, or `,` with `--csv` (gapit: `--format csv`). Line = `join(sep, fields) + "\n"`.
 - stdout = data only; all chatter (Processing/Found N genes/Tips) to stderr.
 
 ## 6. Summary mode (`--summary`)
@@ -148,14 +148,14 @@ Input: ≥1 abricate-format report files.
 ## 7. Edge cases & quirks (parity-critical)
 
 - **Input types**: fa/gz/bz2/gbk/embl via any2fasta. Invalid input → pipeline failure → nonzero
-  exit (gaita: exit 5 + JSON error envelope).
+  exit (gapit: exit 5 + JSON error envelope).
 - **Empty FASTA** → zero hits; header still printed; success exit.
 - **Circular contigs**: no special handling (linear).
 - **Partial `~~~` headers**: missing trailing fields → empty strings.
-- **`--csv` + summary**: summary must be told the separator; mixing breaks upstream — gaita
-  detects format per file instead `[gaita-extension]`.
+- **`--csv` + summary**: summary must be told the separator; mixing breaks upstream — gapit
+  detects format per file instead `[gapit-extension]`.
 - **Determinism**: stable sort; fixed BLAST params; no timestamps in data payloads. (Upstream
-  MOTD/`srand` is stderr-only and dropped in gaita.)
+  MOTD/`srand` is stderr-only and dropped in gapit.)
 - **blastx**: no sstrand → STRAND `+`; minid unenforced (quirk kept, documented).
 - Known upstream caveats we inherit: no mutational resistance; gap reporting incomplete;
   overlapping genes both reported; possible coverage-calculation issues.
@@ -169,11 +169,11 @@ RESISTANCE), `resfinder` (plain ACC; gene has `_copy` suffix), `argannot`, `plas
 `upec_expec_vf`; plus `db/abricate/` — a cd-hit-est recipe, not a DB. Disabled getters:
 `ncbibetalactamase`, `serotypefinder`.
 
-gaita v1.0 reads any abricate-format datadir (including abricate's own). A `gaita db fetch`
+gapit v1.0 reads any abricate-format datadir (including abricate's own). A `gapit db fetch`
 reimplementation of `abricate-get_db` is post-1.0 (see PLAN.md).
 
 ## 9. License note
 
-abricate is GPL-2.0. gaita is a behavioral reimplementation (no Perl code copied); to keep DB
-handling and redistribution unambiguous, gaita is licensed GPL-2.0-compatible. Bundled DB content
+abricate is GPL-2.0. gapit is a behavioral reimplementation (no Perl code copied); to keep DB
+handling and redistribution unambiguous, gapit is licensed GPL-2.0-compatible. Bundled DB content
 retains its original upstream licenses.

@@ -7,7 +7,7 @@ currently renders ``ERROR: <message>`` on stderr.
 
 
 class GaitaError(Exception):
-    """Base class for all typed gaita errors."""
+    """Base class for all typed gapit errors."""
 
     code: str
     exit_code: int = 1

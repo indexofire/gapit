@@ -1,4 +1,4 @@
-"""Integration tests: gaita list / setupdb against a real fixture datadir.
+"""Integration tests: gapit list / setupdb against a real fixture datadir.
 
 Exercises the real makeblastdb/blastdbcmd binaries from the pixi environment;
 each test copies the committed fixture into its own tmp datadir (isolated).
@@ -11,7 +11,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field, TypeAdapter
 from typer.testing import CliRunner
 
-from gaita.cli import app
+from gapit.cli import app
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 
@@ -19,7 +19,7 @@ runner = CliRunner()
 
 
 class ListEntry(BaseModel):
-    """One entry of the gaita.list/1 payload (boundary parse for this test)."""
+    """One entry of the gapit.list/1 payload (boundary parse for this test)."""
 
     name: str
     sequences: int
@@ -28,7 +28,7 @@ class ListEntry(BaseModel):
 
 
 class ListPayload(BaseModel):
-    """The gaita.list/1 payload (`schema` clashes with BaseModel.schema, hence the alias)."""
+    """The gapit.list/1 payload (`schema` clashes with BaseModel.schema, hence the alias)."""
 
     schema_name: str = Field(alias="schema")
     databases: list[ListEntry]
@@ -88,13 +88,13 @@ def test_setupdb_runs_list_without_list(tmp_path: Path) -> None:
 
 def test_list_json_output(tmp_path: Path) -> None:
     """Given an indexed fixture datadir, When listed with --json, Then the payload
-    parses, carries schema gaita.list/1, and keys come in documented order."""
+    parses, carries schema gapit.list/1, and keys come in documented order."""
     datadir = make_datadir(tmp_path)
     assert runner.invoke(app, ["setupdb", "--datadir", str(datadir)]).exit_code == 0
     result = runner.invoke(app, ["list", "--datadir", str(datadir), "--json"])
     assert result.exit_code == 0
     payload = TypeAdapter(ListPayload).validate_json(result.stdout)
-    assert payload.schema_name == "gaita.list/1"
+    assert payload.schema_name == "gapit.list/1"
     (entry,) = payload.databases
     assert entry.name == "tinyamr"
     assert entry.sequences == 3
