@@ -15,12 +15,17 @@ IDSEP = "~~~"
 
 
 class DbHeader(BaseModel, frozen=True):
-    """Parsed ``~~~`` fields of a database sequence id (SPEC.md §4 step 5)."""
+    """Parsed ``~~~`` fields of a database sequence id (SPEC.md §4 step 5).
+
+    ``function`` carries functional categories (AMR classes, virulence, ...):
+    the legacy ``~~~`` branch fills it with abricate's 4th resistance field
+    verbatim — same bytes, better name (Wave F1).
+    """
 
     database: str
     gene: str
     accession: str
-    resistance: str
+    function: str
 
 
 class BlastDbInfo(BaseModel, frozen=True):
@@ -50,7 +55,7 @@ class DatabaseInfo(BaseModel, frozen=True):
 
 
 def parse_db_header(seqid: str, default_db: str) -> DbHeader:
-    """Split a seqid on ``~~~`` into (database, gene, accession, resistance).
+    """Split a seqid on ``~~~`` into (database, gene, accession, function).
 
     Without any ``~~~`` the whole seqid is the gene and the default database is
     used; partial headers leave trailing fields empty; an empty database field
@@ -58,14 +63,14 @@ def parse_db_header(seqid: str, default_db: str) -> DbHeader:
     """
     fields = seqid.split(IDSEP)
     if len(fields) == 1:
-        return DbHeader(database=default_db, gene=seqid, accession="", resistance="")
+        return DbHeader(database=default_db, gene=seqid, accession="", function="")
     fields += [""] * (4 - len(fields))
-    database, gene, accession, resistance = fields[:4]
+    database, gene, accession, function = fields[:4]
     return DbHeader(
         database=database or default_db,
         gene=gene,
         accession=accession,
-        resistance=resistance,
+        function=function,
     )
 
 
@@ -91,10 +96,18 @@ def _run(argv: list[str]) -> subprocess.CompletedProcess[str]:
         ) from exc
 
 
-def make_blast_db(sequences_path: Path, name: str) -> None:
-    """(Re)build the BLAST index for one database directory."""
-    letters = "".join(record.sequence for record in iter_fasta(sequences_path))
-    dbtype = mol_type(letters)
+def make_blast_db(
+    sequences_path: Path, name: str, *, dbtype: Literal["nucl", "prot"] | None = None
+) -> None:
+    """(Re)build the BLAST index for one database directory.
+
+    ``dbtype=None`` (the default) keeps the abricate ``mol_type`` heuristic;
+    an explicit ``"nucl"``/``"prot"`` — e.g. from a gapit manifest, which
+    declares the type — skips the heuristic entirely.
+    """
+    if dbtype is None:
+        letters = "".join(record.sequence for record in iter_fasta(sequences_path))
+        dbtype = mol_type(letters)
     for index_file in sequences_path.parent.glob(f"{sequences_path.name}.[np]??"):
         index_file.unlink()
     result = _run(
