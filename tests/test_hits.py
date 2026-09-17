@@ -3,11 +3,16 @@
 import pytest
 
 from gapit.blast import BlastRow
+from gapit.errors import DatabaseError
 from gapit.hits import Hit, process_rows
 
 TET_A_ID = "tinyamr~~~tetA~~~NC_000913.3:100-900~~~TETRACYCLINE"
 TET_A_TITLE = TET_A_ID + " tetracycline efflux pump TetA"
 SUL1_ID = "tinyamr~~~sul1~~~U12338.4:1-940~~~SULFONAMIDE"
+# A native gapit/v1 seqid (dbcodec encoding of gene "de|mo%A=1" and function
+# classes ampicillin;gentamicin) plus its makeblastdb-style stitle.
+GAPIT_ID = "gapit|db=tinyamr|gene=de%7Cmo%25A%3D1|acc=SYN-DEMO-001|func=ampicillin%3Bgentamicin"
+GAPIT_TITLE = GAPIT_ID + " demo beta-lactamase, variant A"
 
 
 def row(
@@ -62,7 +67,7 @@ def test_full_length_hit_fields() -> None:
     assert hit.gene == "tetA"
     assert hit.database == "tinyamr"
     assert hit.accession == "NC_000913.3:100-900"
-    assert hit.resistance == "TETRACYCLINE"
+    assert hit.function == "TETRACYCLINE"
     assert hit.product == "tetracycline efflux pump TetA"
     assert (hit.s_start, hit.s_end, hit.s_len) == (1, 100, 100)
     assert hit.coverage_map == "==============="
@@ -188,12 +193,12 @@ def test_empty_sstrand_counts_as_plus() -> None:
 
 def test_partial_header_falls_back_to_default_db() -> None:
     """Given a plain sseqid with no ~~~, When processed, Then gene is the whole
-    id and database/accession/resistance come from the default_db fallback."""
+    id and database/accession/function come from the default_db fallback."""
     hit = process([row(sseqid="tetA(1)")], default_db="resfinder")[0]
     assert hit.gene == "tetA(1)"
     assert hit.database == "resfinder"
     assert hit.accession == ""
-    assert hit.resistance == ""
+    assert hit.function == ""
 
 
 def test_empty_rows_yield_no_hits() -> None:
@@ -215,3 +220,59 @@ def test_stable_order_on_equal_sequence_start_keys() -> None:
 
     assert sorted([first, second], key=sort_key) == [first, second]
     assert sorted([second, first], key=sort_key) == [second, first]
+
+
+def test_gapit_seqid_decodes_tagged_fields() -> None:
+    """Given a native gapit/v1 sseqid (metachar gene, joined function classes),
+    When processed, Then the gene decodes verbatim and function renders in the
+    abricate display form 'a;b'."""
+    (hit,) = process([row(sseqid=GAPIT_ID, stitle=GAPIT_TITLE)])
+    assert hit.gene == "de|mo%A=1"
+    assert hit.database == "tinyamr"
+    assert hit.accession == "SYN-DEMO-001"
+    assert hit.function == "ampicillin;gentamicin"
+
+
+def test_gapit_stitle_strips_leading_tagged_seqid() -> None:
+    """Given a makeblastdb-style stitle prefixed with the tagged seqid, When
+    processed, Then the leading token is dropped and commas/tabs are stripped
+    (same cleanup as the ~~~ rule, minus the comma in the fixture)."""
+    (hit,) = process([row(sseqid=GAPIT_ID, stitle=GAPIT_TITLE)])
+    assert hit.product == "demo beta-lactamase variant A"
+
+
+def test_gapit_bare_seqid_stitle_stays() -> None:
+    """Given a stitle that is only the tagged seqid (no description), When
+    processed, Then it stays verbatim — the Perl leading-token regex requires
+    trailing whitespace, so a bare id is never stripped (quirk parity)."""
+    (hit,) = process([row(sseqid=GAPIT_ID, stitle=GAPIT_ID)])
+    assert hit.product == GAPIT_ID
+
+
+def test_gapit_and_legacy_rows_decode_side_by_side() -> None:
+    """Given one legacy ~~~ row and one native gapit| row in the same batch,
+    When processed, Then each decodes through its own branch with its own
+    product cleanup (distinct query spans, so dedup keeps both)."""
+    rows = [
+        row(),
+        row(sseqid=GAPIT_ID, stitle=GAPIT_TITLE, qstart=200, qend=439, qlen=439),
+    ]
+    legacy, native = process(rows)
+    assert legacy.gene == "tetA"
+    assert legacy.accession == "NC_000913.3:100-900"
+    assert legacy.product == "tetracycline efflux pump TetA"
+    assert native.gene == "de|mo%A=1"
+    assert native.function == "ampicillin;gentamicin"
+    assert native.product == "demo beta-lactamase variant A"
+
+
+def test_malformed_gapit_header_raises_database_error() -> None:
+    """Given a corrupt gapit| sseqid (bad percent escape in the gene), When
+    processed, Then DatabaseError HEADER_MALFORMED with exit 4 — the
+    documented no-silent-failure contract."""
+    with pytest.raises(DatabaseError) as excinfo:
+        process([row(sseqid="gapit|db=tinyamr|gene=tet%ZZ")])
+    error = excinfo.value
+    assert error.code == "HEADER_MALFORMED"
+    assert error.exit_code == 4
+    assert error.context["reason"] == "invalid_percent_escape:gene"

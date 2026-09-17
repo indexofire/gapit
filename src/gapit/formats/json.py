@@ -28,6 +28,9 @@ class HitDocument(BaseModel, frozen=True):
     database: str
     accession: str
     product: str
+    # "resistance" is frozen by gapit.report/1 (1:1 with the TSV RESISTANCE
+    # column); the value flows from Hit.function and carries functional
+    # categories for native DBs (Wave F1 renamed the internal slot only).
     resistance: str
 
 
@@ -101,6 +104,8 @@ class GeneCoverageDocument(BaseModel, frozen=True):
     database: str
     accession: str
     product: str
+    # "resistance" is frozen by gapit.reads/1; the value flows from
+    # GeneCoverage.function (functional categories for native DBs).
     resistance: str
     tlen: int
     breadth_pct: float
@@ -157,7 +162,7 @@ def _hit_document(hit: Hit) -> HitDocument:
         database=hit.database,
         accession=hit.accession,
         product=hit.product,
-        resistance=hit.resistance,
+        resistance=hit.function,
     )
 
 
@@ -182,7 +187,7 @@ def _gene_coverage_document(gene: GeneCoverage) -> GeneCoverageDocument:
         database=gene.database,
         accession=gene.accession,
         product=gene.product,
-        resistance=gene.resistance,
+        resistance=gene.function,
         tlen=gene.tlen,
         breadth_pct=round(gene.breadth_pct, 2),
         mean_depth=round(gene.mean_depth, 2),

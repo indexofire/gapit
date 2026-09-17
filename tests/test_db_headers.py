@@ -5,12 +5,12 @@ from gapit.db import parse_db_header
 
 def test_canonical_four_fields() -> None:
     """Given a full db~~~gene~~~accession~~~resistance header, When parsed,
-    Then every field is populated."""
+    Then every field is populated (the legacy 4th field lands in ``function``)."""
     header = parse_db_header("ncbi~~~tetA~~~NC_000913.3~~~TETRACYCLINE", default_db="ncbi")
     assert header.database == "ncbi"
     assert header.gene == "tetA"
     assert header.accession == "NC_000913.3"
-    assert header.resistance == "TETRACYCLINE"
+    assert header.function == "TETRACYCLINE"
 
 
 def test_no_separator_falls_back_to_gene_only() -> None:
@@ -20,25 +20,25 @@ def test_no_separator_falls_back_to_gene_only() -> None:
     assert header.gene == "tetA(1)"
     assert header.database == "resfinder"
     assert header.accession == ""
-    assert header.resistance == ""
+    assert header.function == ""
 
 
 def test_two_fields_pad_trailing() -> None:
-    """Given db~~~gene, When parsed, Then accession and resistance are empty."""
+    """Given db~~~gene, When parsed, Then accession and function are empty."""
     header = parse_db_header("vfdb~~~toxA", default_db="ncbi")
     assert header.database == "vfdb"
     assert header.gene == "toxA"
     assert header.accession == ""
-    assert header.resistance == ""
+    assert header.function == ""
 
 
-def test_three_fields_pad_resistance() -> None:
-    """Given db~~~gene~~~accession, When parsed, Then resistance is empty."""
+def test_three_fields_pad_function() -> None:
+    """Given db~~~gene~~~accession, When parsed, Then function is empty."""
     header = parse_db_header("card~~~blaTEM-1~~~J01749.1", default_db="ncbi")
     assert header.database == "card"
     assert header.gene == "blaTEM-1"
     assert header.accession == "J01749.1"
-    assert header.resistance == ""
+    assert header.function == ""
 
 
 def test_empty_database_field_uses_default() -> None:
@@ -48,13 +48,13 @@ def test_empty_database_field_uses_default() -> None:
     assert header.database == "megares"
     assert header.gene == "gene"
     assert header.accession == "acc"
-    assert header.resistance == "RES"
+    assert header.function == "RES"
 
 
-def test_resistance_classes_preserved_verbatim() -> None:
-    """Given a multi-class ;-joined resistance field, When parsed, Then it is
-    preserved verbatim."""
+def test_function_classes_preserved_verbatim() -> None:
+    """Given a multi-class ;-joined 4th field, When parsed, Then it is
+    preserved verbatim in the function slot."""
     header = parse_db_header(
         "argannot~~~gene~~~acc~~~BETA-LACTAM;AMINOGLYCOSIDE;MACROLIDE", default_db="ncbi"
     )
-    assert header.resistance == "BETA-LACTAM;AMINOGLYCOSIDE;MACROLIDE"
+    assert header.function == "BETA-LACTAM;AMINOGLYCOSIDE;MACROLIDE"

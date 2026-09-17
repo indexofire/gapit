@@ -1,7 +1,10 @@
 """Hit processing: the SPEC.md §4 algorithm, in order, nothing more.
 
 No interval merging of any kind — upstream reports overlapping genes at
-different query spans, and so do we.
+different query spans, and so do we. Subject ids decode through
+:mod:`gapit.dbcodec`: legacy ``~~~`` ids parse by the frozen db.py rules,
+``gapit|``-tagged ids by the strict native codec — a malformed native header
+raises DatabaseError ``HEADER_MALFORMED`` (exit 4), never a silent fallback.
 """
 
 import re
@@ -10,11 +13,14 @@ from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel
 
-from gapit.db import IDSEP, parse_db_header
+from gapit.db import IDSEP
+from gapit.dbcodec import decode_seqid, is_gapit_header
 from gapit.minimap import minimap
 
 # Perl: $product =~ s/^\S+\s+// if $product =~ m/~~~/  — strips the leading
 # makeblastdb id token only when followed by whitespace; a bare ~~~id stays.
+# Native gapit| ids get the same substitution: makeblastdb prefixes stitle
+# with the id, and there the prefix is the whitespace-free tagged seqid.
 _LEADING_TOKEN_RE = re.compile(r"^\S+\s+")
 
 if TYPE_CHECKING:
@@ -33,7 +39,7 @@ class Hit(BaseModel, frozen=True):
     database: str
     accession: str
     product: str
-    resistance: str
+    function: str
     s_start: int
     s_end: int
     s_len: int
@@ -50,7 +56,8 @@ def process_rows(rows: Iterable["BlastRow"], *, mincov: float, default_db: str) 
     1. minus-strand swap (subject coords only), 2. dedup on
     (qseqid, qstart, qend) — first row wins, key ignores strand, and the key
     is claimed even if the row is later coverage-filtered, 3. coverage filter
-    on the unrounded float, 4. ~~~ header parse, 5. product cleanup.
+    on the unrounded float, 4. header decode (native ``gapit|`` codec or
+    legacy ``~~~`` rules), 5. product cleanup.
     """
     hits: list[Hit] = []
     seen: set[tuple[str, int, int]] = set()
@@ -69,12 +76,12 @@ def process_rows(rows: Iterable["BlastRow"], *, mincov: float, default_db: str) 
         coverage_pct = 100.0 * (row.length - row.gaps) / row.slen
         if coverage_pct < mincov:
             continue
-        # 4. subject id parse with fallbacks
-        header = parse_db_header(row.sseqid, default_db)
+        # 4. subject id decode: native gapit| codec, legacy ~~~ delegated
+        header = decode_seqid(row.sseqid, default_db)
         # 5. product cleanup: n/a fallback, strip ',' and tab, drop leading id token
         product = row.stitle or "n/a"
         product = product.replace(",", "").replace("\t", "")
-        if IDSEP in product:
+        if IDSEP in product or is_gapit_header(row.sseqid):
             product = _LEADING_TOKEN_RE.sub("", product, count=1)
         hits.append(
             Hit(
@@ -85,7 +92,7 @@ def process_rows(rows: Iterable["BlastRow"], *, mincov: float, default_db: str) 
                 gene=header.gene,
                 database=header.database,
                 accession=header.accession,
-                resistance=header.resistance,
+                function=header.function,
                 product=product,
                 s_start=s_start,
                 s_end=s_end,

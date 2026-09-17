@@ -9,6 +9,7 @@ import typer
 from pydantic import BaseModel
 
 from gapit import __version__, config, db
+from gapit.cmd_db import register_db_command
 from gapit.cmd_summary import register_summary_command
 from gapit.errors import ErrorEnvelope, GapitError, render_error
 from gapit.formats.json import (
@@ -204,6 +205,7 @@ def screen(
 
 
 register_summary_command(app)
+register_db_command(app)
 
 
 _SCHEMA_MODELS: dict[str, type[BaseModel]] = {

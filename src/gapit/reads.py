@@ -8,8 +8,9 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from gapit.db import Database, parse_db_header
-from gapit.errors import DependencyError, GapitError
+from gapit.db import Database
+from gapit.dbcodec import decode_seqid
+from gapit.errors import DependencyError, GapitError, InputError
 from gapit.fasta import iter_fasta
 
 ReadType = Literal["sr", "map-ont", "map-hifi"]
@@ -92,7 +93,7 @@ class GeneCoverage(BaseModel, frozen=True):
     database: str
     gene: str
     accession: str
-    resistance: str
+    function: str
     product: str
     tlen: int
     breadth_pct: float
@@ -135,13 +136,13 @@ def aggregate_coverage(
     for tname, depth in depths.items():
         tlen = len(depth)
         covered = sum(1 for value in depth if value > 0)
-        header = parse_db_header(tname, default_db)
+        header = decode_seqid(tname, default_db)
         coverages.append(
             GeneCoverage(
                 database=header.database,
                 gene=header.gene,
                 accession=header.accession,
-                resistance=header.resistance,
+                function=header.function,
                 product=descriptions.get(tname, ""),
                 tlen=tlen,
                 breadth_pct=100.0 * covered / tlen,
@@ -153,6 +154,50 @@ def aggregate_coverage(
     return sorted(coverages, key=lambda entry: (-entry.breadth_pct, entry.gene))
 
 
+def _minimap2_version() -> str:
+    """First line of ``minimap2 --version`` stdout ('' when minimap2 cannot
+    run — the real invocation in run_minimap2 owns the typed error)."""
+    try:
+        result = subprocess.run(
+            ["minimap2", "--version"], check=False, capture_output=True, text=True
+        )
+    except FileNotFoundError:
+        return ""
+    if result.returncode != 0:
+        return ""
+    return result.stdout.splitlines()[0].strip() if result.stdout else ""
+
+
+def _mmi_index(database: Database) -> Path | None:
+    """The persisted ``sequences.mmi`` to screen against, or None to use the
+    FASTA.
+
+    Usable iff the ``.mmi`` exists, a readable ``gapit-manifest.json`` sits
+    beside it, and its ``minimap2_version`` matches the installed minimap2
+    (index formats are version-specific — that equality is the compatibility
+    gate; the sequences sha256 is deliberately NOT re-checked: the .mmi was
+    built from the same ``sequences`` in the same directory). Any miss —
+    missing file, unreadable/malformed manifest, empty or mismatched version
+    — falls back to the FASTA silently: a performance fallback, not an error;
+    genuine minimap2 failures surface in run_minimap2.
+    """
+    sequences = database.sequences_path
+    mmi = sequences.with_name(f"{sequences.name}.mmi")
+    if not mmi.is_file():
+        return None
+    # Imported here, not at module top: gapit.records -> formats.json ->
+    # gapit.reads would be a circular import at load time.
+    from gapit.records import read_manifest
+
+    try:
+        manifest = read_manifest(sequences.with_name("gapit-manifest.json"))
+    except InputError:
+        return None
+    if not manifest.minimap2_version or manifest.minimap2_version != _minimap2_version():
+        return None
+    return mmi
+
+
 def run_minimap2(
     lanes: list[tuple[Path, Path | None]],
     database: Database,
@@ -161,9 +206,13 @@ def run_minimap2(
     threads: int,
 ) -> list[PafRecord]:
     """Run one minimap2 invocation per lane (PAF on stdout) and concatenate
-    the rows. minimap2's pairing semantics for >2 input files are undocumented;
-    per-lane runs (r1[i] alone or with its mate r2[i]) are deterministic, and
-    re-indexing the small db per lane is negligible."""
+    the rows. The index argument is the persisted ``.mmi`` when usable (see
+    ``_mmi_index``), else the FASTA (minimap2 then loads it per lane —
+    negligible for the small dbs). minimap2's pairing semantics for >2 input
+    files are undocumented; per-lane runs (r1[i] alone or with its mate
+    r2[i]) are deterministic."""
+    mmi = _mmi_index(database)
+    index = database.sequences_path if mmi is None else mmi
     rows: list[PafRecord] = []
     for r1, r2 in lanes:
         argv = [
@@ -172,7 +221,7 @@ def run_minimap2(
             read_type,
             "-t",
             str(threads),
-            str(database.sequences_path),
+            str(index),
             str(r1),
         ]
         if r2 is not None:

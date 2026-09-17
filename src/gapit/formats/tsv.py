@@ -38,7 +38,7 @@ def format_tsv(reports: Iterable[Report], *, csv: bool, noheader: bool, nopath: 
                         hit.database,
                         hit.accession,
                         hit.product,
-                        hit.resistance,
+                        hit.function,
                     )
                 )
             )

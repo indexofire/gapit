@@ -45,7 +45,7 @@ def test_full_coverage_gene_is_present(readsdb: Database) -> None:
     assert entry.gene == "tetX"
     assert entry.database == "tinyreads"
     assert entry.accession == "SYN-001"
-    assert entry.resistance == "TETRACYCLINE"
+    assert entry.function == "TETRACYCLINE"
     assert entry.product == "extended resistance determinant tetX"
     assert entry.present is True
     assert entry.breadth_pct >= 95.0

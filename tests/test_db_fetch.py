@@ -1,4 +1,4 @@
-"""Integration tests: `gapit db fetch` — verified local-file installation.
+"""Integration tests: `gapit db install` — verified local-file installation.
 
 Generic file plumbing only: plain-text (non-biological) fixtures copied from a
 local source path to a target with a streaming SHA256 check. There is no
@@ -48,7 +48,7 @@ def test_db_fetch_installs_bytes_for_known_sha256(tmp_path: Path) -> None:
     target = target_dir / "installed.txt"
     result = runner.invoke(
         app,
-        ["db", "fetch", str(source), "--sha256", PAYLOAD_SHA256, "--output", str(target)],
+        ["db", "install", str(source), "--sha256", PAYLOAD_SHA256, "--output", str(target)],
     )
     assert result.exit_code == 0
     assert target.read_bytes() == PAYLOAD
@@ -69,7 +69,7 @@ def test_db_fetch_checksum_mismatch_preserves_existing_target(tmp_path: Path) ->
     target.write_bytes(OLD_TARGET)
     result = runner.invoke(
         app,
-        ["db", "fetch", str(source), "--sha256", "0" * 64, "--output", str(target)],
+        ["db", "install", str(source), "--sha256", "0" * 64, "--output", str(target)],
     )
     assert result.exit_code == 5
     assert result.stdout == ""
@@ -89,7 +89,7 @@ def test_db_fetch_rejects_malformed_digest_as_usage_error(tmp_path: Path, bad: s
     source = write_source(tmp_path)
     target = tmp_path / "installed.txt"
     result = runner.invoke(
-        app, ["db", "fetch", str(source), "--sha256", bad, "--output", str(target)]
+        app, ["db", "install", str(source), "--sha256", bad, "--output", str(target)]
     )
     assert result.exit_code == 2
     assert result.stdout == ""
@@ -106,7 +106,7 @@ def test_db_fetch_missing_source_is_input_error(tmp_path: Path) -> None:
     target = tmp_path / "installed.txt"
     result = runner.invoke(
         app,
-        ["db", "fetch", str(source), "--sha256", PAYLOAD_SHA256, "--output", str(target)],
+        ["db", "install", str(source), "--sha256", PAYLOAD_SHA256, "--output", str(target)],
     )
     assert result.exit_code == 5
     assert result.stdout == ""
@@ -122,7 +122,7 @@ def test_db_fetch_accepts_uppercase_digest(tmp_path: Path) -> None:
     target = tmp_path / "installed.txt"
     result = runner.invoke(
         app,
-        ["db", "fetch", str(source), "--sha256", PAYLOAD_SHA256.upper(), "--output", str(target)],
+        ["db", "install", str(source), "--sha256", PAYLOAD_SHA256.upper(), "--output", str(target)],
     )
     assert result.exit_code == 0
     assert json.loads(result.stdout)["sha256"] == PAYLOAD_SHA256

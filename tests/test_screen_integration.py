@@ -37,7 +37,7 @@ def test_full_length_exact_match(tinyamr: Database) -> None:
     assert hit.gene == "tetA"
     assert hit.database == "tinyamr"
     assert hit.accession == "NC_000913.3:100-900"
-    assert hit.resistance == "TETRACYCLINE"
+    assert hit.function == "TETRACYCLINE"
     assert hit.product == "tetracycline efflux pump TetA"
     assert hit.identity_pct == 100.0
     assert hit.coverage_pct == 100.0

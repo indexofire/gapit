@@ -70,7 +70,7 @@ def render_markdown(reports: Iterable[Report], params: ScreeningParams, *, now: 
                 hit.database,
                 hit.accession,
                 hit.product,
-                hit.resistance,
+                hit.function,
             )
             lines.append("| " + " | ".join(cells) + " |")
         lines.append("")
@@ -131,7 +131,7 @@ def render_reads_markdown(
                 gene.database,
                 gene.accession,
                 gene.product,
-                gene.resistance,
+                gene.function,
             )
             lines.append("| " + " | ".join(cells) + " |")
         lines.append("")
