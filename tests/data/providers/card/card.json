@@ -1,0 +1,132 @@
+{
+  "_version": "3.2.7-test",
+  "1000001": {
+    "model_name": "OXA-1",
+    "model_type": "protein homolog model",
+    "ARO_accession": "1000001",
+    "ARO_description": "class A beta-lactamase OXA-1",
+    "ARO_category": {
+      "cat-01": {
+        "category_aro_class_name": "Drug Class",
+        "category_aro_name": "penam"
+      },
+      "cat-02": {
+        "category_aro_class_name": "AMR Gene Family",
+        "category_aro_name": "class A beta-lactamase"
+      },
+      "cat-03": {
+        "category_aro_class_name": "Drug Class",
+        "category_aro_name": "cephalosporin antibiotic"
+      }
+    },
+    "model_sequences": {
+      "sequence": {
+        "homolog-seq-2": {
+          "dna_sequence": {
+            "sequence": "TTTTTTTTTTAAAAAAAAAACCCCCCCCCCGGGGGGGGGG",
+            "strand": "+",
+            "fmin": 1,
+            "fmax": 99,
+            "accession": "DQ000000.1"
+          }
+        },
+        "homolog-seq-1": {
+          "dna_sequence": {
+            "sequence": "ATGgCAAAAACTCGACTACGCACTTCGCTAAGCTTGGCTTACGG",
+            "strand": "+",
+            "fmin": 100,
+            "fmax": 900,
+            "accession": "NC_000913.3",
+            "md5": "deadbeefdeadbeefdeadbeefdeadbeef"
+          }
+        }
+      }
+    }
+  },
+  "1000002": {
+    "model_name": "Qnr  B19",
+    "model_type": "protein homolog model",
+    "ARO_accession": "1000002",
+    "ARO_description": "quinolone resistance protein",
+    "ARO_category": {
+      "cat-11": {
+        "category_aro_class_name": "AMR Gene Family",
+        "category_aro_name": "Qnr family"
+      }
+    },
+    "model_sequences": {
+      "sequence": {
+        "qnr-1": {
+          "dna_sequence": {
+            "sequence": "ATGCCGGGTTAACCGGTTAACCGGTTAACCGGTTAACCGGTT",
+            "strand": "-",
+            "fmin": 210,
+            "fmax": 990,
+            "accession": "NZ_CP044330.1"
+          }
+        }
+      }
+    }
+  },
+  "1000003": {
+    "model_name": "AAC3-IV",
+    "model_type": "protein homolog model",
+    "ARO_accession": "3002870",
+    "ARO_category": {
+      "cat-21": {
+        "category_aro_class_name": "Drug Class",
+        "category_aro_name": "macrolide antibiotic"
+      },
+      "cat-22": {
+        "category_aro_class_name": "Resistance Mechanism",
+        "category_aro_name": "antibiotic inactivation"
+      },
+      "cat-23": {
+        "category_aro_class_name": "Drug Class",
+        "category_aro_name": "quaternary ammonium compound"
+      },
+      "cat-24": {
+        "category_aro_class_name": "Drug Class",
+        "category_aro_name": "phenicol antibiotic"
+      }
+    },
+    "model_sequences": {
+      "sequence": {
+        "aac-1": {
+          "dna_sequence": {
+            "sequence": "GGGGAAAATTTTCCCCGGGGAAAATTTTCCCC",
+            "strand": "+",
+            "fmin": 5,
+            "fmax": 805,
+            "accession": "M81112.1"
+          }
+        }
+      }
+    }
+  },
+  "1000004": {
+    "model_name": "rpoB S531L",
+    "model_type": "protein variant model",
+    "ARO_accession": "1000004",
+    "model_param": {
+      "snp": {
+        "original": "TCG",
+        "position": 1593,
+        "change": "TTG"
+      }
+    },
+    "model_sequences": {
+      "sequence": {
+        "rpob-1": {
+          "dna_sequence": {
+            "sequence": "CCCCCCGGGGGGTTTTTTAAAAAA",
+            "strand": "+",
+            "fmin": 1,
+            "fmax": 50,
+            "accession": "NC_000962.3"
+          }
+        }
+      }
+    }
+  }
+}

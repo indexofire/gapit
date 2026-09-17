@@ -1,0 +1,5 @@
+Gene name	Accession/Source	Begin	End	Description	Class	Sequence
+chuA	NC_000913	4342631	4343534	outer membrane heme receptor	Adhesin	ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT
+chuA	CP092946	1	60	duplicate row that must lose to the first chuA	Toxin	TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+iroN	NC_000913	5764571	5765624	salmochelin receptor whose sequence column is empty	Receptor	
+vat	NC_000913	1165553	1166518	vacuolating autotransporter toxin	Virulence assoc	AGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCT

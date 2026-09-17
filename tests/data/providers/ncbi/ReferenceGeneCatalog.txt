@@ -1,0 +1,7 @@
+allele	gene_family	whitelisted_taxa	product_name	scope	type	subtype	class	subclass	refseq_protein_accession	refseq_nucleotide_accession	curated_refseq_start	genbank_protein_accession	genbank_nucleotide_accession	genbank_strand_orientation	genbank_cds_start	genbank_cds_stop	pubmed_reference	blacklisted_taxa	db_version
+fakeGenePlain	FakeFam		fake product alpha	core	AMR	AMR	FAKECLASS	fakeclass	WP_900000001.1	NG_900001.1				+	1	60			fake-db-v1
+fakeGeneFusion	FakeFam		fake product beta	core	AMR	AMR	FAKECLASS	fakeclass2	WP_900000002.1	NG_900002.1				+	1	60			fake-db-v1
+fakeGeneAppend	FakeFam		fake product gamma	core	AMR	AMR	FAKECLASS	solo	WP_900000003.1	NG_900003.1				+	1	60			fake-db-v1
+fakeGeneScope	FakeFam		fake product delta	bonus	AMR	AMR	FAKECLASS	fakeclass4	WP_900000004.1	NG_900004.1				+	1	60			fake-db-v1
+fakeGeneType	FakeFam		fake product epsilon	core	STRESS	AMR	FAKECLASS	fakeclass5	WP_900000005.1	NG_900005.1				+	1	60			fake-db-v1
+fakeGeneMulti	FakeFam		fake product eta	core	AMR	AMR	FAKECLASS	a/b	WP_900000007.1	NG_900007.1				+	1	60			fake-db-v1

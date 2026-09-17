@@ -1,0 +1,5 @@
+#Gene_accession no.	Class	Phenotype	PMID	Mechanism of resistance	Notes	Required_gene
+demoA_1_FAKE0001	Aminoglycoside	Class A, Class B	1	Enzymatic modification	notes	demoA
+demoB_1_FAKE0002	Aminoglycoside	unknown	2	Enzymatic modification	notes	demoB
+demoC_1_FAKE0003	Aminoglycoside	Class OLD	3	Enzymatic modification	notes	demoC
+demoC_2_FAKE0004	Aminoglycoside	Class LAST	4	Enzymatic modification	notes	demoC
