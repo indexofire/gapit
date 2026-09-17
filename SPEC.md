@@ -131,19 +131,46 @@ atomicity; gapit buffers per file but preserves row order).
 - Separator: tab, or `,` with `--csv` (gapit: `--format csv`). Line = `join(sep, fields) + "\n"`.
 - stdout = data only; all chatter (Processing/Found N genes/Tips) to stderr.
 
-## 6. Summary mode (`--summary`)
+## 6. Summary mode (`gapit summary`)
 
-Input: ≥1 abricate-format report files.
+Input: ≥1 abricate-format report files. Upstream surface is `abricate --summary`;
+gapit exposes it as the `summary` subcommand (`--identity`, `--nopath`, `--format
+tsv|csv|json|md`, `--quiet`).
 
 - **Dutch mode**: with exactly 1 input file, matrix rows are keyed by that report's FILE column;
-  with >1 files, rows are keyed by input filename (basename if `--nopath`).
-- First encountered row anywhere is treated as the header map; lines whose col0 starts with `#`
-  are skipped afterwards. Split on the active separator (`--csv` must match the reports' format).
-- Duplicate input filenames: warn + skip. Zero-hit files still appear (non-dutch) with
-  `NUM_FOUND 0`.
+  with >1 files, rows are keyed by input filename (basename applied to labels if `--nopath`).
+- First encountered row anywhere is treated as the header map (name→index, later duplicate
+  names win — Perl `zip` semantics); lines whose col0 starts with `#` are skipped afterwards.
+  A first row WITHOUT `#` (e.g. a noheader report) is header map **and** a data row — quirk
+  verified against 1.4.0.
+- Duplicate input filenames (compared as given, pre-basename): stderr `WARNING: Skipping
+  duplicate file: <name>` + skip. Zero-hit files still appear (non-dutch) with `NUM_FOUND 0`.
 - Gene universe = union of all GENE values, sorted lexicographically.
 - Output: `#FILE  NUM_FOUND  <gene…>`; cell = each hit's %COVERAGE (or %IDENTITY with
   `--identity`) `;`-joined in file order; absent = `.`. NUM_FOUND = count of **distinct genes**.
+- **Rows sort by the as-given key, not the display label** — with `--nopath`, labels can appear
+  unsorted (e.g. keys `1dir/zeta.tsv`, `2dir/mid.tsv` print as `zeta.tsv`, `mid.tsv`). Verified.
+- The `#`-skip tests raw col0 BEFORE `--nopath` basename-ing. A file key starting with `#` is
+  skipped entirely.
+- **`[gapit-extension]` divergences** (typed where upstream is silent-undef):
+  - separator auto-detected per input file (tab if the first line has one, else comma, else
+    tab) — upstream `--csv` must match the reports' format and switches BOTH input and output
+    separator; gapit's input parsing is format-agnostic and `--format` controls only the output.
+  - no args → UsageError exit 2 (upstream: exit 1); missing/unreadable file → InputError
+    `INPUT_NOT_FOUND` exit 5 (upstream: exit 1); non-UTF-8 → InputError `SUMMARY_MALFORMED`.
+  - a data row shorter than the mapped GENE/metric columns, or a header map lacking them, →
+    InputError `SUMMARY_MALFORMED` (exit 5) with file+line context. Upstream silently treats
+    missing cells as empty strings.
+  - empty (0-byte) and header-only files are valid: non-dutch they appear with `NUM_FOUND 0`;
+    a single one in dutch mode yields the header line only (verified upstream).
+- **`gapit.summary/1`** (JSON): `schema`, `tool`, `created_at`, `params` (`metric`:
+  `%COVERAGE`|`%IDENTITY`, `nopath`), `genes` (sorted union), `rows` (`file` label,
+  `num_found`, `cells`: gene → list of original value strings; absent genes omitted).
+  Cells keep the original report strings verbatim. Markdown mirrors this with YAML
+  frontmatter and pipe-escaped cells. Introspect via `gapit schema summary`.
+- Opt-in parity: `pixi run -e parity summary-parity` byte-diffs gapit vs abricate over the
+  committed synthetic fixtures in `tests/data/summary` (dutch, multi, identity, duplicate,
+  csv, nopath-key-sort).
 
 ## 7. Edge cases & quirks (parity-critical)
 
@@ -153,7 +180,7 @@ Input: ≥1 abricate-format report files.
 - **Circular contigs**: no special handling (linear).
 - **Partial `~~~` headers**: missing trailing fields → empty strings.
 - **`--csv` + summary**: summary must be told the separator; mixing breaks upstream — gapit
-  detects format per file instead `[gapit-extension]`.
+  detects format per file instead `[gapit-extension]` (RESOLVED 2026-09-17, see §6).
 - **Determinism**: stable sort; fixed BLAST params; no timestamps in data payloads. (Upstream
   MOTD/`srand` is stderr-only and dropped in gapit.)
 - **blastx**: no sstrand → STRAND `+`; minid unenforced (quirk kept, documented).

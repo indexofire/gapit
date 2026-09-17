@@ -83,15 +83,23 @@ error paths produce the envelope (tests force each exit code).
 - Output: Report model gains a reads evidence block; TSV stays abricate-compatible (contigs
   only); reads mode is JSON/MD-first (`gapit.report/1` extension, documented).
 
-## Phase 6 — Summary mode (`summary.py`)
+## Phase 6 — Summary mode (`summary.py`) — ✅ DONE (2026-09-17)
 
 **Goal**: `gapit summary` matrix, parity with `abricate --summary`.
 
 - Dutch mode (single multi-FILE report), union-of-genes columns, `;`-joined cells, `.` absent,
   `NUM_FOUND` distinct-gene count, `--identity`, zero-hit files included.
-- Matrix also emitted as JSON (`gapit.summary/1`) and Markdown `[gapit-extension]`.
+- Matrix also emitted as JSON (`gapit.summary/1`) and Markdown; registered in `gapit schema`.
+- Core in `summary.py` (parse + aggregate), renderers in `formats/summary.py`, CLI in
+  `cmd_summary.py` (registered from `cli.py` to keep it small). No screening-path changes.
+- Verified behaviors pinned against real abricate 1.4.0: rows sort by as-given key (labels can
+  look unsorted under `--nopath`), `#`-skip before basename, noheader first row is header AND
+  data, duplicate detection on path-as-given. Divergences are typed errors: no args → exit 2,
+  missing file → `INPUT_NOT_FOUND` exit 5, malformed/short rows → `SUMMARY_MALFORMED` exit 5;
+  per-file TSV/CSV auto-detection (upstream `--csv` quirk avoided).
 
-**Done when**: matrix parity against `abricate --summary` on the Phase-3 corpus; golden JSON/MD.
+**Done when**: `pixi run -e parity summary-parity` 6/6 byte-identical on the synthetic
+fixtures; golden TSV/CSV/JSON/MD committed; full gates green.
 
 ## Phase 7 — DB acquisition (`gapit db fetch`) — post-1.0
 
@@ -122,5 +130,7 @@ error paths produce the envelope (tests force each exit code).
 2. ~~**JSON field naming for COVERAGE_MAP / GAPS**~~ — RESOLVED (2026-09-15): v1 keeps the
    abricate strings (`coverage_map`, `gaps = "openings/gaps"`) for 1:1 mapping; structured
    views deferred to `gapit.report/2`.
-3. **CSV + summary format mixing**: gapit auto-detects separator per report file
-   `[gapit-extension]`; confirm no parity test relies on the broken upstream behavior.
+3. ~~**CSV + summary format mixing**: gapit auto-detects separator per report file
+   `[gapit-extension]`; confirm no parity test relies on the broken upstream behavior.~~ —
+   RESOLVED (2026-09-17, Phase 6): per-file auto-detection implemented and covered by the
+   summary parity harness; no upstream-behavior dependency.

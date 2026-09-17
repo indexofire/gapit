@@ -1,0 +1,3 @@
+#FILE,SEQUENCE,START,END,STRAND,GENE,COVERAGE,COVERAGE_MAP,GAPS,%COVERAGE,%IDENTITY,DATABASE,ACCESSION,PRODUCT,RESISTANCE
+sampleB.fa,contig1,1,100,+,feature_b,1-100/100,===============,0/0,100.00,99.99,tinydb,ACC2,product two,
+sampleC.fa,contig9,1,90,+,feature_a,1-90/100,===============,0/0,90.00,97.00,tinydb,ACC1,product one,CLASS_X

@@ -1,0 +1,4 @@
+#FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
+zz_assembly.fa	contig1	1	100	+	feature_a	1-100/100	===============	0/0	91.00	91.00	tinydb	ACC1	product one	CLASS_X
+aa_assembly.fa	contig1	1	100	+	feature_a	1-100/100	===============	0/0	99.00	99.50	tinydb	ACC1	product one	CLASS_X
+mm_assembly.fa	contig2	2	50	+	feature_b	1-49/100	===============	0/0	50.00	50.50	tinydb	ACC2	product two	

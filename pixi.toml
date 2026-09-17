@@ -35,6 +35,7 @@ abricate = "*"
 
 [feature.parity.tasks]
 parity = ".pixi/envs/default/bin/python tests/parity/run_parity.py"
+summary-parity = ".pixi/envs/default/bin/python tests/parity/run_summary_parity.py"
 
 [environments]
 parity = { features = ["parity"], no-default-feature = true }

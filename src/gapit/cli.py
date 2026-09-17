@@ -9,6 +9,7 @@ import typer
 from pydantic import BaseModel
 
 from gapit import __version__, config, db
+from gapit.cmd_summary import register_summary_command
 from gapit.errors import ErrorEnvelope, GapitError, render_error
 from gapit.formats.json import (
     ListDocument,
@@ -17,6 +18,7 @@ from gapit.formats.json import (
     ReportDocument,
     VersionDocument,
 )
+from gapit.formats.summary import SummaryDocument
 from gapit.reads import ReadTypeEnum
 from gapit.screening import OutputFormat, run_screen, run_screen_reads, usage_fail
 
@@ -201,9 +203,13 @@ def screen(
     _dispatch(run)
 
 
+register_summary_command(app)
+
+
 _SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "report": ReportDocument,
     "reads": ReadsDocument,
+    "summary": SummaryDocument,
     "list": ListDocument,
     "error": ErrorEnvelope,
     "version": VersionDocument,
@@ -214,7 +220,9 @@ _SCHEMA_MODELS: dict[str, type[BaseModel]] = {
 def schema(
     name: Annotated[
         str,
-        typer.Argument(help="Document to introspect: report, reads, list, error, or version."),
+        typer.Argument(
+            help="Document to introspect: report, reads, summary, list, error, or version."
+        ),
     ],
 ) -> None:
     """Print the JSON Schema of a gapit output document."""
@@ -222,9 +230,7 @@ def schema(
     def run() -> None:
         model = _SCHEMA_MODELS.get(name)
         if model is None:
-            usage_fail(
-                f"unknown schema name: {name} (choose from: report, reads, list, error, version)"
-            )
+            usage_fail(f"unknown schema name: {name} (choose from: {', '.join(_SCHEMA_MODELS)})")
         typer.echo(json.dumps(model.model_json_schema(by_alias=True), indent=2))
 
     _dispatch(run)

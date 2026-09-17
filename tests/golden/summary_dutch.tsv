@@ -1,0 +1,4 @@
+#FILE	NUM_FOUND	feature_a	feature_b
+aa_assembly.fa	1	99.00	.
+mm_assembly.fa	1	.	50.00
+zz_assembly.fa	1	91.00	.
