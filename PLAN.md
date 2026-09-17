@@ -101,12 +101,22 @@ error paths produce the envelope (tests force each exit code).
 **Done when**: `pixi run -e parity summary-parity` 6/6 byte-identical on the synthetic
 fixtures; golden TSV/CSV/JSON/MD committed; full gates green.
 
-## Phase 7 — DB acquisition (`gapit db fetch`) — post-1.0
+## Phase 7 — DB acquisition (`gapit db`) — ✅ DONE (2026-09-17)
 
-- Reimplement `abricate-get_db` per DB (ncbi, card, resfinder, argannot, plasmidfinder, megares,
-  ecoh, vfdb, ecoli_vf, bacmet2, victors, upec_expec_vf) with the documented transforms
-  (SPEC §8). Until then, gapit consumes abricate-built datadirs.
-- Optional: ship a pixi-packaged snapshot of the bundled DBs.
+**Goal**: gapit builds its own databases (native `gapit/v1` format, SPEC §11), not just
+consumes abricate-built datadirs.
+
+- Delivered: header codec (`dbcodec.py`); `records.jsonl` truth store + `gapit.manifest/1`
+  (`records.py`); deterministic build pipeline with self-check (`dbbuild.py`); all 12
+  providers — ncbi, card, resfinder, argannot, plasmidfinder, megares, ecoh, vfdb,
+  ecoli_vf, bacmet2 (prot), victors, upec_expec_vf (`providers/`); CLI
+  `gapit db fetch|list|install` (`cmd_db.py`); screening + reads wiring (tagged-header
+  decode routing, issue-#95 product rule extended, `.mmi` build + version-gated reuse).
+  abricate cannot read gapit-built DBs (accepted trade-off); gapit reads both formats.
+- Gates: full suite green (349 passed; ruff + basedpyright strict clean). Legacy screening
+  path unchanged (decode delegates to the frozen `~~~` parser); parity harness unaffected.
+- Remaining known items: real-network fetch is the runtime path (the offline suite pins
+  transforms via synthetic fixtures only); optional pixi-packaged DB snapshot not done.
 
 ## Phase 8 — Hardening & distribution — post-1.0
 
