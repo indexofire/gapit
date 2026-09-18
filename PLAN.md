@@ -127,7 +127,10 @@ consumes abricate-built datadirs.
 - Conda/pixi package recipe; shell completions; `--debug` parity of stderr diagnostics.
 - Performance pass (multi-file parallelism across inputs; threads >1 determinism check vs
   abricate behavior).
-- Optional: MCP server exposing `screen`/`summary`/`schema` for agent runtimes.
+- Done (Wave H6, 2026-09-18): MCP server exposing `screen`/`summary`/`schema`
+  (+ read-only `db_list`) for agent runtimes — `gapit mcp` subcommand and
+  `gapit-mcp` console script, hand-rolled stdio JSON-RPC 2.0 in
+  `src/gapit/mcp.py` (zero new dependencies).
 
 ## Milestones
 

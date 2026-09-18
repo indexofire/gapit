@@ -19,6 +19,7 @@ dependencies = [
 
 [project.scripts]
 gapit = "gapit.cli:app"
+gapit-mcp = "gapit.mcp:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gapit"]

@@ -1,0 +1,75 @@
+# Bioconda-style recipe for gapit (Phase 8 Wave H5).
+# Submission to bioconda/bioconda-recipes is a manual follow-up for the user;
+# this in-repo recipe is the deliverable. Field sources:
+# version/license/python/deps mirror pyproject.toml exactly; the external
+# binaries mirror pixi.toml's conda dependencies.
+{% set name = "gapit" %}
+{% set version = "0.1.0" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  # gapit is not on PyPI yet. This is the standard noarch-python source URL;
+  # replace the sha256 with the PyPI sdist hash at submission time.
+  # The value below hashes the LOCAL hatchling sdist (dist/gapit-0.1.0.tar.gz)
+  # — local and PyPI sdists are not byte-identical (gzip), do not trust it.
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: 24df143ed9647fc784fa29c776babfd880d3730d22004b997ed0aea3f105f5e3
+
+build:
+  number: 0
+  noarch: python
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  host:
+    - python >=3.11
+    - pip
+    - hatchling
+  run:
+    - python >=3.11
+    - typer >=0.12
+    - pydantic >=2.7
+    - rich >=13
+    - blast >=2.15
+    - any2fasta >=0.4
+    - minimap2 >=2.24
+
+test:
+  # The repo's pytest suite (380 offline tests) is NOT run here: the sdist does
+  # not ship tests/ and bioconda-recipes carries only this recipe file. Full
+  # suite coverage lives in the repo's own CI. These commands smoke-test the
+  # installed console script end to end, including the bundled card snapshot
+  # (proves package data + blast integration in the conda package itself).
+  imports:
+    - gapit
+    - gapit.providers
+  commands:
+    - gapit --version
+    - gapit schema report > /dev/null
+    # db list exits 4 (DATADIR_NOT_FOUND) when the datadir does not exist,
+    # so create it first.
+    - mkdir -p "${TMPDIR:-/tmp}/gapit-smoke-db"
+    - gapit db list --datadir "${TMPDIR:-/tmp}/gapit-smoke-db" > /dev/null
+    - gapit db fetch card --datadir "${TMPDIR:-/tmp}/gapit-smoke-db" --quiet > /dev/null
+
+about:
+  home: https://github.com/indexofire/gapit
+  # The repo declares SPDX GPL-2.0-only in pyproject.toml but ships no LICENSE
+  # file; add one upstream and set license_file before submitting.
+  license: GPL-2.0-only
+  license_family: GPL2
+  summary: Mass screening of contigs and reads for antimicrobial resistance and virulence genes
+  description: >-
+    Agent-first Python reimplementation of abricate: BLAST-based screening of
+    assemblies with byte-compatible TSV output plus first-class JSON and
+    Markdown, FASTQ read screening via minimap2, and offline install of the
+    card and vfdb databases from snapshots bundled in the package.
+  dev_url: https://github.com/indexofire/gapit
+  doc_url: https://github.com/indexofire/gapit#readme
+
+extra:
+  recipe-maintainers:
+    - indexofire

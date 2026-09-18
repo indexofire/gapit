@@ -20,6 +20,7 @@ from gapit.formats.json import (
     VersionDocument,
 )
 from gapit.formats.summary import SummaryDocument
+from gapit.mcp import register_mcp_command
 from gapit.reads import ReadTypeEnum
 from gapit.screening import OutputFormat, run_screen, run_screen_reads, usage_fail
 
@@ -233,6 +234,7 @@ def screen(
 
 register_summary_command(app)
 register_db_command(app)
+register_mcp_command(app)
 
 
 _SCHEMA_MODELS: dict[str, type[BaseModel]] = {

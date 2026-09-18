@@ -107,6 +107,20 @@ which abricate cannot read. Protein databases such as `bacmet2` screen through b
 | 4 | database error |
 | 5 | input error |
 
+## MCP server
+
+gapit ships an MCP (Model Context Protocol) stdio server so agent runtimes can
+screen assemblies without parsing CLI output: `gapit mcp` or the `gapit-mcp`
+console script speaks newline-delimited JSON-RPC 2.0 on stdin/stdout (no extra
+dependencies — the protocol is hand-rolled). It exposes four read-only tools:
+`screen` (gapit.report/1 by default), `summary` (gapit.summary/1), `schema`,
+and `db_list`. Tool failures return `isError: true` with the `gapit.error/1`
+envelope as text. Register it with an MCP client:
+
+```json
+{"mcpServers": {"gapit": {"command": "gapit-mcp"}}}
+```
+
 ## Development
 
 | Task | Runs |
