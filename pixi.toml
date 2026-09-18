@@ -13,10 +13,20 @@ test = "pytest"
 gapit = "gapit"
 
 [dependencies]
-python = "3.14.*"
 blast = ">=2.15"
 any2fasta = ">=0.4"
 minimap2 = ">=2.24"
+
+# CI matrix (AGENTS.md §2): each feature pins one python; the conda + pypi deps
+# of the default feature apply to every environment that includes it.
+[feature.py314.dependencies]
+python = "3.14.*"
+
+[feature.py311.dependencies]
+python = "3.11.*"
+
+[feature.py313.dependencies]
+python = "3.13.*"
 
 [pypi-options]
 index-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
@@ -38,4 +48,7 @@ parity = ".pixi/envs/default/bin/python tests/parity/run_parity.py"
 summary-parity = ".pixi/envs/default/bin/python tests/parity/run_summary_parity.py"
 
 [environments]
+default = ["py314"]
 parity = { features = ["parity"], no-default-feature = true }
+py311 = ["py311"]
+py313 = ["py313"]

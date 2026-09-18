@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: gates (${{ matrix.env }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [default, py311, py313]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+      - run: pixi run -e ${{ matrix.env }} lint
+      - run: pixi run -e ${{ matrix.env }} fmt -- --check
+      - run: pixi run -e ${{ matrix.env }} typecheck
+      - run: pixi run -e ${{ matrix.env }} test
+
+  # Independent of gates: the bioconda solve is slow and orthogonal to the
+  # python matrix. Needs BOTH envs installed — the harness runs on the default
+  # env's python and invokes .pixi/envs/default/bin/gapit while parity env
+  # supplies abricate (see pixi.toml parity feature).
+  parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+      - run: pixi install -e default -e parity
+      - run: pixi run -e parity parity
+      - run: pixi run -e parity summary-parity
