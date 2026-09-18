@@ -105,4 +105,5 @@ PROVIDER = Provider(
     ),
     dbtype="nucl",
     transform=transform,
+    snapshot=None,
 )

@@ -56,4 +56,5 @@ PROVIDER = Provider(
     source_urls=("http://bacmet.biomedicine.gu.se/download/BacMet2_EXP_database.fasta",),
     dbtype="prot",
     transform=transform,
+    snapshot=None,
 )

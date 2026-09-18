@@ -146,4 +146,5 @@ PROVIDER = Provider(
     source_urls=SOURCE_URLS,
     dbtype=DBTYPE,
     transform=transform,
+    snapshot="card.tar.gz",
 )

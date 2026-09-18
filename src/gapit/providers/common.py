@@ -20,6 +20,7 @@ import sys
 import urllib.request
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
+from importlib.resources import files
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Literal
@@ -28,6 +29,7 @@ from urllib.parse import urlparse
 from gapit import __version__
 from gapit.dbbuild import build_database
 from gapit.errors import DatabaseError
+from gapit.providers.snapshots import extract_snapshot
 from gapit.records import Manifest, Record, write_records
 
 _NUCL_JUNK = re.compile(r"[^AGCT]")
@@ -52,6 +54,9 @@ class Provider:
     its basename) and yields Records; setting ``db`` to the provider name is
     the provider module's job. Sequences and function classes may arrive
     raw — fetch_provider normalizes both.
+
+    ``snapshot`` names a bundled archive (Wave G) under
+    ``gapit/data/snapshots/`` — None (default) for network-only providers.
     """
 
     name: str
@@ -59,6 +64,7 @@ class Provider:
     source_urls: tuple[str, ...]
     dbtype: Dbtype
     transform: Callable[[Path], Iterable[Record]]
+    snapshot: str | None = None
 
 
 def _note(quiet: bool, message: str) -> None:
@@ -146,6 +152,19 @@ def _dedupe(records: Sequence[Record]) -> tuple[tuple[Record, ...], int]:
     return tuple(kept), dropped
 
 
+def _snapshot_path(provider: Provider) -> Path | None:
+    """Filesystem path of the provider's bundled snapshot archive, or None
+    when the provider has none / the package data is absent (missing
+    archives degrade silently to the network path — Wave G). Tests
+    monkeypatch THIS seam (string setattr), never importlib itself; gapit
+    ships as a regular filesystem package, so the str() round-trip is safe.
+    """
+    if provider.snapshot is None:
+        return None
+    archive = files("gapit").joinpath("data").joinpath("snapshots").joinpath(provider.snapshot)
+    return Path(str(archive)) if archive.is_file() else None
+
+
 def fetch_provider(
     provider: Provider,
     db_dir: Path,
@@ -153,12 +172,20 @@ def fetch_provider(
     fetched_at: str,
     force: bool = False,
     quiet: bool = True,
+    from_source: bool = False,
 ) -> Manifest:
     """Run the generic provider pipeline into ``db_dir`` (created if needed).
 
+    Snapshot path (Wave G): unless ``from_source`` is set, a provider with a
+    resolvable bundled snapshot installs its archived ``records.jsonl`` and
+    rebuilds every index locally — ``upstream_version`` comes from the
+    archived manifest, everything else is fresh. Otherwise the network path
+    runs: download each URL, transform, normalize, dedupe, sort.
+
     Raises DatabaseError (exit 4): ``DB_ALREADY_EXISTS`` when a manifest is
     present and force is off (upstream: "Won't overwrite existing (use
-    --force)"), ``DOWNLOAD_FAILED`` for a failed source download, and
+    --force)"), ``DOWNLOAD_FAILED`` for a failed source download,
+    ``SNAPSHOT_INVALID`` for a corrupt snapshot archive, and
     ``PROVIDER_EMPTY`` when the transform+dedupe leaves zero records.
     """
     if (db_dir / "gapit-manifest.json").is_file() and not force:
@@ -168,6 +195,20 @@ def fetch_provider(
             context={"db": provider.name},
         )
     db_dir.mkdir(parents=True, exist_ok=True)
+    if not from_source:
+        snapshot = _snapshot_path(provider)
+        if snapshot is not None:
+            archived = extract_snapshot(snapshot, db_dir)
+            _note(quiet, f"installed {provider.name} from bundled snapshot {snapshot.name}")
+            return build_database(
+                db_dir,
+                name=provider.name,
+                dbtype=provider.dbtype,
+                source_urls=provider.source_urls,
+                fetched_at=fetched_at,
+                upstream_version=archived.upstream_version,
+                quiet=quiet,
+            )
     with TemporaryDirectory(dir=db_dir, prefix=".download.") as workdir_name:
         workdir = Path(workdir_name)
         for url in provider.source_urls:

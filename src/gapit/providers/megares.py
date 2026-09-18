@@ -67,4 +67,5 @@ PROVIDER = Provider(
     source_urls=("https://www.meglab.org/downloads/megares_v3.00.zip",),
     dbtype="nucl",
     transform=transform,
+    snapshot=None,
 )

@@ -59,4 +59,5 @@ PROVIDER = Provider(
     source_urls=("https://raw.githubusercontent.com/katholt/srst2/master/data/EcOH.fasta",),
     dbtype="nucl",
     transform=transform,
+    snapshot=None,
 )

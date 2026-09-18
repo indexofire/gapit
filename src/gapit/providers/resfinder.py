@@ -119,4 +119,5 @@ PROVIDER = Provider(
     source_urls=("https://bitbucket.org/genomicepidemiology/resfinder_db/get/HEAD.zip",),
     dbtype="nucl",
     transform=transform,
+    snapshot=None,
 )

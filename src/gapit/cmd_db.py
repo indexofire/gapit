@@ -1,34 +1,33 @@
-"""The `gapit db` command group: install, fetch, list.
+"""The `gapit db` command group: fetch, list, install.
 
-- ``db install``: checksum-verified LOCAL-FILE installation. SOURCE must be a
-  path to an existing regular file; no network, no provider IDs, no archives,
-  no manifests — streaming SHA256 + atomic copy, kept deliberately independent
-  of db.py and the screening pipeline.
-- ``db fetch NAME``: acquire a named provider database over the network
-  (Wave B provider registry) and build it under the datadir.
+- ``db fetch [NAME]``: acquire provider database(s) under the datadir. With
+  no NAME the default set (``DEFAULT_DBS``: card, vfdb) installs in order —
+  each from its BUNDLED SNAPSHOT (Wave G) when one resolves, else over the
+  network; ``--from-source`` forces the upstream download even when a
+  snapshot exists. One JSON receipt line per database on stdout.
 - ``db list``: show every known provider with its installed state.
+- ``db install``: checksum-verified LOCAL-FILE installation
+  (:mod:`gapit.cmd_db_install`, split off in Wave G at the 250 LOC ceiling).
 """
 
-import hashlib
-import os
-import re
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Annotated, Literal
 
 import typer
 from pydantic import BaseModel, ConfigDict, Field
 
 from gapit import config
-from gapit.errors import DatabaseError, GapitError, InputError, UsageError, render_error
+from gapit.cmd_db_install import db_install_command
+from gapit.errors import DatabaseError, GapitError, UsageError, render_error
 from gapit.providers import REGISTRY
 from gapit.providers.common import Dbtype, fetch_provider
 from gapit.records import read_manifest
 
-_SHA256_SHAPE = re.compile(r"[0-9a-fA-F]{64}")
-_CHUNK_BYTES = 1 << 20
+# Bare `gapit db fetch` installs these, in order — the two providers whose
+# snapshots ship inside the wheel (Wave G: zero-network bootstrap).
+DEFAULT_DBS = ("card", "vfdb")
 
 Datadir = Annotated[
     Path | None,
@@ -37,13 +36,6 @@ Datadir = Annotated[
         help="Database directory (default: $GAPIT_DATADIR, then ~/.local/share/gapit/db).",
     ),
 ]
-
-
-class FetchReceipt(BaseModel, frozen=True):
-    """One-line JSON success receipt printed to stdout (no biological data)."""
-
-    destination: str
-    sha256: str
 
 
 class ProviderReceipt(BaseModel, frozen=True):
@@ -88,98 +80,6 @@ def _dispatch(action: Callable[[], None]) -> None:
         raise typer.Exit(code=exc.exit_code if isinstance(exc, GapitError) else 1) from exc
 
 
-def _parse_sha256(raw: str) -> str:
-    """Lowercased digest if it is exactly 64 hex characters, else UsageError."""
-    if not _SHA256_SHAPE.fullmatch(raw):
-        raise UsageError(
-            "--sha256 must be exactly 64 hex characters",
-            code="USAGE_ERROR",
-            context={"sha256": raw},
-        )
-    return raw.lower()
-
-
-def install_verified(source: Path, target: Path, expected: str) -> FetchReceipt:
-    """Copy source to target with a streaming SHA256 check; atomic on success.
-
-    Bytes land in a NamedTemporaryFile in the target's parent (same
-    filesystem) and are os.replace()d over the target only after the digest
-    verifies, so any failure leaves an existing target untouched. The temp
-    file is removed on every error path.
-    """
-    if not source.is_file():
-        raise InputError(
-            f"source file not found or unreadable: {source}",
-            code="INPUT_NOT_FOUND",
-            context={"source": str(source)},
-        )
-    temp_path: Path | None = None
-    try:
-        with source.open("rb") as src, NamedTemporaryFile(dir=target.parent, delete=False) as temp:
-            temp_path = Path(temp.name)
-            hasher = hashlib.sha256()
-            while chunk := src.read(_CHUNK_BYTES):
-                hasher.update(chunk)
-                temp.write(chunk)
-            actual = hasher.hexdigest()
-            if actual != expected:
-                raise InputError(
-                    f"SHA256 mismatch for {source}",
-                    code="CHECKSUM_MISMATCH",
-                    context={
-                        "source": str(source),
-                        "expected": expected,
-                        "actual": actual,
-                    },
-                )
-        assert temp_path is not None
-        os.replace(temp_path, target)
-    except OSError as exc:
-        raise InputError(
-            f"cannot install {source} to {target}: {exc}",
-            code="FILE_IO_ERROR",
-            context={"source": str(source), "target": str(target)},
-        ) from exc
-    finally:
-        if temp_path is not None:
-            temp_path.unlink(missing_ok=True)
-    return FetchReceipt(destination=str(target), sha256=expected)
-
-
-def db_install_command(
-    source: Annotated[
-        Path,
-        typer.Argument(
-            help="Local source file path (plain filesystem only; no URLs, no provider IDs)."
-        ),
-    ],
-    sha256: Annotated[
-        str,
-        typer.Option("--sha256", help="Expected SHA256 digest of the source (64 hex chars)."),
-    ],
-    output: Annotated[
-        Path,
-        typer.Option(
-            "--output", help="Destination path; replaced atomically only after verification."
-        ),
-    ],
-) -> None:
-    """Install a local file to --output after verifying its SHA256.
-
-    VERIFIED LOCAL-FILE INSTALLATION ONLY: this never fetches over the
-    network and knows nothing about database providers or sequence content —
-    it checksum-verifies and atomically installs bytes. On success a one-line
-    JSON receipt (destination, verified digest) is printed to stdout.
-    """
-
-    def run() -> None:
-        expected = _parse_sha256(sha256)
-        receipt = install_verified(source, output, expected)
-        typer.echo(receipt.model_dump_json())
-
-    _dispatch(run)
-
-
 def _fetch_root(datadir: Path | None) -> Path:
     """Resolve the fetch datadir and mkdir it when absent (fresh-machine
     bootstrap, Wave E). The resolved path is recovered from resolve_datadir's
@@ -204,42 +104,63 @@ def _fetch_root(datadir: Path | None) -> Path:
 
 def db_fetch_command(
     name: Annotated[
-        str,
-        typer.Argument(help="Provider name (see: gapit db list)."),
-    ],
+        str | None,
+        typer.Argument(
+            help=(
+                "Provider name (see: gapit db list). Omitted: install the default set "
+                "(card, vfdb) from their bundled snapshots."
+            ),
+        ),
+    ] = None,
     datadir: Datadir = None,
     force: Annotated[
         bool,
         typer.Option("--force", help="Overwrite the database if it already exists."),
     ] = False,
+    from_source: Annotated[
+        bool,
+        typer.Option(
+            "--from-source", help="Ignore bundled snapshots, download from upstream sources."
+        ),
+    ] = False,
     quiet: Annotated[bool, typer.Option("--quiet", help="Silence stderr diagnostics.")] = False,
 ) -> None:
-    """Fetch and build a provider database into <datadir>/NAME (network)."""
+    """Fetch and build provider database(s) into <datadir>/NAME.
 
-    def run() -> None:
-        provider = REGISTRY.get(name)
+    NAME omitted installs every database in DEFAULT_DBS order; each success
+    prints its own one-line JSON receipt to stdout (stdout purity: receipts
+    are data).
+    """
+
+    def fetch_one(provider_name: str) -> None:
+        provider = REGISTRY.get(provider_name)
         if provider is None:
             raise UsageError(
-                f"unknown provider: {name} (available: {', '.join(sorted(REGISTRY))})",
+                f"unknown provider: {provider_name} (available: {', '.join(sorted(REGISTRY))})",
                 code="USAGE_ERROR",
-                context={"provider": name},
+                context={"provider": provider_name},
             )
-        db_dir = _fetch_root(datadir) / name
+        db_dir = _fetch_root(datadir) / provider_name
         manifest = fetch_provider(
             provider,
             db_dir,
             fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             force=force,
             quiet=quiet,
+            from_source=from_source,
         )
         typer.echo(
             ProviderReceipt(
-                db=name,
+                db=provider_name,
                 records=manifest.n_records,
                 dbtype=manifest.dbtype,
                 destination=str(db_dir),
             ).model_dump_json()
         )
+
+    def run() -> None:
+        for provider_name in (name,) if name is not None else DEFAULT_DBS:
+            fetch_one(provider_name)
 
     _dispatch(run)
 

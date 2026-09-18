@@ -70,4 +70,5 @@ PROVIDER = Provider(
     source_urls=("https://github.com/phac-nml/ecoli_vf/raw/master/data/" + _SOURCE_FILE,),
     dbtype="nucl",
     transform=transform,
+    snapshot=None,
 )

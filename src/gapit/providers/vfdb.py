@@ -88,4 +88,5 @@ PROVIDER = Provider(
     source_urls=("http://www.mgc.ac.cn/VFs/Down/VFDB_setA_nt.fas.gz",),
     dbtype="nucl",
     transform=transform,
+    snapshot="vfdb.tar.gz",
 )

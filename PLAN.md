@@ -115,8 +115,12 @@ consumes abricate-built datadirs.
   abricate cannot read gapit-built DBs (accepted trade-off); gapit reads both formats.
 - Gates: full suite green (349 passed; ruff + basedpyright strict clean). Legacy screening
   path unchanged (decode delegates to the frozen `~~~` parser); parity harness unaffected.
+- Wave G (2026-09-18): bundled DB snapshots — card+vfdb ship in-wheel
+  (`src/gapit/data/snapshots/<name>.tar.gz`, deterministic archives of post-normalize
+  records); bare `db fetch` installs the default set (card, vfdb) with one JSON receipt
+  per db; `--from-source` forces upstream (SPEC §11 "Bundled snapshots").
 - Remaining known items: real-network fetch is the runtime path (the offline suite pins
-  transforms via synthetic fixtures only); optional pixi-packaged DB snapshot not done.
+  transforms via synthetic fixtures only).
 
 ## Phase 8 — Hardening & distribution — post-1.0
 

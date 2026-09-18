@@ -398,3 +398,23 @@ to the `func=` header key and onward to the outputs):
 
 The TSV `RESISTANCE` / JSON `resistance` output names are frozen and carry these
 functional categories for native DBs.
+
+### Bundled snapshots
+
+- card and vfdb ship as **bundled snapshots** inside the wheel
+  (`src/gapit/data/snapshots/<name>.tar.gz`, Wave G): `gapit db fetch NAME` installs
+  them with zero network. All other providers keep the upstream fetch;
+  `--from-source` forces the upstream download even when a snapshot exists, and a
+  missing/unresolvable archive falls back to the network path silently.
+- Archive layout (frozen): `<name>.tar.gz` containing exactly `records.jsonl` +
+  `gapit-manifest.json` from an installed db dir. Snapshots carry
+  **post-normalize records** — never BLAST/minimap2 indexes (index bytes are
+  BLAST-version-sensitive; a local rebuild from records is deterministic and
+  fast). Archives are built deterministically: sorted entry names, PAX format,
+  gzip mtime 0 → byte-identical rebuilds. The installed manifest rebuilds
+  `fetched_at`/`sha256`/tool versions locally; only `upstream_version` is
+  inherited from the archived manifest.
+- Bare `gapit db fetch` (no NAME) installs the default set `("card", "vfdb")` in
+  order, one JSON receipt line per db on stdout. Adding a future bundled DB =
+  dropping a `<name>.tar.gz` into the snapshots dir + setting `snapshot=` on the
+  provider (one line).

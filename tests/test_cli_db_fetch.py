@@ -19,7 +19,8 @@ from gapit.cli import app
 from gapit.errors import ErrorEnvelope
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider
-from gapit.records import Record
+from gapit.providers.snapshots import make_snapshot
+from gapit.records import Manifest, Record, read_manifest, write_manifest, write_records
 
 SYN = "synamr"
 OTHER = "synavail"
@@ -195,3 +196,141 @@ def test_db_list_json_emits_gapit_dblist_document(
     assert by_name[SYN]["dbtype"] == "nucl"
     assert by_name[OTHER]["installed"] is False
     assert "records" not in by_name[OTHER]
+
+
+def build_snapshot(tmp_path: Path, name: str, genes: tuple[str, ...], version: str) -> Path:
+    """A valid snapshot archive for provider ``name`` in tmp_path, carrying
+    one post-normalize record per gene (Wave G: built in-test, no binaries)."""
+    source = tmp_path / f"{name}-snapshotted"
+    source.mkdir()
+    write_records(
+        tuple(Record(db=name, gene=gene, sequence=SEQ_A) for gene in genes),
+        source / "records.jsonl",
+    )
+    write_manifest(
+        Manifest(
+            name=name,
+            source_urls=(),
+            fetched_at="2020-01-01T00:00:00Z",
+            sha256="0" * 64,
+            n_records=len(genes),
+            dbtype="nucl",
+            upstream_version=version,
+        ),
+        source / "gapit-manifest.json",
+    )
+    archive = tmp_path / f"{name}.tar.gz"
+    make_snapshot(source, archive)
+    return archive
+
+
+def patch_snapshot(monkeypatch: pytest.MonkeyPatch, archives: dict[str, Path]) -> None:
+    """Point the gapit.providers.common._snapshot_path seam at per-filename
+    archives (any provider without a snapshot gets None — network path)."""
+
+    def fake_snapshot_path(provider: Provider) -> Path | None:
+        return archives.get(provider.snapshot) if provider.snapshot is not None else None
+
+    monkeypatch.setattr("gapit.providers.common._snapshot_path", fake_snapshot_path)
+
+
+def patch_snapshot_registry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, name: str, url: str
+) -> Path:
+    """Registry holding ONE provider ``name`` whose snapshot archive carries
+    a single record while its network source (``url``) yields two; returns an
+    empty datadir. The 1-vs-2 record counts discriminate snapshot vs network."""
+    archive = build_snapshot(tmp_path, name, (f"snap_{name}_gene",), f"{name}-4.0")
+    monkeypatch.setattr(
+        "gapit.cmd_db.REGISTRY",
+        {
+            name: Provider(
+                name=name,
+                description=f"synthetic snapshot-backed {name} provider",
+                source_urls=(url,),
+                dbtype="nucl",
+                transform=syn_transform,
+                snapshot=f"{name}.tar.gz",
+            )
+        },
+    )
+    patch_snapshot(monkeypatch, {archive.name: archive})
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    return datadir
+
+
+def test_db_fetch_uses_bundled_snapshot_when_available(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a snapshot-backed provider whose network source yields TWO
+    records but whose snapshot carries ONE, When `db fetch NAME`, Then the
+    receipt reports the SNAPSHOT's record count — the bundled archive is
+    preferred over the network."""
+    source = tmp_path / "upstream.fa"
+    source.write_text(UPSTREAM_FASTA, encoding="utf-8")
+    datadir = patch_snapshot_registry(tmp_path, monkeypatch, "card", source.as_uri())
+
+    result = fetch("card", "--datadir", str(datadir))
+
+    assert result.exit_code == 0
+    receipt = json.loads(result.stdout)
+    assert receipt["records"] == 1
+    installed = read_manifest(datadir / "card" / "gapit-manifest.json")
+    assert installed.upstream_version == "card-4.0"  # from the ARCHIVED manifest
+
+
+def test_db_fetch_from_source_ignores_bundled_snapshot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given the same snapshot-backed provider, When `db fetch NAME
+    --from-source`, Then the receipt reports the NETWORK record count — the
+    flag routed around the bundled archive to the upstream source."""
+    source = tmp_path / "upstream.fa"
+    source.write_text(UPSTREAM_FASTA, encoding="utf-8")
+    datadir = patch_snapshot_registry(tmp_path, monkeypatch, "card", source.as_uri())
+
+    result = fetch("card", "--datadir", str(datadir), "--from-source")
+
+    assert result.exit_code == 0
+    receipt = json.loads(result.stdout)
+    assert receipt["records"] == 2  # the file:// source content, not the snapshot's 1
+
+
+def test_db_fetch_without_name_installs_default_dbs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a registry whose card+vfdb providers declare snapshots with
+    DEAD network URLs (a network-path slip would fail loudly), When `db fetch`
+    with no NAME, Then both defaults install in DEFAULT_DBS order from their
+    snapshots with one JSON receipt line per db on stdout."""
+    dead = (tmp_path / "dead.fa").as_uri()
+    card_tar = build_snapshot(tmp_path, "card", ("snap_card_gene",), "card-4.0")
+    vfdb_tar = build_snapshot(tmp_path, "vfdb", ("snap_vfdb_a", "snap_vfdb_b"), "vfdb-2026")
+    monkeypatch.setattr(
+        "gapit.cmd_db.REGISTRY",
+        {
+            name: Provider(
+                name=name,
+                description=f"synthetic snapshot-backed {name} provider",
+                source_urls=(dead,),
+                dbtype="nucl",
+                transform=syn_transform,
+                snapshot=f"{name}.tar.gz",
+            )
+            for name in ("card", "vfdb")
+        },
+    )
+    patch_snapshot(monkeypatch, {"card.tar.gz": card_tar, "vfdb.tar.gz": vfdb_tar})
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    result = fetch("--datadir", str(datadir))
+
+    assert result.exit_code == 0
+    receipts = [json.loads(line) for line in result.stdout.splitlines()]
+    assert [receipt["db"] for receipt in receipts] == ["card", "vfdb"]
+    assert [receipt["records"] for receipt in receipts] == [1, 2]
+    for name in ("card", "vfdb"):
+        assert (datadir / name / "gapit-manifest.json").is_file()
+    assert read_manifest(datadir / "vfdb" / "gapit-manifest.json").upstream_version == "vfdb-2026"

@@ -65,4 +65,5 @@ PROVIDER = Provider(
     source_urls=("https://bitbucket.org/genomicepidemiology/plasmidfinder_db/get/HEAD.zip",),
     dbtype="nucl",
     transform=transform,
+    snapshot=None,
 )
