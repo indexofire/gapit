@@ -1,19 +1,26 @@
 """CLI tests for shell completions (typer add_completion on the root app)."""
 
+import re
+
 from typer.testing import CliRunner
 
 from gapit.cli import app
 
 runner = CliRunner()
 
+# On CI, GITHUB_ACTIONS makes typer force terminal styling on help output;
+# the styled runs split option tokens, so strip SGR escapes before asserting.
+ANSI_STYLE = re.compile(r"\x1b\[[0-9;]*m")
+
 
 def test_root_help_lists_completion_options() -> None:
     """Given --help on the root app, When inspected, Then both typer
     completion options are offered."""
-    result = runner.invoke(app, ["--help"])
+    result = runner.invoke(app, ["--help"], env={"COLUMNS": "100"})
     assert result.exit_code == 0
-    assert "--install-completion" in result.stdout
-    assert "--show-completion" in result.stdout
+    help_text = ANSI_STYLE.sub("", result.stdout)
+    assert "--install-completion" in help_text
+    assert "--show-completion" in help_text
 
 
 def test_show_completion_emits_shell_script() -> None:

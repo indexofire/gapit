@@ -1,6 +1,7 @@
 """CLI tests for reads mode (gapit.reads/1) plus committed goldens."""
 
 import json
+import re
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
@@ -33,6 +34,11 @@ def datadir(tmp_path: Path) -> Path:
 
 def envelope(stderr: str) -> dict[str, str]:
     return json.loads([line for line in stderr.splitlines() if line.strip()][-1])
+
+
+# On CI, GITHUB_ACTIONS makes typer force terminal styling on help output;
+# the styled runs split option tokens, so strip SGR escapes before asserting.
+ANSI_STYLE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 def test_reads_default_json(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -234,11 +240,12 @@ def test_multi_lane_pe_union(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> 
 def test_reads_flag_is_gone_from_help() -> None:
     """Given --help for screen, When inspected, Then --reads is absent and
     --r1/--r2 are present."""
-    result = runner.invoke(app, ["screen", "--help"])
+    result = runner.invoke(app, ["screen", "--help"], env={"COLUMNS": "100"})
     assert result.exit_code == 0
-    assert "--reads" not in result.stdout
-    assert "--r1" in result.stdout
-    assert "--r2" in result.stdout
+    help_text = ANSI_STYLE.sub("", result.stdout)
+    assert "--reads" not in help_text
+    assert "--r1" in help_text
+    assert "--r2" in help_text
 
 
 def test_reads_debug_echoes_minimap2_argv(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
