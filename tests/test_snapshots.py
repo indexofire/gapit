@@ -98,9 +98,7 @@ def test_make_snapshot_is_deterministic(tmp_path: Path) -> None:
     exactly records.jsonl + gapit-manifest.json, in sorted order, whose bytes
     equal the source files."""
     source = tmp_path / "installed"
-    write_snapshot_source(
-        source, (Record(db=SYN, gene="syn_a", sequence=SEQ_A),), "syn-1.0"
-    )
+    write_snapshot_source(source, (Record(db=SYN, gene="syn_a", sequence=SEQ_A),), "syn-1.0")
 
     first = tmp_path / "first.tar.gz"
     second = tmp_path / "second.tar.gz"
@@ -153,17 +151,13 @@ def test_snapshot_install_matches_records_direct_build(
     assert "snapshot" in captured.err
 
 
-def test_from_source_routes_to_network(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_from_source_routes_to_network(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Given a provider whose snapshot IS resolvable, When fetched with
     from_source=True and a dead source URL, Then DOWNLOAD_FAILED — the flag
     routed around the snapshot to the (failing) network path; a snapshot-path
     implementation would instead succeed."""
     dead_url = (tmp_path / "no-such-file.fa").as_uri()
-    archive = build_snapshot(
-        tmp_path, (Record(db=SYN, gene="syn_a", sequence=SEQ_A),), "syn-1.0"
-    )
+    archive = build_snapshot(tmp_path, (Record(db=SYN, gene="syn_a", sequence=SEQ_A),), "syn-1.0")
     patch_snapshot(monkeypatch, archive)
 
     with pytest.raises(DatabaseError) as excinfo:
@@ -187,9 +181,7 @@ def test_corrupt_snapshot_raises_typed_error(
     — the Wave E card.py lesson)."""
     records_only = tmp_path / "records-only"
     records_only.mkdir()
-    write_records(
-        (Record(db=SYN, gene="syn_a", sequence=SEQ_A),), records_only / "records.jsonl"
-    )
+    write_records((Record(db=SYN, gene="syn_a", sequence=SEQ_A),), records_only / "records.jsonl")
     archive = tmp_path / SNAPSHOT_FILE
     with tarfile.open(archive, "w:gz") as tar:
         info = tarfile.TarInfo("records.jsonl")

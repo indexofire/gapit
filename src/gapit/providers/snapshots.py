@@ -48,14 +48,18 @@ def make_snapshot(db_dir: Path, dest: Path) -> None:
     Both members are required (a snapshot of a half-built db dir refuses
     loudly instead of shipping an uninstallable archive).
     """
-    with dest.open("wb") as raw, gzip.GzipFile(
-        # filename="" keeps the dest path OUT of the gzip header (the
-        # fileobj's .name would otherwise be embedded — path-dependent bytes).
-        filename="",
-        mode="wb",
-        fileobj=raw,
-        mtime=0,
-    ) as gz, tarfile.open(fileobj=gz, mode="w", format=tarfile.PAX_FORMAT) as tar:
+    with (
+        dest.open("wb") as raw,
+        gzip.GzipFile(
+            # filename="" keeps the dest path OUT of the gzip header (the
+            # fileobj's .name would otherwise be embedded — path-dependent bytes).
+            filename="",
+            mode="wb",
+            fileobj=raw,
+            mtime=0,
+        ) as gz,
+        tarfile.open(fileobj=gz, mode="w", format=tarfile.PAX_FORMAT) as tar,
+    ):
         for name in _MEMBERS:
             source = db_dir / name
             if not source.is_file():
