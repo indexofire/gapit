@@ -1,6 +1,7 @@
 """The screen use-case: input resolution, validation, and report rendering."""
 
 import enum
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import NoReturn
@@ -80,6 +81,7 @@ def run_screen(
     minid: float,
     mincov: float,
     threads: int,
+    jobs: int,
     fofn: Path | None,
     quiet: bool,
     csv_flag: bool,
@@ -95,17 +97,35 @@ def run_screen(
         usage_fail(f"--mincov must be in [0, 100]: got {mincov}")
     if threads < 1:
         usage_fail(f"--threads must be >= 1: got {threads}")
+    if jobs < 1:
+        usage_fail(f"--jobs must be >= 1: got {jobs}")
     inputs = _resolve_inputs(files, fofn)
     params = ScreeningParams(db=db_name, minid=minid, mincov=mincov, threads=threads)
     database = _find_database(config.resolve_datadir(datadir), db_name)
     reports: list[Report] = []
-    for path in inputs:
-        if not quiet:
-            typer.echo(f"Processing: {path}", err=True)
-        report = screen_file(path, database, params, debug=debug)
-        if not quiet:
-            typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
-        reports.append(report)
+    if jobs == 1:
+        for path in inputs:
+            if not quiet:
+                typer.echo(f"Processing: {path}", err=True)
+            report = screen_file(path, database, params, debug=debug)
+            if not quiet:
+                typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
+            reports.append(report)
+    else:
+
+        def screen_one(path: Path) -> Report:
+            if not quiet:
+                typer.echo(f"Processing: {path}", err=True)
+            report = screen_file(path, database, params, debug=debug)
+            if not quiet:
+                typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
+            return report
+
+        # Subprocess-bound work (GIL irrelevant); executor.map collects
+        # positionally, so reports stay in input order (SPEC.md §4) and a
+        # failing file raises at its position, like the sequential loop.
+        with ThreadPoolExecutor(max_workers=jobs) as executor:
+            reports = list(executor.map(screen_one, inputs))
     if output_format is OutputFormat.json:
         typer.echo(render_json(reports, params, now=datetime.now(UTC)), nl=False)
     elif output_format is OutputFormat.md:
@@ -145,6 +165,7 @@ def run_screen_reads(
     threads: int,
     output_format: OutputFormat | None,
     quiet: bool,
+    debug: bool = False,
 ) -> None:
     """Screen FASTQ reads (per-lane minimap2, sample-level union); json is the
     default format (SPEC.md §10)."""
@@ -175,6 +196,7 @@ def run_screen_reads(
         read_type=read_type.value,
         min_breadth=min_breadth,
         threads=threads,
+        debug=debug,
     )
     present = sum(1 for gene in report.genes if gene.present)
     if not quiet:

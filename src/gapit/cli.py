@@ -27,7 +27,7 @@ app = typer.Typer(
     name="gapit",
     help="Mass screening of contigs for antimicrobial resistance and virulence genes.",
     no_args_is_help=True,
-    add_completion=False,
+    add_completion=True,
 )
 
 
@@ -95,8 +95,8 @@ def _list(datadir: Path | None, as_json: bool) -> None:
         typer.echo(f"{info.name}\t{info.n_sequences}\t{info.dbtype}\t{info.date}")
 
 
-def _setupdb(datadir: Path | None) -> None:
-    infos = db.list_databases(config.resolve_datadir(datadir), setupdb=True)
+def _setupdb(datadir: Path | None, debug: bool) -> None:
+    infos = db.list_databases(config.resolve_datadir(datadir), setupdb=True, debug=debug)
     for info in infos:
         typer.echo(
             f"Indexed {info.name} ({info.n_sequences} sequences, {info.dbtype})",
@@ -117,9 +117,15 @@ def list_dbs(
 
 
 @app.command("setupdb")
-def setupdb(datadir: Datadir = None) -> None:
+def setupdb(
+    datadir: Datadir = None,
+    debug: Annotated[
+        bool,
+        typer.Option("--debug", help="Echo external command lines to stderr."),
+    ] = False,
+) -> None:
     """Build BLAST indices for all databases under the datadir."""
-    _dispatch(lambda: _setupdb(datadir))
+    _dispatch(lambda: _setupdb(datadir, debug))
 
 
 @app.command("screen")
@@ -158,6 +164,17 @@ def screen(
         float, typer.Option("--mincov", help="Minimum %coverage, 0 <= x <= 100.")
     ] = 80.0,
     threads: Annotated[int, typer.Option("--threads", help="BLAST worker threads.")] = 1,
+    jobs: Annotated[
+        int,
+        typer.Option(
+            "--jobs",
+            help=(
+                "Screen N input files concurrently (gapit extension; output order is"
+                " always input order). Each worker runs its own BLAST against the"
+                " shared db index, which BLAST mmaps — concurrent readers are fine."
+            ),
+        ),
+    ] = 1,
     fofn: Annotated[
         Path | None,
         typer.Option("--fofn", help="File of filenames; replaces the positional FILEs."),
@@ -182,7 +199,16 @@ def screen(
             usage_fail("--r2 requires --r1")
         if r1 is not None or r2 is not None:
             run_screen_reads(
-                r1 or "", r2, db, datadir, read_type, min_breadth, threads, output_format, quiet
+                r1 or "",
+                r2,
+                db,
+                datadir,
+                read_type,
+                min_breadth,
+                threads,
+                output_format,
+                quiet,
+                debug,
             )
         else:
             run_screen(
@@ -192,6 +218,7 @@ def screen(
                 minid,
                 mincov,
                 threads,
+                jobs,
                 fofn,
                 quiet,
                 csv_flag,

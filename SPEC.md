@@ -25,7 +25,7 @@
 | `--summary` | flag | off | summary-matrix mode (§7), args are report files |
 | `--identity` | flag | off | summary cells show %IDENTITY instead of %COVERAGE |
 | `--list` / `--setupdb` / `--check` / `--version` / `--help` | modes | — | |
-| `--debug` | flag | off | verbose stderr |
+| `--debug` | flag | off | verbose stderr; echoes each external argv as `gapit: run: <argv>` on stderr (upstream prints `Running: $cmd`) |
 | `--format` `[gapit-extension]` | enum | `tsv` | `tsv\|csv\|json\|md`; supersedes upstream's validated-but-unimplemented `--outfmt` (`bed gff json` are accepted upstream but do nothing) |
 
 Mode precedence (upstream): `--summary` → `--check` → dep check → `--list`/`--setupdb` → BLAST
@@ -182,7 +182,8 @@ tsv|csv|json|md`, `--quiet`).
 - **`--csv` + summary**: summary must be told the separator; mixing breaks upstream — gapit
   detects format per file instead `[gapit-extension]` (RESOLVED 2026-09-17, see §6).
 - **Determinism**: stable sort; fixed BLAST params; no timestamps in data payloads. (Upstream
-  MOTD/`srand` is stderr-only and dropped in gapit.)
+  MOTD/`srand` is stderr-only and dropped in gapit.) gapit `--jobs N` screens files
+  concurrently but stdout stays in input order.
 - **blastx**: no sstrand → STRAND `+`; minid unenforced (quirk kept, documented).
 - Known upstream caveats we inherit: no mutational resistance; gap reporting incomplete;
   overlapping genes both reported; possible coverage-calculation issues.

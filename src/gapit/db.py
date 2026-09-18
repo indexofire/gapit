@@ -2,7 +2,9 @@
 
 import os
 import re
+import shlex
 import subprocess
+import sys
 from pathlib import Path
 from typing import Literal
 
@@ -97,32 +99,38 @@ def _run(argv: list[str]) -> subprocess.CompletedProcess[str]:
 
 
 def make_blast_db(
-    sequences_path: Path, name: str, *, dbtype: Literal["nucl", "prot"] | None = None
+    sequences_path: Path,
+    name: str,
+    *,
+    dbtype: Literal["nucl", "prot"] | None = None,
+    debug: bool = False,
 ) -> None:
     """(Re)build the BLAST index for one database directory.
 
     ``dbtype=None`` (the default) keeps the abricate ``mol_type`` heuristic;
     an explicit ``"nucl"``/``"prot"`` — e.g. from a gapit manifest, which
-    declares the type — skips the heuristic entirely.
+    declares the type — skips the heuristic entirely. With ``debug``, echo
+    the makeblastdb argv to stderr (abricate --debug parity).
     """
     if dbtype is None:
         letters = "".join(record.sequence for record in iter_fasta(sequences_path))
         dbtype = mol_type(letters)
     for index_file in sequences_path.parent.glob(f"{sequences_path.name}.[np]??"):
         index_file.unlink()
-    result = _run(
-        [
-            "makeblastdb",
-            "-in",
-            str(sequences_path),
-            "-title",
-            name,
-            "-dbtype",
-            dbtype,
-            "-logfile",
-            "/dev/null",
-        ]
-    )
+    argv = [
+        "makeblastdb",
+        "-in",
+        str(sequences_path),
+        "-title",
+        name,
+        "-dbtype",
+        dbtype,
+        "-logfile",
+        "/dev/null",
+    ]
+    if debug:
+        print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
+    result = _run(argv)
     if result.returncode != 0:
         raise DatabaseError(
             f"makeblastdb failed for {name}: {result.stderr.strip()}",
@@ -177,13 +185,13 @@ def discover_databases(datadir: Path) -> list[Database]:
     return sorted(databases, key=lambda database: database.name)
 
 
-def list_databases(datadir: Path, *, setupdb: bool) -> list[DatabaseInfo]:
+def list_databases(datadir: Path, *, setupdb: bool, debug: bool = False) -> list[DatabaseInfo]:
     """Enumerate databases (building indices first when ``setupdb``), requiring
     every database to be indexed; returns one DatabaseInfo per database."""
     infos: list[DatabaseInfo] = []
     for database in discover_databases(datadir):
         if setupdb:
-            make_blast_db(database.sequences_path, database.name)
+            make_blast_db(database.sequences_path, database.name, debug=debug)
         sequences = database.sequences_path
         index_exists = any(
             (sequences.parent / f"{sequences.name}{suffix}").exists() for suffix in (".nin", ".pin")

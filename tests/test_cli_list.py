@@ -89,6 +89,18 @@ def test_setupdb_runs_list_without_list(tmp_path: Path) -> None:
     assert setup.stderr == ""
 
 
+def test_setupdb_debug_echoes_makeblastdb_argv(tmp_path: Path) -> None:
+    """Given an unindexed fixture datadir, When `setupdb --debug` runs, Then
+    exit 0 and the makeblastdb argv is echoed to stderr as a `gapit: run:`
+    line (the no-flag default keeps stderr to the Indexed line only — pinned
+    by test_setupdb_then_list_roundtrip)."""
+    datadir = make_datadir(tmp_path)
+    result = runner.invoke(app, ["setupdb", "--debug", "--datadir", str(datadir)])
+    assert result.exit_code == 0
+    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gapit: run:")]
+    assert run_lines and run_lines[0].startswith("gapit: run: makeblastdb -in ")
+
+
 def test_list_json_output(tmp_path: Path) -> None:
     """Given an indexed fixture datadir, When listed with --json, Then the payload
     parses, carries schema gapit.list/1, and keys come in documented order."""

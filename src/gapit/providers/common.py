@@ -173,6 +173,7 @@ def fetch_provider(
     force: bool = False,
     quiet: bool = True,
     from_source: bool = False,
+    debug: bool = False,
 ) -> Manifest:
     """Run the generic provider pipeline into ``db_dir`` (created if needed).
 
@@ -208,6 +209,7 @@ def fetch_provider(
                 fetched_at=fetched_at,
                 upstream_version=archived.upstream_version,
                 quiet=quiet,
+                debug=debug,
             )
     with TemporaryDirectory(dir=db_dir, prefix=".download.") as workdir_name:
         workdir = Path(workdir_name)
@@ -234,4 +236,5 @@ def fetch_provider(
         source_urls=provider.source_urls,
         fetched_at=fetched_at,
         quiet=quiet,
+        debug=debug,
     )

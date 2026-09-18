@@ -164,7 +164,8 @@ def run_screen(
 
     The database must already be indexed; protein databases switch to blastx
     without -perc_identity (upstream quirk, minid silently ignored). With
-    ``debug``, echo the exact blast argv to stderr.
+    ``debug``, echo the exact any2fasta and blast argv to stderr
+    (abricate --debug parity).
     """
     info = blast_db_info(database.sequences_path)
     if info.dbtype == "prot":
@@ -211,7 +212,8 @@ def run_screen(
             "10000",
         ]
     if debug:
-        sys.stderr.write(f"DEBUG: {shlex.join(argv)}\n")
+        sys.stderr.write(f"gapit: run: {shlex.join(['any2fasta', '-q', '-u', str(query)])}\n")
+        sys.stderr.write(f"gapit: run: {shlex.join(argv)}\n")
     output = _pipeline(query, argv)
     return [parse_blast_row(line) for line in output.splitlines() if line.strip()]
 

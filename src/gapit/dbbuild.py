@@ -11,6 +11,7 @@ indexed.
 
 import hashlib
 import os
+import shlex
 import subprocess
 import sys
 from collections.abc import Sequence
@@ -163,10 +164,13 @@ def _sha256(path: Path) -> str:
     return hasher.hexdigest()
 
 
-def _build_mmi(sequences_path: Path, mmi_path: Path) -> None:
+def _build_mmi(sequences_path: Path, mmi_path: Path, *, debug: bool = False) -> None:
     """Index ``sequences`` with ``minimap2 -d``; any failure raises
     ``MMI_BUILD_FAILED`` with the target path in context."""
-    result = _run(["minimap2", "-d", str(mmi_path), str(sequences_path)])
+    argv = ["minimap2", "-d", str(mmi_path), str(sequences_path)]
+    if debug:
+        print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
+    result = _run(argv)
     if result.returncode != 0:
         raise DatabaseError(
             f"minimap2 index build failed for {sequences_path}: {result.stderr.strip()}",
@@ -196,6 +200,7 @@ def build_database(
     fetched_at: str,
     upstream_version: str = "",
     quiet: bool = True,
+    debug: bool = False,
 ) -> Manifest:
     """Build every gapit-native artifact in ``db_dir`` from its records.jsonl.
 
@@ -220,11 +225,13 @@ def build_database(
     verify_sequences(sequences_path, records_path, name)
     _note(quiet, f"self-check passed for {name}")
     sha256 = _sha256(sequences_path)
-    make_blast_db(sequences_path, name, dbtype=dbtype)
+    make_blast_db(sequences_path, name, dbtype=dbtype, debug=debug)
     _note(quiet, f"BLAST index built ({dbtype})")
     match dbtype:
         case "nucl":
-            _build_mmi(sequences_path, sequences_path.parent / f"{sequences_path.name}.mmi")
+            _build_mmi(
+                sequences_path, sequences_path.parent / f"{sequences_path.name}.mmi", debug=debug
+            )
             _note(quiet, "minimap2 index built")
         case "prot":
             # minimap2 is nucleotide-only; the .mmi is intentionally skipped.

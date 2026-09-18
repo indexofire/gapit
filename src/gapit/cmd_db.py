@@ -124,6 +124,10 @@ def db_fetch_command(
         ),
     ] = False,
     quiet: Annotated[bool, typer.Option("--quiet", help="Silence stderr diagnostics.")] = False,
+    debug: Annotated[
+        bool,
+        typer.Option("--debug", help="Echo external command lines to stderr."),
+    ] = False,
 ) -> None:
     """Fetch and build provider database(s) into <datadir>/NAME.
 
@@ -148,6 +152,7 @@ def db_fetch_command(
             force=force,
             quiet=quiet,
             from_source=from_source,
+            debug=debug,
         )
         typer.echo(
             ProviderReceipt(

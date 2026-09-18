@@ -241,6 +241,21 @@ def test_reads_flag_is_gone_from_help() -> None:
     assert "--r2" in result.stdout
 
 
+def test_reads_debug_echoes_minimap2_argv(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given --r1 with --debug, When run, Then the minimap2 argv is echoed
+    to stderr as a `gapit: run:` line and stdout stays identical to the
+    plain run (debug is stderr-only); the plain run emits no argv lines."""
+    args = ["screen", "--r1", "tetx_full.fq", "--db", "tinyreads", "--datadir", str(datadir)]
+    monkeypatch.chdir(READS)
+    debug_run = runner.invoke(app, [*args, "--debug"])
+    plain_run = runner.invoke(app, args)
+    assert debug_run.exit_code == 0
+    run_lines = [line for line in debug_run.stderr.splitlines() if line.startswith("gapit: run:")]
+    assert run_lines and run_lines[0].startswith("gapit: run: minimap2 -x sr ")
+    assert debug_run.stdout == plain_run.stdout
+    assert "gapit: run:" not in plain_run.stderr
+
+
 def test_golden_reads_json(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Given the tetx fixture run and a pinned now, When rendered, Then the
     JSON is byte-identical to the committed golden."""

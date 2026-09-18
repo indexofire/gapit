@@ -260,7 +260,7 @@ def test_manifest_written_last_when_mmi_fails(
     the manifest certifies the artifacts and is written last."""
     db_dir = make_db(tmp_path)
 
-    def fail_mmi(sequences_path: Path, mmi_path: Path) -> None:
+    def fail_mmi(sequences_path: Path, mmi_path: Path, *, debug: bool = False) -> None:
         raise DatabaseError("simulated minimap2 crash", code="MMI_BUILD_FAILED")
 
     monkeypatch.setattr(dbbuild, "_build_mmi", fail_mmi)

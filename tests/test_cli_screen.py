@@ -144,9 +144,32 @@ def test_no_input_files_exits_2(datadir: Path) -> None:
     assert json.loads(result.stderr)["code"] == "USAGE_ERROR"
 
 
-def test_debug_echoes_blast_argv(datadir: Path) -> None:
+def test_debug_echoes_external_argv(datadir: Path) -> None:
+    """Given --debug, When screening, Then each external argv (any2fasta AND
+    blastn) is echoed to stderr as a `gapit: run:` line (abricate --debug
+    parity: the exact commands being run)."""
     result = screen(datadir, "--debug", str(CONTIGS / "full.fa"))
     assert result.exit_code == 0
-    assert "DEBUG:" in result.stderr
-    assert "blastn" in result.stderr
-    assert "-perc_identity" in result.stderr
+    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gapit: run:")]
+    assert len(run_lines) == 2
+    assert run_lines[0].startswith("gapit: run: any2fasta -q -u ")
+    assert run_lines[1].startswith("gapit: run: blastn ")
+    assert "-perc_identity" in run_lines[1]
+
+
+def test_debug_stdout_identical_to_plain_run(datadir: Path) -> None:
+    """Given the same run with and without --debug, When compared, Then
+    stdout is byte-identical (debug is stderr-only)."""
+    debug_run = screen(datadir, "--debug", "--nopath", str(CONTIGS / "full.fa"))
+    plain_run = screen(datadir, "--nopath", str(CONTIGS / "full.fa"))
+    assert debug_run.exit_code == 0
+    assert plain_run.exit_code == 0
+    assert debug_run.stdout == plain_run.stdout
+
+
+def test_default_run_emits_no_argv_lines(datadir: Path) -> None:
+    """Given a default (no --debug) run, When inspected, Then stderr carries
+    no `gapit: run:` argv echo lines."""
+    result = screen(datadir, str(CONTIGS / "full.fa"))
+    assert result.exit_code == 0
+    assert "gapit: run:" not in result.stderr

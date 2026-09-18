@@ -1,7 +1,9 @@
 """FASTQ read screening via minimap2 (SPEC.md §10 — gapit extension)."""
 
 import enum
+import shlex
 import subprocess
+import sys
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Literal
@@ -204,13 +206,15 @@ def run_minimap2(
     *,
     read_type: ReadType,
     threads: int,
+    debug: bool = False,
 ) -> list[PafRecord]:
     """Run one minimap2 invocation per lane (PAF on stdout) and concatenate
     the rows. The index argument is the persisted ``.mmi`` when usable (see
     ``_mmi_index``), else the FASTA (minimap2 then loads it per lane —
     negligible for the small dbs). minimap2's pairing semantics for >2 input
     files are undocumented; per-lane runs (r1[i] alone or with its mate
-    r2[i]) are deterministic."""
+    r2[i]) are deterministic. With ``debug``, echo each argv to stderr
+    (abricate --debug parity)."""
     mmi = _mmi_index(database)
     index = database.sequences_path if mmi is None else mmi
     rows: list[PafRecord] = []
@@ -226,6 +230,8 @@ def run_minimap2(
         ]
         if r2 is not None:
             argv.append(str(r2))
+        if debug:
+            print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
         try:
             result = subprocess.run(argv, check=False, capture_output=True, text=True)
         except FileNotFoundError as exc:
@@ -251,10 +257,11 @@ def screen_reads(
     read_type: ReadType,
     min_breadth: float,
     threads: int,
+    debug: bool = False,
 ) -> ReadsReport:
     """Screen one sample's lanes against one database into a sample-level
     ReadsReport (union of all lanes' primary alignments)."""
-    rows = run_minimap2(lanes, database, read_type=read_type, threads=threads)
+    rows = run_minimap2(lanes, database, read_type=read_type, threads=threads, debug=debug)
     products = {record.id: record.description for record in iter_fasta(database.sequences_path)}
     genes = aggregate_coverage(
         rows, default_db=database.name, min_breadth=min_breadth, products=products
