@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "gapit"
 version = "0.1.0"
 description = "Mass screening of contigs for antimicrobial resistance and virulence genes — agent-first Python reimplementation of abricate"
-readme = "PLAN.md"
+readme = "README.md"
 authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]
 requires-python = ">=3.11"
 license = "GPL-2.0-only"
