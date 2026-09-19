@@ -1,5 +1,8 @@
-"""The `gapit db` command group: fetch, list, install.
+"""The `gapit db` command group: build, fetch, list, install.
 
+- ``db build NAME FASTA``: build a custom gapit-native database from a
+  user-supplied FASTA (+ optional TSV metadata) — the whole acquisition
+  pipeline without a provider (:mod:`gapit.cmd_db_build`).
 - ``db fetch [NAME]``: acquire provider database(s) under the datadir. With
   no NAME the default set (``DEFAULT_DBS``: card, vfdb) installs in order —
   each from its BUNDLED SNAPSHOT (Wave G) when one resolves, else over the
@@ -19,6 +22,7 @@ import typer
 from pydantic import BaseModel, ConfigDict, Field
 
 from gapit import config
+from gapit.cmd_db_build import db_build_command
 from gapit.cmd_db_install import db_install_command
 from gapit.errors import DatabaseError, GapitError, UsageError, render_error
 from gapit.providers import REGISTRY
@@ -214,6 +218,7 @@ def register_db_command(app: typer.Typer) -> None:
         no_args_is_help=True,
     )
     db_app.command("install")(db_install_command)
+    db_app.command("build")(db_build_command)
     db_app.command("fetch")(db_fetch_command)
     db_app.command("list")(db_list_command)
     app.add_typer(db_app, name="db")
