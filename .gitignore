@@ -16,3 +16,6 @@ build/
 
 # opencode
 .omo/
+
+# mkdocs rendered site
+site/

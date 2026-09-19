@@ -132,8 +132,11 @@ envelope as text. Register it with an MCP client:
 | `pixi run -e parity parity` | byte-diff screening vs real abricate |
 | `pixi run -e parity summary-parity` | byte-diff summary vs real abricate |
 
+User documentation lives in [`docs/index.md`](docs/index.md), rendered at
+<https://indexofire.github.io/gapit/>.
+
 `SPEC.md` is the parity contract, `PLAN.md` the roadmap, `AGENTS.md` the contributor
-guide.
+guide, `CHANGELOG.md` the change history.
 
 ## License
 
