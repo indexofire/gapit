@@ -131,6 +131,8 @@ consumes abricate-built datadirs.
   (Wave H6: `gapit mcp` subcommand and `gapit-mcp` console script, hand-rolled stdio
   JSON-RPC 2.0 in `src/gapit/mcp.py`, zero new dependencies, tools
   `screen`/`summary`/`schema` + read-only `db_list`); README, LICENSE, CHANGELOG docs.
+- Custom database construction (`gapit db build`) with metadata merge — added 2026-09-19,
+  post-phase; see docs/custom-db.md.
 - **Deferred by decision (2026-09-18):** PyPI and bioconda publication — recipe remains
   in-repo; sha256 placeholder to be replaced at submission time.
 

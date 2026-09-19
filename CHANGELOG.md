@@ -41,6 +41,10 @@ been released yet; the package version stays 0.1.0.
   JSON-RPC 2.0 with zero new dependencies; read-only tools `screen`, `summary`,
   `schema`, `db_list` (2026-09-18).
 - Conda recipe (`recipe/meta.yaml`) for PyPI/bioconda packaging (2026-09-18).
+- Custom database construction: `gapit db build NAME FASTA` builds a screening-ready native
+  database from plain, abricate `~~~`, or `gapit|` FASTA (auto-detected), with optional
+  `--tsv` metadata (accession, function classes) and `--dbtype` override; guide with worked
+  examples in `docs/custom-db.md` (2026-09-19).
 
 ### Changed
 
