@@ -197,8 +197,8 @@ RESISTANCE), `resfinder` (plain ACC; gene has `_copy` suffix), `argannot`, `plas
 `upec_expec_vf`; plus `db/abricate/` — a cd-hit-est recipe, not a DB. Disabled getters:
 `ncbibetalactamase`, `serotypefinder`.
 
-gapit v1.0 reads any abricate-format datadir (including abricate's own). A `gapit db fetch`
-reimplementation of `abricate-get_db` is post-1.0 (see PLAN.md).
+gapit v1.0 reads any abricate-format datadir (including abricate's own). Reimplemented as
+`gapit db fetch` (Phase 7) — providers, transforms, and the native format are specified in §11.
 gapit-native DB construction and acquisition (`gapit db`, `gapit/v1` headers) is specified
 in §11.
 

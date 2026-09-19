@@ -37,13 +37,14 @@ pixi run lint        # ruff check
 pixi run fmt         # ruff format
 pixi run typecheck   # basedpyright --strict
 pixi run test        # pytest (unit, offline)
-pixi run parity      # golden-file diff against real abricate (requires abricate in env)
 pixi run gapit       # the CLI itself
+pixi run -e parity parity          # byte-diff screening vs real abricate (abricate-only env)
+pixi run -e parity summary-parity  # byte-diff summary vs real abricate
 ```
 
 Every change must leave `lint`, `typecheck`, and `test` green.
 
-## 3. Repository layout (target)
+## 3. Repository layout
 
 ```
 gapit/
@@ -51,29 +52,44 @@ gapit/
 ├── PLAN.md              # development roadmap (phase-gated)
 ├── SPEC.md              # distilled abricate behavior spec (source of truth for parity)
 ├── pixi.toml
+├── recipe/
+│   └── meta.yaml        # conda recipe (submission deferred)
+├── .github/workflows/
+│   └── ci.yml           # gates matrix 3.11/3.13/3.14 + parity job
 ├── src/gapit/
 │   ├── __init__.py
-│   ├── cli.py           # typer entrypoint: screen / summary / setupdb / list / schema
+│   ├── cli.py           # typer entrypoint: screen / summary / db / list / setupdb / schema / mcp
 │   ├── config.py        # datadir resolution, defaults, env vars
-│   ├── fasta.py         # streaming FASTA reader (plain + gz)
+│   ├── fasta.py         # streaming FASTA reader (plain + gz/bz2 via any2fasta)
 │   ├── db.py            # database discovery, header parsing, makeblastdb wrapper
+│   ├── dbcodec.py       # gapit/v1 tagged-header codec (percent-encoded ids)
+│   ├── records.py       # records.jsonl truth store + gapit.manifest/1 provenance
+│   ├── dbbuild.py       # deterministic native-db build pipeline with self-check
 │   ├── blast.py         # blastn invocation + tabular output parsing
 │   ├── hits.py          # Hit model, identity/coverage computation, filtering, dedup
 │   ├── minimap.py       # COVERAGE_MAP construction (exact abricate arithmetic)
 │   ├── report.py        # Report model: the canonical in-memory result
 │   ├── screening.py     # the screen use-case: validation, orchestration, format dispatch
 │   ├── reads.py         # FASTQ mode: minimap2 PAF parsing, coverage breadth/depth, presence
-│   ├── summary.py       # multi-file summary matrix
+│   ├── summary.py       # summary core: parse report tables into a gene matrix
+│   ├── cmd_summary.py   # `gapit summary` CLI (registered from cli.py)
+│   ├── cmd_db.py        # `gapit db fetch|list` CLI
+│   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
+│   ├── mcp.py           # MCP stdio server (hand-rolled JSON-RPC 2.0); backs gapit-mcp
+│   ├── errors.py        # typed errors + JSON error envelope
 │   ├── formats/
 │   │   ├── tsv.py       # abricate-compatible TSV/CSV
-│   │   ├── json.py      # versioned JSON (schema: gapit.report/1)
-│   │   └── md.py        # Markdown (human + agent readable, YAML frontmatter)
-│   ├── errors.py        # typed errors + JSON error envelope
+│   │   ├── json.py      # versioned JSON (gapit.report/1 et al.)
+│   │   ├── md.py        # Markdown (human + agent readable, YAML frontmatter)
+│   │   └── summary.py   # summary matrix renderers (TSV/CSV/JSON/MD)
+│   ├── providers/       # 12 DB providers + common.py helpers + snapshots.py loader
+│   ├── data/snapshots/  # bundled card + vfdb snapshot archives (.tar.gz)
 │   └── py.typed
 └── tests/
-    ├── data/            # tiny synthetic db + contigs (fast, offline)
+    ├── data/            # tiny synthetic db + contigs + reads (fast, offline)
     ├── golden/          # expected outputs incl. abricate reference TSVs
-    └── ...
+    ├── parity/          # corpus + run_parity.py / run_summary_parity.py (opt-in env)
+    └── test_*.py        # unit + CLI + provider + integration tests
 ```
 
 One file, one responsibility. Target ≤ 250 LOC per module; split before it hurts.
@@ -97,13 +113,20 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 
 - **Formats**: `--format tsv|csv|json|md` (default `tsv` for abricate compatibility).
 - **JSON**: top-level `"schema": "gapit.report/1"`; schema introspectable via
-  `gapit schema report | summary | error`. Keys are snake_case, units explicit (`identity_pct`,
-  `coverage_pct`). Semver the schema; never rename or retype a field in a minor bump.
+  `gapit schema report | reads | summary | list | error | version`. Keys are snake_case,
+  units explicit (`identity_pct`, `coverage_pct`). Semver the schema; never rename or
+  retype a field in a minor bump.
 - **Markdown**: YAML frontmatter (tool version, db, params, ISO-8601 UTC timestamp) + tables a
   human can read and an agent can regex reliably.
 - **Errors**: failures print a JSON envelope to stderr
   `{"schema": "gapit.error/1", "code": "...", "message": "...", "context": {...}}` and exit with a
   documented non-zero code (2 = usage, 3 = missing dependency, 4 = db error, 5 = input error).
+- **DB acquisition** `[gapit-extension]`: `gapit db fetch|list|install` — provider fetch
+  (bundled card/vfdb snapshots install offline; `--from-source` forces upstream), provider
+  listing, and SHA256-verified local-file install.
+- **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing read-only
+  tools `screen`, `summary`, `schema`, `db_list`; tool failures carry the `gapit.error/1`
+  envelope.
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
 - **Self-description**: `gapit --version --json`, `gapit list --json`, `gapit schema` — an agent
   must be able to discover everything without reading docs.
@@ -111,18 +134,22 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 ## 6. Testing strategy
 
 - **Unit**: pure functions (coverage %, merge rules, header parsing) — no I/O beyond `tests/data`.
-- **Golden files**: fixed tiny db + fixed contigs → expected TSV/JSON/MD committed; regenerate via
-  `pixi run golden --update`, review diffs like code.
-- **Parity harness**: `pixi run parity` runs real abricate (conda) and gapit over a small genome
-  corpus and diffs the gene calls (file, gene, %identity, %coverage). Parity on the corpus is the
-  release gate for v1.0.
-- Tests must run offline and fast (< 30 s) except `parity`, which is opt-in.
+- **Golden files**: fixed tiny db + fixed contigs → expected TSV/JSON/MD committed; update the
+  committed files deliberately and review diffs like code.
+- **Parity harness**: `pixi run -e parity parity` (and `summary-parity`) runs real abricate
+  (conda) and gapit over a small genome corpus and diffs the gene calls byte-for-byte (file,
+  gene, %identity, %coverage). Parity on the corpus is the release gate for v1.0.
+- Full suite + CI matrix 3.11/3.13/3.14; parity byte-diff is opt-in via the `parity` pixi env.
+  Offline tests stay fast.
 
 ## 7. Domain knowledge (abridged; full detail in SPEC.md)
 
 - A **database** is a directory `<datadir>/<dbname>/sequences`: a nucleotide FASTA whose headers
   encode `>~~~GENE~~~PRODUCT` (and accession / resistance metadata depending on the source db).
-  `makeblastdb -dbtype nucl` builds the index.
+  `makeblastdb -dbtype nucl` builds the index. gapit also writes its own native `gapit/v1`
+  tagged-header format (SPEC §11), whose `func` key carries a locked per-provider function
+  vocabulary (antibiotic classes, `virulence`, `replicon`, ...); abricate cannot read
+  gapit-native databases.
 - Screening = `any2fasta` normalize → `blastn` of query contigs against one db → 15-field
   tabular hits → filter by identity / coverage thresholds → **dedup hits sharing identical
   `(contig, qstart, qend)`** (first/best BLAST row wins) → one TSV row per surviving hit.

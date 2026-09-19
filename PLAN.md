@@ -122,15 +122,17 @@ consumes abricate-built datadirs.
 - Remaining known items: real-network fetch is the runtime path (the offline suite pins
   transforms via synthetic fixtures only).
 
-## Phase 8 — Hardening & distribution — post-1.0
+## Phase 8 — Hardening & distribution — ✅ DONE (2026-09-18)
 
-- Conda/pixi package recipe; shell completions; `--debug` parity of stderr diagnostics.
-- Performance pass (multi-file parallelism across inputs; threads >1 determinism check vs
-  abricate behavior).
-- Done (Wave H6, 2026-09-18): MCP server exposing `screen`/`summary`/`schema`
-  (+ read-only `db_list`) for agent runtimes — `gapit mcp` subcommand and
-  `gapit-mcp` console script, hand-rolled stdio JSON-RPC 2.0 in
-  `src/gapit/mcp.py` (zero new dependencies).
+- Shipped: shell completions (`--install-completion` / `--show-completion`); `--debug`
+  argv echo (parity of stderr diagnostics); `--jobs` multi-file parallelism across
+  inputs with input-order stdout; CI gates matrix (3.11 / 3.13 / 3.14) + parity
+  workflow (`.github/workflows/ci.yml`); conda recipe (`recipe/meta.yaml`); MCP server
+  (Wave H6: `gapit mcp` subcommand and `gapit-mcp` console script, hand-rolled stdio
+  JSON-RPC 2.0 in `src/gapit/mcp.py`, zero new dependencies, tools
+  `screen`/`summary`/`schema` + read-only `db_list`); README, LICENSE, CHANGELOG docs.
+- **Deferred by decision (2026-09-18):** PyPI and bioconda publication — recipe remains
+  in-repo; sha256 placeholder to be replaced at submission time.
 
 ## Milestones
 
