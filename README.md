@@ -51,6 +51,7 @@ gapit summary *.tsv
 gapit db fetch
 gapit db fetch ncbi
 gapit db list
+gapit db build mydb my_genes.fa --tsv my_meta.tsv   # custom db from any FASTA
 
 # Introspection
 gapit list              # installed databases (abricate --list compatible)

@@ -29,6 +29,7 @@ nav:
       - Reads (FASTQ): reads.md
   - Summarizing reports: summary.md
   - Databases: databases.md
+  - Custom databases: custom-db.md
   - Outputs: outputs.md
   - MCP server: mcp.md
   - gapit for agents: agents.md

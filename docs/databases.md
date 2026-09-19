@@ -305,9 +305,100 @@ through to the TSV `RESISTANCE` column and the JSON `resistance` field:
 
 ## Bringing your own database
 
-Any abricate-format datadir works as-is: point `--datadir` at a directory containing
-`<name>/sequences` (a nucleotide FASTA with `~~~` headers) and run `gapit setupdb` once to
-build the BLAST index. The mol-type heuristic from abricate picks `nucl` vs `prot`.
+`gapit db build NAME FASTA` turns any FASTA of reference genes into a fully built
+gapit-native database — `records.jsonl`, the `sequences` projection with `gapit/v1`
+headers, the BLAST index, the minimap2 index, and the manifest — in one command.
+Here is a two-gene synthetic FASTA plus a metadata TSV (fields below), run against a
+scratch datadir:
+
+```console
+$ gapit db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv
+gapit: generated /tmp/opencode/gapit-build-demo/db/tinyamr/sequences
+gapit: self-check passed for tinyamr
+gapit: BLAST index built (nucl)
+gapit: minimap2 index built
+{"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
+```
+
+stderr carries the per-step progress, stdout the one-line JSON receipt (same fields
+as `db fetch`, see the table above). The database screens immediately:
+
+```console
+$ gapit screen --datadir ./db --db tinyamr contig.fa
+Processing: contig.fa
+Found 1 genes in contig.fa
+#FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
+contig.fa	contig1	1	240	+	syn_betalac	1-240/240	===============	0/0	100.00	100.00	tinyamr	SYN-0001	synthetic class A beta-lactamase	ampicillin;cephalosporin
+```
+
+The `ACCESSION` and `RESISTANCE` values came from the TSV merge; the `PRODUCT` from
+the FASTA description. `--dbtype nucl|prot` forces the molecule type (protein
+databases skip the minimap2 index); by default the abricate mol-type heuristic
+decides from the sequences themselves. Input may be plain, `.gz`, or `.bz2`.
+
+### Header detection
+
+The header kind is detected per record, so mixed files work:
+
+| FASTA header | Gene | Accession | Function | Product |
+|---|---|---|---|---|
+| `>syn_betalac synthetic class A beta-lactamase` | `syn_betalac` | — | — | `synthetic class A beta-lactamase` |
+| `>olddb~~~sul1~~~U12338.4:1-940~~~SULFONAMIDE sulfonamide resistance` | `sul1` | `U12338.4:1-940` | `SULFONAMIDE` | `sulfonamide resistance` |
+| `>gapit\|db=old\|gene=sul2\|acc=X\|func=streptomycin aminoglycoside` | `sul2` | `X` | `streptomycin` | `aminoglycoside` |
+
+Plain headers without any description text fall back to `--description TEXT`, then
+to the gene name. The `db` field of every record is always NAME (the database being
+built), and `source_id` keeps the original id token verbatim. Malformed `gapit|`
+headers fail the build with `HEADER_MALFORMED` (exit 4); structurally invalid FASTA
+fails with `INVALID_FASTA` (exit 5).
+
+### Merging metadata from a TSV
+
+`--tsv FILE` adds or overrides accession and function classes per gene. The rules:
+
+- The header row is mandatory and must contain a `gene` column; `accession` and
+  `function` are optional per file (absent columns are simply not merged), and extra
+  columns are ignored. A missing `gene` column fails with exit 5
+  `METADATA_MALFORMED`.
+- Rows are keyed by gene: the **first row wins** on duplicates, with a warning on
+  stderr (`--quiet` silences it).
+- The `function` column is `;`-separated for multiple classes, e.g.
+  `ampicillin;cephalosporin`.
+- Genes present only in the TSV produce a stderr warning and are skipped — the FASTA
+  is the truth for what exists.
+
+The example TSV used above, in full:
+
+```console
+$ cat my_meta.tsv
+gene	accession	function
+syn_betalac	SYN-0001	ampicillin;cephalosporin
+```
+
+### Rebuilding
+
+Like `db fetch`, an existing database is never overwritten silently:
+
+```console
+$ gapit db build tinyamr my_genes.fa --datadir ./db
+{"schema":"gapit.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database tinyamr (use --force)","context":{"db":"tinyamr"}}
+$ gapit db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --force
+gapit: generated /tmp/opencode/gapit-build-demo/db/tinyamr/sequences
+gapit: self-check passed for tinyamr
+gapit: BLAST index built (nucl)
+gapit: minimap2 index built
+{"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
+```
+
+Because `records.jsonl` is the editable truth, editing it (or the FASTA) and
+rebuilding with `--force` regenerates every downstream artifact.
+
+### The manual (abricate-style) path
+
+`db build` is the recommended route, but any abricate-format datadir also works
+as-is: point `--datadir` at a directory containing `<name>/sequences` (a nucleotide
+FASTA with `~~~` headers) and run `gapit setupdb` once to build the BLAST index. The
+mol-type heuristic from abricate picks `nucl` vs `prot`.
 
 End to end with a tiny three-gene database copied into a scratch datadir:
 
@@ -334,3 +425,7 @@ For reads screening (see [reads.md](./reads.md)), gapit reuses a native database
 Any mismatch falls back to reading the FASTA directly, which is slower but produces the
 same calls, so upgrading minimap2 never silently invalidates results. Legacy abricate
 datadirs carry no manifest, so they always take the FASTA path.
+
+A complete `db build` walkthrough with worked examples for every header format, protein
+databases, metadata TSVs, and a troubleshooting table lives in
+[Custom databases](./custom-db.md).
