@@ -96,10 +96,10 @@ def test_fetch_provider_runs_full_pipeline(
         "records.jsonl",
         "sequences",
         "sequences.nin",
-        "sequences.mmi",
         "gapit-manifest.json",
     ):
         assert (db_dir / name).is_file(), name
+    assert not (db_dir / "sequences.mmi").exists()
 
     assert manifest.name == SYN
     assert manifest.n_records == 3
@@ -159,7 +159,8 @@ def test_fetch_provider_force_rebuilds_existing_database(tmp_path: Path) -> None
     manifest = fetch_provider(syn_provider(url), db_dir, fetched_at=FETCHED_AT, force=True)
     assert manifest.n_records == 3
     assert read_manifest(db_dir / "gapit-manifest.json") == manifest
-    assert (db_dir / "sequences.mmi").is_file()
+    assert (db_dir / "sequences.nin").is_file()
+    assert not (db_dir / "sequences.mmi").exists()
 
 
 def test_fetch_provider_empty_transform_raises(tmp_path: Path) -> None:
@@ -203,13 +204,12 @@ def test_fetch_provider_missing_source_raises_download_failed(
     assert all(entry.is_file() for entry in db_dir.iterdir())
 
 
-def test_fetch_provider_prot_normalizes_to_x_and_skips_mmi(
+def test_fetch_provider_prot_normalizes_to_x(
     tmp_path: Path,
 ) -> None:
     """Given a prot provider whose sequences carry lowercase and non-A-Z
     characters, When fetched, Then sequences are uppercased with non-A-Z ->
-    X, a .pin index exists, no .mmi is created, and the manifest records
-    dbtype prot."""
+    X, a .pin index exists, and the manifest records dbtype prot."""
     url = write_source(tmp_path, PROT_FASTA)
     db_dir = tmp_path / SYN
     manifest = fetch_provider(syn_provider(url, dbtype="prot"), db_dir, fetched_at=FETCHED_AT)

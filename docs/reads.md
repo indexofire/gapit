@@ -1,8 +1,8 @@
-# Screening reads (FASTQ)
+# Screening reads and assemblies (FASTQ / FASTA)
 
-`gapit screen --r1/--r2` maps raw FASTQ reads against a gene database with minimap2 and calls
-gene presence from alignment breadth. abricate cannot screen raw reads at all; this mode is a
-gapit extension, so its defaults differ from the contig pipeline.
+`gapit screen --r1/--r2` maps raw FASTQ reads, or whole assembly FASTA files, against a gene
+database with minimap2 and calls gene presence from alignment breadth. abricate cannot screen
+reads at all; this mode is a gapit extension, so its defaults differ from the contig pipeline.
 
 Requires no BLAST indexing: minimap2 indexes the db `sequences` FASTA in memory. Databases:
 [./databases.md](./databases.md). Contig mode: [./screen.md](./screen.md).
@@ -10,32 +10,37 @@ Requires no BLAST indexing: minimap2 indexes the db `sequences` FASTA in memory.
 ## Invocation
 
 ```text
-gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME --read-type sr|map-ont|map-hifi
+gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map-ont|map-hifi]
 ```
 
-- `--r1` and `--r2` take comma-separated file lists, one entry per lane.
+- `--r1` takes FASTQ reads or a FASTA assembly (see below); comma-separated, one entry per lane.
 - Lane i pairs `r1[i]` with `r2[i]`, so the `--r2` count must equal the `--r1` count.
 - All lanes aggregate into one sample: per-gene metrics pool every lane's alignments, and a
   gene can reach the breadth threshold through the union of sub-threshold lanes.
 - Reads mode and positional contig files are mutually exclusive; `--r2` without `--r1` is a
-  usage error (exit 2). Gzipped FASTQ works.
+  usage error (exit 2). Gzipped input works.
+- **Input detection.** Each `--r1`/`--r2` file is detected from content at validation time:
+  the first non-whitespace byte `>` means FASTA, `@` means FASTQ (gzip-wrapped files are
+  peeked through the decompressor). Anything else is an input error, exit 5, code
+  `INVALID_READS_FORMAT`. Mixing FASTA and FASTQ within one `--r1` list, pairing FASTA with
+  `--r2`, or giving FASTA an explicit `sr`/`map-hifi` preset are usage errors (exit 2).
 
 ## Options
 
 Reads mode runs through the same `gapit screen` command; these are the flags that apply
 (transcribed from `gapit screen --help`, gapit 0.1.0). Contig-mode flags not listed here
-(`--minid`, `--mincov`, `--jobs`, `--fofn`, `--noheader`, `--nopath`, `--csv`) do not apply.
+(`--minid`, `--mincov`, `--jobs`, `--fofn`, `--noheader`, `--nopath`) do not apply.
 
 | Flag | Type | Default | Description |
 |---|---|---|---|
-| `--r1` | str | required | Comma-separated FASTQ R1 file(s), one per lane. |
+| `--r1` | str | required | Reads or assembly FASTA file(s), comma-separated, one per lane. |
 | `--r2` | str | none | Comma-separated mate FASTQ file(s); must match `--r1` count. |
-| `--read-type` | sr\|map-ont\|map-hifi | `sr` | minimap2 preset for reads mode. |
+| `--read-type` | sr\|map-ont\|map-hifi | `sr` for FASTQ, `map-ont` for FASTA | minimap2 preset; resolved from the detected input when omitted. |
 | `--min-breadth` | float | `90.0` | Minimum %breadth for presence. |
 | `--db` | str | `ncbi` | Database to screen against (datadir subdir). |
 | `--datadir` | path | `$GAPIT_DATADIR`, then `~/.local/share/gapit/db` | Database directory. |
 | `--threads` | int | `1` | minimap2 worker threads. |
-| `--quiet` | flag | off | Silence stderr diagnostics. |
+| `--quiet` | flag | off | Silence stderr diagnostics (including the assembly-FASTA note). |
 | `--debug` | flag | off | Verbose stderr diagnostics; echoes the minimap2 command line. |
 | `--format` | tsv\|csv\|json\|md | `json` | Output format. `tsv` and `csv` are rejected in reads mode. |
 
@@ -49,7 +54,11 @@ Reads mode runs through the same `gapit screen` command; these are the flags tha
 | Oxford Nanopore | `map-ont` |
 | PacBio HiFi | `map-hifi` |
 
-The default is `sr`; set the preset explicitly for long reads or mapping quality suffers.
+When `--read-type` is omitted, the preset is resolved from the detected input: `sr` for FASTQ
+(the historical default), `map-ont` for assembly FASTA, announced by one stderr note
+(`assembly FASTA detected; using map-ont`). An explicit preset that contradicts the input is a
+usage error: assembly FASTA requires `map-ont` (exit 2). Any explicit preset is accepted for
+FASTQ; set it for long reads or mapping quality suffers.
 
 ## Metrics
 
@@ -265,6 +274,150 @@ $ gapit screen --r1 tetx_full.fq --db tinyreads --format tsv; echo "exit=$?"
 exit=2
 ```
 
+## Screening assemblies (fast presence survey)
+
+The primary spelling is `gapit screen --aligner minimap2 assembly.fa`: the positional file is
+routed through the minimap2 engine, and every input must be FASTA content, gzipped or plain —
+a FASTQ file there is a usage error (exit 2). The `--r1 assembly.fa` spelling is equivalent.
+minimap2 takes FASTA queries natively, so gapit passes the file through exactly as it does for
+FASTQ; what changes is the preset: content detection forces `map-ont` (a contiguous 522 nt
+contig, for example, aligns to only ~14% of its gene under `sr` because short-read soft-clipping
+wrecks long-query alignments), and gapit says so on stderr. Each contig acts as one long read:
+`reads_mapped` counts contigs, `mean_depth` hovers around the covered fraction, and `present`
+still means `breadth_pct >= --min-breadth`. The output stays `gapit.reads/1`;
+`params.read_type` reports the resolved preset.
+
+Using the tinyreads fixture as a stand-in assembly (any multi-contig FASTA behaves the same):
+
+```console
+$ mkdir -p /tmp/gapit-demo/readdb
+$ cp -r tests/data/reads_db/tinyreads /tmp/gapit-demo/readdb/
+$ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
+$ cp tests/data/reads_db/tinyreads/sequences /tmp/gapit-demo/assembly.fa
+$ gapit screen --aligner minimap2 /tmp/gapit-demo/assembly.fa --db tinyreads
+assembly FASTA detected; using map-ont
+Screening reads: /tmp/gapit-demo/assembly.fa
+Detected 2 present genes in /tmp/gapit-demo/assembly.fa
+{
+  "schema": "gapit.reads/1",
+  "tool": {
+    "name": "gapit",
+    "version": "0.1.0"
+  },
+  "created_at": "2026-09-19T14:23:00Z",
+  "params": {
+    "db": "tinyreads",
+    "read_type": "map-ont",
+    "min_breadth": 90.0,
+    "threads": 1
+  },
+  "files": [
+    {
+      "reads": [
+        "/tmp/gapit-demo/assembly.fa"
+      ],
+      "genes": [
+        {
+          "gene": "tetX",
+          "database": "tinyreads",
+          "accession": "SYN-001",
+          "product": "extended resistance determinant tetX",
+          "resistance": "TETRACYCLINE",
+          "tlen": 522,
+          "breadth_pct": 97.89,
+          "mean_depth": 0.98,
+          "reads_mapped": 1,
+          "present": true
+        },
+        {
+          "gene": "sulY",
+          "database": "tinyreads",
+          "accession": "SYN-002",
+          "product": "partial coverage test determinant sulY",
+          "resistance": "SULFONAMIDE",
+          "tlen": 261,
+          "breadth_pct": 95.79,
+          "mean_depth": 0.96,
+          "reads_mapped": 1,
+          "present": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+(The `assembly FASTA detected`, `Screening reads:`, and `Detected ...` lines are stderr;
+`--quiet` silences the note and the chatter, leaving stdout byte-identical.)
+
+### The two-stage pattern: survey, then confirm
+
+Because the minimap2 stage skips BLAST indexing entirely, screening an assembly through the
+minimap2 engine is roughly an order of magnitude faster than the BLAST contig pipeline, at the
+cost of allele-level precision. That trade suggests a two-stage workflow over many samples:
+
+1. **Survey** every sample with minimap2 and a deliberately relaxed breadth floor.
+2. **Confirm** only the positives (or only the samples with any hit) with the regular contig
+   pipeline, which applies the identity and coverage floors at abricate parity.
+
+Real numbers, one K. pneumoniae RefSeq assembly (GCF_000240185.1, 5.3 Mb, `--db ncbi`,
+single-threaded, gapit 0.1.0):
+
+```console
+$ # Stage 1: survey, ~0.9 s
+$ gapit screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 50 --quiet
+{
+  "schema": "gapit.reads/1",
+  ...
+  "params": {
+    "db": "ncbi",
+    "read_type": "map-ont",
+    "min_breadth": 50.0,
+    "threads": 1
+  },
+  "files": [
+    {
+      "reads": ["kpneu_mgh78578.fna.gz"],
+      "genes": [
+        { "gene": "aph(3'')-Ib", "breadth_pct": 99.75, "present": true, ... },
+        { "gene": "dfrA12", "breadth_pct": 99.6, "present": true, ... },
+        { "gene": "tet(G)", "breadth_pct": 99.57, "present": true, ... },
+        { "gene": "blaKPC-2", "breadth_pct": 99.55, "present": true, ... },
+        ... 11 more present genes (floR2 dfrA50 blaCTX-M-14 rmtB1 aadA2 sul2 blaTEM-1 aph(6)-Id fosA6 blaSHV-155 aac(3)-IId) ...
+        { "gene": "sul1", "breadth_pct": 62.74, "present": true, ... },
+        { "gene": "tmexD3", "breadth_pct": 60.22, "present": true, ... },
+        { "gene": "tmexD2", "breadth_pct": 56.2, "present": true, ... }
+      ]
+    }
+  ]
+}
+$ # Stage 2: confirm the positives with the contig pipeline, ~13.6 s
+$ gapit screen kpneu_mgh78578.fna.gz --db ncbi --quiet
+#FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
+kpneu_mgh78578.fna.gz	NC_016838.1	31843	32718	-	blaCTX-M-14	1-876/876	===============	0/0	100.00	100.00	ncbi	NG_048929.1	extended-spectrum class A beta-lactamase CTX-M-14	CEPHALOSPORIN
+kpneu_mgh78578.fna.gz	NC_016838.1	108291	108766	-	dfrA50	2-477/477	===============	0/0	99.79	98.74	ncbi	NG_242637.1	trimethoprim-resistant dihydrofolate reductase DfrA50	TRIMETHOPRIM
+... 16 more rows: aac(3)-IId aadA2 aph(3'')-Ib aph(6)-Id blaKPC-2 blaSHV-158 blaTEM-1 dfrA12 floR2 fosA6 rmtB1 sul2 tet(G) ...
+```
+
+(`...` elides fields and rows; the survey JSON is trimmed to the genes discussed below.)
+
+On this genome the survey ran in 0.9 s versus 13.6 s for BLAST (about 17x), and 14 of 18
+confirmed genes appear in both lists. The differences are the point:
+
+- **Family-level, not allele-level, resolution.** The survey flagged the blaSHV locus as
+  `blaSHV-155`; BLAST confirms the locus but calls the allele `blaSHV-158`. minimap2's
+  primary-only assignment hands a contig shared between near-identical family members to one
+  of them, so treat survey gene names as family-level hints and let the confirm stage name
+  alleles.
+- **No identity floor.** Reads-mode presence is breadth-only. `sul1` (62.7% breadth) and the
+  `tmexD2`/`tmexD3` pair (56-60%) pass the relaxed 50% survey floor but are partial or
+  divergent loci that the confirm stage's 80/80 identity/coverage thresholds reject. A
+  relaxed survey floor trades precision for recall on purpose; the exact filter belongs to
+  stage 2.
+
+When you need exact alleles in one pass, use the contig pipeline directly; use the survey when
+you need gene-family answers from many assemblies quickly.
+
 ## Notes
 
 - **Primary alignments only.** Each read contributes at most one alignment per gene
@@ -277,4 +430,5 @@ exit=2
 - **Very short genes.** With the `sr` preset, soft-clipping at alignment ends caps achievable
   breadth; genes under about 100 nt may never reach 90%. Reads mode targets normal-length genes
   (hundreds of nt and up); lower `--min-breadth` for tiny dbs.
-- **Gzip input.** `.fq.gz` files work; the extension is detected the same way as contig mode.
+- **Gzip input.** `.gz` files work for FASTQ and FASTA alike; input detection peeks through the
+  gzip wrapper, and minimap2 decompresses natively.

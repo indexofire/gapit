@@ -2,8 +2,7 @@
 
 Upstream ``get_bacmet2`` (abricate-get_db 1.4.0) downloads
 ``BacMet2_EXP_database.fasta`` — a protein file, hence the set's one
-``dbtype="prot"`` provider (no ``.mmi`` is built; screening would use
-blastx). Headers look like::
+``dbtype="prot"`` provider (screening uses blastx). Headers look like::
 
     >BAC0098|ctpC|sp|P0A502|CTPC_MYCTU Probable manganese/zinc-exporting
 

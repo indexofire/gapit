@@ -12,7 +12,7 @@ first-class JSON and Markdown outputs with versioned schemas.
 | [Installation](./installation.md) | Prerequisites, pixi setup, verification, database bootstrap, shell completions |
 | [Quickstart](./quickstart.md) | A complete first session on the bundled test fixture, offline |
 | [Screening contigs](./screen.md) | `gapit screen` on FASTA/GBK/EMBL inputs: thresholds, filters, formats |
-| [Screening reads](./reads.md) | FASTQ mode through minimap2: `--r1`/`--r2`, presets, breadth-based presence |
+| [Screening reads](./reads.md) | FASTQ and assembly FASTA through minimap2: `--r1`/`--r2`, presets, breadth-based presence, two-stage survey |
 | [Summary](./summary.md) | `gapit summary`: gene presence/absence matrix across report tables |
 | [Databases](./databases.md) | Providers, `gapit db fetch/list/install`, datadirs, native `gapit/v1` format |
 | [Custom databases](./custom-db.md) | `gapit db build` walkthrough: any FASTA to a screenable database, worked examples |

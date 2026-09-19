@@ -1,12 +1,13 @@
-"""FASTQ read screening via minimap2 (SPEC.md §10 — gapit extension)."""
+"""FASTQ/FASTA read screening via minimap2 (SPEC.md §10 — gapit extension)."""
 
 import enum
+import gzip
 import shlex
 import subprocess
 import sys
 from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Protocol
 
 from pydantic import BaseModel, Field
 
@@ -17,6 +18,14 @@ from gapit.fasta import iter_fasta
 
 ReadType = Literal["sr", "map-ont", "map-hifi"]
 
+_GZIP_MAGIC = b"\x1f\x8b"
+
+
+class _ByteStream(Protocol):
+    """The byte-read surface shared by raw and gzip-decompressed handles."""
+
+    def read(self, size: int = -1, /) -> bytes: ...
+
 
 class ReadTypeEnum(enum.Enum):
     """CLI-facing read-type preset choices."""
@@ -24,6 +33,51 @@ class ReadTypeEnum(enum.Enum):
     sr = "sr"
     map_ont = "map-ont"
     map_hifi = "map-hifi"
+
+
+class ReadFileKind(enum.Enum):
+    """Input file kind detected from content (minimap2 takes FASTA and FASTQ
+    queries natively; gapit detects to resolve the preset)."""
+
+    fasta = "fasta"
+    fastq = "fastq"
+
+
+def _peek_read_kind(handle: _ByteStream, path: Path) -> ReadFileKind:
+    """First non-whitespace byte: '>' = FASTA, '@' = FASTQ; anything else (or
+    EOF) is a typed input error."""
+    while True:
+        byte = handle.read(1)
+        if not byte:
+            raise InputError(
+                f"reads file is empty: {path}",
+                code="INVALID_READS_FORMAT",
+                context={"file": str(path)},
+            )
+        if byte.isspace():
+            continue
+        if byte == b">":
+            return ReadFileKind.fasta
+        if byte == b"@":
+            return ReadFileKind.fastq
+        raise InputError(
+            f"reads file is neither FASTA nor FASTQ: {path}",
+            code="INVALID_READS_FORMAT",
+            context={"file": str(path)},
+        )
+
+
+def detect_read_kind(path: Path) -> ReadFileKind:
+    """Detect a --r1/--r2 file's kind from content. Gzip-wrapped files
+    (magic 1f 8b) are peeked through the decompressor: minimap2 reads them
+    natively, so detection must not reject them."""
+    with path.open("rb") as raw:
+        compressed = raw.read(2) == _GZIP_MAGIC
+    if compressed:
+        with gzip.open(path, "rb") as handle:
+            return _peek_read_kind(handle, path)
+    with path.open("rb") as handle:
+        return _peek_read_kind(handle, path)
 
 
 class ReadsParams(BaseModel, frozen=True):
@@ -156,50 +210,6 @@ def aggregate_coverage(
     return sorted(coverages, key=lambda entry: (-entry.breadth_pct, entry.gene))
 
 
-def _minimap2_version() -> str:
-    """First line of ``minimap2 --version`` stdout ('' when minimap2 cannot
-    run — the real invocation in run_minimap2 owns the typed error)."""
-    try:
-        result = subprocess.run(
-            ["minimap2", "--version"], check=False, capture_output=True, text=True
-        )
-    except FileNotFoundError:
-        return ""
-    if result.returncode != 0:
-        return ""
-    return result.stdout.splitlines()[0].strip() if result.stdout else ""
-
-
-def _mmi_index(database: Database) -> Path | None:
-    """The persisted ``sequences.mmi`` to screen against, or None to use the
-    FASTA.
-
-    Usable iff the ``.mmi`` exists, a readable ``gapit-manifest.json`` sits
-    beside it, and its ``minimap2_version`` matches the installed minimap2
-    (index formats are version-specific — that equality is the compatibility
-    gate; the sequences sha256 is deliberately NOT re-checked: the .mmi was
-    built from the same ``sequences`` in the same directory). Any miss —
-    missing file, unreadable/malformed manifest, empty or mismatched version
-    — falls back to the FASTA silently: a performance fallback, not an error;
-    genuine minimap2 failures surface in run_minimap2.
-    """
-    sequences = database.sequences_path
-    mmi = sequences.with_name(f"{sequences.name}.mmi")
-    if not mmi.is_file():
-        return None
-    # Imported here, not at module top: gapit.records -> formats.json ->
-    # gapit.reads would be a circular import at load time.
-    from gapit.records import read_manifest
-
-    try:
-        manifest = read_manifest(sequences.with_name("gapit-manifest.json"))
-    except InputError:
-        return None
-    if not manifest.minimap2_version or manifest.minimap2_version != _minimap2_version():
-        return None
-    return mmi
-
-
 def run_minimap2(
     lanes: list[tuple[Path, Path | None]],
     database: Database,
@@ -209,14 +219,16 @@ def run_minimap2(
     debug: bool = False,
 ) -> list[PafRecord]:
     """Run one minimap2 invocation per lane (PAF on stdout) and concatenate
-    the rows. The index argument is the persisted ``.mmi`` when usable (see
-    ``_mmi_index``), else the FASTA (minimap2 then loads it per lane —
-    negligible for the small dbs). minimap2's pairing semantics for >2 input
-    files are undocumented; per-lane runs (r1[i] alone or with its mate
-    r2[i]) are deterministic. With ``debug``, echo each argv to stderr
-    (abricate --debug parity)."""
-    mmi = _mmi_index(database)
-    index = database.sequences_path if mmi is None else mmi
+    the rows. The index argument is always the ``sequences`` FASTA — minimap2
+    indexes it in memory with the invocation preset's own parameters. A
+    persisted ``.mmi`` is deliberately rejected even when one sits beside the
+    FASTA: a default-built index overrides the ``-x`` preset's indexing
+    parameters (``-k, -w or -H overridden by prebuilt index``), which
+    misassigns close homologs and benchmarks slower than in-memory indexing
+    (2026-09-19: blaCTX-M/blaSHV allele divergence, +1.2 s on the ncbi db).
+    minimap2's pairing semantics for >2 input files are undocumented;
+    per-lane runs (r1[i] alone or with its mate r2[i]) are deterministic.
+    With ``debug``, echo each argv to stderr (abricate --debug parity)."""
     rows: list[PafRecord] = []
     for r1, r2 in lanes:
         argv = [
@@ -225,7 +237,7 @@ def run_minimap2(
             read_type,
             "-t",
             str(threads),
-            str(index),
+            str(database.sequences_path),
             str(r1),
         ]
         if r2 is not None:

@@ -54,20 +54,22 @@ def test_golden_tsv_multi_file_nopath(datadir: Path) -> None:
 
 
 def test_golden_csv_multi_file_nopath(datadir: Path) -> None:
-    """Given the same run with --csv, When screened, Then stdout is
+    """Given the same run with --format csv, When screened, Then stdout is
     byte-identical to the committed golden CSV."""
-    result = screen(datadir, "--csv", "--nopath", *[str(CONTIGS / name) for name in MULTI_FILES])
+    result = screen(
+        datadir, "--format", "csv", "--nopath", *[str(CONTIGS / name) for name in MULTI_FILES]
+    )
     assert result.exit_code == 0
     assert result.stdout == (GOLDEN / "tinyamr_multi_nopath.csv").read_text(encoding="utf-8")
 
 
-def test_format_csv_and_csv_flag_coexist(datadir: Path) -> None:
-    """Given both --format csv and --csv, When screened, Then csv wins with no
-    error and output matches the --csv-only run."""
-    both = screen(datadir, "--format", "csv", "--csv", "--nopath", str(CONTIGS / "full.fa"))
-    only = screen(datadir, "--csv", "--nopath", str(CONTIGS / "full.fa"))
-    assert both.exit_code == 0
-    assert both.stdout == only.stdout
+def test_csv_flag_is_gone(datadir: Path) -> None:
+    """Given the removed --csv flag, When screened, Then it is rejected as an
+    unknown option with exit 2 and no data on stdout (lock-in: --format csv is
+    the only spelling)."""
+    result = screen(datadir, "--csv", "--nopath", str(CONTIGS / "full.fa"))
+    assert result.exit_code == 2
+    assert result.stdout == ""
 
 
 def test_noheader_suppresses_header_line(datadir: Path) -> None:

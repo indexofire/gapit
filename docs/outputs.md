@@ -182,11 +182,11 @@ Each hit mirrors the TSV columns one to one:
 | `product` | string | Product description |
 | `resistance` | string | Resistance or functional category (frozen name, kept for TSV parity) |
 
-### gapit.reads/1 (FASTQ screening)
+### gapit.reads/1 (reads and assembly screening)
 
-Reads mode reports per-gene coverage across the read set instead of per-hit rows. Gene
-entries sort by `breadth_pct` descending; genes with zero mapped reads are omitted. Fields
-from `gapit schema reads`:
+Reads mode reports per-gene coverage across the read set (or assembly; `--r1` accepts FASTQ and
+FASTA) instead of per-hit rows. Gene entries sort by `breadth_pct` descending; genes with zero
+mapped reads are omitted. Fields from `gapit schema reads`:
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -195,11 +195,11 @@ from `gapit schema reads`:
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
 | `params` | object | Read-screening parameters in effect |
 | `params.db` | string | Database name |
-| `params.read_type` | string | minimap2 preset: `sr`, `map-ont`, or `map-hifi` |
+| `params.read_type` | string | minimap2 preset in effect: `sr`, `map-ont`, or `map-hifi` (resolved from the detected input) |
 | `params.min_breadth` | number | Presence threshold, default 90.0 |
 | `params.threads` | integer | minimap2 thread count |
 | `files` | array | One entry per read set |
-| `files[].reads` | array of string | Input FASTQ paths (all lanes) |
+| `files[].reads` | array of string | Input read/assembly paths (all lanes) |
 | `files[].genes` | array | Per-gene presence calls |
 
 Each gene entry:

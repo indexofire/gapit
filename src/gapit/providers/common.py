@@ -8,7 +8,7 @@ workdir under ``db_dir``, transform, normalize sequences and function classes
 (upstream load_fasta semantics), dedupe by exact normalized sequence
 (first wins), sort by gene, persist ``records.jsonl``, then delegate to
 :func:`gapit.dbbuild.build_database` for the ``sequences`` FASTA, the BLAST
-and minimap2 indexes, and the manifest (written last, certifying the build).
+index, and the manifest (written last, certifying the build).
 
 Upstream's ``is_full_gene`` is deliberately NOT ported: its map result is
 discarded — a no-op.

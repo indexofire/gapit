@@ -11,6 +11,8 @@ from pydantic import TypeAdapter
 from typer.testing import CliRunner
 
 from gapit.cli import app
+from gapit.errors import ErrorEnvelope
+from gapit.fasta import iter_fasta
 from gapit.formats.json import ReadsDocument, render_reads_json
 from gapit.formats.md import render_reads_markdown
 from gapit.reads import ReadsParams, screen_reads
@@ -292,3 +294,210 @@ def test_golden_reads_md(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
     )
     output = render_reads_markdown([report], PARAMS, now=PINNED_NOW)
     assert output == (GOLDEN / "reads_tinyamr.md").read_text(encoding="utf-8")
+
+
+def _tetx_assembly(tmp_path: Path) -> Path:
+    """A single-contig assembly FASTA whose record IS the 522 nt tetX gene
+    (the tinyreads sequences file is itself a FASTA of the genes)."""
+    tetx = next(
+        record
+        for record in iter_fasta(READS_DB_DIR / "tinyreads" / "sequences")
+        if record.id.startswith("tinyreads~~~tetX")
+    )
+    assembly = tmp_path / "assembly.fa"
+    assembly.write_text(f">contig1\n{tetx.sequence}\n", encoding="utf-8")
+    return assembly
+
+
+def test_fasta_assembly_screens_with_map_ont(datadir: Path, tmp_path: Path) -> None:
+    """Given --r1 pointing at an assembly FASTA (the tetX gene as a contig)
+    with no --read-type, When screened, Then minimap2 runs with -x map-ont,
+    gapit.reads/1 reports params.read_type map-ont with the gene present, and
+    the detection note lands on stderr only."""
+    assembly = _tetx_assembly(tmp_path)
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            "--r1",
+            str(assembly),
+            "--db",
+            "tinyreads",
+            "--datadir",
+            str(datadir),
+            "--debug",
+        ],
+    )
+    assert result.exit_code == 0
+    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gapit: run:")]
+    assert run_lines and run_lines[0].startswith("gapit: run: minimap2 -x map-ont ")
+    document = reads_adapter.validate_json(result.stdout)
+    assert document.schema_name == "gapit.reads/1"
+    assert document.params.read_type == "map-ont"
+    (entry,) = document.files[0].genes
+    assert entry.gene == "tetX"
+    assert entry.present is True
+    assert entry.breadth_pct >= 95.0
+    assert entry.reads_mapped == 1
+    assert "assembly FASTA detected; using map-ont" in result.stderr
+    assert "assembly FASTA" not in result.stdout
+
+
+def test_fasta_assembly_note_suppressed_by_quiet(datadir: Path, tmp_path: Path) -> None:
+    """Given the same assembly run with and without --quiet, When compared,
+    Then the detection note is stderr-only and vanishes under --quiet while
+    stdout stays byte-identical."""
+    assembly = _tetx_assembly(tmp_path)
+    args = ["screen", "--r1", str(assembly), "--db", "tinyreads", "--datadir", str(datadir)]
+    plain = runner.invoke(app, args)
+    quiet = runner.invoke(app, [*args, "--quiet"])
+    assert plain.exit_code == 0
+    assert quiet.exit_code == 0
+    assert "assembly FASTA detected; using map-ont" in plain.stderr
+    assert "assembly FASTA detected" not in quiet.stderr
+    assert quiet.stdout == plain.stdout
+
+
+def test_fasta_assembly_explicit_map_ont_is_silent(datadir: Path, tmp_path: Path) -> None:
+    """Given --read-type map-ont explicit on an assembly FASTA, When run,
+    Then it succeeds with no detection note (the user already chose)."""
+    assembly = _tetx_assembly(tmp_path)
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            "--r1",
+            str(assembly),
+            "--db",
+            "tinyreads",
+            "--datadir",
+            str(datadir),
+            "--read-type",
+            "map-ont",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "assembly FASTA detected" not in result.stderr
+    document = reads_adapter.validate_json(result.stdout)
+    assert document.params.read_type == "map-ont"
+
+
+def test_fasta_assembly_explicit_sr_exits_2(datadir: Path, tmp_path: Path) -> None:
+    """Given an assembly FASTA with explicit --read-type sr, When run, Then
+    usage error exit 2 with the frozen message."""
+    assembly = _tetx_assembly(tmp_path)
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            "--r1",
+            str(assembly),
+            "--db",
+            "tinyreads",
+            "--datadir",
+            str(datadir),
+            "--read-type",
+            "sr",
+        ],
+    )
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == "assembly FASTA requires map-ont"
+
+
+def test_fasta_assembly_explicit_map_hifi_exits_2(datadir: Path, tmp_path: Path) -> None:
+    """Given an assembly FASTA with explicit --read-type map-hifi, When run,
+    Then usage error exit 2 (only map-ont is valid for assemblies)."""
+    assembly = _tetx_assembly(tmp_path)
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            "--r1",
+            str(assembly),
+            "--db",
+            "tinyreads",
+            "--datadir",
+            str(datadir),
+            "--read-type",
+            "map-hifi",
+        ],
+    )
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == "assembly FASTA requires map-ont"
+
+
+def test_mixed_fasta_and_fastq_r1_exits_2(datadir: Path, tmp_path: Path) -> None:
+    """Given --r1 listing one FASTA and one FASTQ, When run, Then usage error
+    exit 2 before any mapping happens."""
+    assembly = _tetx_assembly(tmp_path)
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            "--r1",
+            f"{assembly},{READS / 'tetx_full.fq'}",
+            "--db",
+            "tinyreads",
+            "--datadir",
+            str(datadir),
+        ],
+    )
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == "mixed FASTA and FASTQ inputs"
+
+
+def test_fasta_r1_with_r2_exits_2(datadir: Path, tmp_path: Path) -> None:
+    """Given a FASTA --r1 together with --r2, When run, Then usage error exit
+    2 (paired-end is FASTQ-only)."""
+    assembly = _tetx_assembly(tmp_path)
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            "--r1",
+            str(assembly),
+            "--r2",
+            str(READS / "tetx_R2.fq"),
+            "--db",
+            "tinyreads",
+            "--datadir",
+            str(datadir),
+        ],
+    )
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == "paired-end requires FASTQ"
+
+
+def test_garbage_reads_file_exits_5(datadir: Path, tmp_path: Path) -> None:
+    """Given a --r1 file whose first byte is neither '>' nor '@', When run,
+    Then input error exit 5 with the typed code and file context."""
+    garbage = tmp_path / "garbage.txt"
+    garbage.write_text("Nonsense, not sequencing data\n", encoding="utf-8")
+    result = runner.invoke(
+        app,
+        ["screen", "--r1", str(garbage), "--db", "tinyreads", "--datadir", str(datadir)],
+    )
+    assert result.exit_code == 5
+    error = TypeAdapter(ErrorEnvelope).validate_json(result.stderr.splitlines()[-1])
+    assert error.code == "INVALID_READS_FORMAT"
+    assert error.context["file"] == str(garbage)
+
+
+def test_fastq_default_preset_stays_sr(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given a FASTQ --r1 with no --read-type (regression), When run, Then
+    params.read_type stays sr."""
+    monkeypatch.chdir(READS)
+    result = runner.invoke(
+        app, ["screen", "--r1", "tetx_full.fq", "--db", "tinyreads", "--datadir", str(datadir)]
+    )
+    assert result.exit_code == 0
+    document = reads_adapter.validate_json(result.stdout)
+    assert document.params.read_type == "sr"

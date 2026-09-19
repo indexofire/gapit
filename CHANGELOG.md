@@ -45,6 +45,10 @@ been released yet; the package version stays 0.1.0.
   database from plain, abricate `~~~`, or `gapit|` FASTA (auto-detected), with optional
   `--tsv` metadata (accession, function classes) and `--dbtype` override; guide with worked
   examples in `docs/custom-db.md` (2026-09-19).
+- `--aligner blastn|minimap2` engine selector on `gapit screen`: defaults follow the input
+  (blastn for contig files, minimap2 for `--r1`/`--r2` reads); `--aligner minimap2` screens
+  positional assembly FASTA through the minimap2 engine, `--aligner blastn` with `--r1`/`--r2`
+  is a usage error (2026-09-19).
 
 ### Changed
 
@@ -54,6 +58,11 @@ been released yet; the package version stays 0.1.0.
   abricate (accepted trade-off).
 - A bare `gapit db fetch` installs the bundled default set (card, vfdb) instead of
   downloading; `--from-source` restores the upstream fetch path.
+
+### Removed
+
+- `--csv` flag on `gapit screen`; use `--format csv` instead (breaking: the flag is now
+  rejected as an unknown option, exit 2) (2026-09-19).
 
 ### Fixed
 

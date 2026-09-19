@@ -1,7 +1,7 @@
 """The custom-database build path: `gapit db build` (from cmd_db.py).
 
 Turns a user-supplied FASTA into a fully built gapit-native database via the
-existing pipeline (records.jsonl -> sequences + BLAST index + .mmi + manifest,
+existing pipeline (records.jsonl -> sequences + BLAST index + manifest,
 written last). This module is orchestration plus a metadata merge only — the
 building blocks live in records/dbbuild/fasta/dbcodec/db (SPEC.md §11 covers
 the build pipeline itself).

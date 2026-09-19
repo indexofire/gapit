@@ -1,7 +1,7 @@
 """Tests for the bacmet2 provider (Wave B11) — transform only, offline.
 
 Upstream ``BacMet2_EXP_database.fasta`` is a PROTEIN file — the one
-prot-dbtype provider (no ``.mmi``; screening would use blastx) — simulated
+prot-dbtype provider (screening uses blastx) — simulated
 by a committed plain fixture: no network, no fetch_provider, no build (the
 B0 pipeline is already covered by test_providers_common.py).
 """

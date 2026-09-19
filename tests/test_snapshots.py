@@ -143,8 +143,9 @@ def test_snapshot_install_matches_records_direct_build(
     assert manifest.upstream_version == "syn-1.0"
     assert manifest.fetched_at == FRESH_AT
     assert manifest.n_records == 2
-    for name in ("sequences.nin", "sequences.mmi", "gapit-manifest.json"):
+    for name in ("sequences.nin", "gapit-manifest.json"):
         assert (installed / name).is_file(), name
+    assert not (installed / "sequences.mmi").exists()
 
     captured = capsys.readouterr()
     assert captured.out == ""  # stdout purity

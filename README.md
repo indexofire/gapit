@@ -13,8 +13,9 @@ byte-compatible TSV plus first-class JSON and Markdown.
   `gapit.reads/1`, `gapit.summary/1`), self-describing via `gapit schema`, typed JSON error
   envelopes on stderr, documented exit codes. An agent can discover the whole contract
   without reading docs.
-- **Reads, not just contigs.** `gapit screen --r1/--r2` screens FASTQ through minimap2.
-  abricate cannot screen raw reads.
+- **Reads, not just contigs.** `gapit screen --r1/--r2` screens FASTQ through minimap2, and
+  `--r1` accepts assembly FASTA directly (content-detected, `map-ont` forced) for a fast
+  presence survey. abricate cannot screen raw reads.
 
 ## Install
 

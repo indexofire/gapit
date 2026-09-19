@@ -23,14 +23,14 @@ you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 | `--jobs` | int | `1` | Screen N input files concurrently. Output order is always input order. |
 | `--fofn` | path | none | File of filenames; replaces the positional FILEs. |
 | `--quiet` | flag | off | Silence stderr diagnostics. |
-| `--csv` | flag | off | Compat alias for `--format csv`. |
 | `--noheader` | flag | off | Suppress the `#FILE ...` header row. |
 | `--nopath` | flag | off | Basename the FILE column. |
 | `--debug` | flag | off | Verbose stderr diagnostics; echoes each external command line. |
 | `--format` | tsv\|csv\|json\|md | `tsv` | Output format (reads mode defaults to json). |
-| `--r1` | str | none | *Reads mode.* Comma-separated FASTQ R1 file(s), one per lane. |
+| `--aligner` | blastn\|minimap2 | input-based | Alignment engine (default: blastn for contig files, minimap2 for `--r1`/`--r2` reads). `--aligner minimap2` routes positional FASTA assemblies through the minimap2 engine (FASTA content required; see [./reads.md](./reads.md)). |
+| `--r1` | str | none | *Reads mode.* Reads or assembly FASTA file(s), comma-separated, one per lane. |
 | `--r2` | str | none | *Reads mode.* Comma-separated mate FASTQ file(s); must match `--r1` count. |
-| `--read-type` | sr\|map-ont\|map-hifi | `sr` | *Reads mode.* minimap2 preset. |
+| `--read-type` | sr\|map-ont\|map-hifi | `sr` for FASTQ, `map-ont` for FASTA | *Reads mode.* minimap2 preset; resolved from the detected input when omitted. |
 | `--min-breadth` | float | `90.0` | *Reads mode.* Minimum %breadth for presence. |
 
 \* Positional FILEs or `--fofn`, or reads mode via `--r1`. Positional files and `--r1`/`--r2`

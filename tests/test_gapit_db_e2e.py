@@ -2,13 +2,12 @@
 path.
 
 Builds a tiny database from synthetic records via dbbuild (records.jsonl ->
-sequences + BLAST index + .mmi + manifest, written last), then screens a
+sequences + BLAST index + manifest, written last), then screens a
 synthetic contig (contig mode, --format json) and synthetic 100 bp reads
-(reads mode, default json — the run goes through the persisted .mmi, whose
-manifest certifies the same minimap2 as the installed one). Uses the pixi
-env's real makeblastdb/blastn/minimap2, same pattern as
-test_screen_integration.py and test_dbbuild.py; everything is synthetic and
-local to tmp_path, no network.
+(reads mode, default json — minimap2 indexes the sequences FASTA in memory;
+no .mmi is built or consulted). Uses the pixi env's real
+makeblastdb/blastn/minimap2, same pattern as test_screen_integration.py and
+test_dbbuild.py; everything is synthetic and local to tmp_path, no network.
 """
 
 import random
@@ -66,7 +65,8 @@ reads_adapter = TypeAdapter(ReadsDocument)
 
 @pytest.fixture()
 def datadir(tmp_path: Path) -> Path:
-    """A fully built gapit/v1 datadir: all four artifacts, manifest last."""
+    """A fully built gapit/v1 datadir: sequences, BLAST index, and manifest
+    (written last)."""
     db_dir = tmp_path / "datadir" / DB
     db_dir.mkdir(parents=True)
     write_records(RECORDS, db_dir / "records.jsonl")
@@ -117,12 +117,12 @@ def test_screen_json_decodes_native_headers(datadir: Path, tmp_path: Path) -> No
     assert hit.coverage_pct == 100.0
 
 
-def test_reads_screen_uses_persisted_mmi(datadir: Path, tmp_path: Path) -> None:
-    """Given the built db — its sequences.mmi is certified by a manifest that
-    matches the installed minimap2, so reads mode screens against the .mmi —
-    and reads tiling the demo gene, When reads-screened, Then exactly that
-    gene decodes and is present."""
-    assert (datadir / DB / "sequences.mmi").is_file()
+def test_reads_screen_uses_sequences_fasta(datadir: Path, tmp_path: Path) -> None:
+    """Given the built db — no .mmi exists; reads mode indexes the sequences
+    FASTA in memory with the preset's own parameters — and reads tiling the
+    demo gene, When reads-screened, Then exactly that gene decodes and is
+    present."""
+    assert not (datadir / DB / "sequences.mmi").exists()
     result = runner.invoke(
         app,
         ["screen", "--r1", str(_tiled_reads(tmp_path)), "--db", DB, "--datadir", str(datadir)],
@@ -138,19 +138,3 @@ def test_reads_screen_uses_persisted_mmi(datadir: Path, tmp_path: Path) -> None:
     assert entry.product == "demo beta-lactamase, variant A"
     assert entry.present is True
     assert entry.reads_mapped == 3
-
-
-def test_reads_screen_falls_back_to_fasta_without_manifest(datadir: Path, tmp_path: Path) -> None:
-    """Given the same db with its manifest deleted (mmi no longer verifiable),
-    When reads-screened, Then screening still succeeds against the FASTA —
-    a silent performance fallback, not an error — with the same decoded call."""
-    (datadir / DB / "gapit-manifest.json").unlink()
-    result = runner.invoke(
-        app,
-        ["screen", "--r1", str(_tiled_reads(tmp_path)), "--db", DB, "--datadir", str(datadir)],
-    )
-    assert result.exit_code == 0
-    document = reads_adapter.validate_json(result.stdout)
-    (entry,) = document.files[0].genes
-    assert entry.gene == "de|mo%A=1"
-    assert entry.present is True

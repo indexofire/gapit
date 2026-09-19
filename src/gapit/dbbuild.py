@@ -1,17 +1,17 @@
 """Wave A3 build pipeline: records.jsonl -> a fully built gapit-native database.
 
 ``build_database`` turns a directory's truth source (``records.jsonl``) into
-the four artifacts consumers rely on — the ``sequences`` FASTA projection, its
-BLAST index, ``sequences.mmi`` (nucl only), and the ``gapit-manifest.json``
-provenance sidecar written LAST (it certifies the artifacts). Every step is
-deterministic, atomic where it matters, and self-verifying: the generated
-headers must decode back through :mod:`gapit.dbcodec` before anything is
-indexed.
+the three artifacts consumers rely on — the ``sequences`` FASTA projection,
+its BLAST index, and the ``gapit-manifest.json`` provenance sidecar written
+LAST (it certifies the artifacts). Every step is deterministic, atomic where
+it matters, and self-verifying: the generated headers must decode back
+through :mod:`gapit.dbcodec` before anything is indexed. No minimap2 index
+is persisted: reads mode indexes the ``sequences`` FASTA in memory only
+(SPEC.md §10).
 """
 
 import hashlib
 import os
-import shlex
 import subprocess
 import sys
 from collections.abc import Sequence
@@ -164,21 +164,6 @@ def _sha256(path: Path) -> str:
     return hasher.hexdigest()
 
 
-def _build_mmi(sequences_path: Path, mmi_path: Path, *, debug: bool = False) -> None:
-    """Index ``sequences`` with ``minimap2 -d``; any failure raises
-    ``MMI_BUILD_FAILED`` with the target path in context."""
-    argv = ["minimap2", "-d", str(mmi_path), str(sequences_path)]
-    if debug:
-        print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
-    result = _run(argv)
-    if result.returncode != 0:
-        raise DatabaseError(
-            f"minimap2 index build failed for {sequences_path}: {result.stderr.strip()}",
-            code="MMI_BUILD_FAILED",
-            context={"mmi": str(mmi_path)},
-        )
-
-
 def _version_line(argv: list[str]) -> str:
     """First line of a version command's stdout ('' when it printed nothing)."""
     stdout = _run(argv).stdout
@@ -212,11 +197,12 @@ def build_database(
     3. streaming SHA256 of ``sequences``
     4. ``makeblastdb`` with the EXPLICIT ``dbtype`` — the manifest declares
        the type, so the mol_type heuristic is skipped
-    5. nucl only: ``minimap2 -d`` -> ``db_dir/sequences.mmi``. minimap2 is
-       nucleotide-only — all 12 v1 providers are nucl — so prot builds skip
-       the ``.mmi`` silently, without error
-    6. count records and capture ``blastn -version`` / ``minimap2 --version``
-    7. write ``db_dir/gapit-manifest.json`` and return the Manifest
+    5. count records and capture ``blastn -version`` / ``minimap2 --version``
+    6. write ``db_dir/gapit-manifest.json`` and return the Manifest
+
+    No ``.mmi`` is built for either dbtype: reads mode indexes the FASTA in
+    memory with the invocation preset's own parameters (minimap2 is
+    nucleotide-only, which is why prot databases never participated anyway).
     """
     records_path = db_dir / "records.jsonl"
     sequences_path = db_dir / "sequences"
@@ -227,15 +213,6 @@ def build_database(
     sha256 = _sha256(sequences_path)
     make_blast_db(sequences_path, name, dbtype=dbtype, debug=debug)
     _note(quiet, f"BLAST index built ({dbtype})")
-    match dbtype:
-        case "nucl":
-            _build_mmi(
-                sequences_path, sequences_path.parent / f"{sequences_path.name}.mmi", debug=debug
-            )
-            _note(quiet, "minimap2 index built")
-        case "prot":
-            # minimap2 is nucleotide-only; the .mmi is intentionally skipped.
-            pass
     manifest = Manifest(
         name=name,
         source_urls=tuple(source_urls),
@@ -245,6 +222,8 @@ def build_database(
         dbtype=dbtype,
         upstream_version=upstream_version,
         makeblastdb_version=_version_line(["blastn", "-version"]),
+        # Kept although no .mmi is built: environment provenance for the
+        # machine that produced the artifacts (spec'd in gapit.manifest/1).
         minimap2_version=_version_line(["minimap2", "--version"]),
     )
     write_manifest(manifest, db_dir / "gapit-manifest.json")

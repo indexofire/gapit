@@ -10,7 +10,7 @@ the upstream fetch; a future DB is bundled by dropping a ``<name>.tar.gz``
 into the snapshots dir and setting ``snapshot=`` on its Provider (one line).
 
 ``records.jsonl`` (post-normalize records) is what gets snapshotted — NOT
-the BLAST/minimap2 indexes: index bytes are BLAST-version-sensitive while a
+the BLAST index: index bytes are BLAST-version-sensitive while a
 local rebuild from records is deterministic and fast. The archived manifest
 contributes only ``upstream_version``; fetched_at, sha256 and tool versions
 are rebuilt locally by :func:`gapit.dbbuild.build_database`.

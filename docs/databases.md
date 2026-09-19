@@ -116,8 +116,8 @@ Protein databases (`bacmet2`) screen through `blastx`; nucleotide ones through `
 
 Bare `gapit db fetch` (no name) installs the default set, `card` then `vfdb`, from the
 snapshots bundled in the package. Nothing touches the network: the snapshot archive carries
-`records.jsonl` plus the manifest, and gapit rebuilds `sequences`, the BLAST index, and the
-minimap2 index locally. That rebuild is deterministic and fast, and it matches the BLAST
+`records.jsonl` plus the manifest, and gapit rebuilds `sequences` and the BLAST index
+locally. That rebuild is deterministic and fast, and it matches the BLAST
 version actually installed on your machine.
 
 ### Fetching a named provider
@@ -131,7 +131,6 @@ gapit: installed card from bundled snapshot card.tar.gz
 gapit: generated /tmp/opencode/gapit-dbs-demo/card/sequences
 gapit: self-check passed for card
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/opencode/gapit-dbs-demo/card"}
 ```
 
@@ -203,7 +202,6 @@ $ gapit db install src/gapit/data/snapshots/card.tar.gz \
   records.jsonl         truth source: one Record JSON object per line
   sequences             generated FASTA projection (gapit/v1 tagged headers)
   sequences.n*|p*       BLAST index built from sequences
-  sequences.mmi         minimap2 index (nucleotide databases only)
   gapit-manifest.json   provenance sidecar, written last
 ```
 
@@ -267,7 +265,7 @@ versions. A real one, from the plasmidfinder database:
 | `upstream_version` | string | Upstream release label when the source has one |
 | `tool` | object | `{name, version}` of the gapit that built the database |
 | `makeblastdb_version` | string | BLAST+ version that built the index |
-| `minimap2_version` | string | minimap2 version that built `sequences.mmi` |
+| `minimap2_version` | string | minimap2 version in the build environment (reads mode indexes in memory; no `.mmi` is built) |
 
 `records.jsonl` and the manifest are file contracts. They never appear on stdout and are
 not registered with `gapit schema`.
@@ -307,7 +305,7 @@ through to the TSV `RESISTANCE` column and the JSON `resistance` field:
 
 `gapit db build NAME FASTA` turns any FASTA of reference genes into a fully built
 gapit-native database — `records.jsonl`, the `sequences` projection with `gapit/v1`
-headers, the BLAST index, the minimap2 index, and the manifest — in one command.
+headers, the BLAST index, and the manifest — in one command.
 Here is a two-gene synthetic FASTA plus a metadata TSV (fields below), run against a
 scratch datadir:
 
@@ -316,7 +314,6 @@ $ gapit db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv
 gapit: generated /tmp/opencode/gapit-build-demo/db/tinyamr/sequences
 gapit: self-check passed for tinyamr
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
 ```
 
@@ -332,9 +329,9 @@ contig.fa	contig1	1	240	+	syn_betalac	1-240/240	===============	0/0	100.00	100.0
 ```
 
 The `ACCESSION` and `RESISTANCE` values came from the TSV merge; the `PRODUCT` from
-the FASTA description. `--dbtype nucl|prot` forces the molecule type (protein
-databases skip the minimap2 index); by default the abricate mol-type heuristic
-decides from the sequences themselves. Input may be plain, `.gz`, or `.bz2`.
+the FASTA description. `--dbtype nucl|prot` forces the molecule type; by default the
+abricate mol-type heuristic decides from the sequences themselves. Input may be plain,
+`.gz`, or `.bz2`.
 
 ### Header detection
 
@@ -386,7 +383,6 @@ $ gapit db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --force
 gapit: generated /tmp/opencode/gapit-build-demo/db/tinyamr/sequences
 gapit: self-check passed for tinyamr
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
 ```
 
@@ -418,13 +414,15 @@ $ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr /tmp/opencod
 `gapit setupdb` indexes every subdirectory with a readable `sequences` file and exits 0
 when all of them have `sequences.nin` or `sequences.pin`.
 
-### The minimap2 index and legacy datadirs
+### Reads mode and legacy datadirs
 
-For reads screening (see [reads.md](./reads.md)), gapit reuses a native database's
-`sequences.mmi` only when the manifest's `minimap2_version` matches the installed minimap2.
-Any mismatch falls back to reading the FASTA directly, which is slower but produces the
-same calls, so upgrading minimap2 never silently invalidates results. Legacy abricate
-datadirs carry no manifest, so they always take the FASTA path.
+For reads screening (see [reads.md](./reads.md)), minimap2 always indexes the `sequences`
+FASTA in memory; no `.mmi` is built, and one left in a datadir by an older gapit is never
+consulted. Persisted indexes were tried and rejected: a default-built `.mmi` overrides the
+`-x sr` preset's indexing parameters (minimap2 warns "-k, -w or -H overridden by prebuilt
+index"), which misassigns close homologs (CTX-M/SHV allele divergence in the deciding
+benchmark) and ran slower than in-memory indexing at current database scale. Legacy
+abricate datadirs take the same in-memory path.
 
 A complete `db build` walkthrough with worked examples for every header format, protein
 databases, metadata TSVs, and a troubleshooting table lives in

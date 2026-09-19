@@ -165,8 +165,8 @@ def test_db_fetch_creates_missing_nested_datadir(
 def test_db_fetch_debug_echoes_index_argv(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Given a registry provider backed by a file:// fasta, When
     `db fetch NAME --debug`, Then exit 0 with the SAME one-line stdout
-    receipt as a plain fetch, and the makeblastdb and `minimap2 -d` argv
-    lines are echoed to stderr (`gapit: run:`)."""
+    receipt as a plain fetch, the makeblastdb argv line is echoed to stderr
+    (`gapit: run:`), and no `minimap2 -d` line appears (no .mmi is built)."""
     datadir = patch_registry(tmp_path, monkeypatch)
     plain = fetch(SYN, "--datadir", str(datadir), "--force")
     assert plain.exit_code == 0
@@ -176,7 +176,7 @@ def test_db_fetch_debug_echoes_index_argv(tmp_path: Path, monkeypatch: pytest.Mo
     assert result.stdout == plain.stdout
     run_lines = [line for line in result.stderr.splitlines() if line.startswith("gapit: run:")]
     assert any(line.startswith("gapit: run: makeblastdb -in ") for line in run_lines)
-    assert any("minimap2 -d " in line for line in run_lines)
+    assert not any("minimap2 -d " in line for line in run_lines)
 
 
 def test_db_list_text_shows_installed_state(

@@ -19,7 +19,7 @@
 | `--threads` | int | 1 | passed to `-num_threads` |
 | `--fofn` | path | — | file-of-filenames; **replaces** positional args |
 | `--quiet` | flag | off | silences stderr only |
-| `--csv` | flag | off | field separator `,` instead of tab |
+| `--csv` | flag | off | field separator `,` instead of tab (abricate flag; gapit: `--format csv` only — the flag itself is not accepted) |
 | `--noheader` | flag | off | suppress `#FILE ...` header row |
 | `--nopath` | flag | off | basename the FILE column |
 | `--summary` | flag | off | summary-matrix mode (§7), args are report files |
@@ -208,20 +208,42 @@ abricate is GPL-2.0. gapit is a behavioral reimplementation (no Perl code copied
 handling and redistribution unambiguous, gapit is licensed GPL-2.0-compatible. Bundled DB content
 retains its original upstream licenses.
 
-## 10. Read screening (FASTQ) — gapit extension
+## 10. Read and assembly screening (FASTQ/FASTA) — gapit extension
 
-abricate cannot screen raw reads; gapit can. Design decisions (2026-09-15):
+abricate cannot screen raw reads; gapit can. Design decisions (2026-09-15; input detection and
+preset resolution added 2026-09-19):
 
 - **Backend: minimap2 only.** `-x sr` (short/paired reads), `-x map-ont`, `-x map-hifi`.
   bwa/bowtie2 are deliberately excluded: srst2 needs them for SNP-level allele calling, which is
   outside gapit's mission (presence + confidence). One backend covers all read types, and PAF
   output needs no samtools.
-- **Invocation**: `gapit screen --r1 R1[,R1b…] [--r2 R2[,R2b…]] --read-type
-  sr|map-ont|map-hifi` (comma-separated file lists, one entry per lane; `--r2` count must equal
+- **Invocation**: `gapit screen --r1 R1[,R1b…] [--r2 R2[,R2b…]] [--read-type
+  sr|map-ont|map-hifi]` (comma-separated file lists, one entry per lane; `--r2` count must equal
   `--r1` count — lane i pairs r1[i]/r2[i]) — mutually exclusive with positional contig files.
+  The `--aligner blastn|minimap2` engine selector (2026-09-19) defaults to blastn for positional
+  files and minimap2 for reads: `--aligner minimap2` routes positional FASTA through this same
+  reads pipeline (FASTQ content there is a usage error, "minimap2 engine requires FASTA
+  assemblies"), while `--aligner blastn` with `--r1`/`--r2` is a usage error.
+  **Input kinds and preset resolution**: `--r1` accepts FASTQ reads and assembly FASTA; each
+  file is detected from content at validation time (first non-whitespace byte: `>` = FASTA,
+  `@` = FASTQ; gzip-wrapped files peeked through the decompressor since minimap2 reads them
+  natively; anything else is `InputError INVALID_READS_FORMAT`, exit 5, context `{file}`).
+  Usage errors (exit 2): mixed FASTA+FASTQ within the `--r1` list ("mixed FASTA and FASTQ
+  inputs"), FASTA together with `--r2` ("paired-end requires FASTQ"), FASTA with an explicit
+  non-`map-ont` preset ("assembly FASTA requires map-ont"). `--read-type` defaults to None at
+  the CLI layer and resolves in the reads use-case after detection: FASTA → `map-ont` (one
+  stderr note "assembly FASTA detected; using map-ont" when defaulted, suppressed by `--quiet`;
+  stdout purity unaffected), FASTQ → explicit preset or `sr`. Resolved preset flows to
+  `params.read_type` in `gapit.reads/1` (schema frozen, unchanged).
   Pipeline: one `minimap2 -x <preset> -t <threads> <datadir>/<db>/sequences R1 [R2]` run per
-  lane → PAF on stdout; all lanes' rows are aggregated as one sample. The db
-  `sequences` FASTA is used directly (minimap2 indexes in memory; no `.mmi` persisted in v1).
+  lane → PAF on stdout; all lanes' rows are aggregated as one sample. FASTA inputs pass through
+  to minimap2 unchanged (no format conversion). The db
+  `sequences` FASTA is used directly (minimap2 indexes in memory; no `.mmi` is
+  built or consulted). A persisted default-built `.mmi` is deliberately rejected:
+  it overrides the `-x` preset's indexing parameters (minimap2 WARNING
+  "-k, -w or -H overridden by prebuilt index"), which misassigns close homologs
+  (2026-09-19 benchmark: blaCTX-M/blaSHV allele divergence) and ran 1.2 s slower
+  than in-memory indexing at current DB scale.
 - **PAF parsing**: 12 required fields (`qname qlen qstart qend strand tname tlen tstart tend
   nmatch alen mapq`) + optional tags. Keep primary alignments only (`tp:A:P`; records lacking a
   `tp` tag are kept). A row with <12 fields is a hard error.
@@ -295,7 +317,6 @@ rejected); empty `acc`/`func` values allowed.
   records.jsonl         truth source: one frozen Record JSON object per line (LF, UTF-8)
   sequences             GENERATED projection: tagged headers, 60-col wrap, atomic write
   sequences.n*|p*       BLAST index, explicit dbtype (§2 mol_type heuristic not consulted)
-  sequences.mmi         minimap2 -d index (nucl only; prot builds skip it silently)
   gapit-manifest.json   gapit.manifest/1 provenance sidecar, written LAST (certifies build)
 ```
 
@@ -305,7 +326,9 @@ rejected); empty `acc`/`func` values allowed.
 - **gapit.manifest/1 fields**: `schema`, `name`, `source_urls`, `fetched_at` (ISO-8601 UTC,
   seconds), `sha256` (of `sequences`; 64 hex, stored lowercase), `n_records`, `dbtype`
   (explicit `nucl|prot`), `header_format` (`gapit/v1`), `upstream_version`, `tool`,
-  `makeblastdb_version`, `minimap2_version` (the `.mmi` reuse gate, below).
+  `makeblastdb_version`, `minimap2_version` (environment provenance; no `.mmi` is built —
+  reads mode indexes in memory, §10 — but the version stays recorded as provenance for the
+  machine that produced the artifacts).
 - `records.jsonl` + the manifest are FILE contracts: never on stdout, not in
   `gapit schema`. Rebuilds are deterministic — same records + inputs → byte-identical
   `sequences` and manifest (tool versions come from the environment, `fetched_at` is an
@@ -315,7 +338,7 @@ rejected); empty `acc`/`func` values allowed.
 
 ```
 fetch → transform → normalize → dedupe → sort → records.jsonl → sequences → self-check
-  → sha256 → makeblastdb (explicit dbtype) → .mmi (nucl only) → manifest (written LAST)
+  → sha256 → makeblastdb (explicit dbtype) → manifest (written LAST)
 ```
 
 - **normalize** per record: uppercase; nucl `[^AGCT]`→`N`, prot `[^A-Z]`→`X`; function
@@ -329,8 +352,7 @@ fetch → transform → normalize → dedupe → sort → records.jsonl → sequ
 - Upstream `is_full_gene` is a no-op (map result discarded) — not ported.
 - **typed errors** (DatabaseError, exit 4): `DB_ALREADY_EXISTS` (manifest present, no
   `--force`), `DOWNLOAD_FAILED`, `PROVIDER_EMPTY`, `PROVIDER_INVALID`, `BUILD_INVALID`
-  (product line break / empty sequence / zero records), `BUILD_SELF_CHECK_FAILED`,
-  `MMI_BUILD_FAILED`.
+  (product line break / empty sequence / zero records), `BUILD_SELF_CHECK_FAILED`.
 
 ### Providers
 
@@ -370,18 +392,18 @@ path and is not exercised by the offline suite.
   digest verifies; stdout receipt `{destination, sha256}`; mismatch → InputError
   `CHECKSUM_MISMATCH` exit 5.
 
-### Reads mode: `.mmi` reuse
+### Reads mode: in-memory indexing only
 
-- `sequences.mmi` is reused iff it exists, a readable manifest sits beside it, and
-  `manifest.minimap2_version` equals the installed `minimap2 --version` (version-only gate;
-  the `sequences` sha256 is deliberately not re-hashed). Any miss → **silent FASTA
-  fallback** (the §10 in-memory path — a performance fallback, not an error); a genuinely
-  missing minimap2 surfaces as the typed DependencyError from the real invocation. Legacy
-  datadirs carry no manifest → always the FASTA path. This supersedes §10's "no `.mmi`
-  persisted in v1" for gapit-native DBs.
-- Reads-mode `tname` decodes through the same codec (tagged or `~~~`), so native DBs yield
-  proper gene fields in `gapit.reads/1`; prot DBs build no `.mmi` (minimap2 is
-  nucleotide-only).
+- Reads mode always screens against the `sequences` FASTA — minimap2 indexes
+  it in memory with the invocation preset's own parameters. No `.mmi` is
+  built, and a `.mmi` left in a datadir by an older gapit is never consulted
+  (inert). Persisted indexes were tried and rejected: a default-built `.mmi`
+  overrides the `-x sr` indexing parameters ("-k, -w or -H overridden by
+  prebuilt index"), which misassigns close homologs and benchmarks slower
+  (see §10).
+- Reads-mode `tname` decodes through the same codec (tagged or `~~~`), so
+  native DBs yield proper gene fields in `gapit.reads/1`; prot DBs are
+  unreadable by minimap2 (nucleotide-only) — reads mode targets nucl DBs.
 
 ### Function vocabulary (gapit/v1 `func` values)
 

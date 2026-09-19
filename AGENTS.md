@@ -69,9 +69,11 @@ gapit/
 │   ├── hits.py          # Hit model, identity/coverage computation, filtering, dedup
 │   ├── minimap.py       # COVERAGE_MAP construction (exact abricate arithmetic)
 │   ├── report.py        # Report model: the canonical in-memory result
-│   ├── screening.py     # the screen use-case: validation, orchestration, format dispatch
+│   ├── screening.py     # blastn screen use-case + shared engine helpers (OutputFormat, AlignerEnum)
+│   ├── screening_reads.py # minimap2 use-cases: --r1/--r2 reads + --aligner minimap2 assemblies
 │   ├── reads.py         # FASTQ mode: minimap2 PAF parsing, coverage breadth/depth, presence
 │   ├── summary.py       # summary core: parse report tables into a gene matrix
+│   ├── cmd_screen.py    # `gapit screen` CLI (registered from cli.py)
 │   ├── cmd_summary.py   # `gapit summary` CLI (registered from cli.py)
 │   ├── cmd_db.py        # `gapit db fetch|list` CLI
 │   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install

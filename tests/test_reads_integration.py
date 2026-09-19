@@ -6,13 +6,15 @@ each end of alignments on the 79-94 nt tinyamr genes, capping breadth below
 the 90% presence threshold (validated empirically; see phase notes).
 """
 
+import gzip
 import shutil
 from pathlib import Path
 
 import pytest
 
 from gapit.db import Database, discover_databases
-from gapit.reads import screen_reads
+from gapit.errors import InputError
+from gapit.reads import ReadFileKind, detect_read_kind, screen_reads
 
 READS_DB_DIR = Path(__file__).parent / "data" / "reads_db"
 TINYAMR_DB_DIR = Path(__file__).parent / "data" / "db"
@@ -159,3 +161,64 @@ def test_tinyamr_partial_below_threshold(tinyamr: Database) -> None:
     assert entry.gene == "blaTEM-1"
     assert entry.present is False
     assert entry.breadth_pct < 90.0
+
+
+def test_detect_read_kind_fastq(tmp_path: Path) -> None:
+    """Given a file whose first byte is '@', When detected, Then FASTQ."""
+    path = tmp_path / "r1.fq"
+    path.write_text("@read1\nACGT\n+\nIIII\n", encoding="utf-8")
+    assert detect_read_kind(path) is ReadFileKind.fastq
+
+
+def test_detect_read_kind_fasta(tmp_path: Path) -> None:
+    """Given a file whose first byte is '>', When detected, Then FASTA."""
+    path = tmp_path / "assembly.fa"
+    path.write_text(">contig1\nACGT\n", encoding="utf-8")
+    assert detect_read_kind(path) is ReadFileKind.fasta
+
+
+def test_detect_read_kind_skips_leading_whitespace(tmp_path: Path) -> None:
+    """Given a FASTQ preceded by blank lines and spaces, When detected, Then
+    FASTQ (peek walks to the first non-whitespace byte)."""
+    path = tmp_path / "padded.fq"
+    path.write_text("\n\n   @read1\nACGT\n+\nIIII\n", encoding="utf-8")
+    assert detect_read_kind(path) is ReadFileKind.fastq
+
+
+def test_detect_read_kind_gzipped_fastq(tmp_path: Path) -> None:
+    """Given a gzip-wrapped FASTQ (magic 1f 8b first), When detected, Then
+    FASTQ — the peek goes through the decompressor, matching minimap2's
+    native .gz support."""
+    path = tmp_path / "r1.fq.gz"
+    with gzip.open(path, "wb") as handle:
+        handle.write(b"@read1\nACGT\n+\nIIII\n")
+    assert detect_read_kind(path) is ReadFileKind.fastq
+
+
+def test_detect_read_kind_gzipped_fasta(tmp_path: Path) -> None:
+    """Given a gzip-wrapped FASTA, When detected, Then FASTA."""
+    path = tmp_path / "assembly.fa.gz"
+    with gzip.open(path, "wb") as handle:
+        handle.write(b">contig1\nACGT\n")
+    assert detect_read_kind(path) is ReadFileKind.fasta
+
+
+def test_detect_read_kind_rejects_garbage(tmp_path: Path) -> None:
+    """Given a file whose first non-whitespace byte is neither '>' nor '@',
+    When detected, Then typed InputError with the file in context."""
+    path = tmp_path / "garbage.txt"
+    path.write_text("Nonsense, not sequencing data\n", encoding="utf-8")
+    with pytest.raises(InputError) as excinfo:
+        detect_read_kind(path)
+    assert excinfo.value.code == "INVALID_READS_FORMAT"
+    assert excinfo.value.context["file"] == str(path)
+
+
+def test_detect_read_kind_rejects_empty(tmp_path: Path) -> None:
+    """Given an empty (or whitespace-only) file, When detected, Then typed
+    InputError."""
+    path = tmp_path / "empty.fq"
+    path.write_text("   \n", encoding="utf-8")
+    with pytest.raises(InputError) as excinfo:
+        detect_read_kind(path)
+    assert excinfo.value.code == "INVALID_READS_FORMAT"

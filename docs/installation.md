@@ -63,13 +63,11 @@ gapit: installed card from bundled snapshot card.tar.gz
 gapit: generated /tmp/gapit-docs/dd/card/sequences
 gapit: self-check passed for card
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/gapit-docs/dd/card"}
 gapit: installed vfdb from bundled snapshot vfdb.tar.gz
 gapit: generated /tmp/gapit-docs/dd/vfdb/sequences
 gapit: self-check passed for vfdb
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"vfdb","records":4769,"dbtype":"nucl","destination":"/tmp/gapit-docs/dd/vfdb"}
 ```
 

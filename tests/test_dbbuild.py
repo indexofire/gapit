@@ -184,10 +184,12 @@ def test_verify_round_trip_flags_mutated_sequence(tmp_path: Path) -> None:
 
 
 def test_build_database_nucl_produces_all_artifacts(tmp_path: Path) -> None:
-    """Given a 3-record db dir, When built (nucl), Then all four artifacts
-    exist with the exact contract: deterministic sequences bytes, a BLAST
-    index, an .mmi, and a manifest whose every field is correct and whose
-    sha256 matches the sequences file."""
+    """Given a 3-record db dir, When built (nucl), Then the three artifacts
+    exist with the exact contract — deterministic sequences bytes, a BLAST
+    index, and a manifest whose every field is correct and whose sha256
+    matches the sequences file — and NO .mmi is produced (reads mode indexes
+    the FASTA in memory; a persisted default-built .mmi would override the
+    -x sr preset's indexing parameters)."""
     db_dir = make_db(tmp_path)
     manifest = build_database(
         db_dir,
@@ -198,7 +200,7 @@ def test_build_database_nucl_produces_all_artifacts(tmp_path: Path) -> None:
     )
     assert (db_dir / "sequences").read_text(encoding="utf-8") == EXPECTED_FASTA
     assert (db_dir / "sequences.nin").is_file()
-    assert (db_dir / "sequences.mmi").is_file()
+    assert not (db_dir / "sequences.mmi").exists()
     on_disk = read_manifest(db_dir / "gapit-manifest.json")
     assert on_disk == manifest
     assert on_disk.schema_name == "gapit.manifest/1"
@@ -238,11 +240,10 @@ def test_rebuild_is_byte_identical(tmp_path: Path) -> None:
     assert second == first
 
 
-def test_build_database_prot_skips_mmi_and_builds_pin(tmp_path: Path) -> None:
+def test_build_database_prot_builds_pin(tmp_path: Path) -> None:
     """Given dbtype="prot" (synthetic: letters are ACGT but the manifest
     declares the type), When built, Then a .pin index exists (the mol_type
-    heuristic was skipped), no .mmi is created, and the manifest records
-    dbtype prot."""
+    heuristic was skipped) and the manifest records dbtype prot."""
     db_dir = make_db(tmp_path)
     manifest = build_database(
         db_dir, name=DB, dbtype="prot", source_urls=(), fetched_at="2026-09-17T10:30:00Z"
@@ -252,23 +253,23 @@ def test_build_database_prot_skips_mmi_and_builds_pin(tmp_path: Path) -> None:
     assert manifest.dbtype == "prot"
 
 
-def test_manifest_written_last_when_mmi_fails(
+def test_manifest_written_last_when_blast_index_fails(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given an .mmi build failure, When built, Then the error propagates, the
-    earlier artifacts (sequences, BLAST index) exist, and NO manifest exists —
-    the manifest certifies the artifacts and is written last."""
+    """Given a makeblastdb failure, When built, Then the error propagates,
+    the earlier artifact (sequences) exists, and NO manifest exists — the
+    manifest certifies the artifacts and is written last."""
     db_dir = make_db(tmp_path)
 
-    def fail_mmi(sequences_path: Path, mmi_path: Path, *, debug: bool = False) -> None:
-        raise DatabaseError("simulated minimap2 crash", code="MMI_BUILD_FAILED")
+    def fail_blast(sequences_path: Path, name: str, *, dbtype: str, debug: bool = False) -> None:
+        raise DatabaseError("simulated makeblastdb crash", code="MAKEBLASTDB_FAILED")
 
-    monkeypatch.setattr(dbbuild, "_build_mmi", fail_mmi)
+    monkeypatch.setattr(dbbuild, "make_blast_db", fail_blast)
     with pytest.raises(DatabaseError) as excinfo:
         build_database(
             db_dir, name=DB, dbtype="nucl", source_urls=(), fetched_at="2026-09-17T10:30:00Z"
         )
-    assert excinfo.value.code == "MMI_BUILD_FAILED"
+    assert excinfo.value.code == "MAKEBLASTDB_FAILED"
     assert (db_dir / "sequences").is_file()
-    assert (db_dir / "sequences.nin").is_file()
+    assert not (db_dir / "sequences.nin").exists()
     assert not (db_dir / "gapit-manifest.json").exists()

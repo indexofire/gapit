@@ -67,9 +67,9 @@ def screen_rows(datadir: Path, query: Path, name: str = DB) -> list[list[str]]:
 def test_db_build_plain_fasta_creates_database_and_screens(tmp_path: Path) -> None:
     """Given a plain two-gene FASTA, When `db build NAME FASTA`, Then exit 0
     with a fetch-shaped JSON receipt, every native artifact exists (sequences,
-    .nin, .mmi, manifest, records.jsonl), the manifest certifies a local
-    build, and screening a 200/240 bp substring of one gene returns exactly
-    that hit with gene and product decoded."""
+    .nin, manifest, records.jsonl) and no .mmi is built, the manifest
+    certifies a local build, and screening a 200/240 bp substring of one gene
+    returns exactly that hit with gene and product decoded."""
     fasta = tmp_path / "my_genes.fa"
     fasta.write_text(PLAIN_FASTA, encoding="utf-8")
     datadir = tmp_path / "datadir"
@@ -85,8 +85,9 @@ def test_db_build_plain_fasta_creates_database_and_screens(tmp_path: Path) -> No
         "dbtype": "nucl",
         "destination": str(db_dir),
     }
-    for artifact in ("sequences", "sequences.nin", "sequences.mmi", "gapit-manifest.json"):
+    for artifact in ("sequences", "sequences.nin", "gapit-manifest.json"):
         assert (db_dir / artifact).is_file(), artifact
+    assert not (db_dir / "sequences.mmi").exists()
     manifest = read_manifest(db_dir / "gapit-manifest.json")
     assert manifest.source_urls == ("local",)
     assert manifest.upstream_version == ""
@@ -345,10 +346,9 @@ def test_db_build_invalid_fasta_propagates_typed(tmp_path: Path) -> None:
     assert envelope.code == "INVALID_FASTA"
 
 
-def test_db_build_prot_dbtype_builds_pin_without_mmi(tmp_path: Path) -> None:
+def test_db_build_prot_dbtype_builds_pin(tmp_path: Path) -> None:
     """Given a protein FASTA and --dbtype prot, When built, Then the receipt
-    declares prot, the BLAST index is .pin, and no .mmi exists (minimap2 is
-    nucleotide-only)."""
+    declares prot and the BLAST index is .pin."""
     fasta = tmp_path / "prot.faa"
     fasta.write_text(f">prot1 synthetic protein\n{AMINO}\n", encoding="utf-8")
     datadir = tmp_path / "datadir"
@@ -359,7 +359,6 @@ def test_db_build_prot_dbtype_builds_pin_without_mmi(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.stderr
     assert json.loads(result.stdout)["dbtype"] == "prot"
     assert (datadir / DB / "sequences.pin").is_file()
-    assert not (datadir / DB / "sequences.mmi").exists()
 
 
 def test_db_build_auto_detects_protein_without_flag(tmp_path: Path) -> None:

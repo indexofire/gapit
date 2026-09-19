@@ -66,7 +66,6 @@ $ gapit db build labgenes genes.fa --datadir ./db
 gapit: generated /tmp/opencode/customdb-docs/db/labgenes/sequences
 gapit: self-check passed for labgenes
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"labgenes","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labgenes"}
 $ gapit screen query1.fa --db labgenes --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
@@ -88,7 +87,6 @@ $ gapit db build labmeta genes.fa --datadir ./db --tsv meta1.tsv
 gapit: generated /tmp/opencode/customdb-docs/db/labmeta/sequences
 gapit: self-check passed for labmeta
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"labmeta","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labmeta"}
 $ gapit screen query1.fa --db labmeta --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
@@ -106,7 +104,6 @@ $ gapit db build labmulti genes.fa --datadir ./db --tsv meta2.tsv
 gapit: generated /tmp/opencode/customdb-docs/db/labmulti/sequences
 gapit: self-check passed for labmulti
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"labmulti","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labmulti"}
 $ gapit screen query1.fa --db labmulti --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
@@ -125,7 +122,6 @@ $ gapit db build oldlab legacy.fa --datadir ./db
 gapit: generated /tmp/opencode/customdb-docs/db/oldlab/sequences
 gapit: self-check passed for oldlab
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"oldlab","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/oldlab"}
 $ gapit screen query_tet.fa --db oldlab --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
@@ -146,7 +142,6 @@ $ gapit db build labgenes_rt ported.fa --datadir ./db
 gapit: generated /tmp/opencode/customdb-docs/db/labgenes_rt/sequences
 gapit: self-check passed for labgenes_rt
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"labgenes_rt","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labgenes_rt"}
 $ gapit screen query1.fa --db labgenes_rt --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
@@ -157,7 +152,7 @@ The screen output is identical to example 1 (the `db` value in the header is ret
 
 ### 5. Protein databases (blastx)
 
-Amino acid input is detected automatically. Note the receipt says `"dbtype":"prot"` and the `minimap2 index built` step is gone (minimap2 indexes nucleotide only):
+Amino acid input is detected automatically. Note the receipt says `"dbtype":"prot"` and the BLAST index line says `(prot)`:
 
 ```console
 $ grep '>' toxins.faa
@@ -193,7 +188,6 @@ $ gapit db build labgz genes.fa.gz --datadir ./db
 gapit: generated /tmp/opencode/customdb-docs/db/labgz/sequences
 gapit: self-check passed for labgz
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"labgz","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labgz"}
 ```
 
@@ -221,7 +215,6 @@ $ gapit db build labgenes genes_v2.fa --datadir ./db --tsv meta1.tsv --force
 gapit: generated /tmp/opencode/customdb-docs/db/labgenes/sequences
 gapit: self-check passed for labgenes
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"labgenes","records":3,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labgenes"}
 $ gapit screen query1.fa --db labgenes --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
@@ -244,7 +237,6 @@ WARNING: duplicate gene 'labcur1' in metadata TSV: keeping the first row
 gapit: generated /tmp/opencode/customdb-docs/db/labdup/sequences
 gapit: self-check passed for labdup
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"labdup","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labdup"}
 $ gapit screen query1.fa --db labdup --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
@@ -263,7 +255,6 @@ WARNING: gene 'ghostgene' in metadata TSV not found in FASTA: skipped
 gapit: generated /tmp/opencode/customdb-docs/db/labghost/sequences
 gapit: self-check passed for labghost
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"labghost","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labghost"}
 $ grep -c '"gene"' db/labghost/records.jsonl
 2
@@ -279,7 +270,6 @@ $ gapit db build labenv genes.fa
 gapit: generated /tmp/opencode/customdb-default/db/labenv/sequences
 gapit: self-check passed for labenv
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"labenv","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-default/db/labenv"}
 $ gapit list
 DATABASE	SEQUENCES	DBTYPE	DATE
@@ -329,7 +319,6 @@ $ gapit db build bare_desc bare.fa --datadir ./db --description "lab-curated ref
 gapit: generated /tmp/opencode/customdb-docs/db/bare_desc/sequences
 gapit: self-check passed for bare_desc
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"bare_desc","records":1,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/bare_desc"}
 $ grep -o '"product":"[^"]*"' db/bare_desc/records.jsonl
 "product":"lab-curated reference gene"
@@ -337,7 +326,6 @@ $ gapit db build bare_plain bare.fa --datadir ./db --force
 gapit: generated /tmp/opencode/customdb-docs/db/bare_plain/sequences
 gapit: self-check passed for bare_plain
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"bare_plain","records":1,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/bare_plain"}
 $ grep -o '"product":"[^"]*"' db/bare_plain/records.jsonl
 "product":"baregene"
@@ -369,7 +357,6 @@ $ gapit db build labtwin dupname.fa --datadir ./db --force
 gapit: generated /tmp/opencode/customdb-docs/db/labtwin/sequences
 gapit: self-check passed for labtwin
 gapit: BLAST index built (nucl)
-gapit: minimap2 index built
 {"db":"labtwin","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labtwin"}
 $ grep -c '"gene":"twingene"' db/labtwin/records.jsonl
 2
@@ -377,7 +364,7 @@ $ grep -c '"gene":"twingene"' db/labtwin/records.jsonl
 
 ### dbtype resolution
 
-`--dbtype` wins when given; otherwise the abricate mol-type heuristic decides from the input sequences themselves (`nucl` unless the letters say protein). Protein databases get a `.pin` BLAST index and no minimap2 index, and screening goes through `blastx` with a nucleotide query (example 5).
+`--dbtype` wins when given; otherwise the abricate mol-type heuristic decides from the input sequences themselves (`nucl` unless the letters say protein). Protein databases get a `.pin` BLAST index, and screening goes through `blastx` with a nucleotide query (example 5).
 
 ### What lands in the database directory
 
@@ -386,7 +373,6 @@ $ ls db/labmeta
 gapit-manifest.json
 records.jsonl
 sequences
-sequences.mmi
 sequences.ndb
 sequences.nhr
 sequences.nin
@@ -397,7 +383,7 @@ sequences.ntf
 sequences.nto
 ```
 
-`records.jsonl` is the editable truth and `sequences` its `gapit/v1`-header projection; the `sequences.n*` files are the BLAST index and `sequences.mmi` the minimap2 index (nucleotide only). Field-level detail for both file contracts is in [Databases](./databases.md). Sequences are stored verbatim, no provider-style normalization: this is your curated truth, and a manifest with `source_urls: ["local"]` certifies the build.
+`records.jsonl` is the editable truth and `sequences` its `gapit/v1`-header projection; the `sequences.n*` files are the BLAST index. Field-level detail for both file contracts is in [Databases](./databases.md). Sequences are stored verbatim, no provider-style normalization: this is your curated truth, and a manifest with `source_urls: ["local"]` certifies the build.
 
 ## Troubleshooting
 
