@@ -38,10 +38,10 @@ are mutually exclusive.
 
 ## Input files
 
-any2fasta normalizes each input, so plain FASTA, gzipped and bzip2-compressed FASTA, GBK, and
-EMBL all work. Gapit never loads the whole file; normalization streams into blastn. If
-normalization fails (not a sequence file), gapit prints a `gapit.error/1` envelope on stderr
-and exits 5.
+Normalization is native (no external `any2fasta`): plain FASTA, gzipped and bzip2-compressed
+FASTA, FASTQ, GBK, and EMBL all work. The converted FASTA is buffered in memory (genome-scale
+assemblies are a few MB) and fed to blastn on stdin. If normalization fails (not a sequence
+file), gapit prints a `gapit.error/1` envelope on stderr and exits 5.
 
 A `--fofn` file lists one path per line and replaces positional arguments entirely.
 
@@ -173,12 +173,12 @@ output is identical to the sequential run.
 
 ### `--debug`
 
-Echoes every external command line to stderr as a `gapit: run:` line:
+Echoes the native normalization step and every external command line to stderr:
 
 ```console
 $ gapit screen tests/data/contigs/full.fa --db tinyamr --debug 2>&1 >/dev/null
 Processing: tests/data/contigs/full.fa
-gapit: run: any2fasta -q -u tests/data/contigs/full.fa
+gapit: normalize: tests/data/contigs/full.fa (fasta)
 gapit: run: blastn -task blastn -dust no -perc_identity 80.0 -db /tmp/gapit-demo/datadir/tinyamr/sequences -outfmt '6 qseqid qstart qend qlen sseqid sstart send slen sstrand evalue length pident gaps gapopen stitle' -num_threads 1 -evalue 1E-20 -culling_limit 1 -max_target_seqs 10000
 Found 1 genes in tests/data/contigs/full.fa
 ```

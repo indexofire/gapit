@@ -38,10 +38,10 @@ $ gapit --version --json
 
 ## External binaries
 
-gapit shells out to BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`),
-`any2fasta`, and `minimap2`. All three come from the pixi environment (conda-forge and
-bioconda), so there is nothing to install by hand. If you run gapit outside pixi, make
-sure these binaries are on PATH yourself.
+gapit shells out to BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2`.
+Both come from the pixi environment (conda-forge and bioconda), so there is nothing to install
+by hand. If you run gapit outside pixi, make sure these binaries are on PATH yourself. Input
+normalization (plain/gz/bz2 FASTA, FASTQ, GenBank, EMBL) is native — no `any2fasta` needed.
 
 ## Database bootstrap
 

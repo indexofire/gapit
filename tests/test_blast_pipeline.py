@@ -1,54 +1,23 @@
-"""Pipeline stderr-drain tests for blast._pipeline (#6): any2fasta stderr is
-drained by a background thread — an undrained stderr pipe fills at ~64 KB and
-would deadlock the `any2fasta | blastn` pipeline (the classic Popen deadlock;
-watchdog pattern from tests/test_reads_streaming.py). Fakes are executable
-python scripts named ``any2fasta``/``blastn`` on a monkeypatched PATH.
+"""Pipeline tests for blast's native-normalization stage: the normalized FASTA
+must actually reach blastn on stdin, blast failures carry their stderr as
+BLAST_FAILED, and a missing blastn is a typed dependency error. (The retired
+``any2fasta | blastn`` Popen chain needed a stderr-drain thread; the
+``subprocess.run(input=...)`` rewrite makes that deadlock structurally
+impossible, so fakes here only stand in for blastn.) Fakes are executable
+python scripts named ``blastn`` on a monkeypatched PATH.
 """
 
 import os
-import threading
 from pathlib import Path
 
 import pytest
 
-from gapit.blast import screen_file
+from gapit.blast import run_screen
 from gapit.db import Database
-from gapit.errors import InputError
+from gapit.errors import DependencyError, GapitError
 from gapit.report import ScreeningParams
 
-# > 64 KB so the child's stderr write blocks unless something drains it.
-STDERR_SPEW = "spew-line-that-never-ends\n" * 3000
-
-FASTA_OUT = ">contig1\nACGTACGTAC\n"
-
-
-def write_fake(
-    bin_dir: Path, name: str, *, stderr_text: str, stdout_text: str, exit_code: int
-) -> None:
-    """An executable fake that spews stderr, then writes stdout, then exits
-    with exit_code. The stderr write precedes stdout so a run that does not
-    drain stderr concurrently can never produce output."""
-    script = (
-        "#!/usr/bin/env python3\n"
-        "import sys\n"
-        f"sys.stderr.write({stderr_text!r})\n"
-        "sys.stderr.flush()\n"
-        f"sys.stdout.write({stdout_text!r})\n"
-        "sys.stdout.flush()\n"
-        f"sys.exit({exit_code})\n"
-    )
-    binary = bin_dir / name
-    binary.write_text(script, encoding="utf-8")
-    binary.chmod(0o755)
-
-
-def write_fake_blastn(bin_dir: Path) -> None:
-    """An executable fake blastn: consume stdin fully (the pipeline contract),
-    emit no rows, exit 0."""
-    script = "#!/usr/bin/env python3\nimport sys\nsys.stdin.read()\nsys.exit(0)\n"
-    binary = bin_dir / "blastn"
-    binary.write_text(script, encoding="utf-8")
-    binary.chmod(0o755)
+LOWERCASE_FASTA = ">contig1\nacgtacgtac\n"
 
 
 @pytest.fixture()
@@ -64,60 +33,68 @@ def fake_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     return bin_dir
 
 
-def call_with_watchdog(query: Path, database: Database) -> tuple[int, InputError | None]:
-    """Screen one file in a daemon thread; a pipeline deadlock becomes a clean
-    assertion failure instead of a hung suite, and a typed error raised inside
-    the thread is re-raised on the main thread."""
+def write_fake_blastn(bin_dir: Path, script_body: str) -> None:
+    binary = bin_dir / "blastn"
+    binary.write_text("#!/usr/bin/env python3\n" + script_body, encoding="utf-8")
+    binary.chmod(0o755)
+
+
+def test_blastn_receives_normalized_fasta_on_stdin(
+    tmp_path: Path, fakedb: Database, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a lowercase FASTA query, When screened through a fake blastn that
+    dumps stdin to a file, Then the dump is the uppercase re-emitted FASTA —
+    the native converter feeds blast verbatim (the old pipe's contract)."""
+    bin_dir = fake_path(monkeypatch, tmp_path)
+    dump = tmp_path / "stdin.txt"
+    monkeypatch.setenv("GAPIT_STDIN_DUMP", str(dump))
+    write_fake_blastn(
+        bin_dir,
+        "import os, sys\n"
+        "with open(os.environ['GAPIT_STDIN_DUMP'], 'w') as fh:\n"
+        "    fh.write(sys.stdin.read())\n"
+        "sys.exit(0)\n",
+    )
+    query = tmp_path / "contigs.fa"
+    query.write_text(LOWERCASE_FASTA, encoding="utf-8")
     params = ScreeningParams(db="fakedb", minid=80.0, mincov=80.0, threads=1)
-    hits: list[int] = []
-    failure: list[Exception] = []
-
-    def call() -> None:
-        try:
-            report = screen_file(query, database, params, dbtype="nucl")
-            hits.append(len(report.hits))
-        except Exception as exc:  # transport to the joining thread
-            failure.append(exc)
-
-    worker = threading.Thread(target=call, daemon=True)
-    worker.start()
-    worker.join(timeout=30)
-    assert not worker.is_alive(), "pipeline deadlocked on an undrained any2fasta stderr pipe"
-    if failure:
-        assert isinstance(failure[0], InputError)
-        return hits[0] if hits else -1, failure[0]
-    return hits[0], None
+    report = run_screen(query, fakedb, params, dbtype="nucl")
+    assert report == []
+    assert dump.read_text(encoding="utf-8") == ">contig1\nACGTACGTAC\n"
 
 
-def test_any2fasta_stderr_spew_does_not_deadlock(
+def test_blastn_failure_raises_blast_failed_with_stderr(
     tmp_path: Path, fakedb: Database, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given an any2fasta that writes >64 KB of stderr BEFORE its FASTA stdout
-    and a blastn that consumes all of stdin, When screened, Then the pipeline
-    completes with zero hits (fake blastn emits no rows)."""
+    """Given a blastn that exits 1 with a stderr message, When screened, Then
+    GapitError BLAST_FAILED carries that stderr text."""
     bin_dir = fake_path(monkeypatch, tmp_path)
-    write_fake(bin_dir, "any2fasta", stderr_text=STDERR_SPEW, stdout_text=FASTA_OUT, exit_code=0)
-    write_fake_blastn(bin_dir)
+    write_fake_blastn(
+        bin_dir,
+        "import sys\nsys.stderr.write('kaboom: fake blast failure\\n')\nsys.exit(1)\n",
+    )
     query = tmp_path / "contigs.fa"
-    query.write_text(FASTA_OUT, encoding="utf-8")
-    n_hits, error = call_with_watchdog(query, fakedb)
-    assert error is None
-    assert n_hits == 0
+    query.write_text(LOWERCASE_FASTA, encoding="utf-8")
+    params = ScreeningParams(db="fakedb", minid=80.0, mincov=80.0, threads=1)
+    with pytest.raises(GapitError) as excinfo:
+        run_screen(query, fakedb, params, dbtype="nucl")
+    assert excinfo.value.code == "BLAST_FAILED"
+    assert "kaboom" in str(excinfo.value)
+    assert excinfo.value.context["binary"] == "blastn"
 
 
-def test_any2fasta_failure_after_spew_carries_stderr_text(
+def test_missing_blastn_raises_dependency_error(
     tmp_path: Path, fakedb: Database, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given an any2fasta that spews stderr and exits 1 while blastn exits 0,
-    When screened, Then INVALID_INPUT carries the drained stderr text (the
-    background drain feeds the error message, not just the deadlock fix)."""
-    bin_dir = fake_path(monkeypatch, tmp_path)
-    write_fake(bin_dir, "any2fasta", stderr_text=STDERR_SPEW, stdout_text=FASTA_OUT, exit_code=1)
-    write_fake_blastn(bin_dir)
+    """Given a PATH without blastn, When screened, Then DependencyError
+    MISSING_DEPENDENCY names blastn (exit 3)."""
+    empty_bin = tmp_path / "empty-bin"
+    empty_bin.mkdir()
+    monkeypatch.setenv("PATH", str(empty_bin))
     query = tmp_path / "contigs.fa"
-    query.write_text(FASTA_OUT, encoding="utf-8")
-    _, error = call_with_watchdog(query, fakedb)
-    assert error is not None
-    assert error.code == "INVALID_INPUT"
-    assert "spew-line-that-never-ends" in str(error)
-    assert error.context["file"] == str(query)
+    query.write_text(LOWERCASE_FASTA, encoding="utf-8")
+    params = ScreeningParams(db="fakedb", minid=80.0, mincov=80.0, threads=1)
+    with pytest.raises(DependencyError) as excinfo:
+        run_screen(query, fakedb, params, dbtype="nucl")
+    assert excinfo.value.code == "MISSING_DEPENDENCY"
+    assert excinfo.value.context["binary"] == "blastn"

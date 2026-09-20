@@ -20,7 +20,7 @@ byte-compatible TSV plus first-class JSON and Markdown.
 ## Install
 
 [pixi](https://pixi.sh) manages the environment, including the external binaries
-(BLAST+, any2fasta, minimap2):
+(BLAST+, minimap2):
 
 ```bash
 git clone https://github.com/indexofire/gapit.git

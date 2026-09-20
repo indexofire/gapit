@@ -29,7 +29,7 @@ class UsageError(GapitError):
 
 
 class DependencyError(GapitError):
-    """An external binary (BLAST+, any2fasta) is missing from PATH."""
+    """An external binary (BLAST+, minimap2) is missing from PATH."""
 
     exit_code = 3
 

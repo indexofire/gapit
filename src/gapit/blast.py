@@ -4,7 +4,6 @@ import re
 import shlex
 import subprocess
 import sys
-import threading
 from pathlib import Path
 from typing import Literal
 
@@ -14,6 +13,7 @@ from gapit.db import Database
 from gapit.errors import DependencyError, GapitError, InputError
 from gapit.hits import process_rows
 from gapit.report import Report, ScreeningParams
+from gapit.seqconvert import SeqFormat, detect_format, to_fasta_lines
 
 BLAST_FIELDS = [
     "qseqid",
@@ -111,63 +111,46 @@ def ensure_blast() -> None:
         )
 
 
-def _pipeline(query: Path, argv: list[str]) -> str:
-    """`any2fasta -q -u <query> | <argv>`; returns blast's stdout as text."""
+def _normalize(query: Path) -> tuple[str, SeqFormat]:
+    """Convert one input file to FASTA text in-process (seqconvert), wrapping
+    any parser failure in the blast-path error shape
+    ``invalid input file {query}: <reason>``.
+
+    The whole normalized FASTA is held in memory and fed to blast via
+    ``input=`` — genome-scale inputs are a few MB, a deliberate trade-off:
+    ``subprocess.run``'s communicate() owns stdin/stdout concurrency, so the
+    retired ``any2fasta | blastn`` Popen chain needs no stderr-drain thread
+    here anymore.
+    """
     try:
-        any2fasta = subprocess.Popen(
-            ["any2fasta", "-q", "-u", str(query)],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-    except FileNotFoundError as exc:
-        raise DependencyError(
-            "required binary not found on PATH: any2fasta",
-            code="MISSING_DEPENDENCY",
-            context={"binary": "any2fasta"},
+        fmt = detect_format(query)
+        text = "".join(to_fasta_lines(query, fmt))
+    except InputError as exc:
+        raise InputError(
+            f"invalid input file {query}: {exc}",
+            code="INVALID_INPUT",
+            context={"file": str(query)},
         ) from exc
+    return text, fmt
+
+
+def _pipeline(fasta_text: str, argv: list[str]) -> str:
+    """``<argv>`` reading the normalized FASTA on stdin; returns stdout as text."""
     try:
-        blast = subprocess.Popen(
-            argv, stdin=any2fasta.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        result = subprocess.run(argv, input=fasta_text, capture_output=True, text=True)
     except FileNotFoundError as exc:
         raise DependencyError(
             f"required binary not found on PATH: {argv[0]}",
             code="MISSING_DEPENDENCY",
             context={"binary": argv[0]},
         ) from exc
-    if any2fasta.stdout is not None:
-        any2fasta.stdout.close()  # blast owns the read end now; SIGPIPE propagates
-    # stderr is drained by a background thread: an undrained stderr pipe
-    # fills (~64 KB) and blocks any2fasta mid-run (minimap2_run._stream_minimap2).
-    any2fasta_err_chunks: list[bytes] = []
-
-    def drain() -> None:
-        if any2fasta.stderr is not None:
-            any2fasta_err_chunks.append(any2fasta.stderr.read())
-
-    drain_thread = threading.Thread(target=drain)
-    drain_thread.start()
-    try:
-        blast_out, blast_err = blast.communicate()
-        any2fasta_rc = any2fasta.wait()
-    finally:
-        drain_thread.join()
-    any2fasta_err = b"".join(any2fasta_err_chunks)
-    # blast first: if it crashed, its stderr names the real cause (any2fasta
-    # may merely have taken the SIGPIPE).
-    if blast.returncode != 0:
+    if result.returncode != 0:
         raise GapitError(
-            f"{argv[0]} failed: {blast_err.decode('utf-8', 'replace').strip()}",
+            f"{argv[0]} failed: {result.stderr.strip()}",
             code="BLAST_FAILED",
             context={"binary": argv[0]},
         )
-    if any2fasta_rc != 0:
-        raise InputError(
-            f"invalid input file {query}: {any2fasta_err.decode('utf-8', 'replace').strip()}",
-            code="INVALID_INPUT",
-            context={"file": str(query)},
-        )
-    return blast_out.decode("utf-8")
+    return result.stdout
 
 
 def run_screen(
@@ -178,11 +161,12 @@ def run_screen(
     dbtype: Literal["nucl", "prot"],
     debug: bool = False,
 ) -> list[BlastRow]:
-    """Run the any2fasta -> blastn/blastx pipeline for one query file.
+    """Run the normalize (native seqconvert) -> blastn/blastx pipeline for one
+    query file.
 
     The database must already be indexed; protein databases switch to blastx
     without -perc_identity (upstream quirk, minid silently ignored). With
-    ``debug``, echo the exact any2fasta and blast argv to stderr
+    ``debug``, echo the normalization step and the exact blast argv to stderr
     (abricate --debug parity). ``dbtype`` comes from the caller resolving it
     once per run, so dependency/index errors surface before any per-file work.
     """
@@ -229,10 +213,11 @@ def run_screen(
             "-max_target_seqs",
             "10000",
         ]
+    fasta_text, fmt = _normalize(query)
     if debug:
-        sys.stderr.write(f"gapit: run: {shlex.join(['any2fasta', '-q', '-u', str(query)])}\n")
+        sys.stderr.write(f"gapit: normalize: {query} ({fmt.value})\n")
         sys.stderr.write(f"gapit: run: {shlex.join(argv)}\n")
-    output = _pipeline(query, argv)
+    output = _pipeline(fasta_text, argv)
     return [parse_blast_row(line) for line in output.splitlines() if line.strip()]
 
 

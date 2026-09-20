@@ -45,7 +45,7 @@ def locate() -> tuple[Path, Path, Path]:
 def tool_env(abricate_bin: Path) -> dict[str, str]:
     """PATH with the parity env first (abricate's perl must win over the perl
     that ships with blast in the default env); both tools then share the parity
-    env's blastn/any2fasta, keeping the comparison same-binary."""
+    env's blastn (and abricate's any2fasta), keeping the comparison same-binary."""
     env = os.environ.copy()
     env["PATH"] = os.pathsep.join([str(abricate_bin.parent), str(DEFAULT_BIN), env.get("PATH", "")])
     return env

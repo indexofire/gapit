@@ -19,8 +19,12 @@ class FastaRecord(BaseModel, frozen=True):
     sequence: str
 
 
-def _open_text(path: Path) -> IO[str]:
-    """Open a FASTA file as UTF-8 text, transparently decompressing .gz/.bz2."""
+def open_text(path: Path) -> IO[str]:
+    """Open a sequence file as UTF-8 text, transparently decompressing .gz/.bz2.
+
+    Shared by the FASTA readers and seqconvert's normalizer; the suffix
+    (not content) picks the decompressor, matching the any2fasta CLI contract.
+    """
     if path.name.endswith(".gz"):
         return gzip.open(path, "rt", encoding="utf-8")
     if path.name.endswith(".bz2"):
@@ -46,7 +50,7 @@ def iter_fasta(path: Path) -> Iterator[FastaRecord]:
     Raises InputError on content before the first ``>`` header or on a record
     with an empty sequence; an empty file yields zero records.
     """
-    with _open_text(path) as handle:
+    with open_text(path) as handle:
         # pending = (id, description, sequence lines) of the record being read
         pending: tuple[str, str, list[str]] | None = None
         for lineno, raw_line in enumerate(handle, start=1):
@@ -85,7 +89,7 @@ def iter_fasta_headers(path: Path) -> Iterator[tuple[str, str]]:
     first whitespace token, description the rest) matches iter_fasta; an
     empty file yields nothing.
     """
-    with _open_text(path) as handle:
+    with open_text(path) as handle:
         seen_header = False
         for lineno, raw_line in enumerate(handle, start=1):
             line = raw_line.strip()

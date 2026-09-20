@@ -1,0 +1,19 @@
+LOCUS       FAKECTG01                79 bp    DNA     linear   UNK 01-JAN-2026
+DEFINITION  Synthetic gapit fixture contig (fake gene FAKEGENE01).
+ACCESSION   FAKE00001
+VERSION     FAKE00001.1
+KEYWORDS    .
+SOURCE      Synthetic.
+ORIGIN
+        1 atggtcaatt ccgctggcgc tggttatcgg tggcactggc tgcgttttgg cgatggtttt
+       61 cggcaaccgt gcgctggca
+//
+LOCUS       FAKECTG02                60 bp    DNA     linear   UNK 01-JAN-2026
+DEFINITION  Synthetic gapit fixture contig (fake gene FAKEGENE02).
+ACCESSION   FAKE00002
+VERSION     FAKE00002.1
+KEYWORDS    .
+SOURCE      Synthetic.
+ORIGIN
+        1 cccccccccc cccccccccc cccccccccc cccccccccc cccccccccc cccccccccc
+//

@@ -22,10 +22,11 @@ are we?** It replaces abricate (Perl) with a modern, typed, testable Python tool
   for PyPI).
 - **Python**: 3.14 in the pixi dev env (current stable); the package declares
   `requires-python = ">=3.11"` and CI tests 3.11 / 3.13 / 3.14.
-- **External binaries**: BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`),
-  `any2fasta` (input normalization: gbk/embl/gz/bz2), and `minimap2` (FASTQ read screening,
-  SPEC.md §10), all from conda-forge/bioconda. Invoked only via `subprocess` with an argument
-  list — never `shell=True`.
+- **External binaries**: BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2`
+  (FASTQ read screening, SPEC.md §10), all from conda-forge/bioconda. Invoked only via `subprocess`
+  with an argument list — never `shell=True`. Input normalization (fa/fq/gbk/embl, gz/bz2) is
+  native (`seqconvert.py`); `any2fasta` is no longer a runtime dependency and survives only in the
+  opt-in `difftest` pixi env as the differential-validation oracle for the native converter.
 - **Core libraries**: `typer` (CLI), `pydantic` v2 (data models / JSON schema), `rich` (terminal
   output). No biopython — FASTA I/O is a small streaming parser we own.
 - **Quality gates**: `ruff` (lint + format), `basedpyright` (strict mode), `pytest`.
@@ -60,7 +61,8 @@ gapit/
 │   ├── __init__.py
 │   ├── cli.py           # typer entrypoint: screen / summary / db / list / setupdb / schema / mcp
 │   ├── config.py        # datadir resolution, defaults, env vars
-│   ├── fasta.py         # streaming FASTA reader (plain + gz/bz2 via any2fasta)
+│   ├── fasta.py         # streaming FASTA reader + shared gz/bz2 text opener
+│   ├── seqconvert.py    # native input normalization: fa/fq/gbk/embl (±gz/bz2) → FASTA
 │   ├── db.py            # database discovery, header parsing, makeblastdb wrapper
 │   ├── dbcodec.py       # gapit/v1 tagged-header codec (percent-encoded ids)
 │   ├── records.py       # records.jsonl truth store + gapit.manifest/1 provenance
@@ -153,7 +155,8 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   tagged-header format (SPEC §11), whose `func` key carries a locked per-provider function
   vocabulary (antibiotic classes, `virulence`, `replicon`, ...); abricate cannot read
   gapit-native databases.
-- Screening = `any2fasta` normalize → `blastn` of query contigs against one db → 15-field
+- Screening = native normalize (`seqconvert.py`, any2fasta-equivalent semantics) → `blastn` of
+  query contigs against one db → 15-field
   tabular hits → filter by identity / coverage thresholds → **dedup hits sharing identical
   `(contig, qstart, qend)`** (first/best BLAST row wins) → one TSV row per surviving hit.
   abricate does **not** merge overlapping intervals — do not "improve" this on the default path.

@@ -87,7 +87,7 @@ Reads mode: `./reads.md`.
 
 ## What is this "MISSING_DEPENDENCY" error?
 
-An external binary (blastn, makeblastdb, blastdbcmd, any2fasta, minimap2) is
+An external binary (blastn, makeblastdb, blastdbcmd, minimap2) is
 not on PATH. gapit exits 3 with the envelope naming the binary:
 
 ```text

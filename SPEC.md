@@ -34,7 +34,8 @@ version gate (`blastn -version` must be ≥ 2.2.30; we require modern BLAST+ ≥
 Exit codes (upstream): `0` ok; `1` any runtime error; `5` unknown option; BLAST/any2fasta pipeline
 failure propagated verbatim. **gapit mapping** `[gapit-extension]`: `2` usage, `3` missing
 dependency, `4` db error, `5` input error, `1` unexpected — stdout TSV stays byte-compatible;
-exit-code integers are gapit's own contract (documented in AGENTS.md §5).
+exit-code integers are gapit's own contract (documented in AGENTS.md §5). Normalization failures
+are native (§3) and map to exit 5 + JSON envelope like the rest.
 
 ## 2. Database layout
 
@@ -55,10 +56,11 @@ exit-code integers are gapit's own contract (documented in AGENTS.md §5).
 ## 3. Screening pipeline
 
 Per input file (upstream wraps in `bash -c 'set -euo pipefail; ...'`; gapit uses argv lists, no
-shell):
+shell). Upstream pipes `any2fasta -q -u <file> |` into blastn; gapit normalizes natively
+(`seqconvert.py`, any2fasta `-q -u` semantics) and feeds the FASTA to blastn on stdin:
 
 ```
-any2fasta -q -u <file>  |  blastn -task blastn -dust no -perc_identity <minid> \
+blastn -task blastn -dust no -perc_identity <minid> \
   -db <datadir>/<db>/sequences \
   -outfmt "6 qseqid qstart qend qlen sseqid sstart send slen sstrand evalue length pident gaps gapopen stitle" \
   -num_threads <threads> -evalue 1E-20 -culling_limit 1 -max_target_seqs 10000
@@ -68,7 +70,10 @@ any2fasta -q -u <file>  |  blastn -task blastn -dust no -perc_identity <minid> \
   evalue length pident gaps gapopen stitle`. A row with ≠15 columns is a hard error.
 - Protein DBs use `blastx -task blastx-fast -seg no` **without `-perc_identity`**, and `--minid`
   is then silently ignored (upstream quirk — reproduce, with a stderr note).
-- `any2fasta -q -u` normalizes `.fa/.faa/.gbk/.embl`, gz, bz2 → FASTA on stdout.
+- Normalization is native `seqconvert.py` replicating `any2fasta -q -u`: `.fa/.fq/.gbk/.embl`,
+  gz, bz2 → FASTA (id/header, description, uppercase sequence rules extracted from the perl).
+  Divergence: gapit re-wraps at 60 columns and reads universal newlines — blast-invisible, and
+  parsed-record equality with the binary is differentially tested in the `difftest` pixi env.
 
 ## 4. Hit processing (the core algorithm)
 
@@ -174,7 +179,8 @@ tsv|csv|json|md`, `--quiet`).
 
 ## 7. Edge cases & quirks (parity-critical)
 
-- **Input types**: fa/gz/bz2/gbk/embl via any2fasta. Invalid input → pipeline failure → nonzero
+- **Input types**: fa/fastq/gz/bz2/gbk/embl via native normalization (any2fasta `-q -u`
+  semantics; upstream uses the external binary). Invalid input → pipeline failure → nonzero
   exit (gapit: exit 5 + JSON error envelope).
 - **Empty FASTA** → zero hits; header still printed; success exit.
 - **Circular contigs**: no special handling (linear).

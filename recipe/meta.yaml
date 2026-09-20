@@ -34,7 +34,6 @@ requirements:
     - pydantic >=2.7
     - rich >=13
     - blast >=2.15
-    - any2fasta >=0.4
     - minimap2 >=2.24
 
 test:

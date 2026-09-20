@@ -71,6 +71,10 @@ been released yet; the package version stays 0.1.0.
 
 ### Changed
 
+- `any2fasta` is no longer a runtime dependency: input normalization (FASTA/FASTQ/GenBank/EMBL,
+  plain/gz/bz2 → FASTA) is native (`seqconvert.py`, perl-extracted semantics) and blastn reads the
+  converted FASTA on stdin. Parsed-record equivalence with the binary is differentially tested
+  (`pixi run -e difftest difftest`), and `.fa` parity remains byte-identical (2026-09-21).
 - Screening and reads paths route `gapit/v1` tagged headers to the native codec; legacy
   abricate `~~~` headers keep the frozen parser, so abricate-built datadirs screen
   identically. The reverse does not hold: gapit-built databases are unreadable by

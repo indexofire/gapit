@@ -118,7 +118,7 @@ def test_matrix_positional_garbage_with_minimap2_exits_5(
 def test_matrix_positional_blastn_explicit_matches_default(amr_datadir: Path) -> None:
     """Given positional files with explicit --aligner blastn (row 3), When
     compared to the default run, Then stdout is byte-identical (the explicit
-    default is a no-op; gbk/embl keep flowing through any2fasta)."""
+    default is a no-op; gbk/embl keep flowing through native normalization)."""
     explicit = screen_amr(amr_datadir, "--aligner", "blastn", "--nopath", str(CONTIGS / "full.fa"))
     default = screen_amr(amr_datadir, "--nopath", str(CONTIGS / "full.fa"))
     assert explicit.exit_code == 0
