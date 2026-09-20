@@ -1,4 +1,4 @@
-"""Integration tests: the real any2fasta -> blast pipeline over committed contig
+"""Integration tests: the real normalization -> blast pipeline over committed
 fixtures against the tinyamr database (offline, uses the pixi env's binaries)."""
 
 import shutil
@@ -13,6 +13,7 @@ from gapit.report import ScreeningParams
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
+CONVERT = Path(__file__).parent / "data" / "convert"
 PARAMS = ScreeningParams(db="tinyamr")
 
 
@@ -82,14 +83,35 @@ def test_unrelated_contig_yields_empty_report(tinyamr: Database) -> None:
 
 
 def test_junk_input_raises_input_error(tinyamr: Database, tmp_path: Path) -> None:
-    """Given a non-sequence .txt, When screened, Then any2fasta fails and the
-    pipeline raises InputError (exit 5)."""
+    """Given a non-sequence .txt, When screened, Then the native normalizer
+    fails and the pipeline raises InputError (exit 5)."""
     junk = tmp_path / "junk.txt"
     junk.write_text("this is not sequence data at all\n", encoding="utf-8")
     with pytest.raises(InputError) as excinfo:
         screen_file(junk, tinyamr, PARAMS, dbtype="nucl")
     assert excinfo.value.exit_code == 5
     assert excinfo.value.code == "INVALID_INPUT"
+    assert str(excinfo.value).startswith(f"invalid input file {junk}: ")
+
+
+def test_genbank_input_screens_through_blast(tinyamr: Database) -> None:
+    """Given the committed .gbk fixture (tetA embedded in FAKECTG01), When
+    screened, Then exactly one hit on the LOCUS-named sequence — the first
+    real GenBank-input test (SPEC §7 claimed support)."""
+    (hit,) = screen_file(CONVERT / "sample.gbk", tinyamr, PARAMS, dbtype="nucl").hits
+    assert hit.sequence == "FAKECTG01"
+    assert hit.gene == "tetA"
+    assert hit.identity_pct == 100.0
+    assert hit.coverage_pct == 100.0
+
+
+def test_embl_input_screens_through_blast(tinyamr: Database) -> None:
+    """Given the committed .embl fixture, When screened, Then exactly one hit
+    on the ID-named sequence (EMBL inputs reach blastn like GBK ones)."""
+    (hit,) = screen_file(CONVERT / "sample.embl", tinyamr, PARAMS, dbtype="nucl").hits
+    assert hit.sequence == "FAKECTG01"
+    assert hit.gene == "tetA"
+    assert hit.coverage_pct == 100.0
 
 
 def test_report_is_sorted_by_sequence_then_start(tinyamr: Database) -> None:
