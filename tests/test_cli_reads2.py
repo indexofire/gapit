@@ -4,6 +4,7 @@ reads/1 byte-identity lock when both thresholds are off.
 """
 
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -20,6 +21,10 @@ READS = Path(__file__).parent / "data" / "reads"
 
 runner = CliRunner()
 reads2_adapter = TypeAdapter(Reads2Document)
+
+# On CI, GITHUB_ACTIONS makes typer force terminal styling on help output;
+# the styled runs split option tokens, so strip SGR escapes before asserting.
+ANSI_STYLE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 @pytest.fixture()
@@ -355,7 +360,8 @@ def test_schema_unknown_name_lists_reads2() -> None:
 
 
 def test_screen_help_lists_new_flags() -> None:
-    result = runner.invoke(app, ["screen", "--help"], env={"COLUMNS": "120"})
+    result = runner.invoke(app, ["screen", "--help"], env={"COLUMNS": "100"})
     assert result.exit_code == 0
-    assert "--min-identity" in result.stdout
-    assert "--min-mapq" in result.stdout
+    help_text = ANSI_STYLE.sub("", result.stdout)
+    assert "--min-identity" in help_text
+    assert "--min-mapq" in help_text
