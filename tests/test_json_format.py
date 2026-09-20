@@ -40,7 +40,7 @@ def reports(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> list[Report]:
     database = Database(
         name="tinyamr", path=datadir / "tinyamr", sequences_path=datadir / "tinyamr" / "sequences"
     )
-    return [screen_file(Path(name), database, PARAMS) for name in MULTI_FILES]
+    return [screen_file(Path(name), database, PARAMS, dbtype="nucl") for name in MULTI_FILES]
 
 
 def test_golden_json(reports: list[Report]) -> None:

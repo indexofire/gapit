@@ -91,6 +91,13 @@ def _member(tar: tarfile.TarFile, name: str, archive: Path) -> bytes:
     return extracted.read()
 
 
+def read_snapshot_manifest(archive: Path) -> Manifest:
+    """The archived gapit-manifest.json parsed in-memory (no extraction,
+    nothing written) — read-only queries such as `db outdated`."""
+    with tarfile.open(archive, "r:gz") as tar:
+        return Manifest.model_validate_json(_member(tar, "gapit-manifest.json", archive))
+
+
 def extract_snapshot(archive: Path, db_dir: Path) -> Manifest:
     """Install ``records.jsonl`` from ``archive`` into ``db_dir`` atomically;
     return the ARCHIVED manifest (its upstream_version seeds the fresh build)."""

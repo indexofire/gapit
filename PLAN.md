@@ -133,6 +133,9 @@ consumes abricate-built datadirs.
   `screen`/`summary`/`schema` + read-only `db_list`); README, LICENSE, CHANGELOG docs.
 - Custom database construction (`gapit db build`) with metadata merge — added 2026-09-19,
   post-phase; see docs/custom-db.md.
+- Reads-mode opt-in alignment filtering (`gapit.reads/2` via `--min-identity`/`--min-mapq`;
+  per-alignment identity `100*(alen-nm)/alen`, NM via minimap2 `--cs`) — added 2026-09-20,
+  post-phase; `gapit.reads/1` stays the frozen default. See docs/reads.md.
 - **Deferred by decision (2026-09-18):** PyPI and bioconda publication — recipe remains
   in-repo; sha256 placeholder to be replaced at submission time.
 

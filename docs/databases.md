@@ -88,6 +88,98 @@ $ gapit db list --json
 `gapit list` gives the abricate-compatible view of installed databases; `gapit list --json`
 returns a `gapit.list/1` document. See [outputs.md](./outputs.md).
 
+## Checking database freshness
+
+`gapit db outdated` reports every installed database's age and flags two update conditions.
+Against a fully installed datadir (output trimmed to three of twelve rows):
+
+```console
+$ gapit db outdated --days 30
+NAME	FETCHED_AT	AGE_DAYS	STATUS
+argannot	2026-09-17T23:22:06Z	2.58	ok
+bacmet2	2026-09-17T23:13:51Z	2.58	ok
+card	2026-09-17T23:14:25Z	2.58	ok
+...
+```
+
+A database installed long ago and superseded by the bundled snapshot reports both flags:
+
+```console
+$ gapit db outdated --datadir /tmp/opencode/gapit-outdated-demo
+NAME	FETCHED_AT	AGE_DAYS	STATUS
+card	2020-01-01T00:00:00Z	2454.55	stale+snapshot-update
+```
+
+| Status | Meaning |
+|---|---|
+| `ok` | Fresh enough and no newer bundle |
+| `stale` | `age_days` past `--days` (default 90; `--days 0` marks everything stale) |
+| `snapshot-update` | The provider's bundled snapshot is newer than the installed copy (card, vfdb) |
+| `stale+snapshot-update` | Both of the above |
+
+Staleness is a report, never an error state: the command exits 0 however stale things are.
+Exit 4 (`DATADIR_NOT_FOUND`, `DATADIR_EMPTY`) covers a missing datadir or one with no installed
+databases; an unparseable `fetched_at` is `MANIFEST_MALFORMED` (exit 5). For agents, `--json`
+emits a `gapit.dboutdated/1` document (a CLI listing like `gapit.dblist/1`, not registered with
+`gapit schema`):
+
+```console
+$ gapit db outdated --days 3 --json
+{
+  "schema": "gapit.dboutdated/1",
+  "databases": [
+    {
+      "db": "argannot",
+      "fetched_at": "2026-09-17T23:22:06Z",
+      "age_days": 2.58,
+      "status": "ok",
+      "upstream_version": ""
+    },
+    {
+      "db": "card",
+      "fetched_at": "2026-09-17T23:14:25Z",
+      "age_days": 2.58,
+      "status": "ok",
+      "upstream_version": ""
+    }
+  ]
+}
+```
+
+## Searching records across databases
+
+`gapit db search TERM` looks up genes in the `records.jsonl` truth store of every installed
+database — no BLAST, just a fast scan. Matching is case-insensitive substring by default;
+`--exact` switches to full-field equality:
+
+```console
+$ gapit db search ctx-m --limit 3
+argannot	(Bla)blaCTX-M-1	X92506:63-938		(Bla)blaCTX-M-1	876
+argannot	(Bla)blaCTX-M-10	AF255298:1-873		(Bla)blaCTX-M-10	873
+argannot	(Bla)blaCTX-M-100	FR682582:1-876		(Bla)blaCTX-M-100	876
+$ gapit db search "blaCTX-M-1" --field gene --exact
+ncbi	blaCTX-M-1	NG_048897.1	CEPHALOSPORIN	extended-spectrum class A beta-lactamase CTX-M-1	876
+$ gapit db search virulence --db vfdb --field function --limit 2
+vfdb	AAA92657	AAA92657	virulence	(AAA92657) unknown protein [TraJ (VF0241) - Invasion (VFC0083)] [Escherichia coli]	606
+vfdb	AAC38364	AAC38364	virulence	(AAC38364) Orf1 [Ler (VF0189) - Regulation (VFC0301)] [Escherichia coli O127:H6 str. E2348/69]	390
+```
+
+Rows are `DB\tGENE\tACCESSION\tFUNCTION\tPRODUCT\tLENGTH`, streamed in database-then-file
+order; `FUNCTION` joins the record's function classes with `;`. `--field` picks
+`gene|accession|function|product|any` (default `any` searches all of them, one function class
+at a time). `--limit N` caps the output (default 100; `0` = unlimited) and stderr notes a
+truncation (`--quiet` silences it); zero hits exit 0 with empty stdout. `--json` prints one
+JSON object per hit with the same fields as snake_case (`function` as an array):
+
+```console
+$ gapit db search "tet(M)" --field gene --exact --json | head -1
+{"db":"card","gene":"tet(M)","accession":"AB039845.1:25-1945","function":["tetracycline"],"product":"Tet(M) is a ribosomal protection protein that confers tetracycline resistance. It is found on transposable DNA elements and its horizontal transfer between bacterial species has been documented.","length":1920}
+```
+
+An installed database whose `records.jsonl` is missing is skipped with a stderr warning during
+a full scan, but targeting it explicitly (`--db NAME`) fails with exit 4 `DB_INCOMPLETE`; an
+unknown `--db NAME` is a usage error (exit 2) listing what is installed.
+
 ## Providers
 
 Twelve providers ship with gapit. `card` and `vfdb` also ship as bundled snapshots inside
@@ -119,6 +211,12 @@ snapshots bundled in the package. Nothing touches the network: the snapshot arch
 `records.jsonl` plus the manifest, and gapit rebuilds `sequences` and the BLAST index
 locally. That rebuild is deterministic and fast, and it matches the BLAST
 version actually installed on your machine.
+
+The bundled data does not rot: a scheduled workflow
+(`.github/workflows/snapshot-refresh.yml`) re-fetches card and vfdb from upstream monthly
+and opens a pull request whenever the records changed. That PR is the review gate — a human
+signs off on the data update before the new tars merge. Outside GitHub Actions,
+`gapit db fetch <name> --from-source` remains the manual upstream path.
 
 ### Fetching a named provider
 

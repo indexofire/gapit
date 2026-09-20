@@ -221,14 +221,18 @@ def test_fetch_provider_prot_normalizes_to_x(
 
 
 class _FakeResponse:
-    """Minimal urlopen() result for the User-Agent test: read(size) hands
-    out the payload, then b'' (EOF); context-manager shaped like the real
-    addinfourl (the download loop uses ``with urlopen(...)``)."""
+    """Minimal urlopen() result for the network-faked tests: read(size)
+    hands out the payload, then b'' (EOF); context-manager shaped like the
+    real addinfourl (the download loop uses ``with urlopen(...)``).
+    ``read_error`` simulates a stall mid-body (raised on first read)."""
 
-    def __init__(self, payload: bytes) -> None:
+    def __init__(self, payload: bytes, read_error: Exception | None = None) -> None:
         self._remaining = payload
+        self._read_error = read_error
 
     def read(self, size: int = -1) -> bytes:
+        if self._read_error is not None:
+            raise self._read_error
         take = len(self._remaining) if size < 0 else size
         data, self._remaining = self._remaining[:take], self._remaining[take:]
         return data
@@ -250,7 +254,7 @@ def test_fetch_provider_sends_gapit_user_agent(
     the streamed body."""
     captured: dict[str, str] = {}
 
-    def fake_urlopen(request: urllib.request.Request) -> _FakeResponse:
+    def fake_urlopen(request: urllib.request.Request, timeout: float = -1) -> _FakeResponse:
         captured["url"] = request.full_url
         captured["ua"] = request.get_header("User-agent") or ""
         return _FakeResponse(UPSTREAM_FASTA.encode("utf-8"))
@@ -262,3 +266,49 @@ def test_fetch_provider_sends_gapit_user_agent(
     assert manifest.n_records == 3  # the fake body fed the whole pipeline
     assert captured["url"] == url
     assert "gapit/" in captured["ua"]
+
+
+def test_fetch_provider_bounds_urlopen_timeout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a monkeypatched urlopen standing in for the network, When a
+    provider is fetched, Then urlopen receives timeout=60 — an unbounded
+    fetch would hang `gapit db fetch` forever on a stalled connection
+    (review finding H1; the fake's -1 default makes a missing kwarg fail)."""
+    captured: dict[str, float] = {}
+
+    def fake_urlopen(request: urllib.request.Request, timeout: float = -1) -> _FakeResponse:
+        captured["timeout"] = timeout
+        return _FakeResponse(UPSTREAM_FASTA.encode("utf-8"))
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    url = write_source(tmp_path)
+    manifest = fetch_provider(syn_provider(url), tmp_path / SYN, fetched_at=FETCHED_AT)
+
+    assert manifest.n_records == 3  # the fake body fed the whole pipeline
+    assert captured["timeout"] == 60
+
+
+def test_fetch_provider_stalled_download_raises_download_failed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a download whose body stalls — read() raises socket.timeout
+    (alias of TimeoutError, an OSError subclass), When fetched, Then the
+    existing DOWNLOAD_FAILED mapping catches it: DatabaseError with the URL
+    in context, exit code 4, and no partial artifacts left behind."""
+    stalled = _FakeResponse(b"", read_error=TimeoutError("timed out"))
+
+    def fake_urlopen(request: urllib.request.Request, timeout: float = -1) -> _FakeResponse:
+        return stalled
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    url = write_source(tmp_path)
+    db_dir = tmp_path / SYN
+    with pytest.raises(DatabaseError) as excinfo:
+        fetch_provider(syn_provider(url), db_dir, fetched_at=FETCHED_AT)
+    error = excinfo.value
+    assert error.code == "DOWNLOAD_FAILED"
+    assert error.exit_code == 4
+    assert error.context == {"url": url}
+    assert not (db_dir / "gapit-manifest.json").exists()
+    assert all(entry.is_file() for entry in db_dir.iterdir())  # .part cleaned, no workdir left

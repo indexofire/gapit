@@ -6,6 +6,7 @@ pipeline and the shared OutputFormat / AlignerEnum / database lookup.
 """
 
 import enum
+import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
@@ -14,7 +15,7 @@ from typing import NoReturn
 import typer
 
 from gapit import config, db
-from gapit.blast import screen_file
+from gapit.blast import ensure_blast, screen_file
 from gapit.errors import DatabaseError, InputError, UsageError
 from gapit.formats.json import render_json
 from gapit.formats.md import render_markdown
@@ -100,7 +101,12 @@ def run_screen(
     debug: bool,
     output_format: OutputFormat,
 ) -> None:
-    """Screen each input file in order; buffer reports; print once at the end."""
+    """Screen each input file in order; buffer reports; print once at the end.
+
+    The per-run gates (blastn presence via ``ensure_blast``, dbtype via one
+    ``blastdbcmd -info``) fire once up front, so MISSING_DEPENDENCY and
+    DATABASE_NOT_INDEXED errors precede any "Processing:" stderr lines.
+    """
     if not 0.0 < minid <= 100.0:
         usage_fail(f"--minid must be in (0, 100]: got {minid}")
     if not 0.0 <= mincov <= 100.0:
@@ -112,12 +118,17 @@ def run_screen(
     inputs = _resolve_inputs(files, fofn)
     params = ScreeningParams(db=db_name, minid=minid, mincov=mincov, threads=threads)
     database = find_database(config.resolve_datadir(datadir), db_name)
+    ensure_blast()
+    dbtype = db.blast_db_info(database.sequences_path).dbtype
+    cpu_count = os.cpu_count()
+    if not quiet and cpu_count is not None and jobs * threads > cpu_count:
+        typer.echo(f"--jobs {jobs} --threads {threads} oversubscribes {cpu_count} cpus", err=True)
     reports: list[Report] = []
     if jobs == 1:
         for path in inputs:
             if not quiet:
                 typer.echo(f"Processing: {path}", err=True)
-            report = screen_file(path, database, params, debug=debug)
+            report = screen_file(path, database, params, dbtype=dbtype, debug=debug)
             if not quiet:
                 typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
             reports.append(report)
@@ -126,7 +137,7 @@ def run_screen(
         def screen_one(path: Path) -> Report:
             if not quiet:
                 typer.echo(f"Processing: {path}", err=True)
-            report = screen_file(path, database, params, debug=debug)
+            report = screen_file(path, database, params, dbtype=dbtype, debug=debug)
             if not quiet:
                 typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
             return report

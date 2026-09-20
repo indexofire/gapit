@@ -1,0 +1,120 @@
+name: Snapshot refresh
+
+# Monthly: re-fetch card + vfdb from upstream and regenerate the bundled
+# snapshot tars, so the wheel's zero-network defaults do not rot. A PR is the
+# review gate (license/provenance hygiene); `gapit db fetch <db> --from-source`
+# remains the manual path outside Actions.
+on:
+  schedule:
+    - cron: "0 3 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: snapshot-refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+      - run: pixi install
+      - name: Refresh card and vfdb snapshots from upstream
+        id: refresh
+        run: |
+          pixi run python - <<'PY'
+          import hashlib
+          import os
+          from datetime import UTC, datetime
+          from pathlib import Path
+          from tempfile import TemporaryDirectory
+
+          from gapit.providers import REGISTRY
+          from gapit.providers.common import fetch_provider
+          from gapit.providers.snapshots import extract_snapshot, make_snapshot
+
+          # Local verification reruns this exact script against a scratch dir
+          # via GAPIT_SNAPSHOT_REFRESH_DIR; the committed tars stay untouched.
+          snapshot_dir = Path(os.environ.get("GAPIT_SNAPSHOT_REFRESH_DIR", "src/gapit/data/snapshots"))
+          now = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+          def sha256(path: Path) -> str:
+              digest = hashlib.sha256()
+              with path.open("rb") as handle:
+                  for chunk in iter(lambda: handle.read(1 << 20), b""):
+                      digest.update(chunk)
+              return digest.hexdigest()
+
+
+          def emit(key: str, value: str) -> None:
+              target = os.environ.get("GITHUB_OUTPUT")
+              if target:
+                  with open(target, "a", encoding="utf-8") as handle:
+                      print(f"{key}<<EOF", value, "EOF", sep="\n", file=handle)
+
+
+          rows = []
+          with TemporaryDirectory(prefix="gapit-snapshot-refresh.") as scratch:
+              for name in ("card", "vfdb"):
+                  db_dir = Path(scratch) / name
+                  manifest = fetch_provider(
+                      REGISTRY[name], db_dir, fetched_at=now, from_source=True, quiet=False
+                  )
+                  dest = snapshot_dir / f"{name}.tar.gz"
+                  before = sha256(dest) if dest.is_file() else "-"
+                  # The tar turns over only when the records changed: the
+                  # archived manifest carries fetched_at, so an unconditional
+                  # rebuild would rewrite bytes (and open a PR) on every run
+                  # even with identical upstream content.
+                  changed = True
+                  if dest.is_file():
+                      bundled = Path(scratch) / f"{name}-bundled"
+                      bundled.mkdir()
+                      extract_snapshot(dest, bundled)
+                      changed = (bundled / "records.jsonl").read_bytes() != (
+                          db_dir / "records.jsonl"
+                      ).read_bytes()
+                  if changed:
+                      snapshot_dir.mkdir(parents=True, exist_ok=True)
+                      make_snapshot(db_dir, dest)
+                  after = sha256(dest)
+                  rows.append((name, manifest.n_records, before, after, changed))
+                  verdict = "changed" if changed else "unchanged"
+                  print(f"{name}: {manifest.n_records} records, tar sha256 {before} -> {after} ({verdict})")
+
+          summary = "\n".join(
+              [
+                  "Monthly upstream refresh of the bundled card and vfdb snapshots.",
+                  "",
+                  "The snapshot carries `records.jsonl` plus the manifest; the BLAST index",
+                  "rebuilds locally on install (deterministic, matches the installed BLAST).",
+                  "",
+                  "| db | records | tar sha256 before | tar sha256 after | changed |",
+                  "|---|---|---|---|---|",
+                  *(
+                      f"| {name} | {records} | `{before}` | `{after}` | {'yes' if changed else 'no'} |"
+                      for name, records, before, after, changed in rows
+                  ),
+              ]
+          )
+          print()
+          print(summary)
+          emit("month", f"{datetime.now(UTC):%Y-%m}")
+          emit("summary", summary)
+          PY
+      - name: Open snapshot refresh pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/snapshot-refresh
+          title: "data: refresh card and vfdb snapshots (${{ steps.refresh.outputs.month }})"
+          body: ${{ steps.refresh.outputs.summary }}
+          commit-message: "data: refresh card and vfdb snapshots"
+          delete-branch: true

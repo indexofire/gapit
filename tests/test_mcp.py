@@ -95,12 +95,22 @@ def test_notifications_get_no_response() -> None:
     assert responses[0]["id"] == 1
 
 
-def test_tools_list_advertises_four_tools_with_schemas() -> None:
+def test_tools_list_advertises_eight_tools_with_schemas() -> None:
     """Given tools/list, When served, Then exactly screen/summary/schema/
-    db_list, each with an object inputSchema carrying properties + required."""
+    db_list/db_fetch/db_build/db_search/db_outdated, each with an object
+    inputSchema carrying properties + required."""
     (response,) = exchange({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
     tools = response["result"]["tools"]
-    assert sorted(tool["name"] for tool in tools) == ["db_list", "schema", "screen", "summary"]
+    assert sorted(tool["name"] for tool in tools) == [
+        "db_build",
+        "db_fetch",
+        "db_list",
+        "db_outdated",
+        "db_search",
+        "schema",
+        "screen",
+        "summary",
+    ]
     by_name = {tool["name"]: tool for tool in tools}
     for tool in by_name.values():
         assert tool["description"]
@@ -110,6 +120,8 @@ def test_tools_list_advertises_four_tools_with_schemas() -> None:
     assert by_name["screen"]["inputSchema"]["required"] == ["files"]
     assert by_name["summary"]["inputSchema"]["required"] == ["files"]
     assert by_name["schema"]["inputSchema"]["required"] == ["name"]
+    assert by_name["db_build"]["inputSchema"]["required"] == ["name", "fasta"]
+    assert by_name["db_search"]["inputSchema"]["required"] == ["term"]
 
 
 def test_schema_call_returns_report_schema_text() -> None:
@@ -202,7 +214,7 @@ def test_malformed_line_is_ignored_and_loop_continues() -> None:
         {"jsonrpc": "2.0", "id": 3, "method": "tools/list"},
     )
     assert len(responses) == 1
-    assert len(responses[0]["result"]["tools"]) == 4
+    assert len(responses[0]["result"]["tools"]) == 8
 
 
 def test_eof_terminates_cleanly() -> None:
@@ -227,4 +239,4 @@ def test_cli_mcp_subcommand_streams_protocol_lines() -> None:
     responses = [json.loads(line) for line in result.stdout.splitlines()]
     assert [response["id"] for response in responses] == [1, 2]
     assert responses[0]["result"]["serverInfo"]["name"] == "gapit"
-    assert len(responses[1]["result"]["tools"]) == 4
+    assert len(responses[1]["result"]["tools"]) == 8

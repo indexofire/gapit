@@ -49,6 +49,25 @@ been released yet; the package version stays 0.1.0.
   (blastn for contig files, minimap2 for `--r1`/`--r2` reads); `--aligner minimap2` screens
   positional assembly FASTA through the minimap2 engine, `--aligner blastn` with `--r1`/`--r2`
   is a usage error (2026-09-19).
+- `gapit db outdated`: staleness report over installed databases (age vs `--days`, newer
+  bundled snapshot) as a TSV table or `gapit.dboutdated/1` JSON document (2026-09-20).
+- `gapit db search TERM`: case-insensitive gene/accession/function/product lookup across
+  installed databases' `records.jsonl`, with `--field`, `--exact`, `--db`, `--limit` and
+  JSONL output (2026-09-20).
+- MCP database tools `db_fetch`, `db_build`, `db_search`, `db_outdated`: the MCP server now
+  exposes the `db` commands alongside the analysis tools, so agents can self-provision and
+  inspect databases mid-session; `mcp.py` split into protocol (`mcp.py`) and tool
+  implementations (`mcp_tools.py`) with zero wire change for the existing tools (2026-09-20).
+- CI snapshot refresh: monthly scheduled workflow (`.github/workflows/snapshot-refresh.yml`)
+  re-fetching card and vfdb from upstream, regenerating the bundled tars only when the
+  records changed, and opening a review PR (2026-09-20).
+- Reads-mode opt-in alignment filtering: `gapit screen --min-identity/--min-mapq` (reads
+  engine only) drops PAF alignments below the thresholds before aggregation and emits the new
+  `gapit.reads/2` document (params gain both thresholds; gene entries gain
+  `mean_identity_pct`, the alignment-length-weighted mean identity; introspectable via
+  `gapit schema reads2`). Both flags off keeps `gapit.reads/1` byte-identical, and the
+  identity floor fixes the documented family-splitting over-calls on homologous genes
+  (2026-09-20).
 
 ### Changed
 

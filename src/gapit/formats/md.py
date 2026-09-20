@@ -25,6 +25,12 @@ _COLUMNS = (
 )
 
 
+def _md_cell(value: str) -> str:
+    """Escape Markdown table metacharacters so cells cannot break the table
+    (victors gene ids like ``gi|115534241:2616-3152`` contain pipes)."""
+    return value.replace("\\", "\\\\").replace("|", "\\|")
+
+
 def render_markdown(reports: Iterable[Report], params: ScreeningParams, *, now: datetime) -> str:
     """Render screening results as deterministic Markdown: YAML frontmatter,
     one section per file, stable table columns."""
@@ -72,7 +78,7 @@ def render_markdown(reports: Iterable[Report], params: ScreeningParams, *, now: 
                 hit.product,
                 hit.function,
             )
-            lines.append("| " + " | ".join(cells) + " |")
+            lines.append("| " + " | ".join(_md_cell(cell) for cell in cells) + " |")
         lines.append("")
     return "\n".join(lines) + "\n"
 
@@ -89,22 +95,36 @@ _READS_COLUMNS = (
     "Resistance",
 )
 
+_READS2_COLUMNS = (*_READS_COLUMNS, "Identity%")
 
-def render_reads_markdown(
-    reports: Iterable[ReadsReport], params: ReadsParams, *, now: datetime
+
+def _render_reads_markdown(
+    reports: Iterable[ReadsReport],
+    params: ReadsParams,
+    *,
+    now: datetime,
+    schema: str,
+    columns: tuple[str, ...],
+    with_identity: bool,
 ) -> str:
-    """Render read-screening results as deterministic Markdown."""
+    """Shared reads-report Markdown core; gapit.reads/2 adds the two filter
+    lines to the frontmatter and an Identity% cell per gene."""
     files = list(reports)
     genes_found = sum(1 for report in files for gene in report.genes if gene.present)
     lines: list[str] = [
         "---",
-        "schema: gapit.reads/1",
+        f"schema: {schema}",
         f"tool: gapit {__version__}",
         f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
         f"db: {params.db}",
         f"read_type: {params.read_type}",
         f"min_breadth: {params.min_breadth}",
         f"threads: {params.threads}",
+    ]
+    if with_identity:
+        lines.append(f"min_identity: {params.min_identity}")
+        lines.append(f"min_mapq: {params.min_mapq}")
+    lines += [
         f"files: {len(files)}",
         f"genes_found: {genes_found}",
         "---",
@@ -119,8 +139,8 @@ def render_reads_markdown(
             lines.append("_No genes detected._")
             lines.append("")
             continue
-        lines.append("| " + " | ".join(_READS_COLUMNS) + " |")
-        lines.append("|" + "---|" * len(_READS_COLUMNS))
+        lines.append("| " + " | ".join(columns) + " |")
+        lines.append("|" + "---|" * len(columns))
         for gene in report.genes:
             cells = (
                 gene.gene,
@@ -133,6 +153,38 @@ def render_reads_markdown(
                 gene.product,
                 gene.function,
             )
-            lines.append("| " + " | ".join(cells) + " |")
+            if with_identity:
+                cells += (f"{gene.mean_identity_pct:.2f}",)
+            lines.append("| " + " | ".join(_md_cell(cell) for cell in cells) + " |")
         lines.append("")
     return "\n".join(lines) + "\n"
+
+
+def render_reads_markdown(
+    reports: Iterable[ReadsReport], params: ReadsParams, *, now: datetime
+) -> str:
+    """Render read-screening results as deterministic Markdown."""
+    return _render_reads_markdown(
+        reports,
+        params,
+        now=now,
+        schema="gapit.reads/1",
+        columns=_READS_COLUMNS,
+        with_identity=False,
+    )
+
+
+def render_reads2_markdown(
+    reports: Iterable[ReadsReport], params: ReadsParams, *, now: datetime
+) -> str:
+    """Render filtered read-screening results as deterministic Markdown
+    (gapit.reads/2): the reads/1 shape plus the filter thresholds in
+    frontmatter and an Identity% column per gene."""
+    return _render_reads_markdown(
+        reports,
+        params,
+        now=now,
+        schema="gapit.reads/2",
+        columns=_READS2_COLUMNS,
+        with_identity=True,
+    )

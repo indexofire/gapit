@@ -138,3 +138,15 @@ def read_manifest(path: Path) -> Manifest:
             code="MANIFEST_MALFORMED",
             context={"file": str(path)},
         ) from exc
+
+
+def installed_db_dirs(root: Path) -> list[Path]:
+    """Datadir subdirectories holding a gapit-manifest.json, sorted by name."""
+    return sorted(
+        (
+            child
+            for child in root.iterdir()
+            if child.is_dir() and (child / "gapit-manifest.json").is_file()
+        ),
+        key=lambda child: child.name,
+    )

@@ -12,8 +12,8 @@ import typer
 
 from gapit import config
 from gapit.errors import InputError
-from gapit.formats.json import render_reads_json
-from gapit.formats.md import render_reads_markdown
+from gapit.formats.json import render_reads2_json, render_reads_json
+from gapit.formats.md import render_reads2_markdown, render_reads_markdown
 from gapit.reads import (
     ReadFileKind,
     ReadsParams,
@@ -67,7 +67,11 @@ def _resolve_read_preset(
 
 
 def _validate_reads_usage(
-    output_format: OutputFormat | None, min_breadth: float, threads: int
+    output_format: OutputFormat | None,
+    min_breadth: float,
+    min_identity: float,
+    min_mapq: int,
+    threads: int,
 ) -> None:
     """Usage gates shared by both minimap2 entry points, in the frozen order
     (format first, then thresholds), before any file is touched."""
@@ -75,6 +79,10 @@ def _validate_reads_usage(
         usage_fail("--format tsv|csv is not available in reads mode (use json or md)")
     if not 0.0 <= min_breadth <= 100.0:
         usage_fail(f"--min-breadth must be in [0, 100]: got {min_breadth}")
+    if not 0.0 <= min_identity <= 100.0:
+        usage_fail(f"--min-identity must be in [0, 100]: got {min_identity}")
+    if min_mapq < 0:
+        usage_fail(f"--min-mapq must be >= 0: got {min_mapq}")
     if threads < 1:
         usage_fail(f"--threads must be >= 1: got {threads}")
 
@@ -85,13 +93,17 @@ def _screen_lanes(
     datadir: Path | None,
     read_type: ReadTypeEnum | None,
     min_breadth: float,
+    min_identity: float,
+    min_mapq: int,
     threads: int,
     output_format: OutputFormat | None,
     quiet: bool,
     debug: bool,
 ) -> None:
     """Minimap2 engine core shared by both entry points: preset resolution,
-    screening, rendering; json is the default format (SPEC.md §10)."""
+    screening, rendering; json is the default format (SPEC.md §10). Either
+    reads/2 threshold on selects the gapit.reads/2 document; both off keep
+    gapit.reads/1 byte-identical."""
     resolved = _resolve_read_preset(lanes, read_type, quiet)
     database = find_database(config.resolve_datadir(datadir), db_name)
     read_files = [r1_path for r1_path, _ in lanes] + [
@@ -107,18 +119,35 @@ def _screen_lanes(
         min_breadth=min_breadth,
         threads=threads,
         debug=debug,
+        min_identity=min_identity,
+        min_mapq=min_mapq,
     )
     present = sum(1 for gene in report.genes if gene.present)
     if not quiet:
         typer.echo(f"Detected {present} present genes in {read_list}", err=True)
     params = ReadsParams(
-        db=db_name, read_type=resolved.value, min_breadth=min_breadth, threads=threads
+        db=db_name,
+        read_type=resolved.value,
+        min_breadth=min_breadth,
+        threads=threads,
+        min_identity=min_identity,
+        min_mapq=min_mapq,
     )
     now = datetime.now(UTC)
-    if output_format is OutputFormat.md:
-        typer.echo(render_reads_markdown([report], params, now=now), nl=False)
+    reads2 = min_identity > 0.0 or min_mapq > 0
+    if reads2:
+        output = (
+            render_reads2_markdown([report], params, now=now)
+            if output_format is OutputFormat.md
+            else render_reads2_json([report], params, now=now)
+        )
     else:
-        typer.echo(render_reads_json([report], params, now=now), nl=False)
+        output = (
+            render_reads_markdown([report], params, now=now)
+            if output_format is OutputFormat.md
+            else render_reads_json([report], params, now=now)
+        )
+    typer.echo(output, nl=False)
 
 
 def run_screen_reads(
@@ -128,6 +157,8 @@ def run_screen_reads(
     datadir: Path | None,
     read_type: ReadTypeEnum | None,
     min_breadth: float,
+    min_identity: float,
+    min_mapq: int,
     threads: int,
     output_format: OutputFormat | None,
     quiet: bool,
@@ -136,10 +167,11 @@ def run_screen_reads(
 ) -> None:
     """Screen FASTQ reads or assembly FASTA given as --r1/--r2 comma lists
     (per-lane minimap2, sample-level union); json is the default format
-    (SPEC.md §10)."""
+    (SPEC.md §10). A nonzero --min-identity/--min-mapq turns on
+    gapit.reads/2 alignment filtering."""
     if aligner is AlignerEnum.blastn:
         usage_fail("--aligner blastn is not available for --r1/--r2 reads input")
-    _validate_reads_usage(output_format, min_breadth, threads)
+    _validate_reads_usage(output_format, min_breadth, min_identity, min_mapq, threads)
     lanes = _parse_read_lanes(r1, r2)
     for path in [r1_path for r1_path, _ in lanes] + [
         r2_path for _, r2_path in lanes if r2_path is not None
@@ -151,7 +183,17 @@ def run_screen_reads(
                 context={"file": str(path)},
             )
     _screen_lanes(
-        lanes, db_name, datadir, read_type, min_breadth, threads, output_format, quiet, debug
+        lanes,
+        db_name,
+        datadir,
+        read_type,
+        min_breadth,
+        min_identity,
+        min_mapq,
+        threads,
+        output_format,
+        quiet,
+        debug,
     )
 
 
@@ -162,6 +204,8 @@ def run_screen_assemblies(
     datadir: Path | None,
     read_type: ReadTypeEnum | None,
     min_breadth: float,
+    min_identity: float,
+    min_mapq: int,
     threads: int,
     output_format: OutputFormat | None,
     quiet: bool,
@@ -171,8 +215,9 @@ def run_screen_assemblies(
     (--aligner minimap2): every input must be FASTA(.gz) content — FASTQ
     content is a usage error, undetectable content keeps the typed input
     error. Preset resolution and output follow the reads contract (SPEC §10);
-    --fofn is a blastn-engine-only input source and is rejected here."""
-    _validate_reads_usage(output_format, min_breadth, threads)
+    --fofn is a blastn-engine-only input source and is rejected here. A
+    nonzero --min-identity/--min-mapq turns on gapit.reads/2 filtering."""
+    _validate_reads_usage(output_format, min_breadth, min_identity, min_mapq, threads)
     if fofn is not None:
         usage_fail("--fofn is not available with --aligner minimap2")
     if not files:
@@ -192,6 +237,8 @@ def run_screen_assemblies(
         datadir,
         read_type,
         min_breadth,
+        min_identity,
+        min_mapq,
         threads,
         output_format,
         quiet,

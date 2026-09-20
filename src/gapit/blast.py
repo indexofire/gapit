@@ -4,11 +4,13 @@ import re
 import shlex
 import subprocess
 import sys
+import threading
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel
 
-from gapit.db import Database, blast_db_info
+from gapit.db import Database
 from gapit.errors import DependencyError, GapitError, InputError
 from gapit.hits import process_rows
 from gapit.report import Report, ScreeningParams
@@ -135,11 +137,22 @@ def _pipeline(query: Path, argv: list[str]) -> str:
         ) from exc
     if any2fasta.stdout is not None:
         any2fasta.stdout.close()  # blast owns the read end now; SIGPIPE propagates
-    blast_out, blast_err = blast.communicate()
-    any2fasta_err = b""
-    if any2fasta.stderr is not None:
-        any2fasta_err = any2fasta.stderr.read()
-    any2fasta_rc = any2fasta.wait()
+    # stderr is drained by a background thread: an undrained stderr pipe
+    # fills (~64 KB) and blocks any2fasta mid-run (minimap2_run._stream_minimap2).
+    any2fasta_err_chunks: list[bytes] = []
+
+    def drain() -> None:
+        if any2fasta.stderr is not None:
+            any2fasta_err_chunks.append(any2fasta.stderr.read())
+
+    drain_thread = threading.Thread(target=drain)
+    drain_thread.start()
+    try:
+        blast_out, blast_err = blast.communicate()
+        any2fasta_rc = any2fasta.wait()
+    finally:
+        drain_thread.join()
+    any2fasta_err = b"".join(any2fasta_err_chunks)
     # blast first: if it crashed, its stderr names the real cause (any2fasta
     # may merely have taken the SIGPIPE).
     if blast.returncode != 0:
@@ -158,17 +171,22 @@ def _pipeline(query: Path, argv: list[str]) -> str:
 
 
 def run_screen(
-    query: Path, database: Database, params: ScreeningParams, *, debug: bool = False
+    query: Path,
+    database: Database,
+    params: ScreeningParams,
+    *,
+    dbtype: Literal["nucl", "prot"],
+    debug: bool = False,
 ) -> list[BlastRow]:
     """Run the any2fasta -> blastn/blastx pipeline for one query file.
 
     The database must already be indexed; protein databases switch to blastx
     without -perc_identity (upstream quirk, minid silently ignored). With
     ``debug``, echo the exact any2fasta and blast argv to stderr
-    (abricate --debug parity).
+    (abricate --debug parity). ``dbtype`` comes from the caller resolving it
+    once per run, so dependency/index errors surface before any per-file work.
     """
-    info = blast_db_info(database.sequences_path)
-    if info.dbtype == "prot":
+    if dbtype == "prot":
         argv = [
             "blastx",
             "-task",
@@ -219,11 +237,18 @@ def run_screen(
 
 
 def screen_file(
-    query: Path, database: Database, params: ScreeningParams, *, debug: bool = False
+    query: Path,
+    database: Database,
+    params: ScreeningParams,
+    *,
+    dbtype: Literal["nucl", "prot"],
+    debug: bool = False,
 ) -> Report:
-    """Screen one input file against one database into a sorted Report."""
-    ensure_blast()
-    rows = run_screen(query, database, params, debug=debug)
+    """Screen one input file against one database into a sorted Report.
+
+    The caller owns the per-run gates (``ensure_blast`` and the one-shot
+    ``dbtype`` resolution) so a multi-file run pays each probe once."""
+    rows = run_screen(query, database, params, dbtype=dbtype, debug=debug)
     hits = process_rows(rows, mincov=params.mincov, default_db=params.db)
     ordered = sorted(hits, key=lambda hit: (hit.sequence, hit.start))
     return Report(file=str(query), hits=tuple(ordered))

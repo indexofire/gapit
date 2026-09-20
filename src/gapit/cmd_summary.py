@@ -4,27 +4,16 @@ Lives outside cli.py to keep that module small; cli.py registers it via
 ``register_summary_command``.
 """
 
-from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
-from gapit.errors import GapitError, render_error
+from gapit.dispatch import dispatch
 from gapit.formats.summary import format_summary_tsv, render_summary_json, render_summary_md
 from gapit.screening import OutputFormat, usage_fail
 from gapit.summary import SummaryParams, build_summary
-
-
-def _dispatch(action: Callable[[], None]) -> None:
-    """Run a command body; failures render the gapit.error/1 envelope on
-    stderr and exit with the documented code (mirrors cli._dispatch)."""
-    try:
-        action()
-    except Exception as exc:
-        typer.echo(render_error(exc), err=True)
-        raise typer.Exit(code=exc.exit_code if isinstance(exc, GapitError) else 1) from exc
 
 
 def summary_command(
@@ -67,7 +56,7 @@ def summary_command(
         else:
             typer.echo(format_summary_tsv(matrix, csv=output_format is OutputFormat.csv), nl=False)
 
-    _dispatch(run)
+    dispatch(run)
 
 
 def register_summary_command(app: typer.Typer) -> None:

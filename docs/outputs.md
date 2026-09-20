@@ -217,6 +217,25 @@ Each gene entry:
 | `reads_mapped` | integer | Distinct reads with a primary alignment on the gene |
 | `present` | boolean | `breadth_pct >= min_breadth` |
 
+### gapit.reads/2 (reads screening with identity/MAPQ filtering)
+
+Opt-in variant of reads/1, emitted only when `--min-identity` or `--min-mapq` is nonzero: PAF
+alignments below the thresholds are dropped before aggregation, which removes the
+family-splitting over-calls breadth-only presence suffers on homologous genes. With both
+thresholds off the output stays `gapit.reads/1`, byte-identical. Fields from
+`gapit schema reads2` — identical to reads/1 except:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `schema` | string | Always `gapit.reads/2` |
+| `params.min_identity` | number | Per-alignment identity floor in effect, 0 = off |
+| `params.min_mapq` | integer | Per-alignment MAPQ floor in effect, 0 = off |
+| `files[].genes[].mean_identity_pct` | number | Alignment-length-weighted mean per-alignment identity over the kept alignments, rounded to 2 |
+
+Per-alignment identity is `100 * (alen - nm) / alen` (PAF block length and `NM:i:` tag; a row
+without NM counts as 100). See [reads.md](./reads.md#filtering-alignments-by-identity-and-mapq-gapitreads2)
+for the homolog worked example and threshold guidance.
+
 ### gapit.summary/1 (summary matrix)
 
 `gapit summary --format json` turns report tables into a gene matrix. Real output

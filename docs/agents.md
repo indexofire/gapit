@@ -193,4 +193,6 @@ Screening options: `./screen.md`. Summary semantics: `./summary.md`.
 
 If your runtime speaks MCP, register gapit as a server and call `screen`,
 `summary`, `schema`, and `db_list` as tools instead of subprocesses:
-`./mcp.md`.
+`./mcp.md`. The server also exposes the `db` commands (`db_fetch`,
+`db_build`, `db_search`, `db_outdated`), so an agent can provision the
+database it needs and screen against it in one session.

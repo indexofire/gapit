@@ -37,6 +37,8 @@ Reads mode runs through the same `gapit screen` command; these are the flags tha
 | `--r2` | str | none | Comma-separated mate FASTQ file(s); must match `--r1` count. |
 | `--read-type` | sr\|map-ont\|map-hifi | `sr` for FASTQ, `map-ont` for FASTA | minimap2 preset; resolved from the detected input when omitted. |
 | `--min-breadth` | float | `90.0` | Minimum %breadth for presence. |
+| `--min-identity` | float | `0.0` (off) | Minimum %identity per alignment (0–100); any nonzero value turns on [gapit.reads/2](#filtering-alignments-by-identity-and-mapq-gapitreads2) filtering. |
+| `--min-mapq` | int | `0` (off) | Minimum MAPQ per alignment; any nonzero value turns on gapit.reads/2 filtering. |
 | `--db` | str | `ncbi` | Database to screen against (datadir subdir). |
 | `--datadir` | path | `$GAPIT_DATADIR`, then `~/.local/share/gapit/db` | Database directory. |
 | `--threads` | int | `1` | minimap2 worker threads. |
@@ -76,7 +78,8 @@ zero mapped reads are omitted from the output entirely.
 Tuning advice: the default 90% breadth is strict on purpose. Screening tiny references (under
 roughly 100 nt) with `sr` rarely reaches it, because minimap2 soft-clips a few bases at each
 alignment end, so calibrate `--min-breadth` downward for small custom dbs. For noisy long reads
-you may also want to lower it. There is no per-read identity or MAPQ filter in v1.
+you may also want to lower it. Per-read identity and MAPQ filtering are opt-in via
+`--min-identity` / `--min-mapq` (next section).
 
 ## Output
 
@@ -90,6 +93,156 @@ The default is JSON, schema `gapit.reads/1`:
 `--format md` produces the Markdown form with YAML frontmatter. `--format tsv` and `--format
 csv` are rejected: reads results are nested per sample, not flat rows, so there is no
 abricate-shaped table to emit. The refusal is a usage error, exit 2, with the usual envelope.
+
+## Filtering alignments by identity and MAPQ (gapit.reads/2)
+
+Reads-mode presence is breadth-only by default, which over-calls homologous gene families:
+reads from a novel allele pile onto every similar db entry as low-identity primary alignments,
+and breadth accumulates until the wrong gene crosses the threshold. The KP benchmark made the
+failure concrete — blastn contig screening confirmed 18 genes, the reads pipeline called 11
+with Illumina `sr` (split alignments starve both family members) and 140 with ONT (noisy
+reads over-call nearly everything). `--min-identity` and `--min-mapq` are the opt-in fix:
+
+- `--min-identity FLOAT` (0–100, default 0 = off): keep only alignments with
+  `identity >= threshold`. Per-alignment identity is `100 * (alen - nm) / alen` over the PAF
+  block length and the `NM:i:` mismatch count; a row without NM counts as 100% (cannot assess).
+- `--min-mapq INT` (default 0 = off): keep only alignments with PAF MAPQ >= threshold — the
+  tool for multi-mapping reads that spread breadth across repeated gene copies.
+- Both filters run after the primary-only rule and before aggregation; breadth, depth and
+  `reads_mapped` are computed over the surviving alignments only. Genes that lose every
+  alignment drop out of the output entirely.
+- With both thresholds off, nothing changes: the run stays `gapit.reads/1`, byte-identical,
+  and the minimap2 invocation is untouched. Any nonzero value switches the output to the
+  **`gapit.reads/2`** document — same shape, plus `params.min_identity` / `params.min_mapq`
+  and a per-gene `mean_identity_pct` (alignment-length-weighted mean identity of the kept
+  alignments). Introspect it with `gapit schema reads2`. Under `--format md` the frontmatter
+  gains the two thresholds and each gene row gains an `Identity%` column.
+- One subtlety: the `/2` invocation passes minimap2 `--cs` (the only PAF-side flag that emits
+  `NM:i:`), and minimap2's emitted spans can differ slightly between the two geometries —
+  expect small breadth differences between an unfiltered `/1` run and a filtered `/2` run of
+  the same reads.
+- The flags are reads-engine-only: combining them with the blastn contig pipeline is a usage
+  error (exit 2).
+
+Guidance: `--min-identity 95` approximates allele-level stringency (alignments from the true
+gene survive at ~98-100%, homologs at ~85-92% drop out); lower it toward 90 for raw ONT reads,
+whose true alignments are noisier. Use `--min-mapq 20` or higher when the db contains repeats
+or duplicated gene copies and breadth splits between them.
+
+### Worked example: the homolog fixture
+
+The repo fixtures reproduce the failure and the fix deterministically
+(`tests/data/reads2_db/homologs` + `tests/data/reads2`): the db holds a 600 nt `geneA` plus a
+400 nt partial homolog `geneB` (~85% identical, absent from the sample); the sample carries
+`geneA` and a novel B-like allele whose reads land on `geneB` at ~90% identity. ONT-style
+reads, unfiltered — both genes are called present:
+
+```console
+$ mkdir -p /tmp/gapit-demo/readdb
+$ cp -r tests/data/reads2_db/homologs /tmp/gapit-demo/readdb/
+$ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
+$ cd tests/data/reads2
+$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --quiet
+{
+  "schema": "gapit.reads/1",
+  ...
+  "files": [
+    {
+      "reads": [
+        "ont_homologs.fq"
+      ],
+      "genes": [
+        {
+          "gene": "geneB",
+          ...
+          "tlen": 400,
+          "breadth_pct": 98.75,
+          "mean_depth": 14.03,
+          "reads_mapped": 15,
+          "present": true
+        },
+        {
+          "gene": "geneA",
+          ...
+          "tlen": 600,
+          "breadth_pct": 98.5,
+          "mean_depth": 14.43,
+          "reads_mapped": 15,
+          "present": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+`geneB` is a false call — the sample does not carry it. Adding `--min-identity 95` drops every
+~89%-identity alignment on `geneB` (the gene vanishes; zero-read genes are omitted) and keeps
+the true gene's ~98% alignments:
+
+```console
+$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --quiet
+{
+  "schema": "gapit.reads/2",
+  ...
+  "params": {
+    "db": "homologs",
+    "read_type": "map-ont",
+    "min_breadth": 90.0,
+    "threads": 1,
+    "min_identity": 95.0,
+    "min_mapq": 0
+  },
+  "files": [
+    {
+      "reads": [
+        "ont_homologs.fq"
+      ],
+      "genes": [
+        {
+          "gene": "geneA",
+          ...
+          "breadth_pct": 100.0,
+          "mean_depth": 14.98,
+          "reads_mapped": 15,
+          "present": true,
+          "mean_identity_pct": 98.04
+        }
+      ]
+    }
+  ]
+}
+```
+
+The short-read fixture behaves the same with one calibration: `sr` soft-clipping caps
+`geneB`'s unfiltered breadth at ~89.8%, so the unfiltered leg runs with `--min-breadth 80`
+(`geneA` 94.83% / `geneB` 89.75%, both present; filtered: `geneA` 96.5% at identity 100.0,
+`geneB` gone). The Markdown form of a filtered run:
+
+```console
+$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format md --quiet
+---
+schema: gapit.reads/2
+tool: gapit 0.1.0
+created_at: 2026-09-20T14:23:33Z
+db: homologs
+read_type: map-ont
+min_breadth: 90.0
+threads: 1
+min_identity: 95.0
+min_mapq: 0
+files: 1
+genes_found: 1
+---
+
+# gapit read screening report
+
+## `ont_homologs.fq`
+
+| Gene | Breadth% | Depth | Reads | Present | Database | Accession | Product | Resistance | Identity% |
+|---|---|---|---|---|---|---|---|---|---|
+| geneA | 100.00 | 14.98 | 15 | yes | homologs | SYN-A | true allele carried by the sample | TETRACYCLINE | 98.04 |
+```
 
 ## Worked example
 
@@ -425,8 +578,9 @@ you need gene-family answers from many assemblies quickly.
   breadth or depth.
 - **Homologous gene families.** Closely related alleles compete for the same reads. Primary-only
   assignment can misattribute shared reads between near-identical family members, so breadth for
-  one member may look low when the family as a whole is well covered. There is no SNP-level
-  allele calling in v1.
+  one member may look low when the family as a whole is well covered, and reads from a novel
+  allele can push an absent homolog over the breadth floor. `--min-identity` (previous section)
+  removes the low-identity side of that failure. There is no SNP-level allele calling in v1.
 - **Very short genes.** With the `sr` preset, soft-clipping at alignment ends caps achievable
   breadth; genes under about 100 nt may never reach 90%. Reads mode targets normal-length genes
   (hundreds of nt and up); lower `--min-breadth` for tiny dbs.

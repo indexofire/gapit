@@ -9,11 +9,13 @@
   network; ``--from-source`` forces the upstream download even when a
   snapshot exists. One JSON receipt line per database on stdout.
 - ``db list``: show every known provider with its installed state.
+- ``db outdated`` / ``db search``: read-only queries over the installed
+  databases (:mod:`gapit.cmd_db_outdated`, :mod:`gapit.cmd_db_search`).
 - ``db install``: checksum-verified LOCAL-FILE installation
   (:mod:`gapit.cmd_db_install`, split off in Wave G at the 250 LOC ceiling).
 """
 
-from collections.abc import Callable
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Literal
@@ -24,7 +26,10 @@ from pydantic import BaseModel, ConfigDict, Field
 from gapit import config
 from gapit.cmd_db_build import db_build_command
 from gapit.cmd_db_install import db_install_command
-from gapit.errors import DatabaseError, GapitError, UsageError, render_error
+from gapit.cmd_db_outdated import db_outdated_command
+from gapit.cmd_db_search import db_search_command
+from gapit.dispatch import Datadir, dispatch
+from gapit.errors import UsageError
 from gapit.providers import REGISTRY
 from gapit.providers.common import Dbtype, fetch_provider
 from gapit.records import read_manifest
@@ -32,14 +37,6 @@ from gapit.records import read_manifest
 # Bare `gapit db fetch` installs these, in order — the two providers whose
 # snapshots ship inside the wheel (Wave G: zero-network bootstrap).
 DEFAULT_DBS = ("card", "vfdb")
-
-Datadir = Annotated[
-    Path | None,
-    typer.Option(
-        "--datadir",
-        help="Database directory (default: $GAPIT_DATADIR, then ~/.local/share/gapit/db).",
-    ),
-]
 
 
 class ProviderReceipt(BaseModel, frozen=True):
@@ -74,36 +71,48 @@ class DbListDocument(BaseModel, frozen=True):
     providers: tuple[DbListEntry, ...]
 
 
-def _dispatch(action: Callable[[], None]) -> None:
-    """Run a command body; failures render the gapit.error/1 envelope on
-    stderr and exit with the documented code (mirrors cli._dispatch)."""
-    try:
-        action()
-    except Exception as exc:
-        typer.echo(render_error(exc), err=True)
-        raise typer.Exit(code=exc.exit_code if isinstance(exc, GapitError) else 1) from exc
+def perform_fetch(
+    name: str | None,
+    datadir: Path | None,
+    *,
+    force: bool = False,
+    from_source: bool = False,
+    quiet: bool = True,
+    debug: bool = False,
+) -> Iterator[ProviderReceipt]:
+    """Fetch provider database(s) into <datadir>/NAME — the shared CLI + MCP
+    path. NAME None installs every database in DEFAULT_DBS order; each
+    receipt yields as its install completes (streaming, like the CLI's
+    per-db stdout lines).
+    """
 
+    def fetch_one(provider_name: str) -> ProviderReceipt:
+        provider = REGISTRY.get(provider_name)
+        if provider is None:
+            raise UsageError(
+                f"unknown provider: {provider_name} (available: {', '.join(sorted(REGISTRY))})",
+                code="USAGE_ERROR",
+                context={"provider": provider_name},
+            )
+        db_dir = config.ensure_datadir(datadir) / provider_name
+        manifest = fetch_provider(
+            provider,
+            db_dir,
+            fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            force=force,
+            quiet=quiet,
+            from_source=from_source,
+            debug=debug,
+        )
+        return ProviderReceipt(
+            db=provider_name,
+            records=manifest.n_records,
+            dbtype=manifest.dbtype,
+            destination=str(db_dir),
+        )
 
-def _fetch_root(datadir: Path | None) -> Path:
-    """Resolve the fetch datadir and mkdir it when absent (fresh-machine
-    bootstrap, Wave E). The resolved path is recovered from resolve_datadir's
-    DATADIR_NOT_FOUND context — config stays the single owner of resolution;
-    only `db fetch` creates the root, every read path still demands it."""
-    try:
-        root = config.resolve_datadir(datadir)
-    except DatabaseError as exc:
-        if exc.code != "DATADIR_NOT_FOUND":
-            raise
-        root = Path(exc.context["datadir"])
-    try:
-        root.mkdir(parents=True, exist_ok=True)
-    except OSError as exc:
-        raise DatabaseError(
-            f"cannot create datadir: {root}",
-            code="DATADIR_CREATE_FAILED",
-            context={"datadir": str(root)},
-        ) from exc
-    return root
+    for provider_name in (name,) if name is not None else DEFAULT_DBS:
+        yield fetch_one(provider_name)
 
 
 def db_fetch_command(
@@ -140,38 +149,40 @@ def db_fetch_command(
     are data).
     """
 
-    def fetch_one(provider_name: str) -> None:
-        provider = REGISTRY.get(provider_name)
-        if provider is None:
-            raise UsageError(
-                f"unknown provider: {provider_name} (available: {', '.join(sorted(REGISTRY))})",
-                code="USAGE_ERROR",
-                context={"provider": provider_name},
-            )
-        db_dir = _fetch_root(datadir) / provider_name
-        manifest = fetch_provider(
-            provider,
-            db_dir,
-            fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            force=force,
-            quiet=quiet,
-            from_source=from_source,
-            debug=debug,
-        )
-        typer.echo(
-            ProviderReceipt(
-                db=provider_name,
-                records=manifest.n_records,
-                dbtype=manifest.dbtype,
-                destination=str(db_dir),
-            ).model_dump_json()
-        )
-
     def run() -> None:
-        for provider_name in (name,) if name is not None else DEFAULT_DBS:
-            fetch_one(provider_name)
+        for receipt in perform_fetch(
+            name, datadir, force=force, from_source=from_source, quiet=quiet, debug=debug
+        ):
+            typer.echo(receipt.model_dump_json())
 
-    _dispatch(run)
+    dispatch(run)
+
+
+def db_list_entries(root: Path) -> list[DbListEntry]:
+    """Provider rows for the gapit.dblist/1 listing — shared CLI + MCP path."""
+    entries: list[DbListEntry] = []
+    for provider_name in sorted(REGISTRY):
+        provider = REGISTRY[provider_name]
+        manifest_path = root / provider_name / "gapit-manifest.json"
+        installed = manifest_path.is_file()
+        entries.append(
+            DbListEntry(
+                name=provider_name,
+                description=provider.description,
+                dbtype=provider.dbtype,
+                installed=installed,
+                records=read_manifest(manifest_path).n_records if installed else None,
+            )
+        )
+    return entries
+
+
+def db_list_json(root: Path) -> str:
+    """The gapit.dblist/1 document JSON — shared CLI + MCP path."""
+    entries = db_list_entries(root)
+    return DbListDocument(providers=tuple(entries)).model_dump_json(
+        indent=2, by_alias=True, exclude_none=True
+    )
 
 
 def db_list_command(
@@ -185,30 +196,16 @@ def db_list_command(
 
     def run() -> None:
         root = config.resolve_datadir(datadir)
-        entries: list[DbListEntry] = []
-        for provider_name in sorted(REGISTRY):
-            provider = REGISTRY[provider_name]
-            manifest_path = root / provider_name / "gapit-manifest.json"
-            installed = manifest_path.is_file()
-            entries.append(
-                DbListEntry(
-                    name=provider_name,
-                    description=provider.description,
-                    dbtype=provider.dbtype,
-                    installed=installed,
-                    records=read_manifest(manifest_path).n_records if installed else None,
-                )
-            )
         if as_json:
-            document = DbListDocument(providers=tuple(entries))
-            typer.echo(document.model_dump_json(indent=2, by_alias=True, exclude_none=True))
+            typer.echo(db_list_json(root))
             return
+        entries = db_list_entries(root)
         typer.echo("PROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION")
         for entry in entries:
             status = f"installed ({entry.records})" if entry.installed else "available"
             typer.echo(f"{entry.name}\t{status}\t{entry.dbtype}\t{entry.description}")
 
-    _dispatch(run)
+    dispatch(run)
 
 
 def register_db_command(app: typer.Typer) -> None:
@@ -221,4 +218,6 @@ def register_db_command(app: typer.Typer) -> None:
     db_app.command("build")(db_build_command)
     db_app.command("fetch")(db_fetch_command)
     db_app.command("list")(db_list_command)
+    db_app.command("outdated")(db_outdated_command)
+    db_app.command("search")(db_search_command)
     app.add_typer(db_app, name="db")

@@ -3,15 +3,15 @@
 import os
 import re
 import shlex
-import subprocess
 import sys
 from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel
 
-from gapit.errors import DatabaseError, DependencyError
+from gapit.errors import DatabaseError
 from gapit.fasta import iter_fasta
+from gapit.proctools import run_tool
 
 IDSEP = "~~~"
 
@@ -86,18 +86,6 @@ def mol_type(letters: str) -> Literal["nucl", "prot"]:
     return "prot" if 2 * non_agtc > len(letters) else "nucl"
 
 
-def _run(argv: list[str]) -> subprocess.CompletedProcess[str]:
-    """Run an external tool with an argv list (never a shell)."""
-    try:
-        return subprocess.run(argv, check=False, capture_output=True, text=True)
-    except FileNotFoundError as exc:
-        raise DependencyError(
-            f"required binary not found on PATH: {argv[0]}",
-            code="MISSING_DEPENDENCY",
-            context={"binary": argv[0]},
-        ) from exc
-
-
 def make_blast_db(
     sequences_path: Path,
     name: str,
@@ -130,7 +118,7 @@ def make_blast_db(
     ]
     if debug:
         print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
-    result = _run(argv)
+    result = run_tool(argv)
     if result.returncode != 0:
         raise DatabaseError(
             f"makeblastdb failed for {name}: {result.stderr.strip()}",
@@ -164,7 +152,7 @@ def parse_blastdbcmd_info(text: str) -> BlastDbInfo:
 
 def blast_db_info(db_prefix: Path) -> BlastDbInfo:
     """Introspect a built BLAST database via ``blastdbcmd -info``."""
-    result = _run(["blastdbcmd", "-info", "-db", str(db_prefix)])
+    result = run_tool(["blastdbcmd", "-info", "-db", str(db_prefix)])
     if result.returncode != 0:
         raise DatabaseError(
             f"Database {db_prefix} is not indexed, please try: gapit setupdb",

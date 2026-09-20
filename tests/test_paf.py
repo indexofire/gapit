@@ -3,7 +3,7 @@
 import pytest
 
 from gapit.errors import GapitError
-from gapit.reads import parse_paf_row
+from gapit.paf import PafRecord, parse_paf_row
 
 CANONICAL = (
     "r1\t150\t5\t60\t+\tdb~~~geneA~~~ACC~~~RES\t100\t10\t55\t50\t50\t60\ttp:A:P\tcm:i:12\ts1:i:50"
@@ -46,3 +46,30 @@ def test_row_with_too_few_fields_fails() -> None:
 def test_parse_minus_strand() -> None:
     record = parse_paf_row(CANONICAL.replace("\t+\t", "\t-\t"))
     assert record.strand == "-"
+
+
+def test_parse_equals_fully_validated_record() -> None:
+    """Given the canonical row (and its tagged/untagged variants), When parsed
+    via parse_paf_row (model_construct path), Then the result equals a fully
+    validated PafRecord built from the same typed values — the manual
+    int()/strand checks make pydantic re-validation redundant, not absent."""
+    expected = PafRecord(
+        qname="r1",
+        qlen=150,
+        qstart=5,
+        qend=60,
+        strand="+",
+        tname="db~~~geneA~~~ACC~~~RES",
+        tlen=100,
+        tstart=10,
+        tend=55,
+        nmatch=50,
+        alen=50,
+        mapq=60,
+        is_primary=True,
+    )
+    assert parse_paf_row(CANONICAL) == expected
+    secondary = parse_paf_row(CANONICAL.replace("tp:A:P", "tp:A:S"))
+    assert secondary == expected.model_copy(update={"is_primary": False})
+    bare = "\t".join(CANONICAL.split("\t")[:12])
+    assert parse_paf_row(bare) == expected

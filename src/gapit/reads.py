@@ -2,21 +2,24 @@
 
 import enum
 import gzip
-import shlex
-import subprocess
-import sys
 from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Literal, Protocol
+from typing import Protocol
 
 from pydantic import BaseModel, Field
 
 from gapit.db import Database
 from gapit.dbcodec import decode_seqid
-from gapit.errors import DependencyError, GapitError, InputError
-from gapit.fasta import iter_fasta
-
-ReadType = Literal["sr", "map-ont", "map-hifi"]
+from gapit.errors import InputError
+from gapit.fasta import iter_fasta_headers
+from gapit.minimap2_run import run_minimap2
+from gapit.paf import (
+    PafRecord,
+    ReadType,
+    alignment_identity,
+    filter_alignments,
+    union_length,
+)
 
 _GZIP_MAGIC = b"\x1f\x8b"
 
@@ -81,70 +84,22 @@ def detect_read_kind(path: Path) -> ReadFileKind:
 
 
 class ReadsParams(BaseModel, frozen=True):
-    """Parameters for one read-screening run (SPEC.md §10)."""
+    """Parameters for one read-screening run (SPEC.md §10). The reads/2
+    thresholds default off; gapit.reads/1 rendering ignores them entirely."""
 
     db: str
     read_type: ReadType = "sr"
     min_breadth: float = Field(default=90.0, ge=0.0, le=100.0)
     threads: int = Field(default=1, ge=1)
-
-
-class PafRecord(BaseModel, frozen=True):
-    """One PAF alignment row: 12 required fields + primary flag (tp:A:P)."""
-
-    qname: str
-    qlen: int
-    qstart: int
-    qend: int
-    strand: Literal["+", "-"]
-    tname: str
-    tlen: int
-    tstart: int
-    tend: int
-    nmatch: int
-    alen: int
-    mapq: int
-    is_primary: bool = True
-
-
-def parse_paf_row(line: str) -> PafRecord:
-    """Parse one tab-delimited PAF line; <12 fields is a hard error. Records
-    without a tp tag count as primary."""
-    fields = line.split("\t")
-    if len(fields) < 12:
-        raise GapitError(
-            f"can not parse PAF row (expected >= 12 fields): {line!r}",
-            code="PAF_PARSE_FAILED",
-        )
-    is_primary = True
-    for tag in fields[12:]:
-        if tag.startswith("tp:A:"):
-            is_primary = tag == "tp:A:P"
-    strand = fields[4]
-    if strand not in ("+", "-"):
-        raise GapitError(
-            f"can not parse PAF strand (expected + or -): {strand!r}",
-            code="PAF_PARSE_FAILED",
-        )
-    return PafRecord(
-        qname=fields[0],
-        qlen=int(fields[1]),
-        qstart=int(fields[2]),
-        qend=int(fields[3]),
-        strand=strand,
-        tname=fields[5],
-        tlen=int(fields[6]),
-        tstart=int(fields[7]),
-        tend=int(fields[8]),
-        nmatch=int(fields[9]),
-        alen=int(fields[10]),
-        mapq=int(fields[11]),
-        is_primary=is_primary,
-    )
+    min_identity: float = Field(default=0.0, ge=0.0, le=100.0)
+    min_mapq: int = Field(default=0, ge=0)
 
 
 class GeneCoverage(BaseModel, frozen=True):
-    """Per-gene presence call over primary alignments."""
+    """Per-gene presence call over primary alignments. mean_identity_pct is
+    the alen-weighted mean of per-alignment identity over the aggregated
+    (kept) rows — the weighting favors long alignments; computed in reads/1
+    mode too but rendered only by gapit.reads/2."""
 
     database: str
     gene: str
@@ -156,6 +111,7 @@ class GeneCoverage(BaseModel, frozen=True):
     mean_depth: float
     reads_mapped: int
     present: bool
+    mean_identity_pct: float
 
 
 class ReadsReport(BaseModel, frozen=True):
@@ -172,27 +128,34 @@ def aggregate_coverage(
     min_breadth: float,
     products: Mapping[str, str] | None = None,
 ) -> list[GeneCoverage]:
-    """Aggregate primary alignments per target into exact per-base coverage:
-    breadth = union of tstart..tend, depth = per-base sum, reads = distinct
-    qnames. Zero-read genes are omitted; output sorts by (-breadth, gene)."""
-    depths: dict[str, list[int]] = {}
+    """Aggregate primary alignments per target: breadth = union of
+    tstart..tend intervals, depth = summed interval lengths, reads = distinct
+    qnames. tlen is the FIRST-SEEN row's tlen per target (denominator
+    contract). Zero-read genes are omitted; output sorts by (-breadth, gene)."""
+    intervals: dict[str, list[tuple[int, int]]] = {}
+    tlens: dict[str, int] = {}
     qnames: dict[str, set[str]] = {}
+    weights: dict[str, list[tuple[float, int]]] = {}
     for row in rows:
         if not row.is_primary:
             continue
-        if row.tname not in depths:
-            depths[row.tname] = [0] * row.tlen
+        if row.tname not in intervals:
+            intervals[row.tname] = []
+            tlens[row.tname] = row.tlen
             qnames[row.tname] = set()
-        depth = depths[row.tname]
-        for position in range(row.tstart, row.tend):
-            depth[position] += 1
+            weights[row.tname] = []
+        intervals[row.tname].append((row.tstart, row.tend))
         qnames[row.tname].add(row.qname)
+        weights[row.tname].append((alignment_identity(row), row.alen))
     descriptions = products or {}
     coverages: list[GeneCoverage] = []
-    for tname, depth in depths.items():
-        tlen = len(depth)
-        covered = sum(1 for value in depth if value > 0)
+    for tname, spans in intervals.items():
+        tlen = tlens[tname]
+        covered = union_length(spans)
+        breadth_pct = 100.0 * covered / tlen
         header = decode_seqid(tname, default_db)
+        pairs = weights[tname]
+        weight_sum = sum(weight for _, weight in pairs)
         coverages.append(
             GeneCoverage(
                 database=header.database,
@@ -201,65 +164,18 @@ def aggregate_coverage(
                 function=header.function,
                 product=descriptions.get(tname, ""),
                 tlen=tlen,
-                breadth_pct=100.0 * covered / tlen,
-                mean_depth=sum(depth) / tlen,
+                breadth_pct=breadth_pct,
+                mean_depth=sum(end - start for start, end in spans) / tlen,
                 reads_mapped=len(qnames[tname]),
-                present=100.0 * covered / tlen >= min_breadth,
+                present=breadth_pct >= min_breadth,
+                mean_identity_pct=(
+                    sum(identity * weight for identity, weight in pairs) / weight_sum
+                    if weight_sum
+                    else 0.0
+                ),
             )
         )
     return sorted(coverages, key=lambda entry: (-entry.breadth_pct, entry.gene))
-
-
-def run_minimap2(
-    lanes: list[tuple[Path, Path | None]],
-    database: Database,
-    *,
-    read_type: ReadType,
-    threads: int,
-    debug: bool = False,
-) -> list[PafRecord]:
-    """Run one minimap2 invocation per lane (PAF on stdout) and concatenate
-    the rows. The index argument is always the ``sequences`` FASTA — minimap2
-    indexes it in memory with the invocation preset's own parameters. A
-    persisted ``.mmi`` is deliberately rejected even when one sits beside the
-    FASTA: a default-built index overrides the ``-x`` preset's indexing
-    parameters (``-k, -w or -H overridden by prebuilt index``), which
-    misassigns close homologs and benchmarks slower than in-memory indexing
-    (2026-09-19: blaCTX-M/blaSHV allele divergence, +1.2 s on the ncbi db).
-    minimap2's pairing semantics for >2 input files are undocumented;
-    per-lane runs (r1[i] alone or with its mate r2[i]) are deterministic.
-    With ``debug``, echo each argv to stderr (abricate --debug parity)."""
-    rows: list[PafRecord] = []
-    for r1, r2 in lanes:
-        argv = [
-            "minimap2",
-            "-x",
-            read_type,
-            "-t",
-            str(threads),
-            str(database.sequences_path),
-            str(r1),
-        ]
-        if r2 is not None:
-            argv.append(str(r2))
-        if debug:
-            print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
-        try:
-            result = subprocess.run(argv, check=False, capture_output=True, text=True)
-        except FileNotFoundError as exc:
-            raise DependencyError(
-                "required binary not found on PATH: minimap2",
-                code="MISSING_DEPENDENCY",
-                context={"binary": "minimap2"},
-            ) from exc
-        if result.returncode != 0:
-            raise GapitError(
-                f"minimap2 failed: {result.stderr.strip()}",
-                code="MINIMAP2_FAILED",
-                context={"binary": "minimap2", "file": str(r1)},
-            )
-        rows.extend(parse_paf_row(line) for line in result.stdout.splitlines() if line.strip())
-    return rows
 
 
 def screen_reads(
@@ -270,11 +186,25 @@ def screen_reads(
     min_breadth: float,
     threads: int,
     debug: bool = False,
+    min_identity: float = 0.0,
+    min_mapq: int = 0,
 ) -> ReadsReport:
     """Screen one sample's lanes against one database into a sample-level
-    ReadsReport (union of all lanes' primary alignments)."""
-    rows = run_minimap2(lanes, database, read_type=read_type, threads=threads, debug=debug)
-    products = {record.id: record.description for record in iter_fasta(database.sequences_path)}
+    ReadsReport (union of all lanes' primary alignments). With a nonzero
+    min_identity/min_mapq (gapit.reads/2), alignments are filtered BEFORE
+    aggregation and the minimap2 run emits NM tags for the identity rule."""
+    reads2 = min_identity > 0.0 or min_mapq > 0
+    rows = run_minimap2(
+        lanes,
+        database,
+        read_type=read_type,
+        threads=threads,
+        debug=debug,
+        nm_tags=reads2,
+    )
+    if reads2:
+        rows = filter_alignments(rows, min_identity=min_identity, min_mapq=min_mapq)
+    products = dict(iter_fasta_headers(database.sequences_path))
     genes = aggregate_coverage(
         rows, default_db=database.name, min_breadth=min_breadth, products=products
     )

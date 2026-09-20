@@ -13,7 +13,6 @@ test imports it directly (everything drives `gapit.cli.app`).
 import hashlib
 import os
 import re
-from collections.abc import Callable
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Annotated
@@ -21,7 +20,8 @@ from typing import Annotated
 import typer
 from pydantic import BaseModel
 
-from gapit.errors import GapitError, InputError, UsageError, render_error
+from gapit.dispatch import dispatch
+from gapit.errors import InputError, UsageError
 
 _SHA256_SHAPE = re.compile(r"[0-9a-fA-F]{64}")
 _CHUNK_BYTES = 1 << 20
@@ -32,18 +32,6 @@ class FetchReceipt(BaseModel, frozen=True):
 
     destination: str
     sha256: str
-
-
-def _dispatch(action: Callable[[], None]) -> None:
-    """Run a command body; failures render the gapit.error/1 envelope on
-    stderr and exit with the documented code (local mirror of
-    cmd_db._dispatch — reportPrivateUsage blocks importing it, the Wave A3
-    ``_run`` precedent)."""
-    try:
-        action()
-    except Exception as exc:
-        typer.echo(render_error(exc), err=True)
-        raise typer.Exit(code=exc.exit_code if isinstance(exc, GapitError) else 1) from exc
 
 
 def _parse_sha256(raw: str) -> str:
@@ -135,4 +123,4 @@ def db_install_command(
         receipt = install_verified(source, output, expected)
         typer.echo(receipt.model_dump_json())
 
-    _dispatch(run)
+    dispatch(run)

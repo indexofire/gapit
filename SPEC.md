@@ -183,7 +183,8 @@ tsv|csv|json|md`, `--quiet`).
   detects format per file instead `[gapit-extension]` (RESOLVED 2026-09-17, see §6).
 - **Determinism**: stable sort; fixed BLAST params; no timestamps in data payloads. (Upstream
   MOTD/`srand` is stderr-only and dropped in gapit.) gapit `--jobs N` screens files
-  concurrently but stdout stays in input order.
+  concurrently but stdout stays in input order; when `--jobs N --threads T` exceeds the cpu
+  count, one stderr note warns about oversubscription (stdout unaffected) `[gapit-extension]`.
 - **blastx**: no sstrand → STRAND `+`; minid unenforced (quirk kept, documented).
 - Known upstream caveats we inherit: no mutational resistance; gap reporting incomplete;
   overlapping genes both reported; possible coverage-calculation issues.
@@ -263,6 +264,22 @@ preset resolution added 2026-09-19):
   calling; no per-read identity/MAPQ filtering. Empirically, `minimap2 -x sr` soft-clips ~5 nt
   at each alignment end, so genes under ~100 nt can cap below the 90% breadth threshold — reads
   mode targets normal-length genes (hundreds of nt+); calibrate `--min-breadth` for tiny DBs.
+- **reads/2 (opt-in identity/MAPQ filtering, added 2026-09-20)**: `--min-identity FLOAT`
+  (0–100, default 0 = off) and `--min-mapq INT` (default 0 = off) filter PAF alignments
+  BEFORE aggregation, after the primary-only rule; `identity >= min_identity` and
+  `mapq >= min_mapq` (boundary-inclusive). Per-alignment identity is `100 * (alen - nm) / alen`
+  over column 10 and the `NM:i:` tag; a row without NM counts as identity 100.0 (cannot assess),
+  as does a degenerate zero-length block. **STRICTLY ADDITIVE**: both thresholds off keeps
+  `gapit.reads/1` byte-identical and the minimap2 argv unchanged; either on switches the output
+  document to `gapit.reads/2` (schema literal, params gain `min_identity`/`min_mapq`, gene
+  entries gain `mean_identity_pct` = alen-weighted mean identity over kept rows, rounded 2;
+  markdown gains an `Identity%` column) and adds `--cs` to the invocation (minimap2 omits
+  `NM:i:` from PAF output without it; alignments unchanged, but note the emitted spans can
+  differ slightly between the `/1` and `/2` geometries). With the blastn engine these flags are
+  a usage error (exit 2, "--min-identity/--min-mapq are reads-mode only (minimap2 engine)").
+  `gapit schema reads2` introspects the document. Motivation (KP benchmark, 2026-09-20):
+  breadth-only presence over-calls homologous families (sr 11 true names vs ONT 140 vs blastn
+  18); an identity floor of ~95 removes the weak alignments without touching the /1 contract.
 
 ## 11. gapit-native databases — [gapit-extension]
 

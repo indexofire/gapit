@@ -68,6 +68,7 @@ gapit/
 │   ├── blast.py         # blastn invocation + tabular output parsing
 │   ├── hits.py          # Hit model, identity/coverage computation, filtering, dedup
 │   ├── minimap.py       # COVERAGE_MAP construction (exact abricate arithmetic)
+│   ├── minimap2_run.py  # minimap2 invocation layer for reads mode (streaming PAF, --cs/NM tags)
 │   ├── report.py        # Report model: the canonical in-memory result
 │   ├── screening.py     # blastn screen use-case + shared engine helpers (OutputFormat, AlignerEnum)
 │   ├── screening_reads.py # minimap2 use-cases: --r1/--r2 reads + --aligner minimap2 assemblies
@@ -115,7 +116,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 
 - **Formats**: `--format tsv|csv|json|md` (default `tsv` for abricate compatibility).
 - **JSON**: top-level `"schema": "gapit.report/1"`; schema introspectable via
-  `gapit schema report | reads | summary | list | error | version`. Keys are snake_case,
+  `gapit schema report | reads | reads2 | summary | list | error | version`. Keys are snake_case,
   units explicit (`identity_pct`, `coverage_pct`). Semver the schema; never rename or
   retype a field in a minor bump.
 - **Markdown**: YAML frontmatter (tool version, db, params, ISO-8601 UTC timestamp) + tables a

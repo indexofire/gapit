@@ -72,3 +72,32 @@ def iter_fasta(path: Path) -> Iterator[FastaRecord]:
             )
         if pending is not None:
             yield _finalize(path, pending)
+
+
+def iter_fasta_headers(path: Path) -> Iterator[tuple[str, str]]:
+    """Stream (id, description) pairs from FASTA headers only.
+
+    Sequence lines are skipped, not accumulated — the cheap iterator for
+    header-only consumers (e.g. product lookups on a large db). Unlike
+    iter_fasta, the empty-sequence InputError does NOT apply: no sequence
+    check is performed because sequences are never read. Content before the
+    first ``>`` header still raises InputError; header parsing (id is the
+    first whitespace token, description the rest) matches iter_fasta; an
+    empty file yields nothing.
+    """
+    with _open_text(path) as handle:
+        seen_header = False
+        for lineno, raw_line in enumerate(handle, start=1):
+            line = raw_line.strip()
+            if line.startswith(">"):
+                seen_header = True
+                parts = line[1:].strip().split(maxsplit=1)
+                yield (parts[0] if parts else "", parts[1] if len(parts) > 1 else "")
+            elif not line or seen_header:
+                continue
+            else:
+                raise InputError(
+                    f"{path}: content before first '>' header at line {lineno}",
+                    code="INVALID_FASTA",
+                    context={"file": str(path)},
+                )

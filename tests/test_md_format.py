@@ -1,5 +1,6 @@
 """Tests for the Markdown screening report."""
 
+import re
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
@@ -8,7 +9,9 @@ import pytest
 
 from gapit.blast import screen_file
 from gapit.db import Database, make_blast_db
-from gapit.formats.md import render_markdown
+from gapit.formats.md import render_markdown, render_reads_markdown
+from gapit.hits import Hit
+from gapit.reads import GeneCoverage, ReadsParams, ReadsReport
 from gapit.report import Report, ScreeningParams
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
@@ -38,7 +41,7 @@ def reports(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> list[Report]:
     database = Database(
         name="tinyamr", path=datadir / "tinyamr", sequences_path=datadir / "tinyamr" / "sequences"
     )
-    return [screen_file(Path(name), database, PARAMS) for name in MULTI_FILES]
+    return [screen_file(Path(name), database, PARAMS, dbtype="nucl") for name in MULTI_FILES]
 
 
 def frontmatter(output: str) -> dict[str, str]:
@@ -116,3 +119,86 @@ def test_cli_format_md(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.exit_code == 0
     assert result.stdout.startswith("---\n")
     assert HEADER_ROW in result.stdout
+
+
+def _cells_on_unescaped_pipes(row: str) -> list[str]:
+    """Split a rendered Markdown table row on pipes that are not backslash-
+    escaped (escaped pipes stay inside their cell)."""
+    return re.split(r"(?<!\\)\|", row.strip()[1:-1])
+
+
+PIPE_HIT = Hit(
+    sequence="contig|1",
+    start=101,
+    end=420,
+    strand="+",
+    gene="gi|115534241:2616-3152",
+    database="victors",
+    accession="VC|0001",
+    product="virulence factor\\protein",
+    function="virulence",
+    s_start=1,
+    s_end=3152,
+    s_len=3152,
+    coverage_map="=" * 15,
+    gap_openings=0,
+    gaps=3,
+    identity_pct=99.14,
+    coverage_pct=98.7,
+)
+
+
+def test_report_table_escapes_pipes_and_backslashes() -> None:
+    """Given a hit whose sequence/gene/accession/product carry '|' and a
+    backslash (victors-style gene ids), When rendered as Markdown, Then pipes
+    render as '\\|' and backslashes as '\\\\' so the table structure survives."""
+    output = render_markdown([Report(file="pipe.fa", hits=(PIPE_HIT,))], PARAMS, now=PINNED_NOW)
+    row = next(line for line in output.splitlines() if "gi|" in line or "gi\\|" in line)
+    assert "contig\\|1" in row
+    assert "gi\\|115534241:2616-3152" in row
+    assert "VC\\|0001" in row
+    assert "virulence factor\\\\protein" in row
+
+
+def test_report_table_row_keeps_column_count_with_pipes() -> None:
+    """Given a hit whose cells contain pipes, When the row is split on
+    unescaped pipes, Then exactly the 14 report columns come out."""
+    output = render_markdown([Report(file="pipe.fa", hits=(PIPE_HIT,))], PARAMS, now=PINNED_NOW)
+    row = next(line for line in output.splitlines() if "115534241" in line)
+    assert len(_cells_on_unescaped_pipes(row)) == 14
+
+
+PIPE_GENE = GeneCoverage(
+    database="victors",
+    gene="gi|115534241:2616-3152",
+    accession="VC|0001",
+    function="virulence",
+    product="virulence factor\\protein",
+    tlen=3152,
+    breadth_pct=95.5,
+    mean_depth=12.25,
+    reads_mapped=4801,
+    present=True,
+    mean_identity_pct=99.5,
+)
+
+
+def test_reads_table_escapes_pipes_and_backslashes() -> None:
+    """Given a covered gene whose id/accession/product carry '|' and a
+    backslash, When the reads report is rendered as Markdown, Then pipes
+    render as '\\|' and backslashes as '\\\\'."""
+    report = ReadsReport(reads=("sample_R1.fastq.gz",), genes=(PIPE_GENE,))
+    output = render_reads_markdown([report], ReadsParams(db="victors"), now=PINNED_NOW)
+    row = next(line for line in output.splitlines() if "115534241" in line)
+    assert "gi\\|115534241:2616-3152" in row
+    assert "VC\\|0001" in row
+    assert "virulence factor\\\\protein" in row
+
+
+def test_reads_table_row_keeps_column_count_with_pipes() -> None:
+    """Given a covered gene whose cells contain pipes, When the row is split
+    on unescaped pipes, Then exactly the 9 reads columns come out."""
+    report = ReadsReport(reads=("sample_R1.fastq.gz",), genes=(PIPE_GENE,))
+    output = render_reads_markdown([report], ReadsParams(db="victors"), now=PINNED_NOW)
+    row = next(line for line in output.splitlines() if "115534241" in line)
+    assert len(_cells_on_unescaped_pipes(row)) == 9

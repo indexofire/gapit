@@ -1,10 +1,11 @@
 # MCP server
 
 gapit ships a Model Context Protocol (MCP) stdio server that exposes the CLI as
-read-only tools. An agent runtime can screen assemblies, summarize reports, and
-introspect schemas without shelling out or parsing terminal output. The
-protocol is hand-rolled newline-delimited JSON-RPC 2.0 with no extra
-dependencies: one request per line on stdin, one response per line on stdout.
+tools. An agent runtime can screen assemblies, summarize reports, introspect
+schemas, and self-provision databases without shelling out or parsing
+terminal output. The protocol is hand-rolled newline-delimited JSON-RPC 2.0
+with no extra dependencies: one request per line on stdin, one response per
+line on stdout.
 
 ## Entry points
 
@@ -29,8 +30,10 @@ the module CLI as `{"command": "gapit", "args": ["mcp"]}`.
 
 ## Tools
 
-Four read-only tools. Argument lists below are transcribed from the live
-`tools/list` `inputSchema` objects.
+Eight tools: four read-only analysis tools and four database
+self-provisioning tools (`db_fetch`, `db_build`, `db_search`,
+`db_outdated`) that mirror `gapit db ...` exactly. Argument lists below are
+transcribed from the live `tools/list` `inputSchema` objects.
 
 | Tool | Arguments | Returns |
 |---|---|---|
@@ -38,6 +41,10 @@ Four read-only tools. Argument lists below are transcribed from the live
 | `summary` | `files` (array of report table paths, required), `identity` (boolean), `nopath` (boolean) | `gapit.summary/1` JSON |
 | `schema` | `name` (string, required, one of `error`, `list`, `reads`, `report`, `summary`, `version`) | The JSON Schema of that output document |
 | `db_list` | none | `gapit.dblist/1`: provider names, install state, record counts |
+| `db_fetch` | `name` (string), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line per database (`db`, `records`, `dbtype`, `destination`). Name omitted: the card+vfdb default set from bundled snapshots. Network installs can take minutes |
+| `db_build` | `name` (string, required), `fasta` (string, required — a LOCAL filesystem path), `tsv` (string), `dbtype` (string: `nucl` \| `prot`), `description` (string), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line (`db`, `records`, `dbtype`, `destination`) |
+| `db_search` | `term` (string, required), `db` (string), `field` (string: `gene` \| `accession` \| `function` \| `product` \| `any`, default `any`), `exact` (boolean, default `false`), `limit` (integer ≥ 0, default `100`; `0` = unlimited), `datadir` (string) | TSV hit rows with columns `DB`, `GENE`, `ACCESSION`, `FUNCTION`, `PRODUCT`, `LENGTH` |
+| `db_outdated` | `days` (integer ≥ 0, default `90`), `datadir` (string) | TSV rows with columns `NAME`, `FETCHED_AT`, `AGE_DAYS`, `STATUS` |
 
 Omitted `screen` thresholds fall back to the CLI defaults (`minid` 80,
 `mincov` 80), matching `gapit screen`.
@@ -47,8 +54,11 @@ Notes:
 - File paths resolve relative to the server's working directory; absolute
   paths are safest.
 - The datadir comes from the `GAPIT_DATADIR` environment variable, then
-  `~/.local/share/gapit/db` (see `./databases.md`).
+  `~/.local/share/gapit/db` (see `./databases.md`). The db tools also accept
+  an explicit `datadir` argument per call.
 - `screen` in MCP covers contigs only; reads mode and `csv` are CLI-only.
+- `db_build`'s `fasta` must be a path on the server's filesystem — the agent
+  provides a local path, not file contents.
 - Tool failures do not use JSON-RPC errors. They return `isError: true` with
   the `gapit.error/1` envelope serialized as the text content.
 
@@ -86,7 +96,7 @@ Response line 2 (real output, elided in the middle; each tool carries its full
 `inputSchema`):
 
 ```text
-{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for AMR/virulence genes (json = gapit.report/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string","default":"ncbi"}, ... },"required":["files"]}}, {"name":"summary", ...}, {"name":"schema", ...}, {"name":"db_list", "description":"List database providers and their installed state (gapit.dblist/1).","inputSchema":{"type":"object","properties":{},"required":[]}}]}}
+{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for AMR/virulence genes (json = gapit.report/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string","default":"ncbi"}, ... },"required":["files"]}}, {"name":"summary", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
 ```
 
 Response line 3 (real output, text content elided). The screen result rides in
@@ -141,6 +151,66 @@ A missing input file returns a tool error, not a protocol error (real lines):
 
 Parse `content[0].text` as JSON and branch on `code` (codes and exit-code
 mapping: `./outputs.md`).
+
+### Self-provisioning: build a database, then screen
+
+The db tools let an agent provision its own databases mid-session. Real
+session against a fresh datadir (`my_genes.fa` holds one 240 bp synthetic
+gene, `query.fa` a 200 bp substring of it):
+
+```bash
+mkdir -p /tmp/gapit-mcp-demo/datadir
+export GAPIT_DATADIR=/tmp/gapit-mcp-demo/datadir
+```
+
+Two request lines and their verbatim responses:
+
+```text
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"db_build","arguments":{"name":"myamr","fasta":"/tmp/gapit-mcp-demo/my_genes.fa"}}}
+{"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"db\":\"myamr\",\"records\":1,\"dbtype\":\"nucl\",\"destination\":\"/tmp/gapit-mcp-demo/datadir/myamr\"}"}],"isError":false}}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen","arguments":{"files":["/tmp/gapit-mcp-demo/query.fa"],"db":"myamr"}}}
+{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{ ... gapit.report/1 ... }"}],"isError":false}}
+```
+
+Decoded, the screen text is a complete `gapit.report/1` document whose only
+hit is the gene the agent just built the database from (real output):
+
+```json
+{
+  "schema": "gapit.report/1",
+  "tool": {"name": "gapit", "version": "0.1.0"},
+  "created_at": "2026-09-20T13:38:39Z",
+  "params": {"db": "myamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
+  "files": [
+    {
+      "file": "/tmp/gapit-mcp-demo/query.fa",
+      "hits": [
+        {
+          "sequence": "contig1",
+          "start": 1,
+          "end": 200,
+          "strand": "+",
+          "gene": "demov2",
+          "coverage": "1-200/240",
+          "coverage_map": "=============..",
+          "gaps": "0/0",
+          "coverage_pct": 83.33,
+          "identity_pct": 100.0,
+          "database": "myamr",
+          "accession": "",
+          "product": "demo beta-lactamase variant 2",
+          "resistance": ""
+        }
+      ]
+    }
+  ]
+}
+```
+
+The same session pattern works with `db_fetch` (installs card+vfdb from the
+bundled snapshots when `name` is omitted) and `db_search`/`db_outdated` for
+inspection. Custom database construction rules (header kinds, `--tsv`
+metadata): `./custom-db.md`.
 
 ## Protocol notes
 

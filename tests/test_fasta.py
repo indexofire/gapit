@@ -8,7 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 from gapit.errors import InputError
-from gapit.fasta import FastaRecord, iter_fasta
+from gapit.fasta import FastaRecord, iter_fasta, iter_fasta_headers
 
 FIXTURE = Path(__file__).parent / "data" / "db" / "tinyamr" / "sequences"
 
@@ -93,3 +93,55 @@ def test_fasta_record_is_frozen(tmp_path: Path) -> None:
     attribute = "id"  # variable keeps ruff B010 quiet; the model marks fields read-only
     with pytest.raises(ValidationError):
         setattr(record, attribute, "mutated")
+
+
+def test_iter_fasta_headers_extracts_id_and_description(tmp_path: Path) -> None:
+    """Given a multi-record FASTA, When headers are iterated, Then (id,
+    description) pairs come out with the description split on the first
+    whitespace — same split as iter_fasta."""
+    path = write_fasta(tmp_path / "two.fa", ">a desc one\nACGT\nTGCA\n>b\nGGCC\n")
+    assert list(iter_fasta_headers(path)) == [("a", "desc one"), ("b", "")]
+
+
+def test_iter_fasta_headers_matches_iter_fasta_on_fixture() -> None:
+    """Given the committed tinyamr fixture, When both iterators run, Then the
+    header-only pairs equal iter_fasta's (id, description) pairs exactly."""
+    assert list(iter_fasta_headers(FIXTURE)) == [(r.id, r.description) for r in iter_fasta(FIXTURE)]
+
+
+def test_iter_fasta_headers_skips_sequence_lines(tmp_path: Path) -> None:
+    """Given records with long multi-line sequences, When headers are
+    iterated, Then sequence lines are skipped and never surface."""
+    path = write_fasta(tmp_path / "seqs.fa", ">a d\n" + "ACGT\n" * 1000 + ">b e\nGGCC\n")
+    assert list(iter_fasta_headers(path)) == [("a", "d"), ("b", "e")]
+
+
+def test_iter_fasta_headers_allows_empty_sequence(tmp_path: Path) -> None:
+    """Given a header immediately followed by another header, When headers
+    are iterated, Then NO InputError — the empty-sequence check does not
+    apply because sequences are never read."""
+    path = write_fasta(tmp_path / "empty.fa", ">a\nACGT\n>b\n")
+    assert list(iter_fasta_headers(path)) == [("a", ""), ("b", "")]
+
+
+def test_iter_fasta_headers_rejects_content_before_first_header(tmp_path: Path) -> None:
+    """Given junk before the first '>', When headers are iterated, Then the
+    same InputError as iter_fasta (malformed FASTA is still rejected)."""
+    path = write_fasta(tmp_path / "junk.fa", "ACGT\n>a\nACGT\n")
+    with pytest.raises(InputError) as excinfo:
+        list(iter_fasta_headers(path))
+    assert excinfo.value.code == "INVALID_FASTA"
+
+
+def test_iter_fasta_headers_empty_file_yields_nothing(tmp_path: Path) -> None:
+    """Given an empty file, When headers are iterated, Then zero pairs."""
+    assert list(iter_fasta_headers(write_fasta(tmp_path / "empty.fa", ""))) == []
+
+
+def test_iter_fasta_headers_reads_gz(tmp_path: Path) -> None:
+    """Given a gzip-wrapped FASTA, When headers are iterated, Then pairs
+    equal the plain file's (shared transparent decompression)."""
+    plain = write_fasta(tmp_path / "plain.fa", ">a desc one\nACGT\n>b\nGGCC\n")
+    gz_path = tmp_path / "headers.fa.gz"
+    gz_path.write_bytes(gzip.compress(plain.read_bytes()))
+    assert list(iter_fasta_headers(gz_path)) == [("a", "desc one"), ("b", "")]

@@ -3,7 +3,8 @@
 All breadth/depth expectations are computed BY HAND from interval unions.
 """
 
-from gapit.reads import GeneCoverage, PafRecord, aggregate_coverage
+from gapit.paf import PafRecord
+from gapit.reads import GeneCoverage, aggregate_coverage
 
 GENE_A = "db~~~geneA~~~ACC~~~RES"
 GENE_B = "db~~~geneB~~~ACC~~~RES"

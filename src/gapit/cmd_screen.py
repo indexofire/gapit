@@ -5,35 +5,15 @@ Lives outside cli.py to keep that module small; cli.py registers it via
 ``register_screen_command``.
 """
 
-from collections.abc import Callable
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
-from gapit.errors import GapitError, render_error
+from gapit.dispatch import Datadir, dispatch
 from gapit.reads import ReadTypeEnum
 from gapit.screening import AlignerEnum, OutputFormat, run_screen, usage_fail
 from gapit.screening_reads import run_screen_assemblies, run_screen_reads
-
-
-def _dispatch(action: Callable[[], None]) -> None:
-    """Run a command body; any failure renders the gapit.error/1 envelope on
-    stderr and exits with the documented code (mirrors cli._dispatch)."""
-    try:
-        action()
-    except Exception as exc:
-        typer.echo(render_error(exc), err=True)
-        raise typer.Exit(code=exc.exit_code if isinstance(exc, GapitError) else 1) from exc
-
-
-Datadir = Annotated[
-    Path | None,
-    typer.Option(
-        "--datadir",
-        help="Database directory (default: $GAPIT_DATADIR, then ~/.local/share/gapit/db).",
-    ),
-]
 
 
 def screen_command(
@@ -66,6 +46,26 @@ def screen_command(
         float,
         typer.Option("--min-breadth", help="Reads mode: minimum %breadth for presence."),
     ] = 90.0,
+    min_identity: Annotated[
+        float,
+        typer.Option(
+            "--min-identity",
+            help=(
+                "Reads mode: minimum %identity per alignment, 0 <= x <= 100 (0 = off;"
+                " any nonzero value emits gapit.reads/2)."
+            ),
+        ),
+    ] = 0.0,
+    min_mapq: Annotated[
+        int,
+        typer.Option(
+            "--min-mapq",
+            help=(
+                "Reads mode: minimum MAPQ per alignment (0 = off; any nonzero value"
+                " emits gapit.reads/2)."
+            ),
+        ),
+    ] = 0,
     aligner: Annotated[
         AlignerEnum | None,
         typer.Option(
@@ -118,6 +118,12 @@ def screen_command(
             usage_fail("--r1/--r2 and positional contig FILEs are mutually exclusive")
         if r2 is not None and r1 is None:
             usage_fail("--r2 requires --r1")
+        if (
+            (min_identity > 0 or min_mapq > 0)
+            and r1 is None
+            and aligner is not AlignerEnum.minimap2
+        ):
+            usage_fail("--min-identity/--min-mapq are reads-mode only (minimap2 engine)")
         if r1 is not None or r2 is not None:
             run_screen_reads(
                 r1 or "",
@@ -126,6 +132,8 @@ def screen_command(
                 datadir,
                 read_type,
                 min_breadth,
+                min_identity,
+                min_mapq,
                 threads,
                 output_format,
                 quiet,
@@ -140,6 +148,8 @@ def screen_command(
                 datadir,
                 read_type,
                 min_breadth,
+                min_identity,
+                min_mapq,
                 threads,
                 output_format,
                 quiet,
@@ -162,7 +172,7 @@ def screen_command(
                 output_format or OutputFormat.tsv,
             )
 
-    _dispatch(run)
+    dispatch(run)
 
 
 def register_screen_command(app: typer.Typer) -> None:

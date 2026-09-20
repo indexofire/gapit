@@ -28,7 +28,8 @@ from gapit import config
 from gapit.db import mol_type
 from gapit.dbbuild import build_database
 from gapit.dbcodec import decode_seqid
-from gapit.errors import DatabaseError, GapitError, InputError, render_error
+from gapit.dispatch import dispatch
+from gapit.errors import DatabaseError, InputError
 from gapit.fasta import FastaRecord, iter_fasta
 from gapit.records import Record, write_records
 
@@ -51,38 +52,6 @@ class Metadata:
 
     columns: frozenset[str]
     rows: dict[str, tuple[str, str]]
-
-
-def _dispatch(action: Callable[[], None]) -> None:
-    """Run a command body; failures render the gapit.error/1 envelope on
-    stderr and exit with the documented code (local mirror of cmd_db._dispatch
-    — reportPrivateUsage blocks importing it, the Wave A3 ``_run`` precedent)."""
-    try:
-        action()
-    except Exception as exc:
-        typer.echo(render_error(exc), err=True)
-        raise typer.Exit(code=exc.exit_code if isinstance(exc, GapitError) else 1) from exc
-
-
-def _datadir_root(datadir: Path | None) -> Path:
-    """Resolve the build datadir, creating it when absent (local mirror of
-    cmd_db._fetch_root: `db build` is a write path like `db fetch`, so a
-    fresh machine bootstraps instead of hitting DATADIR_NOT_FOUND)."""
-    try:
-        root = config.resolve_datadir(datadir)
-    except DatabaseError as exc:
-        if exc.code != "DATADIR_NOT_FOUND":
-            raise
-        root = Path(exc.context["datadir"])
-    try:
-        root.mkdir(parents=True, exist_ok=True)
-    except OSError as exc:
-        raise DatabaseError(
-            f"cannot create datadir: {root}",
-            code="DATADIR_CREATE_FAILED",
-            context={"datadir": str(root)},
-        ) from exc
-    return root
 
 
 def _split_function(joined: str) -> tuple[str, ...]:
@@ -184,6 +153,56 @@ def _resolve_dbtype(flag: Dbtype | None, records: list[Record]) -> Dbtype:
     return mol_type("".join(record.sequence for record in records))
 
 
+def perform_build(
+    name: str,
+    fasta: Path,
+    tsv: Path | None,
+    dbtype: Dbtype | None,
+    description: str,
+    datadir: Path | None,
+    force: bool,
+    *,
+    warn: Callable[[str], None],
+    quiet: bool = True,
+) -> BuildReceipt:
+    """Run the custom-build pipeline and return the receipt — the shared CLI
+    + MCP path. Warnings go to the caller-supplied ``warn`` (CLI: stderr;
+    MCP: dropped — stderr is reserved for the protocol)."""
+
+    if not fasta.is_file():
+        raise InputError(
+            f"FASTA file not found or unreadable: {fasta}",
+            code="INPUT_NOT_FOUND",
+            context={"file": str(fasta)},
+        )
+    db_dir = config.ensure_datadir(datadir) / name
+    if (db_dir / "gapit-manifest.json").is_file() and not force:
+        raise DatabaseError(
+            f"won't overwrite existing database {name} (use --force)",
+            code="DB_ALREADY_EXISTS",
+            context={"db": name},
+        )
+    records = [_to_record(fasta_record, name, description) for fasta_record in iter_fasta(fasta)]
+    if tsv is not None:
+        records = _merge(records, _read_metadata(tsv, warn), warn)
+    db_dir.mkdir(parents=True, exist_ok=True)
+    write_records(records, db_dir / "records.jsonl")
+    manifest = build_database(
+        db_dir,
+        name=name,
+        dbtype=_resolve_dbtype(dbtype, records),
+        source_urls=("local",),
+        fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        quiet=quiet,
+    )
+    return BuildReceipt(
+        db=name,
+        records=manifest.n_records,
+        dbtype=manifest.dbtype,
+        destination=str(db_dir),
+    )
+
+
 def db_build_command(
     name: Annotated[
         str,
@@ -230,46 +249,14 @@ def db_build_command(
 ) -> None:
     """Build a custom gapit-native database from a FASTA (+ optional TSV)."""
 
-    def warn(message: str) -> None:
-        if not quiet:
-            typer.echo(f"WARNING: {message}", err=True)
-
     def run() -> None:
-        if not fasta.is_file():
-            raise InputError(
-                f"FASTA file not found or unreadable: {fasta}",
-                code="INPUT_NOT_FOUND",
-                context={"file": str(fasta)},
-            )
-        db_dir = _datadir_root(datadir) / name
-        if (db_dir / "gapit-manifest.json").is_file() and not force:
-            raise DatabaseError(
-                f"won't overwrite existing database {name} (use --force)",
-                code="DB_ALREADY_EXISTS",
-                context={"db": name},
-            )
-        records = [
-            _to_record(fasta_record, name, description) for fasta_record in iter_fasta(fasta)
-        ]
-        if tsv is not None:
-            records = _merge(records, _read_metadata(tsv, warn), warn)
-        db_dir.mkdir(parents=True, exist_ok=True)
-        write_records(records, db_dir / "records.jsonl")
-        manifest = build_database(
-            db_dir,
-            name=name,
-            dbtype=_resolve_dbtype(dbtype, records),
-            source_urls=("local",),
-            fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            quiet=quiet,
-        )
-        typer.echo(
-            BuildReceipt(
-                db=name,
-                records=manifest.n_records,
-                dbtype=manifest.dbtype,
-                destination=str(db_dir),
-            ).model_dump_json()
-        )
+        def warn(message: str) -> None:
+            if not quiet:
+                typer.echo(f"WARNING: {message}", err=True)
 
-    _dispatch(run)
+        receipt = perform_build(
+            name, fasta, tsv, dbtype, description, datadir, force, warn=warn, quiet=quiet
+        )
+        typer.echo(receipt.model_dump_json())
+
+    dispatch(run)

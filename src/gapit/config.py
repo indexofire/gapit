@@ -24,3 +24,28 @@ def resolve_datadir(cli_value: Path | None) -> Path:
             context={"datadir": str(datadir)},
         )
     return datadir
+
+
+def ensure_datadir(cli_value: Path | None) -> Path:
+    """Resolve the datadir and mkdir it when absent (fresh-machine bootstrap).
+
+    Write paths (``db fetch``, ``db build``) bootstrap a missing root; every
+    read path still demands it via ``resolve_datadir``. The resolved path is
+    recovered from ``resolve_datadir``'s DATADIR_NOT_FOUND context — this
+    module stays the single owner of resolution.
+    """
+    try:
+        root = resolve_datadir(cli_value)
+    except DatabaseError as exc:
+        if exc.code != "DATADIR_NOT_FOUND":
+            raise
+        root = Path(exc.context["datadir"])
+    try:
+        root.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise DatabaseError(
+            f"cannot create datadir: {root}",
+            code="DATADIR_CREATE_FAILED",
+            context={"datadir": str(root)},
+        ) from exc
+    return root

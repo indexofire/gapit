@@ -2,6 +2,7 @@
 stdout, threads determinism, and validation, over the real pipeline on tinyamr."""
 
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -58,10 +59,15 @@ def test_jobs_default_matches_explicit_1(datadir: Path) -> None:
     assert explicit.stderr == default.stderr
 
 
-def test_jobs_4_stderr_chatter_multiset_matches_jobs_1(datadir: Path) -> None:
+def test_jobs_4_stderr_chatter_multiset_matches_jobs_1(
+    datadir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Given six inputs, When screened --jobs 1 vs --jobs 4, Then stderr holds
     the SAME lines as a multiset — order may interleave under --jobs > 1, so
-    lines are compared sorted, never in sequence."""
+    lines are compared sorted, never in sequence. cpu_count is pinned high so
+    the oversubscription note (fires only on machines with < 4 cpus) stays out
+    of the comparison."""
+    monkeypatch.setattr(os, "cpu_count", lambda: 64)
     files = [str(path) for path in SIX_FILES]
     seq = screen(datadir, "--jobs", "1", *files)
     par = screen(datadir, "--jobs", "4", *files)

@@ -12,8 +12,6 @@ is persisted: reads mode indexes the ``sequences`` FASTA in memory only
 
 import hashlib
 import os
-import subprocess
-import sys
 from collections.abc import Sequence
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -21,28 +19,13 @@ from typing import Literal
 
 from gapit.db import DbHeader, make_blast_db
 from gapit.dbcodec import decode_seqid, encode_seqid
-from gapit.errors import DatabaseError, DependencyError
+from gapit.errors import DatabaseError
 from gapit.fasta import iter_fasta
+from gapit.proctools import note, run_tool
 from gapit.records import Manifest, Record, count_records, read_records, write_manifest
 
 _WRAP_COLUMNS = 60
 _CHUNK_BYTES = 1 << 20
-
-
-def _run(argv: list[str]) -> subprocess.CompletedProcess[str]:
-    """Run an external tool with an argv list (never a shell).
-
-    Mirrors gapit.db._run: db.py is frozen in this wave except for the
-    make_blast_db dbtype parameter, so the runner lives here too.
-    """
-    try:
-        return subprocess.run(argv, check=False, capture_output=True, text=True)
-    except FileNotFoundError as exc:
-        raise DependencyError(
-            f"required binary not found on PATH: {argv[0]}",
-            code="MISSING_DEPENDENCY",
-            context={"binary": argv[0]},
-        ) from exc
 
 
 def generate_sequences(records_path: Path, sequences_path: Path) -> None:
@@ -166,14 +149,8 @@ def _sha256(path: Path) -> str:
 
 def _version_line(argv: list[str]) -> str:
     """First line of a version command's stdout ('' when it printed nothing)."""
-    stdout = _run(argv).stdout
+    stdout = run_tool(argv).stdout
     return stdout.splitlines()[0].strip() if stdout else ""
-
-
-def _note(quiet: bool, message: str) -> None:
-    """Per-step progress on stderr when quiet is disabled (stdout stays pure)."""
-    if not quiet:
-        print(f"gapit: {message}", file=sys.stderr)
 
 
 def build_database(
@@ -207,12 +184,12 @@ def build_database(
     records_path = db_dir / "records.jsonl"
     sequences_path = db_dir / "sequences"
     generate_sequences(records_path, sequences_path)
-    _note(quiet, f"generated {sequences_path}")
+    note(quiet, f"generated {sequences_path}")
     verify_sequences(sequences_path, records_path, name)
-    _note(quiet, f"self-check passed for {name}")
+    note(quiet, f"self-check passed for {name}")
     sha256 = _sha256(sequences_path)
     make_blast_db(sequences_path, name, dbtype=dbtype, debug=debug)
-    _note(quiet, f"BLAST index built ({dbtype})")
+    note(quiet, f"BLAST index built ({dbtype})")
     manifest = Manifest(
         name=name,
         source_urls=tuple(source_urls),

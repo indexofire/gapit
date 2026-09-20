@@ -17,7 +17,7 @@ first-class JSON and Markdown outputs with versioned schemas.
 | [Databases](./databases.md) | Providers, `gapit db fetch/list/install`, datadirs, native `gapit/v1` format |
 | [Custom databases](./custom-db.md) | `gapit db build` walkthrough: any FASTA to a screenable database, worked examples |
 | [Outputs](./outputs.md) | TSV/JSON/Markdown formats, schemas, error envelopes, exit codes |
-| [MCP server](./mcp.md) | `gapit mcp`: read-only tools for agent runtimes over stdio JSON-RPC |
+| [MCP server](./mcp.md) | `gapit mcp`: analysis + database tools for agent runtimes over stdio JSON-RPC |
 | [Agent guide](./agents.md) | Consuming gapit from autonomous agents: schemas, introspection, errors |
 | [FAQ](./faq.md) | Common questions, abricate differences, troubleshooting |
 

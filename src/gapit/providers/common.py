@@ -16,7 +16,6 @@ discarded — a no-op.
 
 import os
 import re
-import sys
 import urllib.request
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
@@ -29,13 +28,16 @@ from urllib.parse import urlparse
 from gapit import __version__
 from gapit.dbbuild import build_database
 from gapit.errors import DatabaseError
-from gapit.providers.snapshots import extract_snapshot
+from gapit.proctools import note
+from gapit.providers.snapshots import extract_snapshot, read_snapshot_manifest
 from gapit.records import Manifest, Record, write_records
 
 _NUCL_JUNK = re.compile(r"[^AGCT]")
 _PROT_JUNK = re.compile(r"[^A-Z]")
 _WHITESPACE = re.compile(r"\s+")
 _CHUNK_BYTES = 1 << 20
+# Bounded fetch: socket.timeout (an OSError) already maps to DOWNLOAD_FAILED below.
+_DOWNLOAD_TIMEOUT_SECONDS = 60
 
 # mgc.ac.cn (vfdb) 403s "Python-urllib" UAs specifically while serving
 # browser-ish clients (Wave E diagnosis): the Mozilla compatibility token
@@ -67,15 +69,6 @@ class Provider:
     snapshot: str | None = None
 
 
-def _note(quiet: bool, message: str) -> None:
-    """Per-step progress on stderr when quiet is disabled (stdout stays pure).
-
-    Mirrors gapit.dbbuild._note — reportPrivateUsage blocks importing it.
-    """
-    if not quiet:
-        print(f"gapit: {message}", file=sys.stderr)
-
-
 def _basename(url: str) -> str:
     """Final path segment of a URL, query string excluded ('' for a bare host)."""
     return urlparse(url).path.rstrip("/").rsplit("/", 1)[-1]
@@ -91,7 +84,10 @@ def _download(url: str, dest: Path) -> None:
     temp = dest.with_name(f".{dest.name}.part")
     request = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
     try:
-        with urllib.request.urlopen(request) as response, temp.open("wb") as out:
+        with (
+            urllib.request.urlopen(request, timeout=_DOWNLOAD_TIMEOUT_SECONDS) as response,
+            temp.open("wb") as out,
+        ):
             while chunk := response.read(_CHUNK_BYTES):
                 out.write(chunk)
         os.replace(temp, dest)
@@ -165,6 +161,15 @@ def _snapshot_path(provider: Provider) -> Path | None:
     return Path(str(archive)) if archive.is_file() else None
 
 
+def bundled_snapshot_manifest(provider: Provider) -> Manifest | None:
+    """The provider's bundled snapshot manifest read in-memory, or None when
+    the provider ships no resolvable snapshot archive (read-only queries:
+    `db outdated` — same seam fetch_provider uses, so tests patch
+    ``_snapshot_path`` and both paths see the fake)."""
+    archive = _snapshot_path(provider)
+    return None if archive is None else read_snapshot_manifest(archive)
+
+
 def fetch_provider(
     provider: Provider,
     db_dir: Path,
@@ -200,7 +205,7 @@ def fetch_provider(
         snapshot = _snapshot_path(provider)
         if snapshot is not None:
             archived = extract_snapshot(snapshot, db_dir)
-            _note(quiet, f"installed {provider.name} from bundled snapshot {snapshot.name}")
+            note(quiet, f"installed {provider.name} from bundled snapshot {snapshot.name}")
             return build_database(
                 db_dir,
                 name=provider.name,
@@ -215,13 +220,13 @@ def fetch_provider(
         workdir = Path(workdir_name)
         for url in provider.source_urls:
             _download(url, workdir / _basename(url))
-        _note(quiet, f"downloaded {len(provider.source_urls)} source file(s)")
+        note(quiet, f"downloaded {len(provider.source_urls)} source file(s)")
         records = tuple(
             _normalize_record(record, provider.dbtype) for record in provider.transform(workdir)
         )
     kept, dropped = _dedupe(records)
-    _note(quiet, f"read {len(records)} records from {provider.name}")
-    _note(quiet, f"dropped {dropped} duplicate sequence(s), kept {len(kept)}")
+    note(quiet, f"read {len(records)} records from {provider.name}")
+    note(quiet, f"dropped {dropped} duplicate sequence(s), kept {len(kept)}")
     if not kept:
         raise DatabaseError(
             f"provider {provider.name} yielded no records",

@@ -2,6 +2,8 @@
 
 import json
 import shutil
+import subprocess
+from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
@@ -175,3 +177,54 @@ def test_default_run_emits_no_argv_lines(datadir: Path) -> None:
     result = screen(datadir, str(CONTIGS / "full.fa"))
     assert result.exit_code == 0
     assert "gapit: run:" not in result.stderr
+
+
+def _screen_with_run_probe_recorder(
+    datadir: Path, monkeypatch: pytest.MonkeyPatch, *extra: str
+) -> tuple[Result, list[list[str]]]:
+    """Run a screen with every subprocess.run argv recorded in order; the real
+    binaries still execute (pass-through wrapper over the keyword forms our
+    call sites use). Popen pipeline invocations (any2fasta/blastn aligner) go
+    through Popen and are not recorded."""
+    real_run = subprocess.run
+    argvs: list[list[str]] = []
+
+    def counting_run(
+        argv: Sequence[str],
+        *,
+        check: bool = False,
+        capture_output: bool = False,
+        text: bool = False,
+    ) -> subprocess.CompletedProcess[str]:
+        argvs.append(list(argv))
+        return real_run(argv, check=check, capture_output=capture_output, text=text)
+
+    monkeypatch.setattr(subprocess, "run", counting_run)
+    return screen(datadir, *extra), argvs
+
+
+def test_probe_subprocesses_fire_once_across_files(
+    datadir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a 3-file screen, When the per-run probe subprocesses are counted,
+    Then `blastn -version` (dependency gate) and `blastdbcmd -info` (dbtype
+    resolution) each fire exactly once per run, never once per input file."""
+    files = [str(CONTIGS / name) for name in ("full.fa", "gap.fa", "none.fa")]
+    result, argvs = _screen_with_run_probe_recorder(datadir, monkeypatch, "--nopath", *files)
+    assert result.exit_code == 0
+    assert sum(1 for argv in argvs if argv[:2] == ["blastn", "-version"]) == 1
+    assert sum(1 for argv in argvs if argv[0] == "blastdbcmd") == 1
+
+
+def test_probe_subprocesses_fire_once_with_jobs(
+    datadir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given the same 3-file screen with --jobs 3, When counted, Then the two
+    probes still fire exactly once each — both are hoisted before the pool."""
+    files = [str(CONTIGS / name) for name in ("full.fa", "gap.fa", "none.fa")]
+    result, argvs = _screen_with_run_probe_recorder(
+        datadir, monkeypatch, "--jobs", "3", "--nopath", *files
+    )
+    assert result.exit_code == 0
+    assert sum(1 for argv in argvs if argv[:2] == ["blastn", "-version"]) == 1
+    assert sum(1 for argv in argvs if argv[0] == "blastdbcmd") == 1
