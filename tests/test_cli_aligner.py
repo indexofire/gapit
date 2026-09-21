@@ -243,6 +243,100 @@ def test_minimap2_without_files_exits_2(reads_datadir: Path) -> None:
     assert error["message"] == "no input files given (positional FILEs)"
 
 
+def test_reads_mode_rejects_fofn(reads_datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given --r1 together with --fofn (even one pointing at a nonexistent
+    file), When screened, Then usage error exit 2: reads mode has no
+    positional-input replacement, the flag is rejected instead of silently
+    ignored."""
+    monkeypatch.chdir(READS)
+    result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--fofn", "nonexistent.txt")
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == "--fofn is not available in reads mode"
+
+
+def test_reads_mode_rejects_noheader(reads_datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given --r1 together with --noheader, When screened, Then usage error
+    exit 2: --noheader shapes blastn TSV output and is rejected in reads mode
+    instead of silently ignored."""
+    monkeypatch.chdir(READS)
+    result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--noheader")
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == "--noheader is not available in reads mode"
+
+
+def test_reads_mode_rejects_nopath(reads_datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given --r1 together with --nopath, When screened, Then usage error
+    exit 2: --nopath shapes the blastn FILE column and is rejected in reads
+    mode instead of silently ignored."""
+    monkeypatch.chdir(READS)
+    result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--nopath")
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == "--nopath is not available in reads mode"
+
+
+def test_reads_mode_rejects_jobs_above_one(
+    reads_datadir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given --r1 together with --jobs 2, When screened, Then usage error
+    exit 2: --jobs parallelizes blastn input files only; reads mode has no
+    per-file parallelism."""
+    monkeypatch.chdir(READS)
+    result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--jobs", "2")
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == "--jobs is not available in reads mode"
+
+
+def test_reads_mode_accepts_explicit_jobs_one(
+    reads_datadir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given --r1 with an explicit --jobs 1 (the default), When screened,
+    Then it succeeds: the guard rejects only jobs != 1."""
+    monkeypatch.chdir(READS)
+    result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--jobs", "1")
+    assert result.exit_code == 0
+    assert reads_adapter.validate_json(result.stdout).schema_name == "gapit.reads/1"
+
+
+def test_minimap2_positional_jobs_exits_2(reads_datadir: Path) -> None:
+    """Given --aligner minimap2 with --jobs 2 on a positional FASTA, When
+    screened, Then usage error exit 2: --jobs is a blastn-engine-only flag
+    (symmetry with the reads-mode guard and the existing --fofn guard)."""
+    result = screen_reads(reads_datadir, "--aligner", "minimap2", "--jobs", "2", str(ASSEMBLY))
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == "--jobs is not available with --aligner minimap2"
+
+
+def test_minimap2_positional_noheader_exits_2(reads_datadir: Path) -> None:
+    """Given --aligner minimap2 with --noheader on a positional FASTA, When
+    screened, Then usage error exit 2: --noheader shapes blastn TSV output."""
+    result = screen_reads(reads_datadir, "--aligner", "minimap2", "--noheader", str(ASSEMBLY))
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == "--noheader is not available with --aligner minimap2"
+
+
+def test_minimap2_positional_nopath_exits_2(reads_datadir: Path) -> None:
+    """Given --aligner minimap2 with --nopath on a positional FASTA, When
+    screened, Then usage error exit 2: --nopath shapes the blastn FILE
+    column."""
+    result = screen_reads(reads_datadir, "--aligner", "minimap2", "--nopath", str(ASSEMBLY))
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == "--nopath is not available with --aligner minimap2"
+
+
 def test_help_lists_aligner_and_no_csv() -> None:
     """Given screen --help, When inspected, Then --aligner is listed with the
     frozen help text and the removed --csv flag is gone."""

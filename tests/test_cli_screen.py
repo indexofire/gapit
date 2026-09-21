@@ -1,5 +1,6 @@
 """Integration tests: gapit screen CLI over the real pipeline on tinyamr fixtures."""
 
+import gzip
 import json
 import shutil
 import subprocess
@@ -7,10 +8,12 @@ from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
+from pydantic import TypeAdapter
 from typer.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.db import make_blast_db
+from gapit.errors import ErrorEnvelope
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
@@ -18,6 +21,14 @@ GOLDEN = Path(__file__).parent / "golden"
 MULTI_FILES = ["full.fa", "gap.fa", "none.fa", "sort.fa"]
 
 runner = CliRunner()
+envelope_adapter = TypeAdapter(ErrorEnvelope)
+
+
+def last_envelope(stderr: str) -> ErrorEnvelope:
+    """Parse the last non-empty stderr line as the gapit.error/1 envelope."""
+    lines = [line for line in stderr.splitlines() if line.strip()]
+    assert lines, "expected an error envelope on stderr"
+    return envelope_adapter.validate_json(lines[-1])
 
 
 @pytest.fixture()
@@ -131,6 +142,18 @@ def test_junk_input_exits_5(datadir: Path, tmp_path: Path) -> None:
     junk.write_text("this is not sequence data at all\n", encoding="utf-8")
     result = screen(datadir, str(junk))
     assert result.exit_code == 5
+
+
+def test_truncated_gz_contigs_exits_5_invalid_input(datadir: Path, tmp_path: Path) -> None:
+    """Given a contigs .gz cut to ~60% of its bytes (partial download), When
+    screened, Then exit 5 with envelope code INVALID_INPUT — the typed input
+    contract, not an uncaught mid-read EOFError surfacing as UNEXPECTED/1."""
+    blob = gzip.compress((CONTIGS / "full.fa").read_bytes())
+    truncated = tmp_path / "truncated.fa.gz"
+    truncated.write_bytes(blob[: len(blob) * 3 // 5])
+    result = screen(datadir, str(truncated))
+    assert result.exit_code == 5
+    assert last_envelope(result.stderr).code == "INVALID_INPUT"
 
 
 def test_unknown_db_exits_4_and_lists_available(datadir: Path) -> None:

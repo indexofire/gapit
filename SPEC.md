@@ -126,10 +126,11 @@ gene may leave box 0 as `.` since coords are 1-based) — do not "fix" them.
 | %COVERAGE / %IDENTITY | `%.2f` |
 | PRODUCT | cleaned stitle |
 
-Rows are sorted by SEQUENCE (lexicographic) then START (numeric) with a **stable** sort, and
-emitted per input file after that file finishes. Files are processed sequentially in argument
-order; a single header row precedes all output (even if a later file errors — upstream has no
-atomicity; gapit buffers per file but preserves row order).
+Rows are sorted by SEQUENCE (lexicographic) then START (numeric) with a **stable** sort. Files
+are processed sequentially in argument order, concurrently with `--jobs` (stdout always in
+input order). gapit buffers all reports and renders once at the end — a failing file produces
+NO stdout (including the header), unlike upstream's partial streaming (all-or-nothing by
+design).
 
 ## 5. TSV/CSV output
 
@@ -146,6 +147,8 @@ tsv|csv|json|md`, `--quiet`).
 
 - **Dutch mode**: with exactly 1 input file, matrix rows are keyed by that report's FILE column;
   with >1 files, rows are keyed by input filename (basename applied to labels if `--nopath`).
+  With `--nopath`, dutch keys colliding on the same basename merge into ONE row (genes union;
+  NUM_FOUND counts the union's distinct genes) — intentional.
 - First encountered row anywhere is treated as the header map (name→index, later duplicate
   names win — Perl `zip` semantics); lines whose col0 starts with `#` are skipped afterwards.
   A first row WITHOUT `#` (e.g. a noheader report) is header map **and** a data row — quirk

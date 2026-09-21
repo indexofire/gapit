@@ -265,3 +265,27 @@ def test_num_found_equals_distinct_gene_count() -> None:
     matrix, _ = summarize([FIXTURES / "sample_a.tsv"])
     (row,) = matrix.rows
     assert row.num_found == len(row.cells) == 2
+
+
+def test_nopath_dutch_same_basename_dirs_merge_into_one_row(tmp_path: Path) -> None:
+    """Given one dutch report whose FILE column contains dirA/x.fa and
+    dirB/x.fa, When summarized with --nopath, Then both keys merge into ONE
+    row labelled x.fa (setdefault collision semantics, intentional): cells
+    carry the union of genes in row order and NUM_FOUND counts the union's
+    distinct genes."""
+    header = (FIXTURES / "empty.tsv").read_text(encoding="utf-8")
+    text = header + (
+        "dirA/x.fa\tc1\t1\t80\t+\tfeature_a\t1-80\t================\t0\t99.50\t98.75\tdb\tA\tp\tR\n"
+        "dirA/x.fa\tc1\t1\t80\t+\tfeature_c\t1-80\t================\t0\t99.00\t97.00\tdb\tA\tp\tR\n"
+        "dirB/x.fa\tc1\t1\t80\t+\tfeature_b\t1-80\t================\t0\t76.00\t95.10\tdb\tA\tp\tR\n"
+        "dirB/x.fa\tc1\t1\t80\t+\tfeature_c\t1-80\t================\t0\t88.00\t93.00\tdb\tA\tp\tR\n"
+    )
+    matrix, _ = summarize_text(tmp_path, "collide.tsv", text, nopath=True)
+    (row,) = matrix.rows
+    assert row.file == "x.fa"
+    assert row.num_found == 3
+    assert row.cells == {
+        "feature_a": ("99.50",),
+        "feature_c": ("99.00", "88.00"),
+        "feature_b": ("76.00",),
+    }

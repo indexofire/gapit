@@ -260,6 +260,24 @@ def test_db_build_refuses_overwrite_without_force(tmp_path: Path) -> None:
     assert json.loads(text)["records"] == 1
 
 
+def test_db_build_rejects_path_injection_names(tmp_path: Path) -> None:
+    """Given a db_build name carrying an absolute path (the prompt-injection
+    write primitive), When called, Then isError with the USAGE_ERROR envelope
+    naming the value and nothing lands under the datadir."""
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    fasta = tmp_path / "my_genes.fa"
+    fasta.write_text(f">demov2 demo gene\n{SEQ_A}\n", encoding="utf-8")
+    is_error, text = call_tool(
+        "db_build", {"name": "/tmp/evil", "fasta": str(fasta), "datadir": str(datadir)}
+    )
+    assert is_error is True
+    envelope = json.loads(text)
+    assert envelope["code"] == "USAGE_ERROR"
+    assert envelope["context"]["name"] == "/tmp/evil"
+    assert list(datadir.iterdir()) == []
+
+
 def test_db_build_missing_fasta_is_input_error(tmp_path: Path) -> None:
     """Given a FASTA path that does not exist, When db_build, Then isError
     INPUT_NOT_FOUND naming the file (CLI semantics)."""

@@ -5,6 +5,7 @@ line references); the differential suite (test_seqconvert_differential.py,
 parity env on PATH) proves parsed-record equality against the real binary.
 """
 
+import bz2
 import gzip
 from pathlib import Path
 
@@ -221,6 +222,31 @@ def test_corrupt_gzip_raises_invalid_input(tmp_path: Path) -> None:
     uncaught OSError)."""
     query = tmp_path / "junk.fa.gz"
     query.write_bytes(b"this is not gzip data")
+    with pytest.raises(InputError) as excinfo:
+        convert(query)
+    assert excinfo.value.code == "INVALID_INPUT"
+
+
+def test_truncated_gz_raises_invalid_input(tmp_path: Path) -> None:
+    """Given a valid .gz cut to ~60% of its bytes (partial download), When
+    converted, Then the mid-read EOFError — not an OSError subclass — becomes
+    InputError INVALID_INPUT (detect_format passes on the first readable line;
+    the failure surfaces mid-iteration)."""
+    blob = gzip.compress(b">mk1\n" + b"acgt" * 100 + b"\n>mk2\n" + b"tttt" * 100 + b"\n")
+    query = tmp_path / "truncated.fa.gz"
+    query.write_bytes(blob[: len(blob) * 3 // 5])
+    with pytest.raises(InputError) as excinfo:
+        convert(query)
+    assert excinfo.value.code == "INVALID_INPUT"
+
+
+def test_truncated_bz2_raises_invalid_input(tmp_path: Path) -> None:
+    """Given a valid .bz2 cut to ~60% of its bytes, When converted, Then the
+    same InputError INVALID_INPUT — bz2 also raises EOFError on a truncated
+    stream, not an OSError."""
+    blob = bz2.compress(b">mk1\n" + b"acgt" * 100 + b"\n>mk2\n" + b"tttt" * 100 + b"\n")
+    query = tmp_path / "truncated.fa.bz2"
+    query.write_bytes(blob[: len(blob) * 3 // 5])
     with pytest.raises(InputError) as excinfo:
         convert(query)
     assert excinfo.value.code == "INVALID_INPUT"

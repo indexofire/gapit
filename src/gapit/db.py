@@ -9,7 +9,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from gapit.errors import DatabaseError
+from gapit.errors import DatabaseError, InputError
 from gapit.fasta import iter_fasta
 from gapit.proctools import run_tool
 
@@ -173,13 +173,37 @@ def discover_databases(datadir: Path) -> list[Database]:
     return sorted(databases, key=lambda database: database.name)
 
 
+def _manifest_dbtype(db_dir: Path) -> Literal["nucl", "prot"] | None:
+    """The dbtype declared by a database's gapit manifest, or ``None`` when the
+    directory has none (abricate-built) — the caller then falls back to the
+    ``mol_type`` heuristic. A malformed manifest propagates (no silent
+    degradation).
+
+    Lazy import: records -> formats.json -> reads -> db is a cycle at module
+    level (Wave C-a notepad hazard).
+    """
+    from gapit.records import read_manifest
+
+    try:
+        return read_manifest(db_dir / "gapit-manifest.json").dbtype
+    except InputError as exc:
+        if exc.code != "INPUT_NOT_FOUND":
+            raise
+        return None
+
+
 def list_databases(datadir: Path, *, setupdb: bool, debug: bool = False) -> list[DatabaseInfo]:
     """Enumerate databases (building indices first when ``setupdb``), requiring
     every database to be indexed; returns one DatabaseInfo per database."""
     infos: list[DatabaseInfo] = []
     for database in discover_databases(datadir):
         if setupdb:
-            make_blast_db(database.sequences_path, database.name, debug=debug)
+            make_blast_db(
+                database.sequences_path,
+                database.name,
+                dbtype=_manifest_dbtype(database.path),
+                debug=debug,
+            )
         sequences = database.sequences_path
         index_exists = any(
             (sequences.parent / f"{sequences.name}{suffix}").exists() for suffix in (".nin", ".pin")

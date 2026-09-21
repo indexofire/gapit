@@ -47,35 +47,44 @@ def _finalize(path: Path, pending: tuple[str, str, list[str]]) -> FastaRecord:
 def iter_fasta(path: Path) -> Iterator[FastaRecord]:
     """Stream FastaRecords from a FASTA file (plain/.gz/.bz2, UTF-8).
 
-    Raises InputError on content before the first ``>`` header or on a record
-    with an empty sequence; an empty file yields zero records.
+    Raises InputError on content before the first ``>`` header, on a record
+    with an empty sequence, or on an unreadable/truncated stream (a .gz/.bz2
+    cut short raises EOFError mid-read, not an OSError); an empty file yields
+    zero records.
     """
-    with open_text(path) as handle:
-        # pending = (id, description, sequence lines) of the record being read
-        pending: tuple[str, str, list[str]] | None = None
-        for lineno, raw_line in enumerate(handle, start=1):
-            line = raw_line.strip()
-            if not line:
-                continue
-            if not line.startswith(">"):
-                if pending is None:
-                    raise InputError(
-                        f"{path}: content before first '>' header at line {lineno}",
-                        code="INVALID_FASTA",
-                        context={"file": str(path)},
-                    )
-                pending[2].append(line)
-                continue
+    try:
+        with open_text(path) as handle:
+            # pending = (id, description, sequence lines) of the record being read
+            pending: tuple[str, str, list[str]] | None = None
+            for lineno, raw_line in enumerate(handle, start=1):
+                line = raw_line.strip()
+                if not line:
+                    continue
+                if not line.startswith(">"):
+                    if pending is None:
+                        raise InputError(
+                            f"{path}: content before first '>' header at line {lineno}",
+                            code="INVALID_FASTA",
+                            context={"file": str(path)},
+                        )
+                    pending[2].append(line)
+                    continue
+                if pending is not None:
+                    yield _finalize(path, pending)
+                parts = line[1:].strip().split(maxsplit=1)
+                pending = (
+                    parts[0] if parts else "",
+                    parts[1] if len(parts) > 1 else "",
+                    [],
+                )
             if pending is not None:
                 yield _finalize(path, pending)
-            parts = line[1:].strip().split(maxsplit=1)
-            pending = (
-                parts[0] if parts else "",
-                parts[1] if len(parts) > 1 else "",
-                [],
-            )
-        if pending is not None:
-            yield _finalize(path, pending)
+    except (OSError, UnicodeDecodeError, EOFError) as exc:
+        raise InputError(
+            f"{path}: could not read input: {exc}",
+            code="INVALID_FASTA",
+            context={"file": str(path)},
+        ) from exc
 
 
 def iter_fasta_headers(path: Path) -> Iterator[tuple[str, str]]:
@@ -85,23 +94,30 @@ def iter_fasta_headers(path: Path) -> Iterator[tuple[str, str]]:
     header-only consumers (e.g. product lookups on a large db). Unlike
     iter_fasta, the empty-sequence InputError does NOT apply: no sequence
     check is performed because sequences are never read. Content before the
-    first ``>`` header still raises InputError; header parsing (id is the
-    first whitespace token, description the rest) matches iter_fasta; an
-    empty file yields nothing.
+    first ``>`` header and an unreadable/truncated stream still raise
+    InputError; header parsing (id is the first whitespace token, description
+    the rest) matches iter_fasta; an empty file yields nothing.
     """
-    with open_text(path) as handle:
-        seen_header = False
-        for lineno, raw_line in enumerate(handle, start=1):
-            line = raw_line.strip()
-            if line.startswith(">"):
-                seen_header = True
-                parts = line[1:].strip().split(maxsplit=1)
-                yield (parts[0] if parts else "", parts[1] if len(parts) > 1 else "")
-            elif not line or seen_header:
-                continue
-            else:
-                raise InputError(
-                    f"{path}: content before first '>' header at line {lineno}",
-                    code="INVALID_FASTA",
-                    context={"file": str(path)},
-                )
+    try:
+        with open_text(path) as handle:
+            seen_header = False
+            for lineno, raw_line in enumerate(handle, start=1):
+                line = raw_line.strip()
+                if line.startswith(">"):
+                    seen_header = True
+                    parts = line[1:].strip().split(maxsplit=1)
+                    yield (parts[0] if parts else "", parts[1] if len(parts) > 1 else "")
+                elif not line or seen_header:
+                    continue
+                else:
+                    raise InputError(
+                        f"{path}: content before first '>' header at line {lineno}",
+                        code="INVALID_FASTA",
+                        context={"file": str(path)},
+                    )
+    except (OSError, UnicodeDecodeError, EOFError) as exc:
+        raise InputError(
+            f"{path}: could not read input: {exc}",
+            code="INVALID_FASTA",
+            context={"file": str(path)},
+        ) from exc

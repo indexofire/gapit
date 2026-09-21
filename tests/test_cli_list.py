@@ -101,6 +101,40 @@ def test_setupdb_debug_echoes_makeblastdb_argv(tmp_path: Path) -> None:
     assert run_lines and run_lines[0].startswith("gapit: run: makeblastdb -in ")
 
 
+def test_setupdb_honors_manifest_dbtype_on_reindex(tmp_path: Path) -> None:
+    """Given a gapit-built prot database whose sequences are pure A/G/T/C
+    (the abricate mol_type heuristic alone would say nucl), When the BLAST
+    index is deleted and rebuilt via setupdb, Then the manifest dbtype wins:
+    a .pin index exists, .nin does not, and list reports prot. Manifest-less
+    (abricate-built) dirs keep the heuristic — pinned by
+    test_setupdb_then_list_roundtrip."""
+    prot_fa = tmp_path / "agtc_prot.fa"
+    prot_fa.write_text(
+        ">agtc_strep synthetic AGTC-heavy protein\n" + "AGTCAGTC" * 6 + "\n"
+        ">agtc_mix synthetic AGTC-heavy protein\n" + "GATCGATC" * 6 + "\n",
+        encoding="utf-8",
+    )
+    datadir = tmp_path / "datadir"
+    build = runner.invoke(
+        app,
+        ["db", "build", "agtcprot", str(prot_fa), "--dbtype", "prot", "--datadir", str(datadir)],
+    )
+    assert build.exit_code == 0
+    db_dir = datadir / "agtcprot"
+    for index_file in db_dir.glob("sequences.[np]??"):
+        index_file.unlink()
+    setup = runner.invoke(app, ["setupdb", "--datadir", str(datadir)])
+    assert setup.exit_code == 0
+    assert setup.stderr.strip() == "Indexed agtcprot (2 sequences, prot)"
+    assert (db_dir / "sequences.pin").is_file()
+    assert not (db_dir / "sequences.nin").exists()
+    result = runner.invoke(app, ["list", "--datadir", str(datadir)])
+    assert result.exit_code == 0
+    lines = result.stdout.splitlines()
+    assert len(lines) == 2
+    assert lines[1].split("\t")[2] == "prot"
+
+
 def test_list_json_output(tmp_path: Path) -> None:
     """Given an indexed fixture datadir, When listed with --json, Then the payload
     parses, carries schema gapit.list/1, and keys come in documented order."""

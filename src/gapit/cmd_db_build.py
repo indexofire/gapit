@@ -29,7 +29,7 @@ from gapit.db import mol_type
 from gapit.dbbuild import build_database
 from gapit.dbcodec import decode_seqid
 from gapit.dispatch import dispatch
-from gapit.errors import DatabaseError, InputError
+from gapit.errors import DatabaseError, InputError, UsageError
 from gapit.fasta import FastaRecord, iter_fasta
 from gapit.records import Record, write_records
 
@@ -169,6 +169,14 @@ def perform_build(
     + MCP path. Warnings go to the caller-supplied ``warn`` (CLI: stderr;
     MCP: dropped — stderr is reserved for the protocol)."""
 
+    # Security/frozen rule: `Path(datadir) / name` REPLACES the base when name
+    # is absolute (and `..` escapes it); plain names only, all else allowed.
+    if not name or name in (".", "..") or "/" in name or "\\" in name:
+        raise UsageError(
+            f"database name must be a plain name without path separators: {name!r}",
+            code="USAGE_ERROR",
+            context={"name": name},
+        )
     if not fasta.is_file():
         raise InputError(
             f"FASTA file not found or unreadable: {fasta}",

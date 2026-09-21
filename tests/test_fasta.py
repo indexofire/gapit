@@ -145,3 +145,28 @@ def test_iter_fasta_headers_reads_gz(tmp_path: Path) -> None:
     gz_path = tmp_path / "headers.fa.gz"
     gz_path.write_bytes(gzip.compress(plain.read_bytes()))
     assert list(iter_fasta_headers(gz_path)) == [("a", "desc one"), ("b", "")]
+
+
+def test_iter_fasta_truncated_gz_raises_invalid_fasta(tmp_path: Path) -> None:
+    """Given a .gz FASTA cut to ~60% of its bytes, When iterated, Then the
+    mid-iteration EOFError becomes InputError INVALID_FASTA with the file in
+    context (typed, not an uncaught EOFError escaping the generator)."""
+    blob = gzip.compress(b">a desc\n" + b"ACGT" * 100 + b"\n>b\nGGCC\n")
+    gz_path = tmp_path / "truncated.fa.gz"
+    gz_path.write_bytes(blob[: len(blob) * 3 // 5])
+    with pytest.raises(InputError) as excinfo:
+        list(iter_fasta(gz_path))
+    assert excinfo.value.code == "INVALID_FASTA"
+    assert excinfo.value.context == {"file": str(gz_path)}
+
+
+def test_iter_fasta_headers_truncated_gz_raises_invalid_fasta(tmp_path: Path) -> None:
+    """Given the same truncated .gz, When headers are iterated, Then the same
+    typed InputError INVALID_FASTA fires (both readers share the wrap)."""
+    blob = gzip.compress(b">a desc\n" + b"ACGT" * 100 + b"\n>b\nGGCC\n")
+    gz_path = tmp_path / "truncated.fa.gz"
+    gz_path.write_bytes(blob[: len(blob) * 3 // 5])
+    with pytest.raises(InputError) as excinfo:
+        list(iter_fasta_headers(gz_path))
+    assert excinfo.value.code == "INVALID_FASTA"
+    assert excinfo.value.context == {"file": str(gz_path)}

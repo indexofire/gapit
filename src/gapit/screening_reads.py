@@ -207,6 +207,9 @@ def run_screen_assemblies(
     min_identity: float,
     min_mapq: int,
     threads: int,
+    jobs: int,
+    noheader: bool,
+    nopath: bool,
     output_format: OutputFormat | None,
     quiet: bool,
     debug: bool = False,
@@ -215,11 +218,18 @@ def run_screen_assemblies(
     (--aligner minimap2): every input must be FASTA(.gz) content — FASTQ
     content is a usage error, undetectable content keeps the typed input
     error. Preset resolution and output follow the reads contract (SPEC §10);
-    --fofn is a blastn-engine-only input source and is rejected here. A
-    nonzero --min-identity/--min-mapq turns on gapit.reads/2 filtering."""
+    the blastn-engine-only flags --fofn/--jobs/--noheader/--nopath are
+    rejected here instead of silently ignored. A nonzero
+    --min-identity/--min-mapq turns on gapit.reads/2 filtering."""
     _validate_reads_usage(output_format, min_breadth, min_identity, min_mapq, threads)
     if fofn is not None:
         usage_fail("--fofn is not available with --aligner minimap2")
+    if jobs != 1:
+        usage_fail("--jobs is not available with --aligner minimap2")
+    if noheader:
+        usage_fail("--noheader is not available with --aligner minimap2")
+    if nopath:
+        usage_fail("--nopath is not available with --aligner minimap2")
     if not files:
         usage_fail("no input files given (positional FILEs)")
     for path in files:

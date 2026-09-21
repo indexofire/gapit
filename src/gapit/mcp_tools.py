@@ -62,6 +62,7 @@ TOOLS: list[dict[str, object]] = [
             "minid": {"type": "number"},
             "mincov": {"type": "number"},
             "format": {"type": "string", "enum": ["json", "tsv", "md"], "default": "json"},
+            "datadir": _STR,
         },
         ["files"],
     ),
@@ -186,6 +187,7 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     if not files:
         usage_fail("no input files given (files is required)")
     db_name = _string(arguments, "db", "ncbi")
+    datadir = _optional_path(arguments, "datadir")
     minid = _number(arguments, "minid", 80.0)
     mincov = _number(arguments, "mincov", 80.0)
     if not 0.0 < minid <= 100.0:
@@ -203,7 +205,7 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
                 context={"file": str(path)},
             )
     params = ScreeningParams(db=db_name, minid=minid, mincov=mincov, threads=1)
-    database = find_database(config.resolve_datadir(None), db_name)
+    database = find_database(config.resolve_datadir(datadir), db_name)
     ensure_blast()
     dbtype = db.blast_db_info(database.sequences_path).dbtype
     reports = [screen_file(path, database, params, dbtype=dbtype) for path in files]

@@ -71,7 +71,7 @@ def detect_format(path: Path) -> SeqFormat:
     try:
         with open_text(path) as handle:
             first = handle.readline()
-    except (OSError, UnicodeDecodeError) as exc:
+    except (OSError, UnicodeDecodeError, EOFError) as exc:
         raise InputError(
             f"could not read input: {exc}",
             code="INVALID_INPUT",
@@ -195,7 +195,7 @@ def to_fasta_lines(path: Path, fmt: SeqFormat | None = None) -> Iterator[str]:
                 yield f">{header}\n"
                 for offset in range(0, len(sequence), _WRAP):
                     yield f"{sequence[offset : offset + _WRAP]}\n"
-    except (OSError, UnicodeDecodeError) as exc:
+    except (OSError, UnicodeDecodeError, EOFError) as exc:
         raise InputError(
             f"could not read input: {exc}",
             code="INVALID_INPUT",

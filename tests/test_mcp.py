@@ -173,6 +173,28 @@ def test_screen_call_rejects_missing_files_argument(datadir: Path) -> None:
     assert json.loads(response["result"]["content"][0]["text"])["code"] == "USAGE_ERROR"
 
 
+def test_screen_call_honors_datadir_argument_without_env(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given NO $GAPIT_DATADIR in the environment, When tools/call screen
+    passes the datadir argument, Then the fixture database screens and the
+    tetA hit returns — the db tools' datadir symmetry, no env bridge."""
+    monkeypatch.delenv("GAPIT_DATADIR", raising=False)
+    target = tmp_path / "datadir"
+    shutil.copytree(FIXTURE_DB_DIR, target)
+    make_blast_db(target / "tinyamr" / "sequences", "tinyamr")
+    (response,) = exchange(
+        tool_call(
+            "screen", {"files": [str(CONTIGS / "full.fa")], "db": "tinyamr", "datadir": str(target)}
+        )
+    )
+    assert response["result"]["isError"] is False
+    document = json.loads(response["result"]["content"][0]["text"])
+    assert document["schema"] == "gapit.report/1"
+    (hit,) = document["files"][0]["hits"]
+    assert hit["gene"] == "tetA"
+
+
 def test_summary_call_returns_summary_json() -> None:
     (response,) = exchange(
         tool_call(

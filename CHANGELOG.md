@@ -82,6 +82,10 @@ been released yet; the package version stays 0.1.0.
   abricate (accepted trade-off).
 - A bare `gapit db fetch` installs the bundled default set (card, vfdb) instead of
   downloading; `--from-source` restores the upstream fetch path.
+- `gapit setupdb` honors the `gapit.manifest/1` dbtype on reindex (manifest-less abricate
+  dirs keep the mol_type heuristic), and reads/minimap2-assembly screening now rejects the
+  blastn-only flags `--fofn`, `--noheader`, `--nopath`, `--jobs N>1` with usage errors
+  (exit 2) instead of silently ignoring them (2026-09-22).
 
 ### Removed
 

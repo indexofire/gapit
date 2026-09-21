@@ -398,6 +398,43 @@ def test_db_build_refuses_existing_database_then_force_rebuilds(tmp_path: Path) 
     assert json.loads(forced.stdout)["records"] == 2
 
 
+def test_db_build_rejects_names_that_escape_the_datadir(tmp_path: Path) -> None:
+    """Given names that would redirect the destination outside the datadir
+    (absolute, ../ traversal, separator, dot), When built, Then exit 2 with a
+    USAGE_ERROR envelope carrying the name in context and nothing is written
+    anywhere (datadir stays empty, no ../escape sibling)."""
+    fasta = tmp_path / "my_genes.fa"
+    fasta.write_text(PLAIN_FASTA, encoding="utf-8")
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    for name in ("/tmp/evil", "../escape", "a/b", "."):
+        result = build(name, str(fasta), "--datadir", str(datadir))
+        assert result.exit_code == 2, name
+        envelope = last_envelope(result.stderr)
+        assert envelope.code == "USAGE_ERROR"
+        assert envelope.context["name"] == name
+        assert envelope.message == (
+            f"database name must be a plain name without path separators: {name!r}"
+        )
+    assert list(datadir.iterdir()) == []
+    assert not (tmp_path / "escape").exists()
+
+
+def test_db_build_allows_dash_underscore_dot_names(tmp_path: Path) -> None:
+    """Given a plain name carrying dashes, underscores and an inside dot,
+    When built, Then exit 0 — anything without separators stays allowed."""
+    fasta = tmp_path / "my_genes.fa"
+    fasta.write_text(f">demov2 demo\n{SEQ_A}\n", encoding="utf-8")
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    result = build("my-db_1.x", str(fasta), "--datadir", str(datadir))
+
+    assert result.exit_code == 0, result.stderr
+    assert (datadir / "my-db_1.x" / "gapit-manifest.json").is_file()
+
+
 def test_db_build_creates_missing_datadir(tmp_path: Path) -> None:
     """Given a --datadir whose nested path does not exist yet, When built,
     Then the datadir is created (mirroring `db fetch` bootstrap) and the

@@ -125,6 +125,14 @@ def screen_command(
         ):
             usage_fail("--min-identity/--min-mapq are reads-mode only (minimap2 engine)")
         if r1 is not None or r2 is not None:
+            if fofn is not None:
+                usage_fail("--fofn is not available in reads mode")
+            if noheader:
+                usage_fail("--noheader is not available in reads mode")
+            if nopath:
+                usage_fail("--nopath is not available in reads mode")
+            if jobs != 1:
+                usage_fail("--jobs is not available in reads mode")
             run_screen_reads(
                 r1 or "",
                 r2,
@@ -151,6 +159,9 @@ def screen_command(
                 min_identity,
                 min_mapq,
                 threads,
+                jobs,
+                noheader,
+                nopath,
                 output_format,
                 quiet,
                 debug,
