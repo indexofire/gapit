@@ -12,6 +12,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 concurrency:
   group: snapshot-refresh
@@ -118,3 +119,11 @@ jobs:
           body: ${{ steps.refresh.outputs.summary }}
           commit-message: "data: refresh card and vfdb snapshots"
           delete-branch: true
+      - name: Open failure issue
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "snapshot-refresh failed (run ${{ github.run_id }})" \
+            --body "Scheduled snapshot refresh failed. Check the [run log](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}). Common cause: upstream source outage (card.mcmaster.ca / mgc.ac.cn)."
