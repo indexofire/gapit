@@ -2,10 +2,10 @@
 
 Compares PARSED records (id, description, sequence) — not raw bytes: gapit
 re-wraps sequence at 60 columns while the perl keeps input wrapping, a
-difference blast cannot see. Skipped unless any2fasta is on PATH; the difftest
-pixi env provides it:
+difference blast cannot see. Skipped unless any2fasta is on PATH; the parity
+env supplies it transitively via abricate:
 
-    pixi run -e difftest difftest
+    PATH="$PWD/.pixi/envs/parity/bin:$PATH" pixi run pytest tests/test_seqconvert_differential.py -q
 """
 
 import shutil
@@ -29,7 +29,8 @@ FIXTURES = [
 ]
 
 pytestmark = pytest.mark.skipif(
-    ANY2FASTA is None, reason="any2fasta not on PATH (run via: pixi run -e difftest difftest)"
+    ANY2FASTA is None,
+    reason="any2fasta not on PATH (prepend .pixi/envs/parity/bin to PATH)",
 )
 
 

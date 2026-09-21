@@ -73,7 +73,9 @@ blastn -task blastn -dust no -perc_identity <minid> \
 - Normalization is native `seqconvert.py` replicating `any2fasta -q -u`: `.fa/.fq/.gbk/.embl`,
   gz, bz2 → FASTA (id/header, description, uppercase sequence rules extracted from the perl).
   Divergence: gapit re-wraps at 60 columns and reads universal newlines — blast-invisible, and
-  parsed-record equality with the binary is differentially tested in the `difftest` pixi env.
+  parsed-record equality with the binary is differentially tested by running under the
+  `parity` env's PATH (abricate provides any2fasta transitively; gapit owns no any2fasta
+  dependency).
 
 ## 4. Hit processing (the core algorithm)
 

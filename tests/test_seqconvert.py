@@ -2,7 +2,7 @@
 
 Semantics locked here mirror the perl (see the seqconvert.py docstring for
 line references); the differential suite (test_seqconvert_differential.py,
-difftest env) proves parsed-record equality against the real binary.
+parity env on PATH) proves parsed-record equality against the real binary.
 """
 
 import gzip

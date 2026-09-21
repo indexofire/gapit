@@ -25,8 +25,9 @@ are we?** It replaces abricate (Perl) with a modern, typed, testable Python tool
 - **External binaries**: BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2`
   (FASTQ read screening, SPEC.md §10), all from conda-forge/bioconda. Invoked only via `subprocess`
   with an argument list — never `shell=True`. Input normalization (fa/fq/gbk/embl, gz/bz2) is
-  native (`seqconvert.py`); `any2fasta` is no longer a runtime dependency and survives only in the
-  opt-in `difftest` pixi env as the differential-validation oracle for the native converter.
+  native (`seqconvert.py`); `any2fasta` is no longer a gapit dependency anywhere — the
+  differential-validation oracle binary arrives transitively via abricate in the opt-in
+  `parity` pixi env (prepend `.pixi/envs/parity/bin` to PATH for the differential test).
 - **Core libraries**: `typer` (CLI), `pydantic` v2 (data models / JSON schema), `rich` (terminal
   output). No biopython — FASTA I/O is a small streaming parser we own.
 - **Quality gates**: `ruff` (lint + format), `basedpyright` (strict mode), `pytest`.

@@ -46,15 +46,6 @@ abricate = "*"
 parity = ".pixi/envs/default/bin/python tests/parity/run_parity.py"
 summary-parity = ".pixi/envs/default/bin/python tests/parity/run_summary_parity.py"
 
-# Input normalization is native (src/gapit/seqconvert.py); any2fasta stays
-# available in this opt-in env purely as the differential-validation oracle
-# for tests/test_seqconvert_differential.py.
-[feature.difftest.dependencies]
-any2fasta = ">=0.4"
-
-[feature.difftest.tasks]
-difftest = "pytest tests/test_seqconvert_differential.py"
-
 # Docs site (MkDocs Material). Dev-only: never in gapit's runtime deps or the
 # gates environments (AGENTS.md §2 dependency discipline).
 [feature.docs.pypi-dependencies]
@@ -63,7 +54,6 @@ mkdocs-material = ">=9.5"
 [environments]
 default = ["py314"]
 parity = { features = ["parity"], no-default-feature = true }
-difftest = ["py314", "difftest"]
 py311 = ["py311"]
 py313 = ["py313"]
 # py314 needed alongside docs: python lives in the pyXX features, not the
