@@ -27,8 +27,6 @@ python = "3.11.*"
 [feature.py313.dependencies]
 python = "3.13.*"
 
-[pypi-options]
-index-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 
 [pypi-dependencies]
 gapit = { path = ".", editable = true }
