@@ -216,9 +216,8 @@ in §11.
 
 ## 9. License note
 
-abricate is GPL-2.0. gapit is a behavioral reimplementation (no Perl code copied); to keep DB
-handling and redistribution unambiguous, gapit is licensed GPL-2.0-compatible. Bundled DB content
-retains its original upstream licenses.
+abricate is GPL-2.0. gapit is MIT: an independent behavioral reimplementation, no Perl code
+copied. Bundled DB content retains its original upstream licenses.
 
 ## 10. Read and assembly screening (FASTQ/FASTA) — gapit extension
 

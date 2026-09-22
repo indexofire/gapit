@@ -99,7 +99,7 @@ PATH.
 
 ## What licenses apply to the bundled databases?
 
-gapit itself is GPL-2.0-compatible. Database content keeps its original
+gapit itself is MIT-licensed. Database content keeps its original
 upstream licenses (NCBI, CARD, CGE, and so on); gapit does not relicense it.
 Details in SPEC.md §9.
 

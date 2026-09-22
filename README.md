@@ -148,6 +148,6 @@ guide, `CHANGELOG.md` the change history.
 
 ## License
 
-GPL-2.0-compatible: gapit is a behavioral reimplementation of GPL-2.0 abricate and copies
-no Perl code. Bundled database content retains its original upstream licenses
-(SPEC.md §9).
+gapit is MIT-licensed. It is a behavioral reimplementation of abricate (GPL-2.0) and
+copies no Perl code; abricate itself remains GPL-2.0. Bundled database content retains
+its original upstream licenses (SPEC.md §9).

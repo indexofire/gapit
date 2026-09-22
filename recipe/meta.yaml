@@ -4,7 +4,7 @@
 # version/license/python/deps mirror pyproject.toml exactly; the external
 # binaries mirror pixi.toml's conda dependencies.
 {% set name = "gapit" %}
-{% set version = "0.2.0" %}
+{% set version = "0.2.1" %}
 
 package:
   name: {{ name|lower }}
@@ -13,7 +13,7 @@ package:
 source:
   # gapit is not on PyPI yet. This is the standard noarch-python source URL;
   # replace the sha256 with the PyPI sdist hash at submission time.
-  # The value below hashes the LOCAL hatchling sdist (dist/gapit-0.2.0.tar.gz)
+  # The value below hashes the LOCAL hatchling sdist (dist/gapit-0.2.1.tar.gz)
   # — local and PyPI sdists are not byte-identical (gzip), do not trust it.
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
   sha256: 24df143ed9647fc784fa29c776babfd880d3730d22004b997ed0aea3f105f5e3
@@ -56,10 +56,10 @@ test:
 
 about:
   home: https://github.com/indexofire/gapit
-  # The repo declares SPDX GPL-2.0-only in pyproject.toml but ships no LICENSE
-  # file; add one upstream and set license_file before submitting.
-  license: GPL-2.0-only
-  license_family: GPL2
+  # The repo ships an MIT LICENSE (root) and pyproject.toml declares SPDX MIT;
+  # add license_file before submitting.
+  license: MIT
+  license_family: MIT
   summary: Mass screening of contigs and reads for antimicrobial resistance and virulence genes
   description: >-
     Agent-first Python reimplementation of abricate: BLAST-based screening of

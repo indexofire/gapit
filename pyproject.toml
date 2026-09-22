@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gapit"
-version = "0.2.0"
+version = "0.2.1"
 description = "Mass screening of contigs for antimicrobial resistance and virulence genes — agent-first Python reimplementation of abricate"
 readme = "README.md"
 authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]
 requires-python = ">=3.11"
-license = "GPL-2.0-only"
+license = "MIT"
 keywords = ["bioinformatics", "AMR", "virulence", "blast", "genomics"]
 dependencies = [
   "typer>=0.12",
