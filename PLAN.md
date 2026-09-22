@@ -136,6 +136,12 @@ consumes abricate-built datadirs.
 - Reads-mode opt-in alignment filtering (`gapit.reads/2` via `--min-identity`/`--min-mapq`;
   per-alignment identity `100*(alen-nm)/alen`, NM via minimap2 `--cs`) — added 2026-09-20,
   post-phase; `gapit.reads/1` stays the frozen default. See docs/reads.md.
+- MCP reads tools — added 2026-09-22, post-phase: the `screen_reads` tool (FASTQ via
+  minimap2, `gapit.reads/1`/`reads/2`) and `screen`'s `aligner`/`min_breadth`/`min_identity`/
+  `min_mapq` parameters (minimap2 assembly survey), both delegating to the shared
+  `run_screen_reads`/`run_screen_assemblies` use-cases. Additive `gapit.mcp` contract
+  (9 tools; the other 8 entries byte-identical), no output-schema version bump. See
+  docs/mcp.md.
 - **Deferred by decision (2026-09-18):** PyPI and bioconda publication — recipe remains
   in-repo; sha256 placeholder to be replaced at submission time.
 

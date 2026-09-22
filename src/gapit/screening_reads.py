@@ -99,11 +99,12 @@ def _screen_lanes(
     output_format: OutputFormat | None,
     quiet: bool,
     debug: bool,
-) -> None:
+) -> str:
     """Minimap2 engine core shared by both entry points: preset resolution,
     screening, rendering; json is the default format (SPEC.md §10). Either
     reads/2 threshold on selects the gapit.reads/2 document; both off keep
-    gapit.reads/1 byte-identical."""
+    gapit.reads/1 byte-identical. Returns the rendered output for the caller
+    to echo."""
     resolved = _resolve_read_preset(lanes, read_type, quiet)
     database = find_database(config.resolve_datadir(datadir), db_name)
     read_files = [r1_path for r1_path, _ in lanes] + [
@@ -147,7 +148,7 @@ def _screen_lanes(
             if output_format is OutputFormat.md
             else render_reads_json([report], params, now=now)
         )
-    typer.echo(output, nl=False)
+    return output
 
 
 def run_screen_reads(
@@ -164,11 +165,11 @@ def run_screen_reads(
     quiet: bool,
     debug: bool = False,
     aligner: AlignerEnum | None = None,
-) -> None:
+) -> str:
     """Screen FASTQ reads or assembly FASTA given as --r1/--r2 comma lists
     (per-lane minimap2, sample-level union); json is the default format
     (SPEC.md §10). A nonzero --min-identity/--min-mapq turns on
-    gapit.reads/2 alignment filtering."""
+    gapit.reads/2 alignment filtering. Returns the rendered output."""
     if aligner is AlignerEnum.blastn:
         usage_fail("--aligner blastn is not available for --r1/--r2 reads input")
     _validate_reads_usage(output_format, min_breadth, min_identity, min_mapq, threads)
@@ -182,7 +183,7 @@ def run_screen_reads(
                 code="INPUT_NOT_FOUND",
                 context={"file": str(path)},
             )
-    _screen_lanes(
+    return _screen_lanes(
         lanes,
         db_name,
         datadir,
@@ -213,14 +214,15 @@ def run_screen_assemblies(
     output_format: OutputFormat | None,
     quiet: bool,
     debug: bool = False,
-) -> None:
+) -> str:
     """Screen positional assembly FASTA file(s) with the minimap2 engine
     (--aligner minimap2): every input must be FASTA(.gz) content — FASTQ
     content is a usage error, undetectable content keeps the typed input
     error. Preset resolution and output follow the reads contract (SPEC §10);
     the blastn-engine-only flags --fofn/--jobs/--noheader/--nopath are
     rejected here instead of silently ignored. A nonzero
-    --min-identity/--min-mapq turns on gapit.reads/2 filtering."""
+    --min-identity/--min-mapq turns on gapit.reads/2 filtering. Returns the
+    rendered output."""
     _validate_reads_usage(output_format, min_breadth, min_identity, min_mapq, threads)
     if fofn is not None:
         usage_fail("--fofn is not available with --aligner minimap2")
@@ -241,7 +243,7 @@ def run_screen_assemblies(
             )
         if detect_read_kind(path) is not ReadFileKind.fasta:
             usage_fail("minimap2 engine requires FASTA assemblies")
-    _screen_lanes(
+    return _screen_lanes(
         [(path, None) for path in files],
         db_name,
         datadir,

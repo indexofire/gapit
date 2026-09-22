@@ -1,4 +1,4 @@
-"""MCP tool implementations + inputSchemas (protocol: gapit.mcp).
+"""MCP tool implementations (protocol: gapit.mcp; declarations: gapit.mcp_schemas).
 
 Every tool mirrors its CLI twin by calling the SAME shared callables —
 never a reimplementation. Failures raise typed errors; the protocol layer
@@ -27,102 +27,15 @@ from gapit.formats.md import render_markdown
 from gapit.formats.schemas import SCHEMA_MODELS
 from gapit.formats.summary import render_summary_json
 from gapit.formats.tsv import format_tsv
+from gapit.reads import ReadTypeEnum
 from gapit.report import ScreeningParams
-from gapit.screening import find_database, usage_fail
+from gapit.screening import AlignerEnum, OutputFormat, find_database, usage_fail
+from gapit.screening_reads import run_screen_assemblies, run_screen_reads
 from gapit.summary import SummaryParams, build_summary
 
 # Parsed JSON-RPC argument containers stay dict[str, Any] until the
 # per-field isinstance checks in the helpers below pin concrete types (the
 # sanctioned Any boundary, card.py precedent).
-
-_FILES: dict[str, object] = {"type": "array", "items": {"type": "string"}}
-_FLAG: dict[str, object] = {"type": "boolean", "default": False}
-_STR: dict[str, object] = {"type": "string"}
-_DAYS: dict[str, object] = {"type": "integer", "minimum": 0, "default": DEFAULT_STALE_DAYS}
-_SEARCH_FIELDS: list[str] = [field.value for field in SearchField]
-
-
-def _tool_entry(
-    name: str,
-    description: str,
-    properties: dict[str, object] | None = None,
-    required: list[str] | None = None,
-) -> dict[str, object]:
-    schema = {"type": "object", "properties": properties or {}, "required": required or []}
-    return {"name": name, "description": description, "inputSchema": schema}
-
-
-TOOLS: list[dict[str, object]] = [
-    _tool_entry(
-        "screen",
-        "Screen contig files for AMR/virulence genes (json = gapit.report/1).",
-        {
-            "files": _FILES,
-            "db": {"type": "string", "default": "ncbi"},
-            "minid": {"type": "number"},
-            "mincov": {"type": "number"},
-            "format": {"type": "string", "enum": ["json", "tsv", "md"], "default": "json"},
-            "datadir": _STR,
-        },
-        ["files"],
-    ),
-    _tool_entry(
-        "summary",
-        "Summarize report tables into a gapit.summary/1 matrix.",
-        {"files": _FILES, "identity": {"type": "boolean"}, "nopath": {"type": "boolean"}},
-        ["files"],
-    ),
-    _tool_entry(
-        "schema",
-        "Print the JSON Schema of a gapit output document.",
-        {"name": {"type": "string", "enum": sorted(SCHEMA_MODELS)}},
-        ["name"],
-    ),
-    _tool_entry("db_list", "List database providers and their installed state (gapit.dblist/1)."),
-    _tool_entry(
-        "db_fetch",
-        "Fetch provider database(s) into the datadir (name omitted: card+vfdb from bundled"
-        " snapshots; network installs can take minutes). One JSON receipt line per database"
-        " (db, records, dbtype, destination).",
-        {"name": _STR, "datadir": _STR, "force": _FLAG},
-    ),
-    _tool_entry(
-        "db_build",
-        "Build a custom database from a LOCAL FASTA filesystem path (plain, abricate ~~~, or"
-        " gapit| headers; .gz/.bz2 accepted). Returns a JSON receipt (db, records, dbtype,"
-        " destination).",
-        {
-            "name": _STR,
-            "fasta": _STR,
-            "tsv": _STR,
-            "dbtype": {"type": "string", "enum": ["nucl", "prot"]},
-            "description": _STR,
-            "datadir": _STR,
-            "force": _FLAG,
-        },
-        ["name", "fasta"],
-    ),
-    _tool_entry(
-        "db_search",
-        "Search installed databases for a term (case-insensitive substring, or exact"
-        " full-field equality). Hit rows are TSV: DB, GENE, ACCESSION, FUNCTION, PRODUCT, LENGTH.",
-        {
-            "term": _STR,
-            "db": _STR,
-            "field": {"type": "string", "enum": _SEARCH_FIELDS, "default": "any"},
-            "exact": _FLAG,
-            "limit": {"type": "integer", "minimum": 0, "default": DEFAULT_LIMIT},
-            "datadir": _STR,
-        },
-        ["term"],
-    ),
-    _tool_entry(
-        "db_outdated",
-        "Report installed database ages against the staleness threshold (days) and newer"
-        " bundled snapshots. Rows are TSV with columns NAME, FETCHED_AT, AGE_DAYS, STATUS.",
-        {"days": _DAYS, "datadir": _STR},
-    ),
-]
 
 
 def _paths(arguments: dict[str, Any], key: str) -> list[Path]:
@@ -182,6 +95,12 @@ def _flag(arguments: dict[str, Any], key: str) -> bool:
     return value
 
 
+def _optional_output_format(name: str) -> OutputFormat | None:
+    """Map an already-validated format name onto the reads use-case's
+    OutputFormat|None (None = the json default, SPEC.md §10)."""
+    return None if name == "json" else OutputFormat(name)
+
+
 def _tool_screen(arguments: dict[str, Any]) -> str:
     files = _paths(arguments, "files")
     if not files:
@@ -197,6 +116,34 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     output_format = _string(arguments, "format", "json")
     if output_format not in ("json", "tsv", "md"):
         usage_fail(f"format must be one of json, tsv, md: got {output_format}")
+    aligner_name = _string(arguments, "aligner", "blastn")
+    try:
+        aligner = AlignerEnum(aligner_name)
+    except ValueError:
+        usage_fail(f"aligner must be blastn or minimap2: got {aligner_name}")
+    min_breadth = _number(arguments, "min_breadth", 90.0)
+    min_identity = _number(arguments, "min_identity", 0.0)
+    min_mapq = _integer(arguments, "min_mapq", 0)
+    if aligner is AlignerEnum.minimap2:
+        # tsv is rejected by the use-case itself (reads-mode format rule).
+        return run_screen_assemblies(
+            files,
+            None,
+            db_name,
+            datadir,
+            None,
+            min_breadth,
+            min_identity,
+            min_mapq,
+            threads=1,
+            jobs=1,
+            noheader=False,
+            nopath=False,
+            output_format=_optional_output_format(output_format),
+            quiet=True,
+        )
+    if (min_breadth, min_identity, min_mapq) != (90.0, 0.0, 0):
+        usage_fail("reads-mode parameters require aligner minimap2")
     for path in files:
         if not path.is_file():
             raise InputError(
@@ -215,6 +162,54 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     if output_format == "md":
         return render_markdown(reports, params, now=now)
     return format_tsv(reports, csv=False, noheader=False, nopath=False)
+
+
+def _reads_list(arguments: dict[str, Any], key: str) -> str:
+    """Reads path array -> the CLI's comma-joined --r1/--r2 string (the reads
+    use-case consumes the flag form). Empty elements are usage errors: an
+    empty string would silently become the working directory."""
+    _paths(arguments, key)
+    # list[str] proven by the _paths isinstance checks above
+    raw: list[str] = arguments.get(key, [])
+    if any(item == "" for item in raw):
+        usage_fail(f"{key} contains an empty element")
+    return ",".join(raw)
+
+
+def _tool_screen_reads(arguments: dict[str, Any]) -> str:
+    r1 = _reads_list(arguments, "r1")
+    if not r1:
+        usage_fail("no reads files given (r1 is required)")
+    r2 = _reads_list(arguments, "r2") or None
+    read_type_name = _string(arguments, "read_type", ReadTypeEnum.sr.value)
+    try:
+        read_type = ReadTypeEnum(read_type_name)
+    except ValueError:
+        usage_fail(f"read_type must be one of {', '.join(t.value for t in ReadTypeEnum)}")
+    output_format = _string(arguments, "format", "json")
+    if output_format not in ("json", "md"):
+        usage_fail(f"format must be one of json, md: got {output_format}")
+    min_breadth = _number(arguments, "min_breadth", 90.0)
+    if not 0.0 <= min_breadth <= 100.0:
+        usage_fail(f"min_breadth must be in [0, 100]: got {min_breadth}")
+    min_identity = _number(arguments, "min_identity", 0.0)
+    if not 0.0 <= min_identity <= 100.0:
+        usage_fail(f"min_identity must be in [0, 100]: got {min_identity}")
+    min_mapq = _integer(arguments, "min_mapq", 0)
+    # lane pairing is validated by the use-case (frozen CLI message)
+    return run_screen_reads(
+        r1,
+        r2,
+        _string(arguments, "db", "ncbi"),
+        _optional_path(arguments, "datadir"),
+        read_type,
+        min_breadth,
+        min_identity,
+        min_mapq,
+        threads=1,
+        output_format=_optional_output_format(output_format),
+        quiet=True,
+    )
 
 
 def _tool_summary(arguments: dict[str, Any]) -> str:
@@ -290,6 +285,7 @@ def _tool_db_outdated(arguments: dict[str, Any]) -> str:
 
 TOOL_HANDLERS: dict[str, Callable[[dict[str, Any]], str]] = {
     "screen": _tool_screen,
+    "screen_reads": _tool_screen_reads,
     "summary": _tool_summary,
     "schema": _tool_schema,
     "db_list": _tool_db_list,

@@ -1,9 +1,9 @@
 # MCP server
 
 gapit ships a Model Context Protocol (MCP) stdio server that exposes the CLI as
-tools. An agent runtime can screen assemblies, summarize reports, introspect
-schemas, and self-provision databases without shelling out or parsing
-terminal output. The protocol is hand-rolled newline-delimited JSON-RPC 2.0
+tools. An agent runtime can screen assemblies and reads, summarize reports,
+introspect schemas, and self-provision databases without shelling out or
+parsing terminal output. The protocol is hand-rolled newline-delimited JSON-RPC 2.0
 with no extra dependencies: one request per line on stdin, one response per
 line on stdout.
 
@@ -30,14 +30,15 @@ the module CLI as `{"command": "gapit", "args": ["mcp"]}`.
 
 ## Tools
 
-Eight tools: four read-only analysis tools and four database
+Nine tools: five read-only analysis tools and four database
 self-provisioning tools (`db_fetch`, `db_build`, `db_search`,
 `db_outdated`) that mirror `gapit db ...` exactly. Argument lists below are
 transcribed from the live `tools/list` `inputSchema` objects.
 
 | Tool | Arguments | Returns |
 |---|---|---|
-| `screen` | `files` (array of strings, required), `db` (string, default `ncbi`), `minid` (number), `mincov` (number), `format` (string: `json` \| `tsv` \| `md`, default `json`) | Report text: `gapit.report/1` JSON by default, TSV or Markdown per `format` |
+| `screen` | `files` (array of strings, required), `db` (string, default `ncbi`), `minid` (number), `mincov` (number), `format` (string: `json` \| `tsv` \| `md`, default `json`), `aligner` (string: `blastn` \| `minimap2`, default `blastn`), `min_breadth` (number 0–100, default `90`; minimap2 only), `min_identity` (number 0–100, default `0`; minimap2 only), `min_mapq` (integer ≥ 0, default `0`; minimap2 only), `datadir` (string) | Report text: `gapit.report/1` JSON by default, TSV or Markdown per `format`; `aligner minimap2` runs the reads engine and emits `gapit.reads/1` |
+| `screen_reads` | `r1` (array of strings, required — one path per lane), `r2` (array of strings, same count as `r1`), `read_type` (string: `sr` \| `map-ont` \| `map-hifi`, default `sr`), `min_breadth` (number 0–100, default `90`), `min_identity` (number 0–100, default `0`), `min_mapq` (integer ≥ 0, default `0`), `format` (string: `json` \| `md`, default `json`), `db` (string, default `ncbi`), `datadir` (string) | `gapit.reads/1` JSON by default or Markdown per `format`; `min_identity`/`min_mapq` > 0 switches to `gapit.reads/2` |
 | `summary` | `files` (array of report table paths, required), `identity` (boolean), `nopath` (boolean) | `gapit.summary/1` JSON |
 | `schema` | `name` (string, required, one of `error`, `list`, `reads`, `report`, `summary`, `version`) | The JSON Schema of that output document |
 | `db_list` | none | `gapit.dblist/1`: provider names, install state, record counts |
@@ -47,7 +48,10 @@ transcribed from the live `tools/list` `inputSchema` objects.
 | `db_outdated` | `days` (integer ≥ 0, default `90`), `datadir` (string) | TSV rows with columns `NAME`, `FETCHED_AT`, `AGE_DAYS`, `STATUS` |
 
 Omitted `screen` thresholds fall back to the CLI defaults (`minid` 80,
-`mincov` 80), matching `gapit screen`.
+`mincov` 80; with `aligner minimap2`: `min_breadth` 90, `min_identity` 0,
+`min_mapq` 0), matching `gapit screen`. The `min_breadth`/`min_identity`/
+`min_mapq` arguments are rejected on the default `blastn` path (they are
+reads-engine parameters); `minid`/`mincov` are ignored by `minimap2`.
 
 Notes:
 
@@ -56,7 +60,8 @@ Notes:
 - The datadir comes from the `GAPIT_DATADIR` environment variable, then
   `~/.local/share/gapit/db` (see `./databases.md`). The db tools also accept
   an explicit `datadir` argument per call.
-- `screen` in MCP covers contigs only; reads mode and `csv` are CLI-only.
+- `csv` output is CLI-only: MCP `screen` offers `json`/`tsv`/`md` and
+  `screen_reads` offers `json`/`md` (reads mode rejects tabular output).
 - `db_build`'s `fasta` must be a path on the server's filesystem — the agent
   provides a local path, not file contents.
 - Tool failures do not use JSON-RPC errors. They return `isError: true` with
@@ -96,7 +101,7 @@ Response line 2 (real output, elided in the middle; each tool carries its full
 `inputSchema`):
 
 ```text
-{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for AMR/virulence genes (json = gapit.report/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string","default":"ncbi"}, ... },"required":["files"]}}, {"name":"summary", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
+{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for AMR/virulence genes (json = gapit.report/1; aligner minimap2 = fast assembly survey emitting gapit.reads/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string","default":"ncbi"}, ... },"required":["files"]}}, {"name":"screen_reads","description":"Screen FASTQ reads for genes via minimap2 (json = gapit.reads/1; min_identity/min_mapq > 0 emits gapit.reads/2). Returns the rendered document.","inputSchema":{"type":"object","properties":{"r1":{"type":"array","items":{"type":"string"}},"r2":{"type":"array","items":{"type":"string"}},"read_type":{"type":"string","enum":["sr","map-ont","map-hifi"],"default":"sr"}, ... },"required":["r1"]}}, {"name":"summary", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
 ```
 
 Response line 3 (real output, text content elided). The screen result rides in
@@ -140,6 +145,71 @@ the same run):
   ]
 }
 ```
+
+### Screening reads
+
+`screen_reads` mirrors `gapit screen --r1/--r2`: minimap2 per lane, presence
+on alignment breadth. Same datadir convention as `screen`, but no BLAST
+index is needed — minimap2 reads the sequences file directly. Real session
+against a throwaway copy of the repo's `tinyreads` fixture:
+
+```bash
+mkdir -p /tmp/gapit-mcp-demo/datadir
+cp -r tests/data/reads_db/tinyreads /tmp/gapit-mcp-demo/datadir/
+cat <<'EOF' | gapit mcp
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen_reads","arguments":{"r1":["tests/data/reads/tetx_full.fq"],"db":"tinyreads","datadir":"/tmp/gapit-mcp-demo/datadir"}}}
+EOF
+```
+
+Verbatim response (text content elided):
+
+```text
+{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\n  \"schema\": \"gapit.reads/1\", ... }"}],"isError":false}}
+```
+
+Decoded, the text is a complete `gapit.reads/1` document (real output from
+the same run):
+
+```json
+{
+  "schema": "gapit.reads/1",
+  "tool": {"name": "gapit", "version": "0.1.0"},
+  "created_at": "2026-09-22T00:07:35Z",
+  "params": {
+    "db": "tinyreads",
+    "read_type": "sr",
+    "min_breadth": 90.0,
+    "threads": 1
+  },
+  "files": [
+    {
+      "reads": [
+        "tests/data/reads/tetx_full.fq"
+      ],
+      "genes": [
+        {
+          "gene": "tetX",
+          "database": "tinyreads",
+          "accession": "SYN-001",
+          "product": "extended resistance determinant tetX",
+          "resistance": "TETRACYCLINE",
+          "tlen": 522,
+          "breadth_pct": 97.7,
+          "mean_depth": 2.09,
+          "reads_mapped": 12,
+          "present": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+`r2` takes the mate paths (same count as `r1`), `read_type` picks the
+minimap2 preset, and a nonzero `min_identity`/`min_mapq` switches the
+document to `gapit.reads/2` (semantics: `./reads.md`). For assembly FASTA,
+call `screen` with `aligner: "minimap2"` instead — the survey auto-resolves
+the `map-ont` preset.
 
 ### Failure shapes
 

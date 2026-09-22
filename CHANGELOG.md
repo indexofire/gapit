@@ -68,6 +68,12 @@ been released yet; the package version stays 0.1.0.
   `gapit schema reads2`). Both flags off keeps `gapit.reads/1` byte-identical, and the
   identity floor fixes the documented family-splitting over-calls on homologous genes
   (2026-09-20).
+- MCP reads tools: new `screen_reads` tool (FASTQ lanes via minimap2 → `gapit.reads/1`,
+  `min_identity`/`min_mapq` > 0 → `gapit.reads/2`) and new `screen` arguments
+  `aligner`/`min_breadth`/`min_identity`/`min_mapq` (`aligner minimap2` = fast assembly
+  survey). Both delegate to the shared reads use-cases with `quiet` stderr; additive
+  `gapit.mcp` contract — nine tools, the other eight wire-identical, no output-schema
+  version bump (2026-09-22).
 
 ### Changed
 

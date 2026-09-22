@@ -95,10 +95,10 @@ def test_notifications_get_no_response() -> None:
     assert responses[0]["id"] == 1
 
 
-def test_tools_list_advertises_eight_tools_with_schemas() -> None:
-    """Given tools/list, When served, Then exactly screen/summary/schema/
-    db_list/db_fetch/db_build/db_search/db_outdated, each with an object
-    inputSchema carrying properties + required."""
+def test_tools_list_advertises_nine_tools_with_schemas() -> None:
+    """Given tools/list, When served, Then exactly screen/screen_reads/
+    summary/schema/db_list/db_fetch/db_build/db_search/db_outdated, each with
+    an object inputSchema carrying properties + required."""
     (response,) = exchange({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
     tools = response["result"]["tools"]
     assert sorted(tool["name"] for tool in tools) == [
@@ -109,6 +109,7 @@ def test_tools_list_advertises_eight_tools_with_schemas() -> None:
         "db_search",
         "schema",
         "screen",
+        "screen_reads",
         "summary",
     ]
     by_name = {tool["name"]: tool for tool in tools}
@@ -236,7 +237,7 @@ def test_malformed_line_is_ignored_and_loop_continues() -> None:
         {"jsonrpc": "2.0", "id": 3, "method": "tools/list"},
     )
     assert len(responses) == 1
-    assert len(responses[0]["result"]["tools"]) == 8
+    assert len(responses[0]["result"]["tools"]) == 9
 
 
 def test_eof_terminates_cleanly() -> None:
@@ -261,4 +262,4 @@ def test_cli_mcp_subcommand_streams_protocol_lines() -> None:
     responses = [json.loads(line) for line in result.stdout.splitlines()]
     assert [response["id"] for response in responses] == [1, 2]
     assert responses[0]["result"]["serverInfo"]["name"] == "gapit"
-    assert len(responses[1]["result"]["tools"]) == 8
+    assert len(responses[1]["result"]["tools"]) == 9

@@ -133,38 +133,44 @@ def screen_command(
                 usage_fail("--nopath is not available in reads mode")
             if jobs != 1:
                 usage_fail("--jobs is not available in reads mode")
-            run_screen_reads(
-                r1 or "",
-                r2,
-                db,
-                datadir,
-                read_type,
-                min_breadth,
-                min_identity,
-                min_mapq,
-                threads,
-                output_format,
-                quiet,
-                debug,
-                aligner=aligner,
+            typer.echo(
+                run_screen_reads(
+                    r1 or "",
+                    r2,
+                    db,
+                    datadir,
+                    read_type,
+                    min_breadth,
+                    min_identity,
+                    min_mapq,
+                    threads,
+                    output_format,
+                    quiet,
+                    debug,
+                    aligner=aligner,
+                ),
+                nl=False,
             )
         elif aligner is AlignerEnum.minimap2:
-            run_screen_assemblies(
-                files,
-                fofn,
-                db,
-                datadir,
-                read_type,
-                min_breadth,
-                min_identity,
-                min_mapq,
-                threads,
-                jobs,
-                noheader,
-                nopath,
-                output_format,
-                quiet,
-                debug,
+            typer.echo(
+                run_screen_assemblies(
+                    files,
+                    fofn,
+                    db,
+                    datadir,
+                    read_type,
+                    min_breadth,
+                    min_identity,
+                    min_mapq,
+                    threads,
+                    jobs,
+                    noheader,
+                    nopath,
+                    output_format,
+                    quiet,
+                    debug,
+                ),
+                nl=False,
             )
         else:
             run_screen(

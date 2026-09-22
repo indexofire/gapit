@@ -5,8 +5,9 @@ short): no `mcp` SDK — just the essential MCP stdio behavior, JSON-RPC 2.0,
 one message per line on stdin and one response line on stdout. Limitations:
 single messages only (no batch arrays); non-JSON lines are ignored silently
 (robustness over -32700). This module is the PROTOCOL only — frames,
-dispatch, and the serve loop; the tool implementations and inputSchemas
-live in :mod:`gapit.mcp_tools` (screen, summary, schema, db_list, db_fetch,
+dispatch, and the serve loop; the tool implementations live in
+:mod:`gapit.mcp_tools` and the tools/list declarations (inputSchemas) in
+:mod:`gapit.mcp_schemas` (screen, summary, schema, db_list, db_fetch,
 db_build, db_search, db_outdated). Tool failures return isError=true with
 the gapit.error/1 envelope as text; stdout is protocol-only.
 """
@@ -21,7 +22,8 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 
 from gapit import __version__
 from gapit.errors import render_error
-from gapit.mcp_tools import TOOL_HANDLERS, TOOLS
+from gapit.mcp_schemas import TOOLS
+from gapit.mcp_tools import TOOL_HANDLERS
 
 # Parsed JSON-RPC values are the one sanctioned Any boundary (card.py
 # precedent): frame/argument containers stay dict[str, Any] until the

@@ -82,6 +82,7 @@ gapit/
 │   ├── cmd_db.py        # `gapit db fetch|list` CLI
 │   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
 │   ├── mcp.py           # MCP stdio server (hand-rolled JSON-RPC 2.0); backs gapit-mcp
+│   ├── mcp_schemas.py   # MCP tools/list declarations (names, descriptions, inputSchemas)
 │   ├── errors.py        # typed errors + JSON error envelope
 │   ├── formats/
 │   │   ├── tsv.py       # abricate-compatible TSV/CSV
@@ -131,7 +132,8 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   (bundled card/vfdb snapshots install offline; `--from-source` forces upstream), provider
   listing, and SHA256-verified local-file install.
 - **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing read-only
-  tools `screen`, `summary`, `schema`, `db_list`; tool failures carry the `gapit.error/1`
+  tools `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via
+  minimap2), `summary`, `schema`, `db_list`; tool failures carry the `gapit.error/1`
   envelope.
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
 - **Self-description**: `gapit --version --json`, `gapit list --json`, `gapit schema` — an agent
