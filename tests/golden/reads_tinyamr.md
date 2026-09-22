@@ -1,6 +1,6 @@
 ---
 schema: gapit.reads/1
-tool: gapit 0.1.0
+tool: gapit 0.2.0
 created_at: 2026-09-17T12:00:00Z
 db: tinyreads
 read_type: sr

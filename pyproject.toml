@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gapit"
-version = "0.1.0"
+version = "0.2.0"
 description = "Mass screening of contigs for antimicrobial resistance and virulence genes — agent-first Python reimplementation of abricate"
 readme = "README.md"
 authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]
