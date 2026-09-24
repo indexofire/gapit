@@ -1,11 +1,13 @@
-"""Typed errors and the JSON error envelope (gapit.error/1).
+"""Typed errors, shared raise-helpers, and the JSON error envelope
+(gapit.error/1).
 
 Exit-code contract (AGENTS.md §5): 2 usage, 3 missing dependency, 4 db error,
 5 input error, 1 unexpected. Failures render as a one-line JSON envelope on
 stderr via ``render_error``.
 """
 
-from typing import Literal
+from pathlib import Path
+from typing import Literal, NoReturn
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -44,6 +46,22 @@ class InputError(GapitError):
     """User-supplied input is malformed."""
 
     exit_code = 5
+
+
+def usage_fail(message: str) -> NoReturn:
+    """Raise a usage error (gapit.error/1 envelope, exit 2)."""
+    raise UsageError(message, code="USAGE_ERROR")
+
+
+def ensure_input_file(path: Path, what: str = "input file") -> None:
+    """Raise INPUT_NOT_FOUND for a missing/unreadable input path; ``what``
+    names the kind in the message (e.g. "reads file")."""
+    if not path.is_file():
+        raise InputError(
+            f"{what} not found or unreadable: {path}",
+            code="INPUT_NOT_FOUND",
+            context={"file": str(path)},
+        )
 
 
 class ErrorEnvelope(BaseModel, frozen=True):

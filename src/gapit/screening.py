@@ -10,13 +10,12 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import NoReturn
 
 import typer
 
 from gapit import config, db
 from gapit.blast import ensure_blast, screen_file
-from gapit.errors import DatabaseError, InputError, UsageError
+from gapit.errors import DatabaseError, InputError, ensure_input_file, usage_fail
 from gapit.formats.json import render_json
 from gapit.formats.md import render_markdown
 from gapit.formats.tsv import format_tsv
@@ -39,11 +38,6 @@ class AlignerEnum(enum.Enum):
     minimap2 = "minimap2"
 
 
-def usage_fail(message: str) -> NoReturn:
-    """Raise a usage error (gapit.error/1 envelope, exit 2)."""
-    raise UsageError(message, code="USAGE_ERROR")
-
-
 def _resolve_inputs(files: list[Path] | None, fofn: Path | None) -> list[Path]:
     """Input files: --fofn (lines stripped, empties dropped) REPLACES positionals."""
     if fofn is not None:
@@ -63,12 +57,7 @@ def _resolve_inputs(files: list[Path] | None, fofn: Path | None) -> list[Path]:
     else:
         usage_fail("no input files given (positional FILEs or --fofn)")
     for path in inputs:
-        if not path.is_file():
-            raise InputError(
-                f"input file not found or unreadable: {path}",
-                code="INPUT_NOT_FOUND",
-                context={"file": str(path)},
-            )
+        ensure_input_file(path)
     return inputs
 
 
@@ -100,8 +89,9 @@ def run_screen(
     nopath: bool,
     debug: bool,
     output_format: OutputFormat,
-) -> None:
-    """Screen each input file in order; buffer reports; print once at the end.
+) -> str:
+    """Screen each input file in order; buffer reports; render once at the
+    end and return the output for the caller to echo.
 
     The per-run gates (blastn presence via ``ensure_blast``, dbtype via one
     ``blastdbcmd -info``) fire once up front, so MISSING_DEPENDENCY and
@@ -148,9 +138,8 @@ def run_screen(
         with ThreadPoolExecutor(max_workers=jobs) as executor:
             reports = list(executor.map(screen_one, inputs))
     if output_format is OutputFormat.json:
-        typer.echo(render_json(reports, params, now=datetime.now(UTC)), nl=False)
-    elif output_format is OutputFormat.md:
-        typer.echo(render_markdown(reports, params, now=datetime.now(UTC)), nl=False)
-    else:
-        as_csv = output_format is OutputFormat.csv
-        typer.echo(format_tsv(reports, csv=as_csv, noheader=noheader, nopath=nopath), nl=False)
+        return render_json(reports, params, now=datetime.now(UTC))
+    if output_format is OutputFormat.md:
+        return render_markdown(reports, params, now=datetime.now(UTC))
+    as_csv = output_format is OutputFormat.csv
+    return format_tsv(reports, csv=as_csv, noheader=noheader, nopath=nopath)

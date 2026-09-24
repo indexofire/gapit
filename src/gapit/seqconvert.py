@@ -183,7 +183,7 @@ def to_fasta_lines(path: Path, fmt: SeqFormat | None = None) -> Iterator[str]:
     """Yield complete FASTA lines for one input file: one verbatim header line
     per record, then its uppercased sequence wrapped at 60 columns.
 
-    ``fmt`` may be pre-supplied to reuse a sniff (blast.run_screen's debug
+    ``fmt`` may be pre-supplied to reuse a sniff (blast.run_blastn's debug
     echo shares one detection). Raises InputError (INVALID_INPUT) on unreadable,
     empty, or unrecognized input — the retired any2fasta's fatal path.
     """

@@ -300,11 +300,11 @@ def syn_transform(workdir: Path) -> Iterable[Record]:
 
 
 def patch_file_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """One file:// provider in gapit.cmd_db.REGISTRY + an empty datadir."""
+    """One file:// provider in gapit.db_ops.REGISTRY + an empty datadir."""
     source = tmp_path / "upstream.fa"
     source.write_text(UPSTREAM_FASTA, encoding="utf-8")
     monkeypatch.setattr(
-        "gapit.cmd_db.REGISTRY",
+        "gapit.db_ops.REGISTRY",
         {
             SYN: Provider(
                 name=SYN,
@@ -404,7 +404,7 @@ def test_db_fetch_default_set_installs_card_vfdb_from_snapshots(
             transform=syn_transform,
             snapshot=f"{name}.tar.gz",
         )
-    monkeypatch.setattr("gapit.cmd_db.REGISTRY", registry)
+    monkeypatch.setattr("gapit.db_ops.REGISTRY", registry)
 
     def fake_snapshot_path(provider: Provider) -> Path | None:
         return archives.get(provider.snapshot) if provider.snapshot is not None else None

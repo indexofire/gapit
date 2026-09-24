@@ -73,12 +73,21 @@ def _peek_read_kind(handle: _ByteStream, path: Path) -> ReadFileKind:
 def detect_read_kind(path: Path) -> ReadFileKind:
     """Detect a --r1/--r2 file's kind from content. Gzip-wrapped files
     (magic 1f 8b) are peeked through the decompressor: minimap2 reads them
-    natively, so detection must not reject them."""
+    natively, so detection must not reject them. A truncated or corrupt
+    gzip stream raises the same typed INVALID_READS_FORMAT error as any
+    other unreadable reads file, never a raw EOFError."""
     with path.open("rb") as raw:
         compressed = raw.read(2) == _GZIP_MAGIC
     if compressed:
         with gzip.open(path, "rb") as handle:
-            return _peek_read_kind(handle, path)
+            try:
+                return _peek_read_kind(handle, path)
+            except (OSError, EOFError, UnicodeDecodeError) as exc:
+                raise InputError(
+                    f"cannot decompress reads file: {path}",
+                    code="INVALID_READS_FORMAT",
+                    context={"file": str(path)},
+                ) from exc
     with path.open("rb") as handle:
         return _peek_read_kind(handle, path)
 

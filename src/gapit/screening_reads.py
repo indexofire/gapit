@@ -11,7 +11,7 @@ from pathlib import Path
 import typer
 
 from gapit import config
-from gapit.errors import InputError
+from gapit.errors import ensure_input_file, usage_fail
 from gapit.formats.json import render_reads2_json, render_reads_json
 from gapit.formats.md import render_reads2_markdown, render_reads_markdown
 from gapit.reads import (
@@ -21,27 +21,16 @@ from gapit.reads import (
     detect_read_kind,
     screen_reads,
 )
-from gapit.screening import AlignerEnum, OutputFormat, find_database, usage_fail
+from gapit.screening import AlignerEnum, OutputFormat, find_database
 
 
-def _parse_read_lanes(r1: str, r2: str | None) -> list[tuple[Path, Path | None]]:
-    """Split comma-separated --r1/--r2 file lists into per-sample lanes."""
-    r1_list = _split_read_list(r1, "--r1")
-    r2_list = _split_read_list(r2, "--r2") if r2 is not None else None
-    if r2_list is not None and len(r2_list) != len(r1_list):
-        usage_fail(
-            f"--r2 has {len(r2_list)} files but --r1 has {len(r1_list)} (lanes must pair up)"
-        )
-    if r2_list is None:
-        return [(path, None) for path in r1_list]
-    return list(zip(r1_list, r2_list, strict=True))
-
-
-def _split_read_list(raw: str, flag: str) -> list[Path]:
-    parts = [part.strip() for part in raw.split(",")]
-    if any(not part for part in parts):
-        usage_fail(f"{flag} contains an empty element: {raw!r}")
-    return [Path(part) for part in parts]
+def _pair_read_lanes(r1: list[Path], r2: list[Path] | None) -> list[tuple[Path, Path | None]]:
+    """Pair per-lane --r1/--r2 file lists (r2 None = single-end)."""
+    if r2 is not None and len(r2) != len(r1):
+        usage_fail(f"--r2 has {len(r2)} files but --r1 has {len(r1)} (lanes must pair up)")
+    if r2 is None:
+        return [(path, None) for path in r1]
+    return list(zip(r1, r2, strict=True))
 
 
 def _resolve_read_preset(
@@ -64,6 +53,16 @@ def _resolve_read_preset(
     if read_type is None and not quiet:
         typer.echo("assembly FASTA detected; using map-ont", err=True)
     return ReadTypeEnum.map_ont
+
+
+def _reject_blastn_thresholds(minid: float, mincov: float, mode: str) -> None:
+    """--minid/--mincov are blastn-only; every minimap2 entry point rejects
+    them instead of silently ignoring them (reads thresholds have their own
+    flags). ``mode`` names the invocation in the frozen message."""
+    if minid != 80.0 or mincov != 80.0:
+        usage_fail(
+            f"--minid/--mincov apply to blastn only; use --min-identity/--min-breadth with {mode}"
+        )
 
 
 def _validate_reads_usage(
@@ -152,8 +151,8 @@ def _screen_lanes(
 
 
 def run_screen_reads(
-    r1: str,
-    r2: str | None,
+    r1: list[Path],
+    r2: list[Path] | None,
     db_name: str,
     datadir: Path | None,
     read_type: ReadTypeEnum | None,
@@ -165,24 +164,24 @@ def run_screen_reads(
     quiet: bool,
     debug: bool = False,
     aligner: AlignerEnum | None = None,
+    minid: float = 80.0,
+    mincov: float = 80.0,
 ) -> str:
-    """Screen FASTQ reads or assembly FASTA given as --r1/--r2 comma lists
-    (per-lane minimap2, sample-level union); json is the default format
-    (SPEC.md §10). A nonzero --min-identity/--min-mapq turns on
-    gapit.reads/2 alignment filtering. Returns the rendered output."""
+    """Screen FASTQ reads or assembly FASTA given as already-split per-lane
+    --r1/--r2 file lists (the CLI owns the comma-splitting; MCP passes arrays
+    natively, so commas in filenames survive). Per-lane minimap2, sample-level
+    union; json is the default format (SPEC.md §10). A nonzero
+    --min-identity/--min-mapq turns on gapit.reads/2 alignment filtering.
+    Returns the rendered output."""
     if aligner is AlignerEnum.blastn:
         usage_fail("--aligner blastn is not available for --r1/--r2 reads input")
     _validate_reads_usage(output_format, min_breadth, min_identity, min_mapq, threads)
-    lanes = _parse_read_lanes(r1, r2)
+    _reject_blastn_thresholds(minid, mincov, "--r1/--r2")
+    lanes = _pair_read_lanes(r1, r2)
     for path in [r1_path for r1_path, _ in lanes] + [
         r2_path for _, r2_path in lanes if r2_path is not None
     ]:
-        if not path.is_file():
-            raise InputError(
-                f"reads file not found or unreadable: {path}",
-                code="INPUT_NOT_FOUND",
-                context={"file": str(path)},
-            )
+        ensure_input_file(path, "reads file")
     return _screen_lanes(
         lanes,
         db_name,
@@ -214,15 +213,17 @@ def run_screen_assemblies(
     output_format: OutputFormat | None,
     quiet: bool,
     debug: bool = False,
+    minid: float = 80.0,
+    mincov: float = 80.0,
 ) -> str:
     """Screen positional assembly FASTA file(s) with the minimap2 engine
     (--aligner minimap2): every input must be FASTA(.gz) content — FASTQ
     content is a usage error, undetectable content keeps the typed input
     error. Preset resolution and output follow the reads contract (SPEC §10);
-    the blastn-engine-only flags --fofn/--jobs/--noheader/--nopath are
-    rejected here instead of silently ignored. A nonzero
-    --min-identity/--min-mapq turns on gapit.reads/2 filtering. Returns the
-    rendered output."""
+    the blastn-engine-only flags --fofn/--jobs/--noheader/--nopath and the
+    blastn thresholds --minid/--mincov are rejected here instead of silently
+    ignored. A nonzero --min-identity/--min-mapq turns on gapit.reads/2
+    filtering. Returns the rendered output."""
     _validate_reads_usage(output_format, min_breadth, min_identity, min_mapq, threads)
     if fofn is not None:
         usage_fail("--fofn is not available with --aligner minimap2")
@@ -232,15 +233,11 @@ def run_screen_assemblies(
         usage_fail("--noheader is not available with --aligner minimap2")
     if nopath:
         usage_fail("--nopath is not available with --aligner minimap2")
+    _reject_blastn_thresholds(minid, mincov, "--aligner minimap2")
     if not files:
         usage_fail("no input files given (positional FILEs)")
     for path in files:
-        if not path.is_file():
-            raise InputError(
-                f"input file not found or unreadable: {path}",
-                code="INPUT_NOT_FOUND",
-                context={"file": str(path)},
-            )
+        ensure_input_file(path)
         if detect_read_kind(path) is not ReadFileKind.fasta:
             usage_fail("minimap2 engine requires FASTA assemblies")
     return _screen_lanes(

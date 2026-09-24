@@ -11,25 +11,22 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from gapit import config, db
-from gapit.blast import ensure_blast, screen_file
-from gapit.cmd_db import db_list_json, perform_fetch
-from gapit.cmd_db_build import perform_build
-from gapit.cmd_db_outdated import (
+from gapit import config
+from gapit.db_build_ops import perform_build
+from gapit.db_ops import db_list_json, perform_fetch
+from gapit.db_query_ops import (
+    DEFAULT_LIMIT,
     DEFAULT_STALE_DAYS,
+    SearchField,
     outdated_tsv_lines,
     perform_outdated,
+    perform_search,
 )
-from gapit.cmd_db_search import DEFAULT_LIMIT, SearchField, perform_search
-from gapit.errors import InputError
-from gapit.formats import json as fmt_json
-from gapit.formats.md import render_markdown
+from gapit.errors import usage_fail
 from gapit.formats.schemas import SCHEMA_MODELS
 from gapit.formats.summary import render_summary_json
-from gapit.formats.tsv import format_tsv
 from gapit.reads import ReadTypeEnum
-from gapit.report import ScreeningParams
-from gapit.screening import AlignerEnum, OutputFormat, find_database, usage_fail
+from gapit.screening import AlignerEnum, OutputFormat, run_screen
 from gapit.screening_reads import run_screen_assemblies, run_screen_reads
 from gapit.summary import SummaryParams, build_summary
 
@@ -109,10 +106,6 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     datadir = _optional_path(arguments, "datadir")
     minid = _number(arguments, "minid", 80.0)
     mincov = _number(arguments, "mincov", 80.0)
-    if not 0.0 < minid <= 100.0:
-        usage_fail(f"minid must be in (0, 100]: got {minid}")
-    if not 0.0 <= mincov <= 100.0:
-        usage_fail(f"mincov must be in [0, 100]: got {mincov}")
     output_format = _string(arguments, "format", "json")
     if output_format not in ("json", "tsv", "md"):
         usage_fail(f"format must be one of json, tsv, md: got {output_format}")
@@ -125,7 +118,8 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     min_identity = _number(arguments, "min_identity", 0.0)
     min_mapq = _integer(arguments, "min_mapq", 0)
     if aligner is AlignerEnum.minimap2:
-        # tsv is rejected by the use-case itself (reads-mode format rule).
+        # tsv is rejected by the use-case itself (reads-mode format rule);
+        # non-default minid/mincov too (blastn-only thresholds).
         return run_screen_assemblies(
             files,
             None,
@@ -141,46 +135,45 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
             nopath=False,
             output_format=_optional_output_format(output_format),
             quiet=True,
+            minid=minid,
+            mincov=mincov,
         )
     if (min_breadth, min_identity, min_mapq) != (90.0, 0.0, 0):
         usage_fail("reads-mode parameters require aligner minimap2")
-    for path in files:
-        if not path.is_file():
-            raise InputError(
-                f"input file not found or unreadable: {path}",
-                code="INPUT_NOT_FOUND",
-                context={"file": str(path)},
-            )
-    params = ScreeningParams(db=db_name, minid=minid, mincov=mincov, threads=1)
-    database = find_database(config.resolve_datadir(datadir), db_name)
-    ensure_blast()
-    dbtype = db.blast_db_info(database.sequences_path).dbtype
-    reports = [screen_file(path, database, params, dbtype=dbtype) for path in files]
-    now = datetime.now(UTC)
-    if output_format == "json":
-        return fmt_json.render_json(reports, params, now=now)
-    if output_format == "md":
-        return render_markdown(reports, params, now=now)
-    return format_tsv(reports, csv=False, noheader=False, nopath=False)
+    return run_screen(
+        files=files,
+        db_name=db_name,
+        datadir=datadir,
+        minid=minid,
+        mincov=mincov,
+        threads=1,
+        jobs=1,
+        fofn=None,
+        quiet=True,
+        noheader=False,
+        nopath=False,
+        debug=False,
+        output_format=OutputFormat(output_format),
+    )
 
 
-def _reads_list(arguments: dict[str, Any], key: str) -> str:
-    """Reads path array -> the CLI's comma-joined --r1/--r2 string (the reads
-    use-case consumes the flag form). Empty elements are usage errors: an
-    empty string would silently become the working directory."""
+def _reads_paths(arguments: dict[str, Any], key: str) -> list[Path]:
+    """Reads path array -> the native list the use-case consumes (no
+    join/split round trip, so commas in filenames survive). Empty elements
+    are usage errors: an empty string would silently become the cwd."""
     _paths(arguments, key)
     # list[str] proven by the _paths isinstance checks above
     raw: list[str] = arguments.get(key, [])
     if any(item == "" for item in raw):
         usage_fail(f"{key} contains an empty element")
-    return ",".join(raw)
+    return [Path(item) for item in raw]
 
 
 def _tool_screen_reads(arguments: dict[str, Any]) -> str:
-    r1 = _reads_list(arguments, "r1")
+    r1 = _reads_paths(arguments, "r1")
     if not r1:
         usage_fail("no reads files given (r1 is required)")
-    r2 = _reads_list(arguments, "r2") or None
+    r2 = _reads_paths(arguments, "r2") or None
     read_type_name = _string(arguments, "read_type", ReadTypeEnum.sr.value)
     try:
         read_type = ReadTypeEnum(read_type_name)

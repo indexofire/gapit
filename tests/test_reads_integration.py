@@ -222,3 +222,19 @@ def test_detect_read_kind_rejects_empty(tmp_path: Path) -> None:
     with pytest.raises(InputError) as excinfo:
         detect_read_kind(path)
     assert excinfo.value.code == "INVALID_READS_FORMAT"
+
+
+def test_detect_read_kind_rejects_truncated_gzip(tmp_path: Path) -> None:
+    """Given a .fq.gz cut right after its 10-byte header (valid magic, no
+    stream data), When detected, Then typed InputError INVALID_READS_FORMAT
+    (exit-5 class) instead of a raw EOFError escaping as UNEXPECTED."""
+    path = tmp_path / "r1.fq.gz"
+    with path.open("wb") as raw, gzip.GzipFile(fileobj=raw, mode="wb", mtime=0) as handle:
+        handle.write(b"@read1\nACGT\n+\nIIII\n")
+    path.write_bytes(path.read_bytes()[:10])
+    assert path.read_bytes()[:2] == b"\x1f\x8b"
+    with pytest.raises(InputError) as excinfo:
+        detect_read_kind(path)
+    assert excinfo.value.code == "INVALID_READS_FORMAT"
+    assert excinfo.value.exit_code == 5
+    assert excinfo.value.context["file"] == str(path)

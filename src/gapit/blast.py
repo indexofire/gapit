@@ -153,7 +153,7 @@ def _pipeline(fasta_text: str, argv: list[str]) -> str:
     return result.stdout
 
 
-def run_screen(
+def run_blastn(
     query: Path,
     database: Database,
     params: ScreeningParams,
@@ -233,7 +233,7 @@ def screen_file(
 
     The caller owns the per-run gates (``ensure_blast`` and the one-shot
     ``dbtype`` resolution) so a multi-file run pays each probe once."""
-    rows = run_screen(query, database, params, dbtype=dbtype, debug=debug)
+    rows = run_blastn(query, database, params, dbtype=dbtype, debug=debug)
     hits = process_rows(rows, mincov=params.mincov, default_db=params.db)
     ordered = sorted(hits, key=lambda hit: (hit.sequence, hit.start))
     return Report(file=str(query), hits=tuple(ordered))

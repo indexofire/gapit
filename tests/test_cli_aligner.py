@@ -305,6 +305,34 @@ def test_reads_mode_accepts_explicit_jobs_one(
     assert reads_adapter.validate_json(result.stdout).schema_name == "gapit.reads/1"
 
 
+def test_reads_mode_minid_exits_2(reads_datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given --r1 FASTQ with --minid 90, When screened, Then usage error
+    exit 2 with the shared blastn-thresholds message: --minid is blastn-only
+    and reads mode rejects it instead of silently ignoring it (mirror of
+    the positional --aligner minimap2 guard)."""
+    monkeypatch.chdir(READS)
+    result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--minid", "90")
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == (
+        "--minid/--mincov apply to blastn only; use --min-identity/--min-breadth with --r1/--r2"
+    )
+
+
+def test_reads_mode_mincov_exits_2(reads_datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given --r1 FASTQ with --mincov 95 (minid left default), When screened,
+    Then the same shared guard fires for the other threshold."""
+    monkeypatch.chdir(READS)
+    result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--mincov", "95")
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == (
+        "--minid/--mincov apply to blastn only; use --min-identity/--min-breadth with --r1/--r2"
+    )
+
+
 def test_minimap2_positional_jobs_exits_2(reads_datadir: Path) -> None:
     """Given --aligner minimap2 with --jobs 2 on a positional FASTA, When
     screened, Then usage error exit 2: --jobs is a blastn-engine-only flag
@@ -335,6 +363,34 @@ def test_minimap2_positional_nopath_exits_2(reads_datadir: Path) -> None:
     error = envelope(result.stderr)
     assert error["code"] == "USAGE_ERROR"
     assert error["message"] == "--nopath is not available with --aligner minimap2"
+
+
+def test_minimap2_positional_minid_exits_2(reads_datadir: Path) -> None:
+    """Given --aligner minimap2 with --minid 90 on a positional FASTA, When
+    screened, Then usage error exit 2 with the shared blastn-thresholds
+    message: --minid is blastn-only, rejected instead of silently ignored
+    (mirror of the reads-params-need-minimap2 guard)."""
+    result = screen_reads(reads_datadir, "--aligner", "minimap2", "--minid", "90", str(ASSEMBLY))
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == (
+        "--minid/--mincov apply to blastn only;"
+        " use --min-identity/--min-breadth with --aligner minimap2"
+    )
+
+
+def test_minimap2_positional_mincov_exits_2(reads_datadir: Path) -> None:
+    """Given --aligner minimap2 with --mincov 95 (minid left default), When
+    screened, Then the same shared guard fires for the other threshold."""
+    result = screen_reads(reads_datadir, "--aligner", "minimap2", "--mincov", "95", str(ASSEMBLY))
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert error["message"] == (
+        "--minid/--mincov apply to blastn only;"
+        " use --min-identity/--min-breadth with --aligner minimap2"
+    )
 
 
 def test_help_lists_aligner_and_no_csv() -> None:

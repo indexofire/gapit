@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from gapit.blast import run_screen
+from gapit.blast import run_blastn
 from gapit.db import Database
 from gapit.errors import DependencyError, GapitError
 from gapit.report import ScreeningParams
@@ -58,7 +58,7 @@ def test_blastn_receives_normalized_fasta_on_stdin(
     query = tmp_path / "contigs.fa"
     query.write_text(LOWERCASE_FASTA, encoding="utf-8")
     params = ScreeningParams(db="fakedb", minid=80.0, mincov=80.0, threads=1)
-    report = run_screen(query, fakedb, params, dbtype="nucl")
+    report = run_blastn(query, fakedb, params, dbtype="nucl")
     assert report == []
     assert dump.read_text(encoding="utf-8") == ">contig1\nACGTACGTAC\n"
 
@@ -77,7 +77,7 @@ def test_blastn_failure_raises_blast_failed_with_stderr(
     query.write_text(LOWERCASE_FASTA, encoding="utf-8")
     params = ScreeningParams(db="fakedb", minid=80.0, mincov=80.0, threads=1)
     with pytest.raises(GapitError) as excinfo:
-        run_screen(query, fakedb, params, dbtype="nucl")
+        run_blastn(query, fakedb, params, dbtype="nucl")
     assert excinfo.value.code == "BLAST_FAILED"
     assert "kaboom" in str(excinfo.value)
     assert excinfo.value.context["binary"] == "blastn"
@@ -95,6 +95,6 @@ def test_missing_blastn_raises_dependency_error(
     query.write_text(LOWERCASE_FASTA, encoding="utf-8")
     params = ScreeningParams(db="fakedb", minid=80.0, mincov=80.0, threads=1)
     with pytest.raises(DependencyError) as excinfo:
-        run_screen(query, fakedb, params, dbtype="nucl")
+        run_blastn(query, fakedb, params, dbtype="nucl")
     assert excinfo.value.code == "MISSING_DEPENDENCY"
     assert excinfo.value.context["binary"] == "blastn"

@@ -4,7 +4,9 @@ Hand-rolled on purpose (AGENTS.md §2 keeps the dependency list deliberately
 short): no `mcp` SDK — just the essential MCP stdio behavior, JSON-RPC 2.0,
 one message per line on stdin and one response line on stdout. Limitations:
 single messages only (no batch arrays); non-JSON lines are ignored silently
-(robustness over -32700). This module is the PROTOCOL only — frames,
+(robustness over -32700); JSON lines that fail frame validation get a
+-32600/-32602 error when they carry a request id, so no client ever hangs.
+This module is the PROTOCOL only — frames,
 dispatch, and the serve loop; the tool implementations live in
 :mod:`gapit.mcp_tools` and the tools/list declarations (inputSchemas) in
 :mod:`gapit.mcp_schemas` (screen, summary, schema, db_list, db_fetch,
@@ -15,7 +17,7 @@ the gapit.error/1 envelope as text; stdout is protocol-only.
 import json
 import sys
 from collections.abc import Iterable
-from typing import Any, TextIO
+from typing import Any, TextIO, TypeGuard
 
 import typer
 from pydantic import BaseModel, ConfigDict, ValidationError
@@ -90,10 +92,32 @@ def _tools_call(id_value: JsonRpcId, params: dict[str, Any] | None) -> dict[str,
     return _result(id_value, _text(text, is_error=False))
 
 
+def _is_json_object(value: Any) -> TypeGuard[dict[str, Any]]:
+    """Narrow a parsed JSON value to the sanctioned dict[str, Any] boundary
+    (plain isinstance would surface dict[Unknown, Unknown])."""
+    return isinstance(value, dict)
+
+
+def _reject(value: Any) -> dict[str, object] | None:
+    """A line that parsed as JSON but failed _Frame validation: answer the
+    request id with -32600 (missing/non-string method) or -32602 (params not
+    an object); id-less messages stay ignored like notifications."""
+    if not _is_json_object(value):
+        return None
+    id_value = value.get("id")
+    if id_value is None:
+        return None
+    if not isinstance(value.get("method"), str):
+        return _error(id_value, -32600, "invalid request: method must be a string")
+    return _error(id_value, -32602, "invalid request: params must be an object")
+
+
 def _handle(frame: _Frame) -> dict[str, object] | None:
     """One parsed frame -> one response object; None = no response."""
-    if frame.method is None or "id" not in frame.model_fields_set:
-        return None  # notifications and malformed frames never get responses
+    if "id" not in frame.model_fields_set:
+        return None  # notifications never get responses
+    if frame.method is None:
+        return _error(frame.id, -32600, "invalid request: method is required")
     id_value = frame.id
     if frame.method == "initialize":
         return _result(id_value, _initialize(frame.params))
@@ -105,13 +129,20 @@ def _handle(frame: _Frame) -> dict[str, object] | None:
 
 
 def serve(stdin: Iterable[str], stdout: TextIO) -> None:
-    """Serve newline-delimited JSON-RPC 2.0 until EOF; non-JSON lines ignored."""
+    """Serve newline-delimited JSON-RPC 2.0 until EOF; non-JSON lines and
+    id-less invalid messages are ignored, requests that fail frame
+    validation get a -32600/-32602 error instead of silence."""
     for line in stdin:
         try:
-            frame = _Frame.model_validate_json(line)
-        except ValidationError:
+            value: object = json.loads(line)
+        except json.JSONDecodeError:
             continue
-        response = _handle(frame)
+        try:
+            frame = _Frame.model_validate(value)
+        except ValidationError:
+            response = _reject(value)
+        else:
+            response = _handle(frame)
         if response is not None:
             stdout.write(json.dumps(response, separators=(",", ":")) + "\n")
             stdout.flush()

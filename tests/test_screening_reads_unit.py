@@ -35,14 +35,14 @@ def test_run_screen_reads_returns_golden_json(
     datadir: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given the tetx fixture and a pinned clock, When run_screen_reads is
-    called directly (no CliRunner), Then it returns the golden JSON string
-    for the caller to echo."""
+    called directly (no CliRunner) with already-split lane lists, Then it
+    returns the golden JSON string for the caller to echo."""
     monkeypatch.setattr(screening_reads, "datetime", _FrozenDatetime)
     monkeypatch.chdir(READS)
     # quiet=True only silences stderr diagnostics; the returned document is
     # byte-identical either way, and direct calls must not spam real stderr.
     output = run_screen_reads(
-        "tetx_full.fq",
+        [Path("tetx_full.fq")],
         None,
         "tinyreads",
         datadir,

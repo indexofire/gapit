@@ -6,7 +6,9 @@ PATH (argv stays a list; shell is never involved).
 """
 
 import os
+import subprocess
 import threading
+from io import StringIO
 from pathlib import Path
 
 import pytest
@@ -125,3 +127,48 @@ def test_missing_binary_raises_dependency_error(
         run_minimap2([(reads, None)], fakedb, read_type="sr", threads=1)
     assert excinfo.value.code == "MISSING_DEPENDENCY"
     assert excinfo.value.context["binary"] == "minimap2"
+
+
+class _FakePopen:
+    """The Popen surface _stream_minimap2 touches: stdout line iteration,
+    stderr read, wait, returncode."""
+
+    def __init__(self) -> None:
+        self.stdout = StringIO(PAF_ROWS)
+        self.stderr = StringIO()
+        self.returncode = 0
+
+    def wait(self) -> int:
+        return 0
+
+
+def test_input_paths_are_absolute_and_stdin_is_devnull(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a query file literally named '-d' paired with a mate (the
+    index-dump injection shape) and a relative db sequences path, When run,
+    Then every path argument in argv is absolute — '/…/-d' cannot parse as
+    the -d option — and the child's stdin is /dev/null, never an inherited
+    stdin (the MCP server's JSON-RPC stream)."""
+    database = Database(name="fakedb", path=Path("fakedb"), sequences_path=Path("sequences"))
+    reads = tmp_path / "-d"
+    reads.write_text("@r1\nACGT\n+\nIIII\n", encoding="utf-8")
+    mate = tmp_path / "mate.fq"
+    mate.write_text("@r2\nACGT\n+\nIIII\n", encoding="utf-8")
+    calls: list[tuple[list[str], dict[str, object]]] = []
+
+    def fake_popen(argv: list[str], **kwargs: object) -> _FakePopen:
+        calls.append((argv, kwargs))
+        return _FakePopen()
+
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    rows = run_minimap2([(reads, mate)], database, read_type="sr", threads=1)
+    assert [row.qname for row in rows] == ["r1", "r2"]
+    ((argv, kwargs),) = calls
+    assert argv[:5] == ["minimap2", "-x", "sr", "-t", "1"]
+    assert kwargs["stdin"] == subprocess.DEVNULL
+    db_arg, r1_arg, r2_arg = argv[5:8]
+    assert Path(db_arg) == Path("sequences").absolute()
+    assert Path(r1_arg) == reads.absolute()
+    assert Path(r2_arg) == mate.absolute()
+    assert not any(argument.startswith("-") for argument in argv[5:])

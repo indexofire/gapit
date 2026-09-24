@@ -11,10 +11,10 @@ from gapit.cmd_db import register_db_command
 from gapit.cmd_screen import register_screen_command
 from gapit.cmd_summary import register_summary_command
 from gapit.dispatch import Datadir, dispatch
+from gapit.errors import usage_fail
 from gapit.formats.json import ListDocument, ListEntryDocument, VersionDocument
 from gapit.formats.schemas import SCHEMA_MODELS
 from gapit.mcp import register_mcp_command
-from gapit.screening import usage_fail
 
 app = typer.Typer(
     name="gapit",

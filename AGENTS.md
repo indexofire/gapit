@@ -62,16 +62,22 @@ gapit/
 │   ├── __init__.py
 │   ├── cli.py           # typer entrypoint: screen / summary / db / list / setupdb / schema / mcp
 │   ├── config.py        # datadir resolution, defaults, env vars
+│   ├── dispatch.py      # shared CLI dispatch (error envelope → exit codes) + --datadir option
+│   ├── proctools.py     # external-tool plumbing: argv subprocess runner + stderr notes
 │   ├── fasta.py         # streaming FASTA reader + shared gz/bz2 text opener
 │   ├── seqconvert.py    # native input normalization: fa/fq/gbk/embl (±gz/bz2) → FASTA
 │   ├── db.py            # database discovery, header parsing, makeblastdb wrapper
 │   ├── dbcodec.py       # gapit/v1 tagged-header codec (percent-encoded ids)
 │   ├── records.py       # records.jsonl truth store + gapit.manifest/1 provenance
 │   ├── dbbuild.py       # deterministic native-db build pipeline with self-check
+│   ├── db_ops.py        # db use-cases: provider fetch + list (shared CLI + MCP; no typer)
+│   ├── db_query_ops.py  # db use-cases: search + outdated over installed DBs (shared CLI + MCP)
+│   ├── db_build_ops.py  # db use-case: custom FASTA+TSV → native db build (shared CLI + MCP)
 │   ├── blast.py         # blastn invocation + tabular output parsing
 │   ├── hits.py          # Hit model, identity/coverage computation, filtering, dedup
 │   ├── minimap.py       # COVERAGE_MAP construction (exact abricate arithmetic)
 │   ├── minimap2_run.py  # minimap2 invocation layer for reads mode (streaming PAF, --cs/NM tags)
+│   ├── paf.py           # PAF row parsing + interval arithmetic (minimap2 output boundary)
 │   ├── report.py        # Report model: the canonical in-memory result
 │   ├── screening.py     # blastn screen use-case + shared engine helpers (OutputFormat, AlignerEnum)
 │   ├── screening_reads.py # minimap2 use-cases: --r1/--r2 reads + --aligner minimap2 assemblies
@@ -79,15 +85,20 @@ gapit/
 │   ├── summary.py       # summary core: parse report tables into a gene matrix
 │   ├── cmd_screen.py    # `gapit screen` CLI (registered from cli.py)
 │   ├── cmd_summary.py   # `gapit summary` CLI (registered from cli.py)
-│   ├── cmd_db.py        # `gapit db fetch|list` CLI
+│   ├── cmd_db.py        # `gapit db` command group (fetch | list; registers the subcommands)
 │   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
+│   ├── cmd_db_build.py  # `gapit db build` CLI (custom FASTA → native db)
+│   ├── cmd_db_search.py # `gapit db search` CLI (records.jsonl lookup)
+│   ├── cmd_db_outdated.py # `gapit db outdated` CLI (staleness report)
 │   ├── mcp.py           # MCP stdio server (hand-rolled JSON-RPC 2.0); backs gapit-mcp
+│   ├── mcp_tools.py     # MCP tool implementations (call the shared use-cases)
 │   ├── mcp_schemas.py   # MCP tools/list declarations (names, descriptions, inputSchemas)
 │   ├── errors.py        # typed errors + JSON error envelope
 │   ├── formats/
 │   │   ├── tsv.py       # abricate-compatible TSV/CSV
 │   │   ├── json.py      # versioned JSON (gapit.report/1 et al.)
 │   │   ├── md.py        # Markdown (human + agent readable, YAML frontmatter)
+│   │   ├── schemas.py   # registered output models behind `gapit schema`
 │   │   └── summary.py   # summary matrix renderers (TSV/CSV/JSON/MD)
 │   ├── providers/       # 12 DB providers + common.py helpers + snapshots.py loader
 │   ├── data/snapshots/  # bundled card + vfdb snapshot archives (.tar.gz)
@@ -128,13 +139,15 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 - **Errors**: failures print a JSON envelope to stderr
   `{"schema": "gapit.error/1", "code": "...", "message": "...", "context": {...}}` and exit with a
   documented non-zero code (2 = usage, 3 = missing dependency, 4 = db error, 5 = input error).
-- **DB acquisition** `[gapit-extension]`: `gapit db fetch|list|install` — provider fetch
-  (bundled card/vfdb snapshots install offline; `--from-source` forces upstream), provider
-  listing, and SHA256-verified local-file install.
-- **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing read-only
-  tools `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via
-  minimap2), `summary`, `schema`, `db_list`; tool failures carry the `gapit.error/1`
-  envelope.
+- **DB acquisition** `[gapit-extension]`: `gapit db fetch|list|search|outdated|build|install` —
+  provider fetch (bundled card/vfdb snapshots install offline; `--from-source` forces upstream),
+  provider listing, records.jsonl gene search, staleness report, custom FASTA→native-db build,
+  and SHA256-verified local-file install.
+- **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing nine tools:
+  read-only `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via
+  minimap2), `summary`, `schema`, `db_list`, `db_search`, `db_outdated`, plus the datadir-mutating
+  `db_fetch` (installs provider databases; may download) and `db_build` (writes a custom db);
+  tool failures carry the `gapit.error/1` envelope.
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
 - **Self-description**: `gapit --version --json`, `gapit list --json`, `gapit schema` — an agent
   must be able to discover everything without reading docs.

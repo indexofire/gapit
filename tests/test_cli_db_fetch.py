@@ -1,6 +1,6 @@
 """CLI integration tests: `gapit db fetch NAME` (provider path) + `db list`.
 
-Offline by construction: ``gapit.cmd_db.REGISTRY`` is monkeypatched down to
+Offline by construction: ``gapit.db_ops.REGISTRY`` is monkeypatched down to
 two synthetic Providers whose source_urls point at a ``file://`` fasta fixture
 in tmp_path, so the full download -> transform -> build pipeline runs against
 the pixi env's real makeblastdb/minimap2 without touching the network (the
@@ -49,14 +49,14 @@ def syn_transform(workdir: Path) -> Iterable[Record]:
 
 
 def patch_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """Point ``gapit.cmd_db.REGISTRY`` at two synthetic file:// providers
+    """Point ``gapit.db_ops.REGISTRY`` at two synthetic file:// providers
     (SYN fetchable, OTHER never fetched) and create an empty datadir under
     tmp_path; returns that datadir."""
     source = tmp_path / "upstream.fa"
     source.write_text(UPSTREAM_FASTA, encoding="utf-8")
     url = source.as_uri()
     monkeypatch.setattr(
-        "gapit.cmd_db.REGISTRY",
+        "gapit.db_ops.REGISTRY",
         {
             SYN: Provider(
                 name=SYN,
@@ -259,7 +259,7 @@ def patch_snapshot_registry(
     empty datadir. The 1-vs-2 record counts discriminate snapshot vs network."""
     archive = build_snapshot(tmp_path, name, (f"snap_{name}_gene",), f"{name}-4.0")
     monkeypatch.setattr(
-        "gapit.cmd_db.REGISTRY",
+        "gapit.db_ops.REGISTRY",
         {
             name: Provider(
                 name=name,
@@ -325,7 +325,7 @@ def test_db_fetch_without_name_installs_default_dbs(
     card_tar = build_snapshot(tmp_path, "card", ("snap_card_gene",), "card-4.0")
     vfdb_tar = build_snapshot(tmp_path, "vfdb", ("snap_vfdb_a", "snap_vfdb_b"), "vfdb-2026")
     monkeypatch.setattr(
-        "gapit.cmd_db.REGISTRY",
+        "gapit.db_ops.REGISTRY",
         {
             name: Provider(
                 name=name,

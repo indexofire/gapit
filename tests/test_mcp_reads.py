@@ -208,6 +208,44 @@ def test_screen_aligner_blastn_rejects_reads_parameters(amr_datadir: Path) -> No
     assert "reads-mode parameters require aligner minimap2" in text
 
 
+def test_screen_aligner_minimap2_rejects_blastn_parameters(amr_datadir: Path) -> None:
+    """Given screen with aligner minimap2 and a non-default minid, When
+    served, Then isError with the same shared guard message the CLI emits
+    (blastn-only thresholds, no silent ignoring)."""
+    is_error, text = call_tool(
+        "screen",
+        {
+            "files": [str(CONTIGS / "full.fa")],
+            "db": "tinyamr",
+            "datadir": str(amr_datadir),
+            "aligner": "minimap2",
+            "minid": 90.0,
+        },
+    )
+    assert is_error is True
+    assert envelope_code(text) == "USAGE_ERROR"
+    assert "--minid/--mincov apply to blastn only" in text
+
+
+def test_screen_reads_comma_in_filename_survives(reads_datadir: Path, tmp_path: Path) -> None:
+    """Given paired FASTQ whose filenames contain commas, When screen_reads
+    is called with the native r1/r2 arrays, Then the files screen: paths are
+    never join/split through a comma-separated flag form."""
+    r1 = tmp_path / "sample,1.fq"
+    r2 = tmp_path / "sample,2.fq"
+    r1.write_bytes((READS / "tetx_R1.fq").read_bytes())
+    r2.write_bytes((READS / "tetx_R2.fq").read_bytes())
+    is_error, text = call_tool(
+        "screen_reads",
+        reads_args(reads_datadir, r1=[str(r1)], r2=[str(r2)]),
+    )
+    assert is_error is False
+    document = json.loads(text)
+    assert document["schema"] == "gapit.reads/1"
+    genes = {entry["gene"]: entry["present"] for entry in document["files"][0]["genes"]}
+    assert genes == {"tetX": True}
+
+
 # -------------------------------------------------------------- cli smoke --
 
 

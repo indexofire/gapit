@@ -11,9 +11,19 @@ from typing import Annotated
 import typer
 
 from gapit.dispatch import Datadir, dispatch
+from gapit.errors import usage_fail
 from gapit.reads import ReadTypeEnum
-from gapit.screening import AlignerEnum, OutputFormat, run_screen, usage_fail
+from gapit.screening import AlignerEnum, OutputFormat, run_screen
 from gapit.screening_reads import run_screen_assemblies, run_screen_reads
+
+
+def _split_read_list(raw: str, flag: str) -> list[Path]:
+    """Split a comma-separated --r1/--r2 value into paths; empty elements
+    are usage errors (an empty string would silently become the cwd)."""
+    parts = [part.strip() for part in raw.split(",")]
+    if any(not part for part in parts):
+        usage_fail(f"{flag} contains an empty element: {raw!r}")
+    return [Path(part) for part in parts]
 
 
 def screen_command(
@@ -135,8 +145,8 @@ def screen_command(
                 usage_fail("--jobs is not available in reads mode")
             typer.echo(
                 run_screen_reads(
-                    r1 or "",
-                    r2,
+                    _split_read_list(r1 or "", "--r1"),
+                    _split_read_list(r2, "--r2") if r2 is not None else None,
                     db,
                     datadir,
                     read_type,
@@ -148,6 +158,8 @@ def screen_command(
                     quiet,
                     debug,
                     aligner=aligner,
+                    minid=minid,
+                    mincov=mincov,
                 ),
                 nl=False,
             )
@@ -169,24 +181,29 @@ def screen_command(
                     output_format,
                     quiet,
                     debug,
+                    minid=minid,
+                    mincov=mincov,
                 ),
                 nl=False,
             )
         else:
-            run_screen(
-                files,
-                db,
-                datadir,
-                minid,
-                mincov,
-                threads,
-                jobs,
-                fofn,
-                quiet,
-                noheader,
-                nopath,
-                debug,
-                output_format or OutputFormat.tsv,
+            typer.echo(
+                run_screen(
+                    files,
+                    db,
+                    datadir,
+                    minid,
+                    mincov,
+                    threads,
+                    jobs,
+                    fofn,
+                    quiet,
+                    noheader,
+                    nopath,
+                    debug,
+                    output_format or OutputFormat.tsv,
+                ),
+                nl=False,
             )
 
     dispatch(run)

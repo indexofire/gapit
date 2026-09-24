@@ -14,6 +14,7 @@ from typer.testing import CliRunner, Result
 from gapit.cli import app
 from gapit.db import make_blast_db
 from gapit.errors import ErrorEnvelope
+from gapit.screening import OutputFormat, run_screen
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
@@ -74,6 +75,30 @@ def test_golden_csv_multi_file_nopath(datadir: Path) -> None:
     )
     assert result.exit_code == 0
     assert result.stdout == (GOLDEN / "tinyamr_multi_nopath.csv").read_text(encoding="utf-8")
+
+
+def test_run_screen_returns_cli_identical_bytes(datadir: Path) -> None:
+    """Given a direct run_screen call (the MCP route), When compared with the
+    CLI twin run, Then the returned string is byte-identical to CLI stdout —
+    the perform contract: the use-case renders, the caller echoes."""
+    result = screen(datadir, "--nopath", *[str(CONTIGS / name) for name in MULTI_FILES])
+    assert result.exit_code == 0
+    output = run_screen(
+        [CONTIGS / name for name in MULTI_FILES],
+        "tinyamr",
+        datadir,
+        80.0,
+        80.0,
+        1,
+        1,
+        None,
+        quiet=True,
+        noheader=False,
+        nopath=True,
+        debug=False,
+        output_format=OutputFormat.tsv,
+    )
+    assert output == result.stdout
 
 
 def test_csv_flag_is_gone(datadir: Path) -> None:

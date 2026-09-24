@@ -11,8 +11,9 @@ from typing import Annotated
 import typer
 
 from gapit.dispatch import dispatch
+from gapit.errors import usage_fail
 from gapit.formats.summary import format_summary_tsv, render_summary_json, render_summary_md
-from gapit.screening import OutputFormat, usage_fail
+from gapit.screening import OutputFormat
 from gapit.summary import SummaryParams, build_summary
 
 

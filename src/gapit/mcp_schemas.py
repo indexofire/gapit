@@ -5,8 +5,7 @@ Descriptions are wire-visible wording; treat any edit like a schema change
 (AGENTS.md §5).
 """
 
-from gapit.cmd_db_outdated import DEFAULT_STALE_DAYS
-from gapit.cmd_db_search import DEFAULT_LIMIT, SearchField
+from gapit.db_query_ops import DEFAULT_LIMIT, DEFAULT_STALE_DAYS, SearchField
 from gapit.formats.schemas import SCHEMA_MODELS
 from gapit.reads import ReadTypeEnum
 

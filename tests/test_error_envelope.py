@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 
 from gapit.cli import app
 from gapit.db import make_blast_db
-from gapit.errors import ErrorEnvelope, render_error
+from gapit.errors import ErrorEnvelope, InputError, ensure_input_file, render_error
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
@@ -74,6 +74,22 @@ def test_missing_input_file_envelope(datadir: Path) -> None:
     envelope = last_envelope(result.stderr)
     assert envelope.code == "INPUT_NOT_FOUND"
     assert envelope.context["file"] == str(datadir / "nope.fa")
+
+
+def test_ensure_input_file_parametrizes_the_kind(tmp_path: Path) -> None:
+    """Given the shared existence helper, When a missing path is checked with
+    a kind, Then InputError carries that kind in the message plus the
+    INPUT_NOT_FOUND code and file context (bytes match the former inline
+    raises in screening.py / screening_reads.py)."""
+    missing = tmp_path / "nope.fq"
+    with pytest.raises(InputError) as excinfo:
+        ensure_input_file(missing, "reads file")
+    assert str(excinfo.value) == f"reads file not found or unreadable: {missing}"
+    assert excinfo.value.code == "INPUT_NOT_FOUND"
+    assert excinfo.value.context == {"file": str(missing)}
+    with pytest.raises(InputError) as default:
+        ensure_input_file(missing)
+    assert str(default.value) == f"input file not found or unreadable: {missing}"
 
 
 def test_junk_input_envelope(datadir: Path, tmp_path: Path) -> None:

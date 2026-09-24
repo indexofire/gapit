@@ -25,7 +25,13 @@ def _stream_minimap2(argv: list[str], r1: Path) -> list[PafRecord]:
     mid-run. Returncode != 0 raises MINIMAP2_FAILED with the captured
     stderr text."""
     try:
-        process = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        process = subprocess.Popen(
+            argv,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
     except FileNotFoundError as exc:
         raise DependencyError(
             "required binary not found on PATH: minimap2",
@@ -96,9 +102,12 @@ def run_minimap2(
         ]
         if nm_tags:
             argv.append("--cs")
-        argv += [str(database.sequences_path), str(r1)]
+        # Input paths go to argv absolutized: an absolute path starts with
+        # "/" and can never parse as a minimap2 option, so a query file
+        # named "-d" cannot make minimap2 dump an index over its mate path.
+        argv += [str(database.sequences_path.absolute()), str(r1.absolute())]
         if r2 is not None:
-            argv.append(str(r2))
+            argv.append(str(r2.absolute()))
         if debug:
             print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
         rows.extend(_stream_minimap2(argv, r1))
