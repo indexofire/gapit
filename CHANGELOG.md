@@ -5,6 +5,28 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2026-09-24
+
+### Security
+
+- minimap2 input paths are passed as absolute paths, so a file named like an option
+  (e.g. `-d`) can no longer inject minimap2 flags; the child process no longer inherits
+  stdin (the MCP protocol stream).
+
+### Changed
+
+- `--minid`/`--mincov` with `--aligner minimap2` or `--r1/--r2` are now a usage error
+  (exit 2) instead of being silently ignored.
+- MCP `screen` (blastn) reuses the CLI use-case; its validation messages now match the CLI.
+- MCP `screen_reads` passes read arrays natively, so filenames containing commas work.
+
+### Fixed
+
+- MCP server replies `-32600`/`-32602` to malformed requests that carry an `id` instead of
+  silently dropping them.
+- A truncated gzip reads file raises a typed `INVALID_READS_FORMAT` error (exit 5) instead
+  of `UNEXPECTED` (exit 1).
+
 ## [0.2.1] - 2026-09-22
 
 ### Changed

@@ -73,7 +73,7 @@ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.2.1"
+    "version": "0.2.2"
   },
   "created_at": "2026-09-19T01:11:06Z",
   "params": {

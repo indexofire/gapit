@@ -1135,8 +1135,8 @@ packages:
   timestamp: 1694615932610
 - pypi: ./
   name: gapit
-  version: 0.2.1
-  sha256: e612c3d799ddf55276dcb301b56c46142817120afe236cd1214081d813fbd300
+  version: 0.2.2
+  sha256: 7ddd019d0bc6e998bf772d75f8cdc26856074cf4ed1c76c71d048d7486df5b43
   requires_dist:
   - typer>=0.12
   - pydantic>=2.7

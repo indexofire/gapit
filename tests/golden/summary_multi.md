@@ -1,6 +1,6 @@
 ---
 schema: gapit.summary/1
-tool: gapit 0.2.1
+tool: gapit 0.2.2
 created_at: 2026-09-17T12:00:00Z
 metric: '%COVERAGE'
 nopath: false

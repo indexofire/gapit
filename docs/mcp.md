@@ -94,7 +94,7 @@ EOF
 Response line 1, verbatim:
 
 ```text
-{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.2.1"}}}
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.2.2"}}}
 ```
 
 Response line 2 (real output, elided in the middle; each tool carries its full
@@ -117,7 +117,7 @@ the same run):
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.2.1"},
+  "tool": {"name": "gapit", "version": "0.2.2"},
   "created_at": "2026-09-19T01:15:44Z",
   "params": {"db": "tinyamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [
@@ -173,7 +173,7 @@ the same run):
 ```json
 {
   "schema": "gapit.reads/1",
-  "tool": {"name": "gapit", "version": "0.2.1"},
+  "tool": {"name": "gapit", "version": "0.2.2"},
   "created_at": "2026-09-22T00:07:35Z",
   "params": {
     "db": "tinyreads",
@@ -248,7 +248,7 @@ hit is the gene the agent just built the database from (real output):
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.2.1"},
+  "tool": {"name": "gapit", "version": "0.2.2"},
   "created_at": "2026-09-20T13:38:39Z",
   "params": {"db": "myamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [

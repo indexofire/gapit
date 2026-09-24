@@ -10,7 +10,7 @@ exactly what `gapit screen` writes. See [./screen.md](./screen.md) for producing
 
 ## Options
 
-Transcribed from `gapit summary --help` (gapit 0.2.1):
+Transcribed from `gapit summary --help` (gapit 0.2.2):
 
 | Flag | Type | Default | Description |
 |---|---|---|---|
@@ -110,7 +110,7 @@ $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv 
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.2.1"
+    "version": "0.2.2"
   },
   "created_at": "2026-09-19T01:12:48Z",
   "params": {
