@@ -17,6 +17,27 @@ dependencies = [
   "rich>=13",
 ]
 
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+[project.urls]
+Homepage = "https://github.com/indexofire/gapit"
+Documentation = "https://indexofire.github.io/gapit/"
+Changelog = "https://github.com/indexofire/gapit/blob/main/CHANGELOG.md"
+Source = "https://github.com/indexofire/gapit"
+Issues = "https://github.com/indexofire/gapit/issues"
+
 [project.scripts]
 gapit = "gapit.cli:app"
 gapit-mcp = "gapit.mcp:main"
