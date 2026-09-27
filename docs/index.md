@@ -9,7 +9,7 @@ first-class JSON and Markdown outputs with versioned schemas.
 
 | Page | Contents |
 |---|---|
-| [Installation](./installation.md) | Prerequisites, pixi setup, verification, database bootstrap, shell completions |
+| [Installation](./installation.md) | PyPI wheel and pixi paths, external binaries, verification, database bootstrap, shell completions |
 | [Quickstart](./quickstart.md) | A complete first session on the bundled test fixture, offline |
 | [Screening contigs](./screen.md) | `gapit screen` on FASTA/GBK/EMBL inputs: thresholds, filters, formats |
 | [Screening reads](./reads.md) | FASTQ and assembly FASTA through minimap2: `--r1`/`--r2`, presets, breadth-based presence, two-stage survey |
