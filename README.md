@@ -19,8 +19,15 @@ byte-compatible TSV plus first-class JSON and Markdown.
 
 ## Install
 
-[pixi](https://pixi.sh) manages the environment, including the external binaries
-(BLAST+, minimap2):
+From PyPI (external BLAST+ and minimap2 binaries required on PATH — see
+[docs/installation.md](docs/installation.md)):
+
+```bash
+pip install gapit
+```
+
+Or from a git clone with [pixi](https://pixi.sh), which manages the environment including
+the external binaries:
 
 ```bash
 git clone https://github.com/indexofire/gapit.git

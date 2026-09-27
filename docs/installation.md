@@ -1,16 +1,29 @@
 # Installing gapit
 
-gapit is installed from a git clone: [pixi](https://pixi.sh) creates the environment, so
-you don't manage Python or external tools yourself.
+Two install paths: the PyPI wheel (you provide the external binaries) or a git clone with
+[pixi](https://pixi.sh) (binaries managed for you).
 
-## Prerequisites
+## From PyPI
+
+```bash
+pip install gapit
+```
+
+The wheel bundles the Python package, the `gapit`/`gapit-mcp` console scripts, and the
+offline `card`/`vfdb` snapshots. It does **not** bundle BLAST+ or minimap2 — install them
+first ([External binaries](#external-binaries), e.g. `conda create -n gapit-env -c
+bioconda blast minimap2`).
+
+## From source (pixi)
+
+### Prerequisites
 
 - [git](https://git-scm.com) and [pixi](https://pixi.sh). On macOS/Linux:
   `curl -fsSL https://pixi.sh/install.sh | bash`
 - Python 3.11+ if you install the package outside pixi (pip/pyproject). With pixi this is
   moot: the environment ships its own Python (the dev env pins 3.14).
 
-## Install
+### Install
 
 ```bash
 git clone https://github.com/indexofire/gapit.git
