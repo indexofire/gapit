@@ -17,13 +17,13 @@ $ gapit --version --json
 ```
 
 Output schemas. Six documents are introspectable: `report`, `reads`,
-`summary`, `list`, `error`, `version`. Each prints its full JSON Schema:
+`reads2`, `summary`, `error`, `version`. Each prints its full JSON Schema:
 
 ```console
 $ gapit schema report      # gapit.report/1 (contig screening)
 $ gapit schema reads       # gapit.reads/1  (FASTQ screening)
+$ gapit schema reads2      # gapit.reads/2  (filtered FASTQ screening)
 $ gapit schema summary     # gapit.summary/1
-$ gapit schema list        # gapit.list/1
 $ gapit schema error       # gapit.error/1
 $ gapit schema version     # gapit.version/1
 ```
@@ -56,18 +56,27 @@ For example, `gapit schema version` (real output):
 }
 ```
 
-Installed databases (real output against a datadir holding one database):
+Databases: the provider catalog and install state (`gapit db list --json`; real output,
+first two of twelve shown, trimmed):
 
 ```console
-$ gapit list --json
+$ gapit db list --json
 {
-  "schema": "gapit.list/1",
-  "databases": [
+  "schema": "gapit.dblist/1",
+  "providers": [
     {
-      "name": "tinyamr",
-      "sequences": 3,
+      "name": "argannot",
+      "description": "ARG-ANNOT acquired resistance genes",
       "dbtype": "nucl",
-      "date": "2026-Sep-19"
+      "installed": true,
+      "records": 2224
+    },
+    {
+      "name": "bacmet2",
+      "description": "BacMet2 experimentally confirmed biocide/resistance genes (protein)",
+      "dbtype": "prot",
+      "installed": true,
+      "records": 746
     }
   ]
 }
@@ -103,7 +112,7 @@ Envelope details and error codes: `./outputs.md`.
 ## JSON stability policy
 
 - Every document self-identifies with a version string: `gapit.report/1`,
-  `gapit.reads/1`, `gapit.summary/1`, `gapit.list/1`, `gapit.error/1`,
+  `gapit.reads/1`, `gapit.summary/1`, `gapit.error/1`,
   `gapit.version/1`. Check `schema` first, dispatch on it.
 - Schemas follow semver. A minor bump never renames or retypes an existing
   field; new fields may appear, so ignore unknown keys rather than rejecting
@@ -148,7 +157,7 @@ Parsing guidance:
 Discover, screen, parse, summarize. Session below run against the repo's test
 fixture datadir (setup recipe in `./mcp.md`).
 
-1. Discover available databases (`gapit list --json`, or the `db_list` MCP
+1. Discover available databases (`gapit db list --json`, or the `db_list` MCP
    tool), pick a `db` name.
 
 2. Screen each sample as JSON and parse hits straight out of the document:

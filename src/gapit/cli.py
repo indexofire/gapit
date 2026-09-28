@@ -12,7 +12,7 @@ from gapit.cmd_screen import register_screen_command
 from gapit.cmd_summary import register_summary_command
 from gapit.dispatch import Datadir, dispatch
 from gapit.errors import usage_fail
-from gapit.formats.json import ListDocument, ListEntryDocument, VersionDocument
+from gapit.formats.json import VersionDocument
 from gapit.formats.schemas import SCHEMA_MODELS
 from gapit.mcp import register_mcp_command
 
@@ -48,27 +48,6 @@ def main(
         raise typer.Exit()
 
 
-def _list(datadir: Path | None, as_json: bool) -> None:
-    infos = db.list_databases(config.resolve_datadir(datadir), setupdb=False)
-    if as_json:
-        document = ListDocument(
-            databases=[
-                ListEntryDocument(
-                    name=info.name,
-                    sequences=info.n_sequences,
-                    dbtype=info.dbtype,
-                    date=info.date,
-                )
-                for info in infos
-            ]
-        )
-        typer.echo(document.model_dump_json(indent=2, by_alias=True))
-        return
-    typer.echo("DATABASE\tSEQUENCES\tDBTYPE\tDATE")
-    for info in infos:
-        typer.echo(f"{info.name}\t{info.n_sequences}\t{info.dbtype}\t{info.date}")
-
-
 def _setupdb(datadir: Path | None, debug: bool) -> None:
     infos = db.list_databases(config.resolve_datadir(datadir), setupdb=True, debug=debug)
     for info in infos:
@@ -76,18 +55,6 @@ def _setupdb(datadir: Path | None, debug: bool) -> None:
             f"Indexed {info.name} ({info.n_sequences} sequences, {info.dbtype})",
             err=True,
         )
-
-
-@app.command("list")
-def list_dbs(
-    datadir: Datadir = None,
-    as_json: Annotated[
-        bool,
-        typer.Option("--json", help="Print machine-readable JSON instead of a table."),
-    ] = False,
-) -> None:
-    """List installed databases (abricate --list compatible)."""
-    dispatch(lambda: _list(datadir, as_json))
 
 
 @app.command("setupdb")
@@ -113,7 +80,7 @@ def schema(
     name: Annotated[
         str,
         typer.Argument(
-            help="Document to introspect: report, reads, reads2, summary, list, error, or version."
+            help="Document to introspect: report, reads, reads2, summary, error, or version."
         ),
     ],
 ) -> None:

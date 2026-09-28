@@ -367,39 +367,8 @@ $ gapit --version --json
 {"schema":"gapit.version/1","name":"gapit","version":"0.2.2"}
 ```
 
-`gapit list --json` describes installed databases (`gapit.list/1`, first two of twelve
-shown, trimmed):
-
-```json
-{
-  "schema": "gapit.list/1",
-  "databases": [
-    {
-      "name": "argannot",
-      "sequences": 2224,
-      "dbtype": "nucl",
-      "date": "2026-Sep-18"
-    },
-    {
-      "name": "bacmet2",
-      "sequences": 746,
-      "dbtype": "prot",
-      "date": "2026-Sep-18"
-    }
-  ]
-}
-```
-
-| Field | Type | Meaning |
-|---|---|---|
-| `schema` | string | Always `gapit.list/1` |
-| `databases[].name` | string | Database name, usable as `--db` |
-| `databases[].sequences` | integer | Sequence count in the database |
-| `databases[].dbtype` | string | `nucl` or `prot` |
-| `databases[].date` | string | Build date, abricate `%d-%b-%Y` format |
-
 `gapit schema <name>` prints the JSON Schema for each document. The six names: `report`,
-`reads`, `summary`, `list`, `error`, `version`. A trimmed fragment of `gapit schema report`:
+`reads`, `reads2`, `summary`, `error`, `version`. A trimmed fragment of `gapit schema report`:
 
 ```json
 {

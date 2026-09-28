@@ -64,7 +64,6 @@ gapit db search "tet(M)"         # look up genes across every installed database
 gapit db build mydb my_genes.fa --tsv my_meta.tsv   # custom db from any FASTA
 
 # Introspection
-gapit list              # installed databases (abricate --list compatible)
 gapit schema report     # JSON Schema of gapit.report/1
 ```
 

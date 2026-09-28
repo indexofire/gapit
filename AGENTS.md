@@ -60,7 +60,7 @@ gapit/
 │   └── ci.yml           # gates matrix 3.11/3.13/3.14 + parity job
 ├── src/gapit/
 │   ├── __init__.py
-│   ├── cli.py           # typer entrypoint: screen / summary / db / list / setupdb / schema / mcp
+│   ├── cli.py           # typer entrypoint: screen / summary / db / setupdb / schema / mcp
 │   ├── config.py        # datadir resolution, defaults, env vars
 │   ├── dispatch.py      # shared CLI dispatch (error envelope → exit codes) + --datadir option
 │   ├── proctools.py     # external-tool plumbing: argv subprocess runner + stderr notes
@@ -149,7 +149,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   `db_fetch` (installs provider databases; may download) and `db_build` (writes a custom db);
   tool failures carry the `gapit.error/1` envelope.
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
-- **Self-description**: `gapit --version --json`, `gapit list --json`, `gapit schema` — an agent
+- **Self-description**: `gapit --version --json`, `gapit db list --json`, `gapit schema` — an agent
   must be able to discover everything without reading docs.
 
 ## 6. Testing strategy

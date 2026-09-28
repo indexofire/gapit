@@ -146,6 +146,11 @@ consumes abricate-built datadirs.
   releases via `.github/workflows/release.yml` (OIDC trusted publishing, `workflow_dispatch`
   or `v*` tag). **Deferred by decision (2026-09-18, still open):** bioconda submission —
   recipe remains in-repo; sha256 placeholder to be replaced at submission time.
+- **Contract change (2026-09-27, rightsholder decision):** `gapit list` and its
+  `gapit.list/1` document removed; `gapit db list` (`gapit.dblist/1`) is the single
+  listing surface and abricate `--list` byte-parity is intentionally dropped for it.
+  Schema registry is now six documents (report, reads, reads2, summary, error, version).
+  Breaking; recorded under \[Unreleased\] in CHANGELOG.md for the next minor bump.
 
 ## Milestones
 

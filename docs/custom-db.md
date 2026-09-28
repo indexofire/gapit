@@ -271,9 +271,9 @@ gapit: generated /tmp/opencode/customdb-default/db/labenv/sequences
 gapit: self-check passed for labenv
 gapit: BLAST index built (nucl)
 {"db":"labenv","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-default/db/labenv"}
-$ gapit list
-DATABASE	SEQUENCES	DBTYPE	DATE
-labenv	2	nucl	2026-Sep-19
+$ gapit db outdated
+NAME	FETCHED_AT	AGE_DAYS	STATUS
+labenv	2026-09-27T14:46:27Z	0.00	ok
 ```
 
 Unlike screening, a build creates a missing datadir instead of failing, so a fresh machine bootstraps on the first build. The scratch datadir was deleted after this capture.

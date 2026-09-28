@@ -18,11 +18,12 @@ def test_schema_report() -> None:
     assert "HitDocument" in payload.get("$defs", {})
 
 
-def test_schema_list() -> None:
+def test_schema_list_removed_exits_2() -> None:
+    """Given the retired gapit.list/1 document, When introspected, Then the
+    name is rejected as unknown with a usage envelope on stderr."""
     result = runner.invoke(app, ["schema", "list"])
-    assert result.exit_code == 0
-    payload = json.loads(result.stdout)
-    assert "databases" in payload["properties"]
+    assert result.exit_code == 2
+    assert "unknown schema name: list" in result.stderr
 
 
 def test_schema_error() -> None:

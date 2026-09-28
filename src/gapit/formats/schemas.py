@@ -11,7 +11,6 @@ from pydantic import BaseModel
 
 from gapit.errors import ErrorEnvelope
 from gapit.formats.json import (
-    ListDocument,
     Reads2Document,
     ReadsDocument,
     ReportDocument,
@@ -24,7 +23,6 @@ SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "reads": ReadsDocument,
     "reads2": Reads2Document,
     "summary": SummaryDocument,
-    "list": ListDocument,
     "error": ErrorEnvelope,
     "version": VersionDocument,
 }

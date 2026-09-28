@@ -39,7 +39,7 @@ def last_envelope(stderr: str) -> ErrorEnvelope:
 def test_envelope_is_single_line_with_four_keys(tmp_path: Path) -> None:
     """Given any typed failure, When rendered, Then stderr's last line is a
     single-line JSON object with exactly the four documented keys in order."""
-    result = runner.invoke(app, ["list", "--datadir", str(tmp_path / "nope")])
+    result = runner.invoke(app, ["setupdb", "--datadir", str(tmp_path / "nope")])
     assert result.exit_code == 4
     lines = [line for line in result.stderr.splitlines() if line.strip()]
     assert len(lines) == 1
@@ -49,7 +49,7 @@ def test_envelope_is_single_line_with_four_keys(tmp_path: Path) -> None:
 
 
 def test_missing_datadir_envelope(tmp_path: Path) -> None:
-    result = runner.invoke(app, ["list", "--datadir", str(tmp_path / "nope")])
+    result = runner.invoke(app, ["setupdb", "--datadir", str(tmp_path / "nope")])
     assert result.exit_code == 4
     envelope = last_envelope(result.stderr)
     assert envelope.code == "DATADIR_NOT_FOUND"

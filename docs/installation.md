@@ -84,7 +84,8 @@ gapit: BLAST index built (nucl)
 {"db":"vfdb","records":4769,"dbtype":"nucl","destination":"/tmp/gapit-docs/dd/vfdb"}
 ```
 
-Confirm what's installed any time with `gapit list` (or `gapit list --json`).
+Confirm the provider catalog and what's installed any time with `gapit db list` (or
+`gapit db list --json`).
 
 ## Shell completions
 

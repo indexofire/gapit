@@ -1,4 +1,4 @@
-"""Agent-facing JSON documents: gapit.report/1, gapit.list/1, gapit.version/1."""
+"""Agent-facing JSON documents: gapit.report/1, gapit.version/1."""
 
 from collections.abc import Iterable
 from datetime import UTC, datetime
@@ -67,24 +67,6 @@ class ReportDocument(BaseModel, frozen=True):
     created_at: str
     params: ParamsDocument
     files: list[FileDocument]
-
-
-class ListEntryDocument(BaseModel, frozen=True):
-    """One row of `gapit list --json`."""
-
-    name: str
-    sequences: int
-    dbtype: str
-    date: str
-
-
-class ListDocument(BaseModel, frozen=True):
-    """gapit.list/1."""
-
-    model_config = ConfigDict(populate_by_name=True)
-
-    schema_name: Literal["gapit.list/1"] = Field(default="gapit.list/1", alias="schema")
-    databases: list[ListEntryDocument]
 
 
 class VersionDocument(BaseModel, frozen=True):

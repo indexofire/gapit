@@ -85,8 +85,10 @@ $ gapit db list --json
 | `providers[].installed` | boolean | True when a manifest exists in the datadir |
 | `providers[].records` | integer | Record count, omitted when the database isn't installed |
 
-`gapit list` gives the abricate-compatible view of installed databases; `gapit list --json`
-returns a `gapit.list/1` document. See [outputs.md](./outputs.md).
+`gapit db list` is the single listing surface: the provider catalog above, with `--json`
+returning the `gapit.dblist/1` document. (The former standalone listing command and its
+schema were removed; abricate `--list` byte-parity is intentionally dropped for this
+surface.) See [outputs.md](./outputs.md).
 
 ## Checking database freshness
 
