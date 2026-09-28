@@ -23,6 +23,15 @@ def test_root_help_lists_completion_options() -> None:
     assert "--show-completion" in help_text
 
 
+def test_short_help_alias_works_on_every_level() -> None:
+    """Given -h instead of --help, When invoked on the root app, a
+    subcommand, and a nested sub-app, Then each prints its help and exits 0."""
+    for argv in (["-h"], ["screen", "-h"], ["db", "-h"], ["db", "fetch", "-h"]):
+        result = runner.invoke(app, argv, env={"COLUMNS": "100"})
+        assert result.exit_code == 0, argv
+        assert "Usage:" in ANSI_STYLE.sub("", result.stdout), argv
+
+
 def test_show_completion_emits_shell_script() -> None:
     """Given --show-completion under a pinned SHELL, When run, Then a bash
     completion script referencing the gapit completion env var is printed

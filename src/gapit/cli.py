@@ -21,6 +21,8 @@ app = typer.Typer(
     help="Mass screening of contigs for antimicrobial resistance and virulence genes.",
     no_args_is_help=True,
     add_completion=True,
+    # -h alias for --help; click Context propagates this to all subcommands/sub-apps.
+    context_settings={"help_option_names": ["-h", "--help"]},
 )
 
 
