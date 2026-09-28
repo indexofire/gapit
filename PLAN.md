@@ -142,7 +142,7 @@ consumes abricate-built datadirs.
   `run_screen_reads`/`run_screen_assemblies` use-cases. Additive `gapit.mcp` contract
   (9 tools; the other 8 entries byte-identical), no output-schema version bump. See
   docs/mcp.md.
-- **PyPI published (2026-09-27):** `pip install gapit` live for 0.2.2; passwordless
+- **PyPI published (first release 0.2.2, 2026-09-27):** `pip install gapit`; passwordless
   releases via `.github/workflows/release.yml` (OIDC trusted publishing, `workflow_dispatch`
   or `v*` tag). **Deferred by decision (2026-09-18, still open):** bioconda submission —
   recipe remains in-repo; sha256 placeholder to be replaced at submission time.
