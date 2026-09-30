@@ -346,7 +346,8 @@ def test_fasta_assembly_screens_with_map_ont(datadir: Path, tmp_path: Path) -> N
 def test_fasta_assembly_note_suppressed_by_quiet(datadir: Path, tmp_path: Path) -> None:
     """Given the same assembly run with and without --quiet, When compared,
     Then the detection note is stderr-only and vanishes under --quiet while
-    stdout stays byte-identical."""
+    stdout stays identical (created_at normalized: two invocations can
+    straddle a second boundary)."""
     assembly = _tetx_assembly(tmp_path)
     args = ["screen", "--r1", str(assembly), "--db", "tinyreads", "--datadir", str(datadir)]
     plain = runner.invoke(app, args)
@@ -355,7 +356,8 @@ def test_fasta_assembly_note_suppressed_by_quiet(datadir: Path, tmp_path: Path) 
     assert quiet.exit_code == 0
     assert "assembly FASTA detected; using map-ont" in plain.stderr
     assert "assembly FASTA detected" not in quiet.stderr
-    assert quiet.stdout == plain.stdout
+    created_at = re.compile(r'"created_at": "[^"]*"')
+    assert created_at.sub("TS", quiet.stdout) == created_at.sub("TS", plain.stdout)
 
 
 def test_fasta_assembly_explicit_map_ont_is_silent(datadir: Path, tmp_path: Path) -> None:
