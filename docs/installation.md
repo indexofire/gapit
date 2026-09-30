@@ -9,9 +9,10 @@ Two install paths: the PyPI wheel (you provide the external binaries) or a git c
 pip install gapit
 ```
 
-The wheel bundles the Python package, the `gapit`/`gapit-mcp` console scripts, and the
-offline `card`/`vfdb` snapshots. It does **not** bundle BLAST+ or minimap2 — install them
-first ([External binaries](#external-binaries), e.g. `conda create -n gapit-env -c
+The wheel bundles the Python package and the `gapit`/`gapit-mcp` console scripts — no
+database content (every provider downloads from upstream at fetch time; several upstream
+licenses forbid redistribution). It does **not** bundle BLAST+ or minimap2 either — install
+them first ([External binaries](#external-binaries), e.g. `conda create -n gapit-env -c
 bioconda blast minimap2`).
 
 ## From source (pixi)
@@ -59,32 +60,36 @@ normalization (plain/gz/bz2 FASTA, FASTQ, GenBank, EMBL) is native — no `any2f
 ## Database bootstrap
 
 Screening needs at least one database in the datadir (`$GAPIT_DATADIR`, then
-`~/.local/share/gapit/db`; override per call with `--datadir`). `card` and `vfdb` ship
-inside the package and install with no network; the other providers download from
-upstream when fetched. See [Databases](./databases.md) for the full provider table.
+`~/.local/share/gapit/db`; override per call with `--datadir`). Nothing is bundled:
+every provider downloads from upstream when fetched (network required), because several
+upstream licenses — CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0 — forbid
+redistribution inside an MIT-licensed package. See [Databases](./databases.md) for the
+full database table.
 
 ```bash
-gapit db fetch            # installs the default set (card, vfdb) into the default datadir
+gapit db fetch all         # installs the default set (card, vfdb) into the default datadir
 ```
 
 The same install into a scratch datadir, so you can see what a fetch prints. Progress
 lines go to stderr, one JSON receipt per database to stdout:
 
 ```console
-$ gapit db fetch --datadir /tmp/gapit-docs/dd
-gapit: installed card from bundled snapshot card.tar.gz
+$ gapit db fetch all --datadir /tmp/gapit-docs/dd
+gapit: downloaded 1 source file(s)
+gapit: read 6059 records from card
 gapit: generated /tmp/gapit-docs/dd/card/sequences
 gapit: self-check passed for card
 gapit: BLAST index built (nucl)
 {"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/gapit-docs/dd/card"}
-gapit: installed vfdb from bundled snapshot vfdb.tar.gz
+gapit: downloaded 1 source file(s)
+gapit: read 4769 records from vfdb
 gapit: generated /tmp/gapit-docs/dd/vfdb/sequences
 gapit: self-check passed for vfdb
 gapit: BLAST index built (nucl)
 {"db":"vfdb","records":4769,"dbtype":"nucl","destination":"/tmp/gapit-docs/dd/vfdb"}
 ```
 
-Confirm the provider catalog and what's installed any time with `gapit db list` (or
+Confirm the database catalog and what's installed any time with `gapit db list` (or
 `gapit db list --json`).
 
 ## Shell completions
@@ -102,4 +107,4 @@ pixi install
 ```
 
 Database content does not update with the code: re-run `gapit db fetch <name> --force`
-to rebuild an installed database from upstream (or its bundled snapshot).
+to rebuild an installed database from upstream.

@@ -61,5 +61,5 @@ def summary_command(
 
 
 def register_summary_command(app: typer.Typer) -> None:
-    """Attach the summary command to the CLI app."""
-    app.command("summary")(summary_command)
+    """Attach the summary command to the CLI app (bare invocation prints help)."""
+    app.command("summary", no_args_is_help=True)(summary_command)

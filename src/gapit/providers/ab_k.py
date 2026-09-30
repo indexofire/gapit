@@ -24,6 +24,7 @@ NAME = "ab_k"
 PROVIDER = ClusterProvider(
     name=NAME,
     description="A. baumannii K locus (Kaptive)",
+    vendor="Kaptive (Kenyon lab)",
     source_urls=(
         "https://raw.githubusercontent.com/johannajkenyon/"
         "Abaumannii_surface_polysaccharide_loci/main/Acinetobacter_baumannii_K.gbk",

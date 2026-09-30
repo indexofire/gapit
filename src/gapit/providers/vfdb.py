@@ -1,5 +1,8 @@
 """VFDB provider (set A, nucleotide) — transform only.
 
+Download-on-fetch only: VFDB content is CC BY-NC (non-commercial), which an
+MIT-licensed wheel must not redistribute (license audit 2026-09).
+
 Upstream ``get_vfdb`` (abricate-get_db 1.4.0) decompresses
 ``VFDB_setA_nt.fas.gz`` and, per record, pulls the accession from the
 ``<gene>(<db>|<acc>.<version>)`` id suffix and renames the gene to the
@@ -85,8 +88,9 @@ def transform(workdir: Path) -> Iterable[Record]:
 PROVIDER = Provider(
     name=_NAME,
     description="VFDB virulence factors (set A, nucleotide)",
+    vendor="USTC (VFDB)",
     source_urls=("http://www.mgc.ac.cn/VFs/Down/VFDB_setA_nt.fas.gz",),
     dbtype="nucl",
     transform=transform,
-    snapshot="vfdb.tar.gz",
+    license="CC BY-NC 4.0 (non-commercial)",
 )

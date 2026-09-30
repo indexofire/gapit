@@ -59,7 +59,7 @@ $ gapit schema typing      # gapit.typing/1 (cluster db scoring spec)
 }
 ```
 
-数据库：提供商目录与安装状态（`gapit db list --json`；真实输出，十二个中的前两
+数据库：数据库目录与安装状态（`gapit db list --json`；真实输出，十二个中的前两
 个，有删节）：
 
 ```console
@@ -69,6 +69,7 @@ $ gapit db list --json
   "providers": [
     {
       "name": "argannot",
+      "vendor": "IHU Méditerranée-Infection",
       "description": "ARG-ANNOT acquired resistance genes",
       "dbtype": "nucl",
       "installed": true,
@@ -76,6 +77,7 @@ $ gapit db list --json
     },
     {
       "name": "bacmet2",
+      "vendor": "University of Gothenburg",
       "description": "BacMet2 experimentally confirmed biocide/resistance genes (protein)",
       "dbtype": "prot",
       "installed": true,

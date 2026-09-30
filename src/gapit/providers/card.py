@@ -1,5 +1,9 @@
 """CARD provider (Wave B2): transform card.mcmaster.ca data into Records.
 
+Download-on-fetch only: CARD's McMaster terms permit non-commercial use but
+forbid redistribution outside their own channels, so nothing card-derived
+ships inside the wheel (license audit 2026-09).
+
 Upstream quirk: the source URL ``https://card.mcmaster.ca/latest/data`` has no
 extension but serves a tar.bz2, so the download lands at ``<workdir>/data``.
 Only the root-level ``card.json`` is extracted (upstream:
@@ -143,8 +147,9 @@ def transform(workdir: Path) -> Iterator[Record]:
 PROVIDER = Provider(
     name=NAME,
     description=DESCRIPTION,
+    vendor="McMaster University",
     source_urls=SOURCE_URLS,
     dbtype=DBTYPE,
     transform=transform,
-    snapshot="card.tar.gz",
+    license="Custom (McMaster University): non-commercial use; redistribution prohibited",
 )

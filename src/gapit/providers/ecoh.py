@@ -56,8 +56,8 @@ def transform(workdir: Path) -> Iterator[Record]:
 PROVIDER = Provider(
     name=NAME,
     description="E. coli O and H antigens (srst2 EcOH)",
+    vendor="Holt lab (srst2)",
     source_urls=("https://raw.githubusercontent.com/katholt/srst2/master/data/EcOH.fasta",),
     dbtype="nucl",
     transform=transform,
-    snapshot=None,
 )

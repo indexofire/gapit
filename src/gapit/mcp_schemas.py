@@ -85,13 +85,18 @@ TOOLS: list[dict[str, object]] = [
         dict(name={"type": "string", "enum": sorted(SCHEMA_MODELS)}),
         ["name"],
     ),
-    _tool_entry("db_list", "List database providers and their installed state (gapit.dblist/1)."),
+    _tool_entry(
+        "db_list",
+        "List known databases with NAME, upstream PROVIDER, and install state (gapit.dblist/1).",
+    ),
     _tool_entry(
         "db_fetch",
-        "Fetch provider database(s) into the datadir (name omitted: card+vfdb from bundled"
-        " snapshots; network installs can take minutes). One JSON receipt line per database"
+        "Fetch database(s) by NAME into the datadir (name 'all': the card+vfdb"
+        " default set; every database downloads from its upstream provider, so installs"
+        " need network and can take minutes). One JSON receipt line per database"
         " (db, records, dbtype, destination).",
         dict(name=_STR, datadir=_STR, force=_FLAG),
+        ["name"],
     ),
     _tool_entry(
         "db_build",
@@ -125,8 +130,8 @@ TOOLS: list[dict[str, object]] = [
     ),
     _tool_entry(
         "db_outdated",
-        "Report installed database ages against the staleness threshold (days) and newer"
-        " bundled snapshots. Rows are TSV with columns NAME, FETCHED_AT, AGE_DAYS, STATUS.",
+        "Report installed database ages against the staleness threshold (days)."
+        " Rows are TSV with columns NAME, FETCHED_AT, AGE_DAYS, STATUS.",
         dict(days=_DAYS, datadir=_STR),
     ),
 ]

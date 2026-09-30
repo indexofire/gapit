@@ -1,12 +1,12 @@
 """The verified LOCAL-FILE install path: `gapit db install` (from cmd_db.py).
 
 ``db install`` checksum-verifies and atomically installs BYTES: SOURCE must
-be a path to an existing regular file; no network, no provider IDs, no
+be a path to an existing regular file; no network, no database names, no
 archives, no manifests — streaming SHA256 + atomic copy, kept deliberately
 independent of db.py and the screening pipeline.
 
 Split from cmd_db.py in Wave G: cmd_db hit the 250 LOC ceiling when fetch
-gained the bundled-snapshot defaults; this path is self-contained and no
+gained its default set; this path is self-contained and no
 test imports it directly (everything drives `gapit.cli.app`).
 """
 
@@ -96,7 +96,7 @@ def db_install_command(
     source: Annotated[
         Path,
         typer.Argument(
-            help="Local source file path (plain filesystem only; no URLs, no provider IDs)."
+            help="Local source file path (plain filesystem only; no URLs, no database names)."
         ),
     ],
     sha256: Annotated[
@@ -113,7 +113,7 @@ def db_install_command(
     """Install a local file to --output after verifying its SHA256.
 
     VERIFIED LOCAL-FILE INSTALLATION ONLY: this never fetches over the
-    network and knows nothing about database providers or sequence content —
+    network and knows nothing about the provider catalog or sequence content —
     it checksum-verifies and atomically installs bytes. On success a one-line
     JSON receipt (destination, verified digest) is printed to stdout.
     """

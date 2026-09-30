@@ -22,28 +22,30 @@ $ gapit db list --datadir /no/such/dir
 
 ## 查看已安装的数据库
 
-`gapit db list` 列出所有已知提供商及其安装状态：
+`gapit db list` 列出所有已知数据库及其安装状态：
 
 ```console
 $ gapit db list
-PROVIDER	STATUS	DBTYPE	DESCRIPTION
-argannot	installed (2224)	nucl	ARG-ANNOT acquired resistance genes
-bacmet2	installed (746)	prot	BacMet2 experimentally confirmed biocide/resistance genes (protein)
-card	installed (6059)	nucl	CARD protein homolog resistance models
-ecoh	installed (597)	nucl	E. coli O and H antigens (srst2 EcOH)
-ecoli_vf	installed (2701)	nucl	E. coli virulence factors (phac-nml)
-megares	installed (7425)	nucl	MEGARes antimicrobial resistance genes
-ncbi	installed (8373)	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
-plasmidfinder	installed (488)	nucl	CGE PlasmidFinder replicons
-resfinder	installed (3206)	nucl	CGE ResFinder acquired resistance genes
-upec_expec_vf	installed (77)	nucl	UPEC/ExPEC virulence genes (FordeGenomics)
-vfdb	installed (4769)	nucl	VFDB virulence factors (set A, nucleotide)
-victors	installed (4402)	nucl	Victors virulence factors
+NAME	PROVIDER	STATUS	DBTYPE	DESCRIPTION
+argannot	IHU Méditerranée-Infection	installed (2224)	nucl	ARG-ANNOT acquired resistance genes
+bacmet2	University of Gothenburg	installed (746)	prot	BacMet2 experimentally confirmed biocide/resistance genes (protein)
+card	McMaster University	installed (6059)	nucl	CARD protein homolog resistance models
+ecoh	Holt lab (srst2)	installed (597)	nucl	E. coli O and H antigens (srst2 EcOH)
+ecoli_vf	PHAC-NML	installed (2701)	nucl	E. coli virulence factors (phac-nml)
+megares	MEG Lab	installed (7425)	nucl	MEGARes antimicrobial resistance genes
+ncbi	NCBI	installed (8373)	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
+plasmidfinder	DTU CGE	installed (488)	nucl	CGE PlasmidFinder replicons
+resfinder	DTU CGE	installed (3206)	nucl	CGE ResFinder acquired resistance genes
+upec_expec_vf	FordeGenomics	installed (77)	nucl	UPEC/ExPEC virulence genes (FordeGenomics)
+vfdb	USTC (VFDB)	installed (4769)	nucl	VFDB virulence factors (set A, nucleotide)
+victors	University of Chicago	installed (4402)	nucl	Victors virulence factors
 ```
 
-当 `<datadir>/<name>/gapit-manifest.json` 存在时 STATUS 显示 `installed (N)`，N 是
-记录数，否则显示 `available`。面向 agent，`--json` 输出 `gapit.dblist/1` 文档
-（十二个提供商中的前三个，输出有删节）：
+NAME 是传给 `--db` 的数据库名；PROVIDER 是上游维护机构。当
+`<datadir>/<name>/gapit-manifest.json` 存在时 STATUS 显示 `installed (N)`，N 是
+记录数，否则显示 `available`。在交互式终端上，同样的行会渲染为带样式的 rich 表格；
+通过管道或重定向输出时始终保持上面的纯 TSV。面向 agent，`--json` 输出
+`gapit.dblist/1` 文档（前三个条目，输出有删节）：
 
 ```console
 $ gapit db list --json
@@ -52,6 +54,7 @@ $ gapit db list --json
   "providers": [
     {
       "name": "argannot",
+      "vendor": "IHU Méditerranée-Infection",
       "description": "ARG-ANNOT acquired resistance genes",
       "dbtype": "nucl",
       "installed": true,
@@ -59,6 +62,7 @@ $ gapit db list --json
     },
     {
       "name": "bacmet2",
+      "vendor": "University of Gothenburg",
       "description": "BacMet2 experimentally confirmed biocide/resistance genes (protein)",
       "dbtype": "prot",
       "installed": true,
@@ -66,6 +70,7 @@ $ gapit db list --json
     },
     {
       "name": "card",
+      "vendor": "McMaster University",
       "description": "CARD protein homolog resistance models",
       "dbtype": "nucl",
       "installed": true,
@@ -78,20 +83,22 @@ $ gapit db list --json
 | 字段 | 类型 | 含义 |
 |---|---|---|
 | `schema` | string | 恒为 `gapit.dblist/1` |
-| `providers` | array | 每个提供商一项 |
-| `providers[].name` | string | 提供商名称，即传给 `gapit db fetch` 的名字 |
+| `providers` | array | 每个已知数据库一项 |
+| `providers[].name` | string | 数据库名，即传给 `--db` / `gapit db fetch` 的名字 |
+| `providers[].vendor` | string | 上游维护机构（NCBI、DTU CGE、Kaptive (klebgenomics) 等） |
 | `providers[].description` | string | 内容简述 |
 | `providers[].dbtype` | string | `nucl`（用 blastn 筛查）或 `prot`（用 blastx 筛查） |
 | `providers[].installed` | boolean | 数据目录里存在 manifest 时为 true |
 | `providers[].records` | integer | 记录数，数据库未安装时省略 |
+| `providers[].license` | string | 上游内容许可证，仅提供商声明时出现（card、vfdb、ecoli_vf、kaptive） |
 
-`gapit db list` 是唯一的列表入口：即上面的提供商目录，`--json` 返回
+`gapit db list` 是唯一的列表入口：即上面的数据库目录，`--json` 返回
 `gapit.dblist/1` 文档。（早期独立的列表命令及其 schema 已移除；这个入口刻意放弃了
 abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 
 ## 检查数据库新鲜度
 
-`gapit db outdated` 报告每个已安装数据库的年龄，并标记两种更新情况。对装满的数据
+`gapit db outdated` 报告每个已安装数据库相对于过期阈值的年龄。对装满的数据
 目录（输出裁剪到十二行中的三行）：
 
 ```console
@@ -103,20 +110,18 @@ card	2026-09-17T23:14:25Z	2.58	ok
 ...
 ```
 
-安装已久且被内置快照超越的数据库会同时报告两种标记：
+安装已久的数据库只会报告 `stale`：
 
 ```console
 $ gapit db outdated --datadir /tmp/opencode/gapit-outdated-demo
 NAME	FETCHED_AT	AGE_DAYS	STATUS
-card	2020-01-01T00:00:00Z	2454.55	stale+snapshot-update
+card	2020-01-01T00:00:00Z	2454.55	stale
 ```
 
 | 状态 | 含义 |
 |---|---|
-| `ok` | 足够新且没有更新的内置快照 |
+| `ok` | 在阈值之内 |
 | `stale` | `age_days` 超过 `--days`（默认 90；`--days 0` 把一切都标为 stale） |
-| `snapshot-update` | 提供商的内置快照比已安装副本新（card、vfdb） |
-| `stale+snapshot-update` | 以上两者同时成立 |
 
 过期只是一份报告，绝不是错误状态：无论多旧命令都退出 0。退出码 4
 （`DATADIR_NOT_FOUND`、`DATADIR_EMPTY`）对应缺失的数据目录或没有任何已安装数据库的
@@ -183,31 +188,32 @@ $ gapit db search "tet(M)" --field gene --exact --json | head -1
 
 ## 提供商
 
-gapit 自带十九个提供商。`card` 和 `vfdb` 还以内置快照的形式随包发布，零网络安装。
-七个 kaptive 提供商是**基因簇**数据库（抓取时下载并构建；GPL 内容绝不内置，见下文
-Kaptive 提供商一节）。
+gapit 自带十九个提供商。每一个——包括 `card` 和 `vfdb`——都在抓取时从上游下载：
+包里不内置任何内容，因为多家上游许可（CARD 的 McMaster 条款、VFDB 的 CC BY-NC、
+Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发。七个 kaptive 提供商是**基因簇**
+数据库（抓取时经基因簇管线构建，见下文 Kaptive 提供商一节）。
 
-| 名称 | 内容 | dbtype |
-|---|---|---|
-| `ncbi` | NCBI AMRFinderPlus (reference finder) curated AMR（默认数据库） | nucl |
-| `card` | CARD protein homolog resistance models | nucl |
-| `resfinder` | CGE ResFinder acquired resistance genes | nucl |
-| `argannot` | ARG-ANNOT acquired resistance genes | nucl |
-| `plasmidfinder` | CGE PlasmidFinder replicons | nucl |
-| `megares` | MEGARes antimicrobial resistance genes | nucl |
-| `ecoh` | E. coli O and H antigens (srst2 EcOH) | nucl |
-| `vfdb` | VFDB virulence factors (set A, nucleotide) | nucl |
-| `ecoli_vf` | E. coli virulence factors (phac-nml) | nucl |
-| `bacmet2` | BacMet2 experimentally confirmed biocide/resistance genes (protein) | prot |
-| `victors` | Victors virulence factors | nucl |
-| `upec_expec_vf` | UPEC/ExPEC virulence genes (FordeGenomics) | nucl |
-| `kpsc_k` | K. pneumoniae species complex K locus（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
-| `kpsc_o` | K. pneumoniae species complex O locus（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
-| `kosc_k` | K. oxytoca species complex K locus（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
-| `kosc_o` | K. oxytoca species complex O locus（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
-| `ab_k` | A. baumannii K locus（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
-| `ab_o` | A. baumannii OC locus — 官方关键字 `ab_o`（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
-| `ecoli_kps` | E. coli group 2+3 capsular polysaccharide loci（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
+| 名称 | 维护方 | 内容 | dbtype |
+|---|---|---|---|
+| `ncbi` | NCBI | NCBI AMRFinderPlus (reference finder) curated AMR（默认数据库） | nucl |
+| `card` | McMaster University | CARD protein homolog resistance models | nucl |
+| `resfinder` | DTU CGE | CGE ResFinder acquired resistance genes | nucl |
+| `argannot` | IHU Méditerranée-Infection | ARG-ANNOT acquired resistance genes | nucl |
+| `plasmidfinder` | DTU CGE | CGE PlasmidFinder replicons | nucl |
+| `megares` | MEG Lab | MEGARes antimicrobial resistance genes | nucl |
+| `ecoh` | Holt lab (srst2) | E. coli O and H antigens (srst2 EcOH) | nucl |
+| `vfdb` | USTC (VFDB) | VFDB virulence factors (set A, nucleotide) | nucl |
+| `ecoli_vf` | PHAC-NML | E. coli virulence factors (phac-nml) | nucl |
+| `bacmet2` | University of Gothenburg | BacMet2 experimentally confirmed biocide/resistance genes (protein) | prot |
+| `victors` | University of Chicago | Victors virulence factors | nucl |
+| `upec_expec_vf` | FordeGenomics | UPEC/ExPEC virulence genes (FordeGenomics) | nucl |
+| `kpsc_k` | Kaptive (klebgenomics) | K. pneumoniae species complex K locus（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
+| `kpsc_o` | Kaptive (klebgenomics) | K. pneumoniae species complex O locus（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
+| `kosc_k` | Kaptive (klebgenomics) | K. oxytoca species complex K locus（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
+| `kosc_o` | Kaptive (klebgenomics) | K. oxytoca species complex O locus（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
+| `ab_k` | Kaptive (Kenyon lab) | A. baumannii K locus（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
+| `ab_o` | Kaptive (Kenyon lab) | A. baumannii OC locus — 官方关键字 `ab_o`（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
+| `ecoli_kps` | Kaptive (Gladstone lab) | E. coli group 2+3 capsular polysaccharide loci（Kaptive；cluster，GPL-3.0，抓取时下载） | nucl |
 
 蛋白质数据库（`bacmet2`）经 `blastx` 筛查；核苷酸数据库经 `blastn`。基因簇数据库
 经 minimap2 基因簇引擎筛查（[screen.md](./screen.md)）。
@@ -216,7 +222,7 @@ Kaptive 提供商一节）。
 
 七个 kaptive 提供商封装了 [Kaptive](https://github.com/klebgenomics/Kaptive) 的参考
 数据库（Wyres et al., J Clin Microbiol 2020：使用这些数据库的结果请引用
-Kaptive）。提供商名称就是 Kaptive v3 数据库文档中的**官方安装关键字**
+Kaptive）。数据库名（NAME）就是 Kaptive v3 数据库文档中的**官方安装关键字**
 （[Available databases](https://klebgenomics.github.io/Kaptive/db/overview.html#available-databases)），
 每个提供商直接从持续维护的按物种上游仓库的 `main` 头部抓取原始 GenBank 文件 ——
 `klebgenomics/KpSC_surface_antigen_loci`（`kpsc_k`、`kpsc_o`）、
@@ -235,25 +241,23 @@ null）；你得到 kaptive 风格的最佳位点判定，之后可以用 `gapit
 
 ## 抓取数据库
 
-### 内置快照，零网络
+### 默认集合
 
-不带名字的 `gapit db fetch` 会从包内快照安装默认集合：先 `card` 后 `vfdb`。完全不
-碰网络：快照档案携带 `records.jsonl` 和 manifest，gapit 在本地重建 `sequences` 和
-BLAST 索引。重建是确定且快速的，并且与你机器上实际安装的 BLAST 版本匹配。
+`gapit db fetch all` 安装默认集合：先 `card` 后 `vfdb`。与其他所有提供商一
+样，它从上游下载、变换记录、并在本地构建 `sequences` 和 BLAST 索引——因此索引永远
+与你机器上实际安装的 BLAST 版本匹配。需要网络。不带参数的 `gapit db fetch`
+只打印命令帮助：多库下载必须显式指定（`all` 或单个 NAME），绝不因省略参数而隐式
+触发。
 
-内置数据不会腐坏：一个定时工作流
-（`.github/workflows/snapshot-refresh.yml`）每月从上游重新抓取 card 和 vfdb，记录
-有变化时就开一个 pull request。那个 PR 就是评审关卡：数据更新由人签字后才能合并。
-GitHub Actions 之外，`gapit db fetch <name> --from-source` 仍是手动走上游的路径。
+### 抓取指定数据库
 
-### 抓取指定提供商
-
-`gapit db fetch <name>` 对单个提供商跑完整流水线。下面是从内置快照安装 `card`
+`gapit db fetch <name>` 对单个数据库跑完整流水线。下面是安装 `card`
 （stderr 进度行，随后 stdout 一行 JSON 回执）：
 
 ```console
 $ gapit db fetch --datadir /tmp/opencode/gapit-dbs-demo card
-gapit: installed card from bundled snapshot card.tar.gz
+gapit: downloaded 1 source file(s)
+gapit: read 6059 records from card
 gapit: generated /tmp/opencode/gapit-dbs-demo/card/sequences
 gapit: self-check passed for card
 gapit: BLAST index built (nucl)
@@ -262,20 +266,20 @@ gapit: BLAST index built (nucl)
 
 | 回执字段 | 类型 | 含义 |
 |---|---|---|
-| `db` | string | 提供商名称 |
+| `db` | string | 数据库名（NAME） |
 | `records` | integer | 写入 `records.jsonl` 的记录数 |
 | `dbtype` | string | `nucl` 或 `prot` |
 | `destination` | string | 安装后的数据库目录 |
 
-没有内置快照的提供商在抓取时从上游下载，需要网络。未知名字在解析数据目录之前就会
-被拒绝：
+每个数据库在抓取时从其上游来源下载，因此需要网络。未知名字在解析数据目录之
+前就会被拒绝：
 
 ```console
 $ gapit db fetch nosuchdb
-{"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown provider: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"provider":"nosuchdb"}}
+{"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
 ```
 
-### 重新抓取与强制走上游
+### 重新抓取
 
 已有的数据库目录永远不会被静默覆盖。不带参数重新抓取会以退出码 4 失败：
 
@@ -291,31 +295,28 @@ $ gapit db fetch --datadir /tmp/opencode/gapit-dbs-demo --force card
 {"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/opencode/gapit-dbs-demo/card"}
 ```
 
-`--from-source` 跳过内置快照，即使快照存在也强制走上游下载。反过来，提供商没有快
-照档案时，抓取会自动落到网络路径。
-
 ## 安装本地文件
 
 `gapit db install SOURCE --sha256 HASH --output TARGET` 是带校验的本地文件安装。它
-对提供商、档案、序列内容一无所知：把 SOURCE 流式过 SHA256，与 `--sha256` 比对摘
+对提供商目录、档案、序列内容一无所知：把 SOURCE 流式过 SHA256，与 `--sha256` 比对摘
 要，通过后才原子替换 TARGET。校验失败时已有的 TARGET 不受影响。
 
 ```console
-$ sha256sum src/gapit/data/snapshots/card.tar.gz
-65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025  src/gapit/data/snapshots/card.tar.gz
-$ gapit db install src/gapit/data/snapshots/card.tar.gz \
+$ sha256sum card.json
+65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025  card.json
+$ gapit db install card.json \
     --sha256 65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025 \
-    --output /tmp/opencode/card-copy.tar.gz
-{"destination":"/tmp/opencode/card-copy.tar.gz","sha256":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}
+    --output /tmp/opencode/card-copy.json
+{"destination":"/tmp/opencode/card-copy.json","sha256":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}
 ```
 
 摘要错误以退出码 5 中止：
 
 ```console
-$ gapit db install src/gapit/data/snapshots/card.tar.gz \
+$ gapit db install card.json \
     --sha256 0000000000000000000000000000000000000000000000000000000000000000 \
-    --output /tmp/opencode/card-bad.tar.gz
-{"schema":"gapit.error/1","code":"CHECKSUM_MISMATCH","message":"SHA256 mismatch for src/gapit/data/snapshots/card.tar.gz","context":{"source":"src/gapit/data/snapshots/card.tar.gz","expected":"0000000000000000000000000000000000000000000000000000000000000000","actual":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}}
+    --output /tmp/opencode/card-bad.json
+{"schema":"gapit.error/1","code":"CHECKSUM_MISMATCH","message":"SHA256 mismatch for card.json","context":{"source":"card.json","expected":"0000000000000000000000000000000000000000000000000000000000000000","actual":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}}
 ```
 
 ## gapit 构建的数据库里有什么
@@ -385,7 +386,7 @@ manifest，来自 plasmidfinder 数据库：
 | `dbtype` | string | `nucl` 或 `prot`，构建时显式选择 |
 | `header_format` | string | gapit 构建的数据库恒为 `gapit/v1` |
 | `upstream_version` | string | 源有版本标签时的上游版本名 |
-| `license` | string | 数据库内容许可证，仅提供商声明时出现（kaptive：`GPL-3.0 (database content)`） |
+| `license` | string | 数据库内容许可证，仅提供商声明时出现（kaptive：`GPL-3.0 (database content)`；card：McMaster 非商业条款；vfdb：`CC BY-NC 4.0`） |
 | `note` | string | 自由文本来源说明（kaptive：源文件 + 引用），设置时才出现 |
 | `tool` | object | 构建数据库的 gapit 的 `{name, version}` |
 | `makeblastdb_version` | string | 构建索引的 BLAST+ 版本 |

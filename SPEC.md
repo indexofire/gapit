@@ -410,10 +410,12 @@ path and is not exercised by the offline suite.
 - `gapit db fetch NAME [--datadir D] [--force] [--quiet]` — full pipeline into
   `<datadir>/NAME`; stdout = one-line JSON receipt `{db, records, dbtype, destination}`;
   unknown NAME → UsageError exit 2 (registry lookup precedes datadir resolution).
-- `gapit db list [--datadir D] [--json]` — `PROVIDER STATUS DBTYPE DESCRIPTION` table
-  (`installed (N)` iff `<datadir>/<name>/gapit-manifest.json` exists, else `available`),
-  or `gapit.dblist/1` JSON (`providers[]`: `name`, `description`, `dbtype`, `installed`,
-  `records` omitted when unset). Module-local schema, deliberately NOT in `gapit schema`.
+- `gapit db list [--datadir D] [--json]` — `NAME PROVIDER STATUS DBTYPE DESCRIPTION`
+  table (NAME = the `--db` value, PROVIDER = upstream maintainer org; `installed (N)`
+  iff `<datadir>/<name>/gapit-manifest.json` exists, else `available`),
+  or `gapit.dblist/1` JSON (`providers[]`: `name`, `vendor`, `description`, `dbtype`,
+  `installed`, `records` omitted when unset). Module-local schema, deliberately NOT in
+  `gapit schema`.
 - `gapit db install SOURCE --sha256 HASH --output TARGET` — verified LOCAL-FILE install
   only (no network, no providers, no archives): streaming SHA256, atomic replace after the
   digest verifies; stdout receipt `{destination, sha256}`; mismatch → InputError
@@ -449,22 +451,15 @@ to the `func=` header key and onward to the outputs):
 The TSV `RESISTANCE` / JSON `resistance` output names are frozen and carry these
 functional categories for native DBs.
 
-### Bundled snapshots
+### Download-on-fetch (no bundled content)
 
-- card and vfdb ship as **bundled snapshots** inside the wheel
-  (`src/gapit/data/snapshots/<name>.tar.gz`, Wave G): `gapit db fetch NAME` installs
-  them with zero network. All other providers keep the upstream fetch;
-  `--from-source` forces the upstream download even when a snapshot exists, and a
-  missing/unresolvable archive falls back to the network path silently.
-- Archive layout (frozen): `<name>.tar.gz` containing exactly `records.jsonl` +
-  `gapit-manifest.json` from an installed db dir. Snapshots carry
-  **post-normalize records** — never BLAST/minimap2 indexes (index bytes are
-  BLAST-version-sensitive; a local rebuild from records is deterministic and
-  fast). Archives are built deterministically: sorted entry names, PAX format,
-  gzip mtime 0 → byte-identical rebuilds. The installed manifest rebuilds
-  `fetched_at`/`sha256`/tool versions locally; only `upstream_version` is
-  inherited from the archived manifest.
-- Bare `gapit db fetch` (no NAME) installs the default set `("card", "vfdb")` in
-  order, one JSON receipt line per db on stdout. Adding a future bundled DB =
-  dropping a `<name>.tar.gz` into the snapshots dir + setting `snapshot=` on the
-  provider (one line).
+- **Nothing is bundled.** Every provider — card and vfdb included — downloads
+  from its upstream source at fetch time and builds locally (license
+  compliance, 2026-09 audit: CARD's McMaster terms are non-commercial and
+  forbid redistribution; VFDB content is CC BY-NC; ecoli_vf content is
+  VFDB-derived per its own README; the kaptive cluster content is GPL-3.0).
+- Bare `gapit db fetch` (no NAME) installs the default set `("card", "vfdb")`
+  in order, one JSON receipt line per db on stdout — over the network like
+  any named fetch.
+- Providers that pin a content license expose it via `gapit db list --json`
+  (`license` field) and stamp it into the build manifest (kaptive precedent).

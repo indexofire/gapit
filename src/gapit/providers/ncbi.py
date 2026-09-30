@@ -93,11 +93,11 @@ def transform(workdir: Path) -> Iterator[Record]:
 PROVIDER = Provider(
     name=NAME,
     description="NCBI AMRFinderPlus (reference finder) curated AMR",
+    vendor="NCBI",
     source_urls=(
         f"{_LATEST}/AMR_CDS.fa",
         f"{_LATEST}/ReferenceGeneCatalog.txt",
     ),
     dbtype="nucl",
     transform=transform,
-    snapshot=None,
 )

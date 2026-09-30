@@ -44,12 +44,10 @@ gapit-mcp = "gapit.mcp:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gapit"]
-# Hatchling's `packages` selection ships EVERY non-gitignored file under the
-# package dir (no setuptools-style package_data needed): the bundled DB
-# snapshots in src/gapit/data/snapshots/*.tar.gz ride the wheel as committed
-# package files (Wave G). Verified: .gitignore carries no *.tar.gz pattern.
-# A force-include mapping is deliberately NOT used — it fails the build while
-# the source directory does not exist yet.
+# Hatchling's `packages` selection ships every non-gitignored file under the
+# package dir (no setuptools-style package_data needed). No database content
+# rides the wheel: every provider downloads from upstream at fetch time
+# (license compliance — CARD/VFDB terms forbid redistribution).
 
 [tool.ruff]
 src = ["src"]

@@ -253,5 +253,5 @@ def screen_command(
 
 
 def register_screen_command(app: typer.Typer) -> None:
-    """Attach the screen command to the CLI app."""
-    app.command("screen")(screen_command)
+    """Attach the screen command to the CLI app (bare invocation prints help)."""
+    app.command("screen", no_args_is_help=True)(screen_command)

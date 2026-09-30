@@ -41,8 +41,8 @@ transcribed from the live `tools/list` `inputSchema` objects.
 | `screen_reads` | `r1` (array of strings, required — one path per lane), `r2` (array of strings, same count as `r1`), `read_type` (string: `sr` \| `map-ont` \| `map-hifi`, default `sr`), `min_breadth` (number 0–100, default `90`), `min_identity` (number 0–100, default `0`), `min_mapq` (integer ≥ 0, default `0`), `format` (string: `json` \| `md`, default `json`), `db` (string, default `ncbi`), `datadir` (string) | `gapit.reads/1` JSON by default or Markdown per `format`; `min_identity`/`min_mapq` > 0 switches to `gapit.reads/2` |
 | `summary` | `files` (array of report table paths, required), `identity` (boolean), `nopath` (boolean) | `gapit.summary/1` JSON |
 | `schema` | `name` (string, required, one of `cluster`, `error`, `features`, `reads`, `reads2`, `report`, `summary`, `typing`, `version`) | The JSON Schema of that output document |
-| `db_list` | none | `gapit.dblist/1`: provider names, install state, record counts |
-| `db_fetch` | `name` (string), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line per database (`db`, `records`, `dbtype`, `destination`). Name omitted: the card+vfdb default set from bundled snapshots. Network installs can take minutes |
+| `db_list` | none | `gapit.dblist/1`: database names, install state, record counts |
+| `db_fetch` | `name` (string, required — a database NAME, or `all` for the card+vfdb default set), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line per database (`db`, `records`, `dbtype`, `destination`). Every database downloads from its upstream provider, so installs need network and can take minutes |
 | `db_build` | `name` (string, required), `fasta` (string, required — a LOCAL filesystem path), `tsv` (string), `dbtype` (string: `nucl` \| `prot`), `description` (string), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line (`db`, `records`, `dbtype`, `destination`) |
 | `db_search` | `term` (string, required), `db` (string), `field` (string: `gene` \| `accession` \| `function` \| `product` \| `any`, default `any`), `exact` (boolean, default `false`), `limit` (integer ≥ 0, default `100`; `0` = unlimited), `datadir` (string) | TSV hit rows with columns `DB`, `GENE`, `ACCESSION`, `FUNCTION`, `PRODUCT`, `LENGTH` |
 | `db_outdated` | `days` (integer ≥ 0, default `90`), `datadir` (string) | TSV rows with columns `NAME`, `FETCHED_AT`, `AGE_DAYS`, `STATUS` |
@@ -277,8 +277,8 @@ hit is the gene the agent just built the database from (real output):
 }
 ```
 
-The same session pattern works with `db_fetch` (installs card+vfdb from the
-bundled snapshots when `name` is omitted) and `db_search`/`db_outdated` for
+The same session pattern works with `db_fetch` (`name` `all` installs the
+card+vfdb default set) and `db_search`/`db_outdated` for
 inspection. Custom database construction rules (header kinds, `--tsv`
 metadata): `./custom-db.md`.
 

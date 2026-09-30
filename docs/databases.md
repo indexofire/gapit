@@ -22,28 +22,31 @@ $ gapit db list --datadir /no/such/dir
 
 ## Listing what's installed
 
-`gapit db list` shows every known provider and whether it is installed:
+`gapit db list` shows every known database and whether it is installed:
 
 ```console
 $ gapit db list
-PROVIDER	STATUS	DBTYPE	DESCRIPTION
-argannot	installed (2224)	nucl	ARG-ANNOT acquired resistance genes
-bacmet2	installed (746)	prot	BacMet2 experimentally confirmed biocide/resistance genes (protein)
-card	installed (6059)	nucl	CARD protein homolog resistance models
-ecoh	installed (597)	nucl	E. coli O and H antigens (srst2 EcOH)
-ecoli_vf	installed (2701)	nucl	E. coli virulence factors (phac-nml)
-megares	installed (7425)	nucl	MEGARes antimicrobial resistance genes
-ncbi	installed (8373)	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
-plasmidfinder	installed (488)	nucl	CGE PlasmidFinder replicons
-resfinder	installed (3206)	nucl	CGE ResFinder acquired resistance genes
-upec_expec_vf	installed (77)	nucl	UPEC/ExPEC virulence genes (FordeGenomics)
-vfdb	installed (4769)	nucl	VFDB virulence factors (set A, nucleotide)
-victors	installed (4402)	nucl	Victors virulence factors
+NAME	PROVIDER	STATUS	DBTYPE	DESCRIPTION
+argannot	IHU Méditerranée-Infection	installed (2224)	nucl	ARG-ANNOT acquired resistance genes
+bacmet2	University of Gothenburg	installed (746)	prot	BacMet2 experimentally confirmed biocide/resistance genes (protein)
+card	McMaster University	installed (6059)	nucl	CARD protein homolog resistance models
+ecoh	Holt lab (srst2)	installed (597)	nucl	E. coli O and H antigens (srst2 EcOH)
+ecoli_vf	PHAC-NML	installed (2701)	nucl	E. coli virulence factors (phac-nml)
+megares	MEG Lab	installed (7425)	nucl	MEGARes antimicrobial resistance genes
+ncbi	NCBI	installed (8373)	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
+plasmidfinder	DTU CGE	installed (488)	nucl	CGE PlasmidFinder replicons
+resfinder	DTU CGE	installed (3206)	nucl	CGE ResFinder acquired resistance genes
+upec_expec_vf	FordeGenomics	installed (77)	nucl	UPEC/ExPEC virulence genes (FordeGenomics)
+vfdb	USTC (VFDB)	installed (4769)	nucl	VFDB virulence factors (set A, nucleotide)
+victors	University of Chicago	installed (4402)	nucl	Victors virulence factors
 ```
 
-STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json` exists, with N the
-record count, otherwise `available`. For agents, `--json` emits a `gapit.dblist/1` document
-(first three of twelve providers shown, output trimmed):
+NAME is the database name you pass to `--db`; PROVIDER names the upstream maintainer
+organisation. STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`
+exists, with N the record count, otherwise `available`. On an interactive terminal the
+same rows render as a styled rich table; piped or redirected output always stays the
+plain TSV above. For agents, `--json` emits a `gapit.dblist/1` document
+(first three entries shown, output trimmed):
 
 ```console
 $ gapit db list --json
@@ -52,6 +55,7 @@ $ gapit db list --json
   "providers": [
     {
       "name": "argannot",
+      "vendor": "IHU Méditerranée-Infection",
       "description": "ARG-ANNOT acquired resistance genes",
       "dbtype": "nucl",
       "installed": true,
@@ -59,6 +63,7 @@ $ gapit db list --json
     },
     {
       "name": "bacmet2",
+      "vendor": "University of Gothenburg",
       "description": "BacMet2 experimentally confirmed biocide/resistance genes (protein)",
       "dbtype": "prot",
       "installed": true,
@@ -66,6 +71,7 @@ $ gapit db list --json
     },
     {
       "name": "card",
+      "vendor": "McMaster University",
       "description": "CARD protein homolog resistance models",
       "dbtype": "nucl",
       "installed": true,
@@ -78,22 +84,24 @@ $ gapit db list --json
 | Field | Type | Meaning |
 |---|---|---|
 | `schema` | string | Always `gapit.dblist/1` |
-| `providers` | array | One entry per provider |
-| `providers[].name` | string | Provider name, as passed to `gapit db fetch` |
+| `providers` | array | One entry per known database |
+| `providers[].name` | string | Database name, as passed to `--db` / `gapit db fetch` |
+| `providers[].vendor` | string | Upstream maintainer organisation (NCBI, DTU CGE, Kaptive (klebgenomics), ...) |
 | `providers[].description` | string | Short content summary |
 | `providers[].dbtype` | string | `nucl` (screened with blastn) or `prot` (screened with blastx) |
 | `providers[].installed` | boolean | True when a manifest exists in the datadir |
 | `providers[].records` | integer | Record count, omitted when the database isn't installed |
+| `providers[].license` | string | Upstream content license, omitted unless the provider pins one (card, vfdb, ecoli_vf, kaptive) |
 
-`gapit db list` is the single listing surface: the provider catalog above, with `--json`
+`gapit db list` is the single listing surface: the database catalog above, with `--json`
 returning the `gapit.dblist/1` document. (The former standalone listing command and its
 schema were removed; abricate `--list` byte-parity is intentionally dropped for this
 surface.) See [outputs.md](./outputs.md).
 
 ## Checking database freshness
 
-`gapit db outdated` reports every installed database's age and flags two update conditions.
-Against a fully installed datadir (output trimmed to three of twelve rows):
+`gapit db outdated` reports every installed database's age against the staleness
+threshold. Against a fully installed datadir (output trimmed to three of twelve rows):
 
 ```console
 $ gapit db outdated --days 30
@@ -104,20 +112,18 @@ card	2026-09-17T23:14:25Z	2.58	ok
 ...
 ```
 
-A database installed long ago and superseded by the bundled snapshot reports both flags:
+A database installed long ago simply reports `stale`:
 
 ```console
 $ gapit db outdated --datadir /tmp/opencode/gapit-outdated-demo
 NAME	FETCHED_AT	AGE_DAYS	STATUS
-card	2020-01-01T00:00:00Z	2454.55	stale+snapshot-update
+card	2020-01-01T00:00:00Z	2454.55	stale
 ```
 
 | Status | Meaning |
 |---|---|
-| `ok` | Fresh enough and no newer bundle |
+| `ok` | Within the threshold |
 | `stale` | `age_days` past `--days` (default 90; `--days 0` marks everything stale) |
-| `snapshot-update` | The provider's bundled snapshot is newer than the installed copy (card, vfdb) |
-| `stale+snapshot-update` | Both of the above |
 
 Staleness is a report, never an error state: the command exits 0 however stale things are.
 Exit 4 (`DATADIR_NOT_FOUND`, `DATADIR_EMPTY`) covers a missing datadir or one with no installed
@@ -184,32 +190,34 @@ unknown `--db NAME` is a usage error (exit 2) listing what is installed.
 
 ## Providers
 
-Nineteen providers ship with gapit. `card` and `vfdb` also ship as bundled snapshots inside
-the package, so they install with zero network access. The seven kaptive providers are
-**cluster** databases (downloaded and built at fetch time; GPL content is never bundled —
+Nineteen providers ship with gapit. Every one of them — `card` and `vfdb` included —
+downloads from its upstream source at fetch time: nothing is bundled inside the package,
+because several upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's
+GPL-3.0) forbid redistribution inside an MIT-licensed distribution. The seven kaptive
+providers are **cluster** databases (built through the cluster pipeline at fetch time —
 see [Kaptive providers](#kaptive-providers-gpl-downloaded-on-fetch)).
 
-| Name | Content | dbtype |
-|---|---|---|
-| `ncbi` | NCBI AMRFinderPlus (reference finder) curated AMR (default db) | nucl |
-| `card` | CARD protein homolog resistance models | nucl |
-| `resfinder` | CGE ResFinder acquired resistance genes | nucl |
-| `argannot` | ARG-ANNOT acquired resistance genes | nucl |
-| `plasmidfinder` | CGE PlasmidFinder replicons | nucl |
-| `megares` | MEGARes antimicrobial resistance genes | nucl |
-| `ecoh` | E. coli O and H antigens (srst2 EcOH) | nucl |
-| `vfdb` | VFDB virulence factors (set A, nucleotide) | nucl |
-| `ecoli_vf` | E. coli virulence factors (phac-nml) | nucl |
-| `bacmet2` | BacMet2 experimentally confirmed biocide/resistance genes (protein) | prot |
-| `victors` | Victors virulence factors | nucl |
-| `upec_expec_vf` | UPEC/ExPEC virulence genes (FordeGenomics) | nucl |
-| `kpsc_k` | K. pneumoniae species complex K locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
-| `kpsc_o` | K. pneumoniae species complex O locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
-| `kosc_k` | K. oxytoca species complex K locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
-| `kosc_o` | K. oxytoca species complex O locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
-| `ab_k` | A. baumannii K locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
-| `ab_o` | A. baumannii OC locus — official keyword `ab_o` (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
-| `ecoli_kps` | E. coli group 2+3 capsular polysaccharide loci (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| Name | Maintainer | Content | dbtype |
+|---|---|---|---|
+| `ncbi` | NCBI | NCBI AMRFinderPlus (reference finder) curated AMR (default db) | nucl |
+| `card` | McMaster University | CARD protein homolog resistance models | nucl |
+| `resfinder` | DTU CGE | CGE ResFinder acquired resistance genes | nucl |
+| `argannot` | IHU Méditerranée-Infection | ARG-ANNOT acquired resistance genes | nucl |
+| `plasmidfinder` | DTU CGE | CGE PlasmidFinder replicons | nucl |
+| `megares` | MEG Lab | MEGARes antimicrobial resistance genes | nucl |
+| `ecoh` | Holt lab (srst2) | E. coli O and H antigens (srst2 EcOH) | nucl |
+| `vfdb` | USTC (VFDB) | VFDB virulence factors (set A, nucleotide) | nucl |
+| `ecoli_vf` | PHAC-NML | E. coli virulence factors (phac-nml) | nucl |
+| `bacmet2` | University of Gothenburg | BacMet2 experimentally confirmed biocide/resistance genes (protein) | prot |
+| `victors` | University of Chicago | Victors virulence factors | nucl |
+| `upec_expec_vf` | FordeGenomics | UPEC/ExPEC virulence genes (FordeGenomics) | nucl |
+| `kpsc_k` | Kaptive (klebgenomics) | K. pneumoniae species complex K locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `kpsc_o` | Kaptive (klebgenomics) | K. pneumoniae species complex O locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `kosc_k` | Kaptive (klebgenomics) | K. oxytoca species complex K locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `kosc_o` | Kaptive (klebgenomics) | K. oxytoca species complex O locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `ab_k` | Kaptive (Kenyon lab) | A. baumannii K locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `ab_o` | Kaptive (Kenyon lab) | A. baumannii OC locus — official keyword `ab_o` (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `ecoli_kps` | Kaptive (Gladstone lab) | E. coli group 2+3 capsular polysaccharide loci (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
 
 Protein databases (`bacmet2`) screen through `blastx`; nucleotide ones through `blastn`.
 Cluster databases screen through the minimap2 cluster engine
@@ -219,7 +227,7 @@ Cluster databases screen through the minimap2 cluster engine
 
 The seven kaptive providers wrap the reference databases of
 [Kaptive](https://github.com/klebgenomics/Kaptive) (Wyres et al., J Clin Microbiol 2020 —
-please cite Kaptive when you use results from these databases). The provider names are the
+please cite Kaptive when you use results from these databases). The database NAMEs are the
 **official install keywords** from the Kaptive v3 database docs
 ([Available databases](https://klebgenomics.github.io/Kaptive/db/overview.html#available-databases)),
 and each fetches its raw GenBank file from the head (`main`) of the actively curated
@@ -240,28 +248,24 @@ locus calls, and you can later install your own `typing.json` semantics by rebui
 
 ## Fetching databases
 
-### Bundled snapshots, zero network
+### The default set
 
-Bare `gapit db fetch` (no name) installs the default set, `card` then `vfdb`, from the
-snapshots bundled in the package. Nothing touches the network: the snapshot archive carries
-`records.jsonl` plus the manifest, and gapit rebuilds `sequences` and the BLAST index
-locally. That rebuild is deterministic and fast, and it matches the BLAST
-version actually installed on your machine.
+`gapit db fetch all` installs the default set, `card` then `vfdb`. Like every
+provider it downloads from upstream, transforms the records, and builds `sequences` plus
+the BLAST index locally — so the index always matches the BLAST version actually
+installed on your machine. Network access is required. A bare `gapit db fetch` prints the
+command help: a multi-database download is always named explicitly (`all` or a single
+NAME), never implied by an omitted argument.
 
-The bundled data does not rot: a scheduled workflow
-(`.github/workflows/snapshot-refresh.yml`) re-fetches card and vfdb from upstream monthly
-and opens a pull request whenever the records changed. That PR is the review gate — a human
-signs off on the data update before the new tars merge. Outside GitHub Actions,
-`gapit db fetch <name> --from-source` remains the manual upstream path.
+### Fetching a named database
 
-### Fetching a named provider
-
-`gapit db fetch <name>` runs the full pipeline for one provider. Here is `card` from its
-bundled snapshot (stderr progress lines, then a one-line JSON receipt on stdout):
+`gapit db fetch <name>` runs the full pipeline for one database. Here is `card`
+(stderr progress lines, then a one-line JSON receipt on stdout):
 
 ```console
 $ gapit db fetch --datadir /tmp/opencode/gapit-dbs-demo card
-gapit: installed card from bundled snapshot card.tar.gz
+gapit: downloaded 1 source file(s)
+gapit: read 6059 records from card
 gapit: generated /tmp/opencode/gapit-dbs-demo/card/sequences
 gapit: self-check passed for card
 gapit: BLAST index built (nucl)
@@ -270,20 +274,20 @@ gapit: BLAST index built (nucl)
 
 | Receipt field | Type | Meaning |
 |---|---|---|
-| `db` | string | Provider name |
+| `db` | string | Database name (NAME) |
 | `records` | integer | Records written to `records.jsonl` |
 | `dbtype` | string | `nucl` or `prot` |
 | `destination` | string | Installed database directory |
 
-Providers without a bundled snapshot download from their upstream source at fetch time, so
-they need network access. Unknown names are rejected before the datadir is even resolved:
+Every database downloads from its upstream source at fetch time, so fetches need network
+access. Unknown names are rejected before the datadir is even resolved:
 
 ```console
 $ gapit db fetch nosuchdb
-{"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown provider: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"provider":"nosuchdb"}}
+{"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
 ```
 
-### Refetching and forcing upstream
+### Refetching
 
 An existing database directory is never overwritten silently. Refetching without flags
 fails with exit 4:
@@ -300,33 +304,29 @@ $ gapit db fetch --datadir /tmp/opencode/gapit-dbs-demo --force card
 {"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/opencode/gapit-dbs-demo/card"}
 ```
 
-`--from-source` skips the bundled snapshot and forces the upstream download even when a
-snapshot exists. Conversely, if a provider has no snapshot archive, the fetch falls back to
-the network path on its own.
-
 ## Installing a local file
 
 `gapit db install SOURCE --sha256 HASH --output TARGET` is a verified local-file install.
-It knows nothing about providers, archives, or sequence content: it streams SOURCE through
+It knows nothing about the provider catalog, archives, or sequence content: it streams SOURCE through
 SHA256, compares the digest against `--sha256`, and only then atomically replaces TARGET.
 A failed check leaves any existing TARGET untouched.
 
 ```console
-$ sha256sum src/gapit/data/snapshots/card.tar.gz
-65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025  src/gapit/data/snapshots/card.tar.gz
-$ gapit db install src/gapit/data/snapshots/card.tar.gz \
+$ sha256sum card.json
+65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025  card.json
+$ gapit db install card.json \
     --sha256 65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025 \
-    --output /tmp/opencode/card-copy.tar.gz
-{"destination":"/tmp/opencode/card-copy.tar.gz","sha256":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}
+    --output /tmp/opencode/card-copy.json
+{"destination":"/tmp/opencode/card-copy.json","sha256":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}
 ```
 
 A wrong digest aborts with exit 5:
 
 ```console
-$ gapit db install src/gapit/data/snapshots/card.tar.gz \
+$ gapit db install card.json \
     --sha256 0000000000000000000000000000000000000000000000000000000000000000 \
-    --output /tmp/opencode/card-bad.tar.gz
-{"schema":"gapit.error/1","code":"CHECKSUM_MISMATCH","message":"SHA256 mismatch for src/gapit/data/snapshots/card.tar.gz","context":{"source":"src/gapit/data/snapshots/card.tar.gz","expected":"0000000000000000000000000000000000000000000000000000000000000000","actual":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}}
+    --output /tmp/opencode/card-bad.json
+{"schema":"gapit.error/1","code":"CHECKSUM_MISMATCH","message":"SHA256 mismatch for card.json","context":{"source":"card.json","expected":"0000000000000000000000000000000000000000000000000000000000000000","actual":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}}
 ```
 
 ## What's inside a gapit-built database
@@ -397,7 +397,7 @@ versions. A real one, from the plasmidfinder database:
 | `dbtype` | string | `nucl` or `prot`, chosen explicitly at build time |
 | `header_format` | string | Always `gapit/v1` for gapit-built databases |
 | `upstream_version` | string | Upstream release label when the source has one |
-| `license` | string | Database-content license, present only when the provider declares one (kaptive: `GPL-3.0 (database content)`) |
+| `license` | string | Database-content license, present only when the provider declares one (kaptive: `GPL-3.0 (database content)`; card: McMaster non-commercial terms; vfdb: `CC BY-NC 4.0`) |
 | `note` | string | Free-text provenance note (kaptive: source file + citation), present only when set |
 | `tool` | object | `{name, version}` of the gapit that built the database |
 | `makeblastdb_version` | string | BLAST+ version that built the index |

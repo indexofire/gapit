@@ -52,8 +52,8 @@ def transform(workdir: Path) -> Iterable[Record]:
 PROVIDER = Provider(
     name=_NAME,
     description="BacMet2 experimentally confirmed biocide/resistance genes (protein)",
+    vendor="University of Gothenburg",
     source_urls=("http://bacmet.biomedicine.gu.se/download/BacMet2_EXP_database.fasta",),
     dbtype="prot",
     transform=transform,
-    snapshot=None,
 )

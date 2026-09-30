@@ -56,11 +56,11 @@ gapit screen --r1 ont_reads.fastq.gz --read-type map-ont --format json
 # Summarize report tables into a gene presence/absence matrix
 gapit summary *.tsv
 
-# Databases: card + vfdb install offline from bundled snapshots, others fetch on demand
-gapit db fetch
+# Databases: every database downloads from upstream on first fetch
+gapit db fetch all         # default set (card, vfdb)
 gapit db fetch ncbi
 gapit db list
-gapit db outdated                # flag stale databases and newer bundled snapshots
+gapit db outdated                # flag databases older than the staleness threshold
 gapit db search "tet(M)"         # look up genes across every installed database
 gapit db build mydb my_genes.fa --tsv my_meta.tsv   # custom db from any FASTA
 
@@ -74,9 +74,11 @@ presence defaults to 90% alignment breadth (`--min-breadth 90`).
 ## Databases
 
 A database is a directory under the datadir, resolved from `$GAPIT_DATADIR`, then
-`~/.local/share/gapit/db` (override per call with `--datadir`). Twelve providers exist;
-`card` and `vfdb` ship inside the wheel and install with zero network, the rest download
-from upstream when fetched.
+`~/.local/share/gapit/db` (override per call with `--datadir`). Twelve databases are built
+into the catalog; all of them download from upstream and build on `gapit db fetch` — nothing
+is bundled inside the package, because several upstream licenses (CARD's McMaster terms,
+VFDB's CC BY-NC, Kaptive's GPL-3.0) forbid redistribution inside an MIT-licensed
+distribution.
 
 | Name | Content | dbtype |
 |---|---|---|
@@ -101,7 +103,8 @@ Gene **cluster** databases are a second kind: `gapit db build NAME loci.gbk|gff3
 `kind: cluster` db (locus calls via minimap2, optional `--typing FILE` phenotype scoring),
 and the seven Kaptive cluster databases (kpsc_k, kpsc_o, kosc_k, kosc_o, ab_k, ab_o,
 ecoli_kps) fetch the Kaptive antigen-locus references at install time (GPL-3.0 content, so
-nothing is bundled — cite Kaptive/Wyres et al. 2020 for results).
+nothing is bundled — cite Kaptive/Wyres et al. 2020 for results). `gapit db list --json`
+surfaces each provider's content license where one is pinned.
 
 ## Output contract
 
@@ -149,7 +152,7 @@ Register it with an MCP client:
 | `pixi run lint` | ruff check |
 | `pixi run fmt` | ruff format |
 | `pixi run typecheck` | basedpyright (strict) |
-| `pixi run test` | pytest, 778 offline tests |
+| `pixi run test` | pytest, 776 offline tests |
 | `pixi run -e parity parity` | byte-diff screening vs real abricate |
 | `pixi run -e parity summary-parity` | byte-diff summary vs real abricate |
 
@@ -162,5 +165,6 @@ guide, `CHANGELOG.md` the change history.
 ## License
 
 gapit is MIT-licensed. It is a behavioral reimplementation of abricate (GPL-2.0) and
-copies no Perl code; abricate itself remains GPL-2.0. Bundled database content retains
-its original upstream licenses (SPEC.md §9).
+copies no Perl code; abricate itself remains GPL-2.0. No database content ships inside
+the package: every provider downloads from upstream at fetch time, under its own
+license (SPEC.md §9).

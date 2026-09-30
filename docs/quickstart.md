@@ -22,19 +22,19 @@ makeblastdb -in /tmp/gapit-quickstart/db/tinyamr/sequences \
 export GAPIT_DATADIR=/tmp/gapit-quickstart/db
 ```
 
-`gapit db list` shows the provider catalog and install state (trimmed below; `--json`
+`gapit db list` shows the database catalog and install state (trimmed below; `--json`
 returns the `gapit.dblist/1` document). The fixture `tinyamr` is a plain custom database,
-not a provider, so it does not appear there — the screen in the next section confirms it
+not a catalog database, so it does not appear there — the screen in the next section confirms it
 is usable:
 
 ```console
 $ gapit db list
-PROVIDER	STATUS	DBTYPE	DESCRIPTION
-argannot	available	nucl	ARG-ANNOT acquired resistance genes
-ncbi	available	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
+NAME	PROVIDER	STATUS	DBTYPE	DESCRIPTION
+argannot	IHU Méditerranée-Infection	available	nucl	ARG-ANNOT acquired resistance genes
+ncbi	NCBI	available	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
 ```
 
-(twelve providers in total, all `available` in this throwaway datadir)
+(twelve catalog databases in total, all `available` in this throwaway datadir)
 
 ## 2. Screen a contig file
 

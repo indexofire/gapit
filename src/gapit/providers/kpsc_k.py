@@ -25,6 +25,7 @@ NAME = "kpsc_k"
 PROVIDER = ClusterProvider(
     name=NAME,
     description="K. pneumoniae species complex K locus (Kaptive)",
+    vendor="Kaptive (klebgenomics)",
     source_urls=(
         "https://raw.githubusercontent.com/klebgenomics/"
         "KpSC_surface_antigen_loci/main/"

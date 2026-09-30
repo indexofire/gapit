@@ -9,10 +9,10 @@ git 克隆安装（二进制由它代管）。
 pip install gapit
 ```
 
-wheel 里打包了 Python 包、`gapit`/`gapit-mcp` console script，以及离线的
-`card`/`vfdb` 快照。它**不**打包 BLAST+ 和 minimap2：请先装好它们（见下文
-"外部二进制"一节，例如 `conda create -n gapit-env -c
-bioconda blast minimap2`）。
+wheel 里打包了 Python 包和 `gapit`/`gapit-mcp` console script——不含任何数据库内容
+（每个提供商都在抓取时从上游下载；多家上游许可禁止再分发）。它也**不**打包
+BLAST+ 和 minimap2：请先装好它们（见下文 "外部二进制" 一节，例如
+`conda create -n gapit-env -c bioconda blast minimap2`）。
 
 ## 从源码安装（pixi）
 
@@ -59,31 +59,35 @@ GenBank、EMBL）是原生的，不需要 `any2fasta`。
 ## 数据库引导
 
 筛查需要数据目录（`$GAPIT_DATADIR`，然后是 `~/.local/share/gapit/db`；可用
-`--datadir` 逐次覆盖）里至少有一个数据库。`card` 和 `vfdb` 随包内置、零网络安装；
-其他提供商在抓取时从上游下载。完整的提供商表见[数据库](./databases.md)。
+`--datadir` 逐次覆盖）里至少有一个数据库。没有任何内容随包内置：每个提供商都在
+抓取时从上游下载（需要网络），因为多家上游许可——CARD 的 McMaster 条款、VFDB 的
+CC BY-NC、Kaptive 的 GPL-3.0——禁止随 MIT 许可的包再分发。完整的数据库表见
+[数据库](./databases.md)。
 
 ```bash
-gapit db fetch            # installs the default set (card, vfdb) into the default datadir
+gapit db fetch all         # installs the default set (card, vfdb) into the default datadir
 ```
 
 同样的安装动作放进一个临时数据目录，看看 fetch 会打印什么。进度行走 stderr，每个
 数据库一行 JSON 回执走 stdout：
 
 ```console
-$ gapit db fetch --datadir /tmp/gapit-docs/dd
-gapit: installed card from bundled snapshot card.tar.gz
+$ gapit db fetch all --datadir /tmp/gapit-docs/dd
+gapit: downloaded 1 source file(s)
+gapit: read 6059 records from card
 gapit: generated /tmp/gapit-docs/dd/card/sequences
 gapit: self-check passed for card
 gapit: BLAST index built (nucl)
 {"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/gapit-docs/dd/card"}
-gapit: installed vfdb from bundled snapshot vfdb.tar.gz
+gapit: downloaded 1 source file(s)
+gapit: read 4769 records from vfdb
 gapit: generated /tmp/gapit-docs/dd/vfdb/sequences
 gapit: self-check passed for vfdb
 gapit: BLAST index built (nucl)
 {"db":"vfdb","records":4769,"dbtype":"nucl","destination":"/tmp/gapit-docs/dd/vfdb"}
 ```
 
-随时用 `gapit db list`（或 `gapit db list --json`）确认提供商目录和安装状态。
+随时用 `gapit db list`（或 `gapit db list --json`）确认数据库目录和安装状态。
 
 ## Shell 补全
 
@@ -99,5 +103,5 @@ git pull
 pixi install
 ```
 
-数据库内容不会随代码更新：重新运行 `gapit db fetch <name> --force`，从上游（或其
-内置快照）重建已安装的数据库。
+数据库内容不会随代码更新：重新运行 `gapit db fetch <name> --force`，从上游重建
+已安装的数据库。

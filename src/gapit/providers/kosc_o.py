@@ -25,6 +25,7 @@ NAME = "kosc_o"
 PROVIDER = ClusterProvider(
     name=NAME,
     description="K. oxytoca species complex O locus (Kaptive)",
+    vendor="Kaptive (klebgenomics)",
     source_urls=(
         "https://raw.githubusercontent.com/klebgenomics/"
         "KoSC-surface-antigen-loci/main/"

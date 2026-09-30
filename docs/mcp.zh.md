@@ -38,8 +38,8 @@ shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0�
 | `screen_reads` | `r1`（字符串数组，必填，每条 lane 一个路径）、`r2`（字符串数组，数量与 `r1` 相同）、`read_type`（string：`sr` \| `map-ont` \| `map-hifi`，默认 `sr`）、`min_breadth`（number 0-100，默认 `90`）、`min_identity`（number 0-100，默认 `0`）、`min_mapq`（integer ≥ 0，默认 `0`）、`format`（string：`json` \| `md`，默认 `json`）、`db`（string，默认 `ncbi`）、`datadir`（string） | 默认 `gapit.reads/1` JSON，按 `format` 可为 Markdown；`min_identity`/`min_mapq` > 0 切换为 `gapit.reads/2` |
 | `summary` | `files`（报告表路径数组，必填）、`identity`（boolean）、`nopath`（boolean） | `gapit.summary/1` JSON |
 | `schema` | `name`（string，必填，取值 `cluster`、`error`、`features`、`reads`、`reads2`、`report`、`summary`、`typing`、`version` 之一） | 该输出文档的 JSON Schema |
-| `db_list` | 无 | `gapit.dblist/1`：提供商名称、安装状态、记录数 |
-| `db_fetch` | `name`（string）、`datadir`（string）、`force`（boolean，默认 `false`） | 每个数据库一行 JSON 回执（`db`、`records`、`dbtype`、`destination`）。省略 name：从内置快照安装 card+vfdb 默认集合。网络安装可能耗时数分钟 |
+| `db_list` | 无 | `gapit.dblist/1`：数据库名、安装状态、记录数 |
+| `db_fetch` | `name`（string，必填——数据库名，或 `all` 表示 card+vfdb 默认集合）、`datadir`（string）、`force`（boolean，默认 `false`） | 每个数据库一行 JSON 回执（`db`、`records`、`dbtype`、`destination`）。每个数据库都从其上游提供商下载，安装需要网络且可能耗时数分钟 |
 | `db_build` | `name`（string，必填）、`fasta`（string，必填，本地文件系统路径）、`tsv`（string）、`dbtype`（string：`nucl` \| `prot`）、`description`（string）、`datadir`（string）、`force`（boolean，默认 `false`） | 一行 JSON 回执（`db`、`records`、`dbtype`、`destination`） |
 | `db_search` | `term`（string，必填）、`db`（string）、`field`（string：`gene` \| `accession` \| `function` \| `product` \| `any`，默认 `any`）、`exact`（boolean，默认 `false`）、`limit`（integer ≥ 0，默认 `100`；`0` = 不限）、`datadir`（string） | TSV 命中行，列为 `DB`、`GENE`、`ACCESSION`、`FUNCTION`、`PRODUCT`、`LENGTH` |
 | `db_outdated` | `days`（integer ≥ 0，默认 `90`）、`datadir`（string） | TSV 行，列为 `NAME`、`FETCHED_AT`、`AGE_DAYS`、`STATUS` |
@@ -265,7 +265,7 @@ export GAPIT_DATADIR=/tmp/gapit-mcp-demo/datadir
 }
 ```
 
-同样的会话模式也适用于 `db_fetch`（省略 name 时从内置快照安装 card+vfdb）以及用于
+同样的会话模式也适用于 `db_fetch`（`name` 传 `all` 时安装 card+vfdb 默认集合）以及用于
 巡检的 `db_search`/`db_outdated`。自定义数据库构建规则（表头类型、`--tsv` 元数
 据）：`./custom-db.md`。
 

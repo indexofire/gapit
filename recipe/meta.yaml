@@ -34,11 +34,11 @@ requirements:
     - minimap2 >=2.24
 
 test:
-  # The repo's pytest suite (610 offline tests) is NOT run here: the sdist does
+  # The repo's pytest suite (776 offline tests) is NOT run here: the sdist does
   # not ship tests/ and bioconda-recipes carries only this recipe file. Full
   # suite coverage lives in the repo's own CI. These commands smoke-test the
-  # installed console script end to end, including the bundled card snapshot
-  # (proves package data + blast integration in the conda package itself).
+  # installed console script end to end (no network: listing + schema only —
+  # provider fetches download from upstream and are exercised in repo CI).
   imports:
     - gapit
     - gapit.providers
@@ -49,7 +49,6 @@ test:
     # so create it first.
     - mkdir -p "${TMPDIR:-/tmp}/gapit-smoke-db"
     - gapit db list --datadir "${TMPDIR:-/tmp}/gapit-smoke-db" > /dev/null
-    - gapit db fetch card --datadir "${TMPDIR:-/tmp}/gapit-smoke-db" --quiet > /dev/null
 
 about:
   home: https://github.com/indexofire/gapit
@@ -60,8 +59,9 @@ about:
   description: >-
     Agent-first Python reimplementation of abricate: BLAST-based screening of
     assemblies with byte-compatible TSV output plus first-class JSON and
-    Markdown, FASTQ read screening via minimap2, and offline install of the
-    card and vfdb databases from snapshots bundled in the package.
+    Markdown, FASTQ read screening via minimap2, and on-demand database
+    installs — every provider downloads from upstream at fetch time (nothing
+    is bundled: CARD/VFDB terms forbid redistribution).
   dev_url: https://github.com/indexofire/gapit
   doc_url: https://indexofire.github.io/gapit/
 

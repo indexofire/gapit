@@ -3,9 +3,9 @@ through the real serve loop.
 
 Same offline patterns as the CLI suites: hand-written manifest + records
 databases for the read-only queries (test_cli_db_query.py), file://
-providers and in-test snapshot archives for fetch (test_cli_db_fetch.py),
-and real makeblastdb/blastn for the build-then-screen agent story
-(test_cli_db_build.py). No network; tmp_path datadirs only.
+providers for fetch (test_cli_db_fetch.py), and real makeblastdb/blastn
+for the build-then-screen agent story (test_cli_db_build.py). No network;
+tmp_path datadirs only.
 """
 
 import json
@@ -21,7 +21,6 @@ import pytest
 from gapit.fasta import iter_fasta
 from gapit.mcp import serve
 from gapit.providers.common import Provider
-from gapit.providers.snapshots import make_snapshot
 from gapit.records import Manifest, Record, write_manifest, write_records
 
 SYN = "synamr"
@@ -131,7 +130,7 @@ def test_tools_list_carries_the_four_db_tools_with_schemas() -> None:
     db_outdated are advertised with object schemas and correct requireds."""
     (response,) = exchange({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
     by_name = {tool["name"]: tool for tool in response["result"]["tools"]}
-    assert by_name["db_fetch"]["inputSchema"]["required"] == []
+    assert by_name["db_fetch"]["inputSchema"]["required"] == ["name"]
     assert by_name["db_build"]["inputSchema"]["required"] == ["name", "fasta"]
     assert by_name["db_search"]["inputSchema"]["required"] == ["term"]
     assert by_name["db_outdated"]["inputSchema"]["required"] == []
@@ -309,6 +308,7 @@ def patch_file_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path
             SYN: Provider(
                 name=SYN,
                 description="synthetic provider for the MCP db_fetch tests",
+                vendor="Synthetica",
                 source_urls=(source.as_uri(),),
                 dbtype="nucl",
                 transform=syn_transform,
@@ -365,58 +365,49 @@ def test_db_fetch_unknown_name_is_usage_error(
     assert SYN in text
 
 
-def test_db_fetch_default_set_installs_card_vfdb_from_snapshots(
+def test_db_fetch_without_name_is_usage_error(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given card+vfdb providers whose snapshots carry one record each and
-    whose network URLs are dead, When db_fetch with no name, Then both
-    defaults install from the snapshots: two receipt lines, card first."""
-    dead = (tmp_path / "dead.fa").as_uri()
-    archives: dict[str, Path] = {}
-    registry: dict[str, Provider] = {}
-    for name in ("card", "vfdb"):
-        source = tmp_path / f"{name}-source"
-        source.mkdir()
-        write_records(
-            (Record(db=name, gene=f"snap_{name}_gene", sequence=SEQ),),
-            source / "records.jsonl",
-        )
-        write_manifest(
-            Manifest(
+    """Given any registry, When db_fetch omits name, Then isError with a
+    USAGE_ERROR envelope — the default set requires the explicit name 'all'
+    (same rule as the CLI)."""
+    datadir = patch_file_registry(tmp_path, monkeypatch)
+    is_error, text = call_tool("db_fetch", {"datadir": str(datadir)})
+    assert is_error is True
+    assert envelope_code(text) == "USAGE_ERROR"
+    assert "name" in text
+
+
+def test_db_fetch_default_set_downloads_card_vfdb(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given card+vfdb providers backed by a file:// fasta, When db_fetch
+    with name 'all', Then both defaults install over the download path: two
+    receipt lines, card first."""
+    source = tmp_path / "upstream.fa"
+    source.write_text(UPSTREAM_FASTA, encoding="utf-8")
+    url = source.as_uri()
+    monkeypatch.setattr(
+        "gapit.db_ops.REGISTRY",
+        {
+            name: Provider(
                 name=name,
-                source_urls=(),
-                fetched_at="2020-01-01T00:00:00Z",
-                sha256="0" * 64,
-                n_records=1,
+                description=f"synthetic {name} provider for the default-set test",
+                vendor="Synthetica",
+                source_urls=(url,),
                 dbtype="nucl",
-                upstream_version=f"{name}-4.0",
-            ),
-            source / "gapit-manifest.json",
-        )
-        archive = tmp_path / f"{name}.tar.gz"
-        make_snapshot(source, archive)
-        archives[archive.name] = archive
-        registry[name] = Provider(
-            name=name,
-            description=f"synthetic snapshot-backed {name} provider",
-            source_urls=(dead,),
-            dbtype="nucl",
-            transform=syn_transform,
-            snapshot=f"{name}.tar.gz",
-        )
-    monkeypatch.setattr("gapit.db_ops.REGISTRY", registry)
-
-    def fake_snapshot_path(provider: Provider) -> Path | None:
-        return archives.get(provider.snapshot) if provider.snapshot is not None else None
-
-    monkeypatch.setattr("gapit.providers.common._snapshot_path", fake_snapshot_path)
+                transform=syn_transform,
+            )
+            for name in ("card", "vfdb")
+        },
+    )
     datadir = tmp_path / "datadir"
     datadir.mkdir()
 
-    is_error, text = call_tool("db_fetch", {"datadir": str(datadir)})
+    is_error, text = call_tool("db_fetch", {"name": "all", "datadir": str(datadir)})
     assert is_error is False
     receipts = [json.loads(line) for line in text.splitlines()]
     assert [receipt["db"] for receipt in receipts] == ["card", "vfdb"]
-    assert all(receipt["records"] == 1 for receipt in receipts)
+    assert all(receipt["records"] == 2 for receipt in receipts)
     for name in ("card", "vfdb"):
         assert (datadir / name / "gapit-manifest.json").is_file(), name

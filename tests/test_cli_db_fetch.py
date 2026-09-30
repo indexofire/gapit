@@ -7,20 +7,24 @@ the pixi env's real makeblastdb/minimap2 without touching the network (the
 test_providers_common.py pattern, driven through the CLI surface instead).
 """
 
+import io
 import json
+import sys
 from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
 from pydantic import TypeAdapter
+from rich.console import Console
 from typer.testing import CliRunner, Result
 
 from gapit.cli import app
+from gapit.cmd_db import db_list_command
+from gapit.db_ops import DbListEntry, db_list_table
 from gapit.errors import ErrorEnvelope
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider
-from gapit.providers.snapshots import make_snapshot
-from gapit.records import Manifest, Record, read_manifest, write_manifest, write_records
+from gapit.records import Record
 
 SYN = "synamr"
 OTHER = "synavail"
@@ -61,6 +65,7 @@ def patch_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
             SYN: Provider(
                 name=SYN,
                 description=SYN_DESCRIPTION,
+                vendor="Synthetica",
                 source_urls=(url,),
                 dbtype="nucl",
                 transform=syn_transform,
@@ -68,6 +73,7 @@ def patch_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
             OTHER: Provider(
                 name=OTHER,
                 description="available but never fetched in these tests",
+                vendor="Example Org",
                 source_urls=(url,),
                 dbtype="nucl",
                 transform=syn_transform,
@@ -190,9 +196,10 @@ def test_db_list_text_shows_installed_state(
     result = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert result.exit_code == 0
     lines = result.stdout.splitlines()
-    assert lines[0] == "PROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION"
-    assert f"{SYN}\tinstalled (2)\tnucl\t{SYN_DESCRIPTION}" in lines
-    assert f"{OTHER}\tavailable\tnucl\tavailable but never fetched in these tests" in lines
+    assert lines[0] == "NAME\tPROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION"
+    assert f"{SYN}\tSynthetica\tinstalled (2)\tnucl\t{SYN_DESCRIPTION}" in lines
+    other_row = f"{OTHER}\tExample Org\tavailable\tnucl\tavailable but never fetched"
+    assert f"{other_row} in these tests" in lines
 
 
 def test_db_list_json_emits_gapit_dblist_document(
@@ -211,143 +218,167 @@ def test_db_list_json_emits_gapit_dblist_document(
     assert by_name[SYN]["installed"] is True
     assert by_name[SYN]["records"] == 2
     assert by_name[SYN]["dbtype"] == "nucl"
+    assert by_name[SYN]["vendor"] == "Synthetica"
     assert by_name[OTHER]["installed"] is False
     assert "records" not in by_name[OTHER]
 
 
-def build_snapshot(tmp_path: Path, name: str, genes: tuple[str, ...], version: str) -> Path:
-    """A valid snapshot archive for provider ``name`` in tmp_path, carrying
-    one post-normalize record per gene (Wave G: built in-test, no binaries)."""
-    source = tmp_path / f"{name}-snapshotted"
-    source.mkdir()
-    write_records(
-        tuple(Record(db=name, gene=gene, sequence=SEQ_A) for gene in genes),
-        source / "records.jsonl",
+class FakeStdout(io.StringIO):
+    """A stdout stand-in whose TTY-ness is pinned — the isatty seam that
+    decides rich table vs TSV in `db list`."""
+
+    def __init__(self, tty: bool) -> None:
+        super().__init__()
+        self._tty = tty
+
+    def isatty(self) -> bool:
+        return self._tty
+
+
+def test_db_list_table_builds_rich_table() -> None:
+    """Given a mixed installed/available entry list, When db_list_table
+    renders at width 100, Then the title, all five column headers, both
+    STATUS texts, and the vendor strings appear — and the captured text
+    carries no ANSI escapes."""
+    console = Console(record=True, width=100)
+    console.print(
+        db_list_table(
+            (
+                DbListEntry(
+                    name="card",
+                    vendor="McMaster University",
+                    description="CARD protein homolog resistance models",
+                    dbtype="nucl",
+                    installed=True,
+                    records=203,
+                ),
+                DbListEntry(
+                    name="vfdb",
+                    vendor="USTC (VFDB)",
+                    description="VFDB virulence factors (set A, nucleotide)",
+                    dbtype="nucl",
+                    installed=False,
+                ),
+            )
+        )
     )
-    write_manifest(
-        Manifest(
-            name=name,
-            source_urls=(),
-            fetched_at="2020-01-01T00:00:00Z",
-            sha256="0" * 64,
-            n_records=len(genes),
-            dbtype="nucl",
-            upstream_version=version,
-        ),
-        source / "gapit-manifest.json",
+    text = console.export_text()
+    assert "Databases" in text
+    for header in ("Name", "Provider", "Status", "DBTYPE", "Description"):
+        assert header in text
+    assert "card" in text
+    assert "McMaster University" in text
+    assert "USTC (VFDB)" in text
+    assert "installed (203)" in text
+    assert "available" in text
+    assert "\x1b" not in text
+
+
+def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given a datadir with one fetched provider and a NON-TTY stdout
+    (isatty False), When `db list` runs, Then stdout is byte-identical TSV —
+    header plus one row per provider — never a rich table."""
+    datadir = patch_registry(tmp_path, monkeypatch)
+    assert fetch(SYN, "--datadir", str(datadir)).exit_code == 0
+    fake = FakeStdout(tty=False)
+    monkeypatch.setattr(sys, "stdout", fake)
+    db_list_command(datadir=datadir)
+    assert fake.getvalue() == (
+        "NAME\tPROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION\n"
+        f"{SYN}\tSynthetica\tinstalled (2)\tnucl\t{SYN_DESCRIPTION}\n"
+        f"{OTHER}\tExample Org\tavailable\tnucl\tavailable but never fetched in these tests\n"
     )
-    archive = tmp_path / f"{name}.tar.gz"
-    make_snapshot(source, archive)
-    return archive
 
 
-def patch_snapshot(monkeypatch: pytest.MonkeyPatch, archives: dict[str, Path]) -> None:
-    """Point the gapit.providers.common._snapshot_path seam at per-filename
-    archives (any provider without a snapshot gets None — network path)."""
+def test_db_list_tty_renders_rich_table_not_tsv(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given the same datadir but a TTY stdout (isatty True), When `db list`
+    runs, Then stdout carries the rich table (title + status texts) and
+    never the TSV header line."""
+    datadir = patch_registry(tmp_path, monkeypatch)
+    assert fetch(SYN, "--datadir", str(datadir)).exit_code == 0
+    fake = FakeStdout(tty=True)
+    monkeypatch.setattr(sys, "stdout", fake)
+    db_list_command(datadir=datadir)
+    out = fake.getvalue()
+    assert "Databases" in out
+    assert "installed (2)" in out
+    assert "available" in out
+    assert "NAME\tPROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION" not in out
 
-    def fake_snapshot_path(provider: Provider) -> Path | None:
-        return archives.get(provider.snapshot) if provider.snapshot is not None else None
 
-    monkeypatch.setattr("gapit.providers.common._snapshot_path", fake_snapshot_path)
-
-
-def patch_snapshot_registry(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, name: str, url: str
-) -> Path:
-    """Registry holding ONE provider ``name`` whose snapshot archive carries
-    a single record while its network source (``url``) yields two; returns an
-    empty datadir. The 1-vs-2 record counts discriminate snapshot vs network."""
-    archive = build_snapshot(tmp_path, name, (f"snap_{name}_gene",), f"{name}-4.0")
+def test_db_fetch_all_installs_default_dbs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a registry whose card+vfdb providers point at a file:// fasta,
+    When `db fetch all`, Then both defaults install in DEFAULT_DBS order
+    over the download path with one JSON receipt line per db on stdout."""
+    source = tmp_path / "upstream.fa"
+    source.write_text(UPSTREAM_FASTA, encoding="utf-8")
+    url = source.as_uri()
     monkeypatch.setattr(
         "gapit.db_ops.REGISTRY",
         {
             name: Provider(
                 name=name,
-                description=f"synthetic snapshot-backed {name} provider",
+                description=f"synthetic {name} provider for the default-set test",
+                vendor="Synthetica",
                 source_urls=(url,),
                 dbtype="nucl",
                 transform=syn_transform,
-                snapshot=f"{name}.tar.gz",
-            )
-        },
-    )
-    patch_snapshot(monkeypatch, {archive.name: archive})
-    datadir = tmp_path / "datadir"
-    datadir.mkdir()
-    return datadir
-
-
-def test_db_fetch_uses_bundled_snapshot_when_available(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Given a snapshot-backed provider whose network source yields TWO
-    records but whose snapshot carries ONE, When `db fetch NAME`, Then the
-    receipt reports the SNAPSHOT's record count — the bundled archive is
-    preferred over the network."""
-    source = tmp_path / "upstream.fa"
-    source.write_text(UPSTREAM_FASTA, encoding="utf-8")
-    datadir = patch_snapshot_registry(tmp_path, monkeypatch, "card", source.as_uri())
-
-    result = fetch("card", "--datadir", str(datadir))
-
-    assert result.exit_code == 0
-    receipt = json.loads(result.stdout)
-    assert receipt["records"] == 1
-    installed = read_manifest(datadir / "card" / "gapit-manifest.json")
-    assert installed.upstream_version == "card-4.0"  # from the ARCHIVED manifest
-
-
-def test_db_fetch_from_source_ignores_bundled_snapshot(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Given the same snapshot-backed provider, When `db fetch NAME
-    --from-source`, Then the receipt reports the NETWORK record count — the
-    flag routed around the bundled archive to the upstream source."""
-    source = tmp_path / "upstream.fa"
-    source.write_text(UPSTREAM_FASTA, encoding="utf-8")
-    datadir = patch_snapshot_registry(tmp_path, monkeypatch, "card", source.as_uri())
-
-    result = fetch("card", "--datadir", str(datadir), "--from-source")
-
-    assert result.exit_code == 0
-    receipt = json.loads(result.stdout)
-    assert receipt["records"] == 2  # the file:// source content, not the snapshot's 1
-
-
-def test_db_fetch_without_name_installs_default_dbs(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Given a registry whose card+vfdb providers declare snapshots with
-    DEAD network URLs (a network-path slip would fail loudly), When `db fetch`
-    with no NAME, Then both defaults install in DEFAULT_DBS order from their
-    snapshots with one JSON receipt line per db on stdout."""
-    dead = (tmp_path / "dead.fa").as_uri()
-    card_tar = build_snapshot(tmp_path, "card", ("snap_card_gene",), "card-4.0")
-    vfdb_tar = build_snapshot(tmp_path, "vfdb", ("snap_vfdb_a", "snap_vfdb_b"), "vfdb-2026")
-    monkeypatch.setattr(
-        "gapit.db_ops.REGISTRY",
-        {
-            name: Provider(
-                name=name,
-                description=f"synthetic snapshot-backed {name} provider",
-                source_urls=(dead,),
-                dbtype="nucl",
-                transform=syn_transform,
-                snapshot=f"{name}.tar.gz",
             )
             for name in ("card", "vfdb")
         },
     )
-    patch_snapshot(monkeypatch, {"card.tar.gz": card_tar, "vfdb.tar.gz": vfdb_tar})
     datadir = tmp_path / "datadir"
     datadir.mkdir()
 
-    result = fetch("--datadir", str(datadir))
+    result = fetch("all", "--datadir", str(datadir))
 
     assert result.exit_code == 0
     receipts = [json.loads(line) for line in result.stdout.splitlines()]
     assert [receipt["db"] for receipt in receipts] == ["card", "vfdb"]
-    assert [receipt["records"] for receipt in receipts] == [1, 2]
+    assert [receipt["records"] for receipt in receipts] == [2, 2]
     for name in ("card", "vfdb"):
         assert (datadir / name / "gapit-manifest.json").is_file()
-    assert read_manifest(datadir / "vfdb" / "gapit-manifest.json").upstream_version == "vfdb-2026"
+
+
+def test_db_fetch_from_source_flag_is_rejected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given any registry, When `db fetch NAME --from-source`, Then the
+    command is a usage error (exit 2, nothing on stdout) — the flag was
+    removed with the bundled snapshots it used to bypass."""
+    datadir = patch_registry(tmp_path, monkeypatch)
+
+    result = fetch(SYN, "--datadir", str(datadir), "--from-source")
+
+    assert result.exit_code == 2
+    assert result.stdout == ""
+
+
+def test_db_list_json_surfaces_provider_licenses(tmp_path: Path) -> None:
+    """Given the REAL registry and an empty datadir, When `db list --json`,
+    Then the gapit.dblist/1 entries carry a license field exactly for the
+    providers that pin one — card (McMaster terms), vfdb + ecoli_vf
+    (CC BY-NC), the seven kaptive cluster providers (GPL) — and omit it for
+    the rest; every entry also names its upstream maintainer in vendor."""
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    result = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
+
+    assert result.exit_code == 0
+    by_name = {entry["name"]: entry for entry in json.loads(result.stdout)["providers"]}
+    assert by_name["card"]["license"].startswith("Custom (McMaster University)")
+    assert by_name["vfdb"]["license"] == "CC BY-NC 4.0 (non-commercial)"
+    assert by_name["ecoli_vf"]["license"] == "CC BY-NC 4.0 (VFDB-derived content)"
+    assert by_name["kpsc_k"]["license"] == "GPL-3.0 (database content)"
+    assert "license" not in by_name["ncbi"]
+    assert "license" not in by_name["argannot"]
+    assert by_name["kpsc_k"]["vendor"] == "Kaptive (klebgenomics)"
+    assert by_name["ab_k"]["vendor"] == "Kaptive (Kenyon lab)"
+    assert by_name["ecoli_kps"]["vendor"] == "Kaptive (Gladstone lab)"
+    assert by_name["ncbi"]["vendor"] == "NCBI"
+    assert all(entry["vendor"] for entry in by_name.values())

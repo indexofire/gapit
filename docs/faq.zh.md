@@ -97,13 +97,15 @@ reads 模式：`./reads.md`。
 
 安装 BLAST+ 及其伙伴（pixi 会替你装好），并确保它们在 PATH 上。
 
-## 内置数据库适用哪些许可证？
+## 数据库适用哪些许可证？
 
-gapit 本身以 MIT 许可。数据库内容保留其原始上游许可证（NCBI、CARD、CGE 等），
-gapit 不重新授权。细节见 SPEC.md §9。
+gapit 本身以 MIT 许可。包里不内置任何数据库内容：每个提供商都在抓取时从上游下载，
+内容保留其原始许可证（NCBI 公有领域、CARD 的 McMaster 非商业条款、VFDB 的
+CC BY-NC、CGE、Kaptive 的 GPL-3.0 等），gapit 不重新授权。声明了许可证的提供商会在
+`gapit db list --json` 中暴露它。细节见 SPEC.md §9。
 
 ## 如何向默认集合添加新数据库？
 
-写一个提供商模块，把快照档案放进 `src/gapit/data/snapshots/`，在提供商上设置
-`snapshot="<name>.tar.gz"`，`gapit db fetch` 即可离线安装。表头格式、变换和构建流
-水线见 SPEC.md §11。
+写一个提供商模块并按名字抓取：每个提供商都在抓取时从上游下载、变换记录、本地构建
+—— 绝不内置任何内容（CARD、VFDB 等上游许可禁止随 MIT 许可的发行版再分发）。表头格
+式、变换和构建流水线见 SPEC.md §11。

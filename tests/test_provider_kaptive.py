@@ -80,6 +80,7 @@ def kaptive_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
             name: ClusterProvider(
                 name=name,
                 description=f"fixture {name}",
+                vendor="Kaptive (klebgenomics)",
                 source_urls=(url,),
                 license="GPL-3.0 (database content)",
                 note="fixture note",
@@ -96,14 +97,13 @@ def test_real_registry_carries_the_seven_kaptive_providers() -> None:
     """Given the shipped provider registry, When inspected, Then the seven
     official-keyword kaptive names are the ONLY cluster providers, each
     with its verified raw main URL, upstream-repo + Wyres provenance, and
-    no snapshot (nothing bundled)."""
+    a GPL-3.0 content license (nothing bundled)."""
     assert {n for n, p in REGISTRY.items() if p.kind == "cluster"} == set(KAPTIVE_PROVIDERS)
     for name, (url, repo) in EXPECTED_SOURCES.items():
         provider = REGISTRY[name]
         assert isinstance(provider, ClusterProvider), name
         assert provider.kind == "cluster"
         assert provider.dbtype == "nucl"
-        assert provider.snapshot is None
         assert provider.source_urls == (url,), name
         assert provider.license == "GPL-3.0 (database content)"
         assert repo in provider.note, name
@@ -171,6 +171,7 @@ def test_fetched_kaptive_db_screens_as_cluster(
             "ecoli_kps": ClusterProvider(
                 name="ecoli_kps",
                 description="screening fixture stand-in",
+                vendor="Kaptive (Gladstone lab)",
                 source_urls=(url,),
                 license="GPL-3.0 (database content)",
                 note="fixture note",

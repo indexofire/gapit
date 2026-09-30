@@ -3,8 +3,7 @@
 - ``perform_search``: case-insensitive lookup across the ``records.jsonl``
   truth stores of every installed database (SPEC.md §11).
 - ``perform_outdated``: installed-database staleness report against a
-  threshold (``days``) and the bundled snapshot dates. Staleness is a
-  REPORT, never an error state.
+  threshold (``days``). Staleness is a REPORT, never an error state.
 
 Both are read-only: no builds, no network, no datadir writes. The typer
 commands (:mod:`gapit.cmd_db_search`, :mod:`gapit.cmd_db_outdated`) and the
@@ -22,8 +21,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from gapit import config
 from gapit.errors import DatabaseError, InputError, UsageError
 from gapit.proctools import note
-from gapit.providers import REGISTRY
-from gapit.providers.common import Provider, bundled_snapshot_manifest
 from gapit.records import Record, installed_db_dirs, read_manifest, read_records
 
 DEFAULT_LIMIT = 100
@@ -150,7 +147,7 @@ class DbOutdatedEntry(BaseModel, frozen=True):
     db: str
     fetched_at: str
     age_days: float
-    status: Literal["ok", "stale", "snapshot-update", "stale+snapshot-update"]
+    status: Literal["ok", "stale"]
     upstream_version: str
 
 
@@ -187,26 +184,12 @@ def _utc_timestamp(value: str, where: str) -> datetime:
     return parsed.astimezone(UTC)
 
 
-def _snapshot_newer(name: str, fetched: datetime) -> bool:
-    """True when the provider's bundled snapshot manifest is newer than the
-    installed ``fetched`` (unknown provider / cluster provider / no bundle
-    -> False; snapshots are gene-pipeline only)."""
-    provider = REGISTRY.get(name)
-    if provider is None or not isinstance(provider, Provider):
-        return False
-    archived = bundled_snapshot_manifest(provider)
-    return archived is not None and fetched < _utc_timestamp(
-        archived.fetched_at, f"bundled snapshot of {name}"
-    )
-
-
 def perform_outdated(
     datadir: Path | None, *, days: int = DEFAULT_STALE_DAYS
 ) -> list[DbOutdatedEntry]:
     """Compute the staleness report entries — the shared CLI + MCP path.
 
-    A database is `stale` past ``days`` and `snapshot-update` when its
-    provider's bundled snapshot is newer than the installed copy.
+    A database is `stale` past ``days`` (default 90), `ok` otherwise.
     """
     root = config.resolve_datadir(datadir)
     db_dirs = installed_db_dirs(root)
@@ -223,15 +206,7 @@ def perform_outdated(
         manifest = read_manifest(manifest_path)
         fetched = _utc_timestamp(manifest.fetched_at, str(manifest_path))
         age = (now - fetched).total_seconds() / 86400
-        match (age > days, _snapshot_newer(db_dir.name, fetched)):
-            case (True, True):
-                status = "stale+snapshot-update"
-            case (True, False):
-                status = "stale"
-            case (False, True):
-                status = "snapshot-update"
-            case (False, False):
-                status = "ok"
+        status: Literal["ok", "stale"] = "stale" if age > days else "ok"
         entries.append(
             DbOutdatedEntry(
                 db=db_dir.name,

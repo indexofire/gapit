@@ -14,7 +14,7 @@ gapit 筛查 contig 文件和 FASTQ reads 中的已知基因：AMR（抗微生�
 | [contig 筛查](./screen.md) | 对 FASTA/GBK/EMBL 输入运行 `gapit screen`：阈值、过滤器、输出格式 |
 | [reads（FASTQ）筛查](./reads.md) | FASTQ 与 assembly FASTA 走 minimap2：`--r1`/`--r2`、预设参数、基于广度的存在判定、两阶段普查 |
 | [汇总报告](./summary.md) | `gapit summary`：把多份报告表折叠成基因存在/缺失矩阵 |
-| [数据库](./databases.md) | 提供商、`gapit db fetch/list/install`、数据目录、原生 `gapit/v1` 格式、基因簇数据库（GBK/GFF、typing.json、kaptive） |
+| [数据库](./databases.md) | 数据库目录（NAME 与上游 PROVIDER）、`gapit db fetch/list/install`、数据目录、原生 `gapit/v1` 格式、基因簇数据库（GBK/GFF、typing.json、kaptive） |
 | [自定义数据库](./custom-db.md) | `gapit db build` 实战演练：任意 FASTA 变成可筛查的数据库，完整示例 |
 | [输出](./outputs.md) | TSV/JSON/Markdown 格式、schema、错误信封、退出码 |
 | [MCP 服务器](./mcp.md) | `gapit mcp`：通过 stdio JSON-RPC 为 agent 运行时提供分析 + 数据库工具 |
@@ -27,8 +27,8 @@ gapit 筛查 contig 文件和 FASTQ reads 中的已知基因：AMR（抗微生�
 |---|---|---|
 | `gapit screen` | 筛查 contig 文件或 FASTQ reads 中的已知基因 | [筛查](./screen.md) |
 | `gapit summary` | 把一份或多份报告表汇总成基因存在/缺失矩阵 | [汇总报告](./summary.md) |
-| `gapit db fetch` | 抓取并构建提供商数据库到数据目录（kaptive 基因簇数据库在抓取时下载） | [数据库](./databases.md) |
-| `gapit db list` | 列出数据库提供商及其安装状态 | [数据库](./databases.md) |
+| `gapit db fetch` | 抓取并构建数据库到数据目录（kaptive 基因簇数据库在抓取时下载） | [数据库](./databases.md) |
+| `gapit db list` | 列出已知数据库（NAME、上游 PROVIDER、安装状态） | [数据库](./databases.md) |
 | `gapit db install` | 校验 SHA256 后安装本地文件 | [数据库](./databases.md) |
 | `gapit db build` | 从基因 FASTA 构建数据库，或从 GBK/GFF 位点构建基因簇数据库（可选配 `--typing` 表型评分规范） | [自定义数据库](./custom-db.md) |
 | `gapit setupdb` | 为数据目录下的所有数据库构建 BLAST 索引 | 本页 |

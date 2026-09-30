@@ -73,7 +73,7 @@ gapit/
 │   ├── clusterbuild.py  # cluster-db build pipeline: GBK/GFF → locus FASTA + features.json + typing copy
 │   ├── cluster.py       # cluster-screening engine core: minimap2 asm20 → per-locus/per-gene calls
 │   ├── cluster_math.py  # cs-walk → union coverage/identity math + verdicts (pure functions)
-│   ├── db_ops.py        # db use-cases: provider fetch + list (shared CLI + MCP; no typer)
+│   ├── db_ops.py        # db use-cases: fetch + list (shared CLI + MCP; no typer)
 │   ├── db_query_ops.py  # db use-cases: search + outdated over installed DBs (shared CLI + MCP)
 │   ├── db_build_ops.py  # db use-case: custom FASTA+TSV → gene db, GBK/GFF → cluster db (shared CLI + MCP)
 │   ├── gbfeatures.py    # GenBank FEATURES/ORIGIN parser → LocusFeatures/GeneFeature + gapit.features/1
@@ -112,8 +112,7 @@ gapit/
 │   │   ├── cluster_md.py # gapit.cluster/1 Markdown renderer (Phenotype column when typed)
 │   │   ├── schemas.py   # registered output models behind `gapit schema`
 │   │   └── summary.py   # summary matrix renderers (TSV/CSV/JSON/MD)
-│   ├── providers/       # 19 DB providers (12 gene + 7 kaptive cluster) + cluster_common.py + common.py + snapshots.py
-│   ├── data/snapshots/  # bundled card + vfdb snapshot archives (.tar.gz)
+│   ├── providers/       # 19 database provider modules (12 gene + 7 kaptive cluster) + cluster_common.py + common.py
 │   └── py.typed
 ├── scripts/
 │   └── cluster_calibration.py # developer calibration harness for typed cluster dbs
@@ -154,15 +153,17 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   `{"schema": "gapit.error/1", "code": "...", "message": "...", "context": {...}}` and exit with a
   documented non-zero code (2 = usage, 3 = missing dependency, 4 = db error, 5 = input error).
 - **DB acquisition** `[gapit-extension]`: `gapit db fetch|list|search|outdated|build|install` —
-  provider fetch (bundled card/vfdb snapshots install offline; `--from-source` forces upstream),
-  provider listing, records.jsonl gene search, staleness report, custom FASTA→native-db build,
-  GBK/GFF→cluster-db build (`--typing` installs a validated `gapit.typing/1` spec), the four
-  download-on-fetch kaptive cluster providers (GPL content, never bundled), and SHA256-verified
-  local-file install.
+  database fetch from the provider catalog (every provider downloads from upstream at fetch
+  time — nothing is bundled inside the wheel, a license-compliance requirement: CARD/VFDB
+  terms are non-commercial and forbid riding an MIT distribution), database listing,
+  records.jsonl gene search, staleness
+  report, custom FASTA→native-db build, GBK/GFF→cluster-db build (`--typing` installs a
+  validated `gapit.typing/1` spec), the four download-on-fetch kaptive cluster providers
+  (GPL content, never bundled), and SHA256-verified local-file install.
 - **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing nine tools:
   read-only `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via
   minimap2), `summary`, `schema`, `db_list`, `db_search`, `db_outdated`, plus the datadir-mutating
-  `db_fetch` (installs provider databases; may download) and `db_build` (writes a custom db);
+  `db_fetch` (installs databases from the provider catalog; may download) and `db_build` (writes a custom db);
   tool failures carry the `gapit.error/1` envelope.
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
 - **Self-description**: `gapit --version --json`, `gapit db list --json`, `gapit schema` — an agent

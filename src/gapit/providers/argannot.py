@@ -73,6 +73,7 @@ def transform(workdir: Path) -> Iterator[Record]:
 PROVIDER = Provider(
     name=NAME,
     description="ARG-ANNOT acquired resistance genes",
+    vendor="IHU Méditerranée-Infection",
     # Upstream 301-migrated; the deep link 404s on both domains (verified 2026-09-17).
     # Wayback CDX: 2020-06-26 + 2026-01-14 captures share digest 5ZDVKAPZ4ZGIUDSYFVTFUYYY4CS5MUXZ
     # (2024 differs: suspect partial). The 2026-01-14 memento intermittently serves a 9KB
@@ -90,5 +91,4 @@ PROVIDER = Provider(
     ),
     dbtype="nucl",
     transform=transform,
-    snapshot=None,
 )

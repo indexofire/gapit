@@ -74,6 +74,7 @@ def syn_provider(url: str, dbtype: Literal["nucl", "prot"] = "nucl") -> Provider
     return Provider(
         name=SYN,
         description="synthetic Wave B0 test provider",
+        vendor="Synthetica",
         source_urls=(url,),
         dbtype=dbtype,
         transform=syn_transform,
@@ -133,6 +134,33 @@ def test_fetch_provider_runs_full_pipeline(
     assert "kept 3" in captured.err
 
 
+def test_fetch_provider_stamps_license_into_manifest(tmp_path: Path) -> None:
+    """Given a provider pinning a content license, When fetched, Then the
+    written manifest carries it; a provider without one omits the field
+    entirely (pre-license manifests stay byte-identical)."""
+    url = write_source(tmp_path)
+    licensed = Provider(
+        name=SYN,
+        description="synthetic licensed provider",
+        vendor="Synthetica",
+        source_urls=(url,),
+        dbtype="nucl",
+        transform=syn_transform,
+        license="CC BY-NC 4.0 (non-commercial)",
+    )
+    manifest = fetch_provider(licensed, tmp_path / "licensed", fetched_at=FETCHED_AT)
+    assert manifest.license == "CC BY-NC 4.0 (non-commercial)"
+    assert read_manifest(tmp_path / "licensed" / "gapit-manifest.json").license == (
+        "CC BY-NC 4.0 (non-commercial)"
+    )
+
+    plain = fetch_provider(syn_provider(url), tmp_path / "plain", fetched_at=FETCHED_AT)
+    assert plain.license is None
+    assert "license" not in (tmp_path / "plain" / "gapit-manifest.json").read_text(
+        encoding="utf-8"
+    )
+
+
 def test_fetch_provider_refuses_overwrite_without_force(tmp_path: Path) -> None:
     """Given an already-built database, When fetched again without force,
     Then DB_ALREADY_EXISTS (exit 4) names the db — parity with upstream
@@ -171,6 +199,7 @@ def test_fetch_provider_empty_transform_raises(tmp_path: Path) -> None:
     provider = Provider(
         name=SYN,
         description="synthetic empty provider",
+        vendor="Synthetica",
         source_urls=(url,),
         dbtype="nucl",
         transform=empty_transform,

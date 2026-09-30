@@ -77,7 +77,7 @@ register_db_command(app)
 register_mcp_command(app)
 
 
-@app.command("schema")
+@app.command("schema", no_args_is_help=True)
 def schema(
     name: Annotated[
         str,

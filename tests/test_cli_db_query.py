@@ -1,11 +1,7 @@
 """CLI integration tests: `gapit db outdated` and `gapit db search`.
 
 Offline by construction: fixtures are hand-written manifest + records.jsonl
-databases (no binaries run — neither command builds anything). The
-snapshot-update tests read the REAL bundled card snapshot in-memory, so the
-packaged tar doubles as fixture: its manifest fetched_at (2026-09-17) is
-frozen, which makes "installed older/newer than the bundle" deterministic
-for any test run date.
+databases (no binaries run — neither command builds anything).
 """
 
 import json
@@ -17,8 +13,6 @@ from typer.testing import CliRunner, Result
 from gapit.cli import app
 from gapit.records import Manifest, Record, write_manifest, write_records
 
-# The real bundled card snapshot's manifest fetched_at (frozen in the archive).
-CARD_SNAPSHOT_FETCHED_AT = "2026-09-17T23:14:25Z"
 SEQ = "ACGTAG" * 10  # 60 bp, matches the synthetic-fixture convention
 
 runner = CliRunner()
@@ -92,15 +86,14 @@ def search(term: str, *extra: str) -> Result:
 def test_db_outdated_table_marks_ok_and_stale(tmp_path: Path) -> None:
     """Given one fresh db and old dbs (one provider, one not), When
     `db outdated`, Then exit 0 with a NAME/FETCHED_AT/AGE_DAYS/STATUS table:
-    fresh -> ok, old -> stale (ncbi proves a provider without a bundled
-    snapshot never reports snapshot-update), and AGE_DAYS agrees with UTC
-    now-minus-fetched_at math."""
+    fresh -> ok, old -> stale (provider and custom dbs report identically),
+    and AGE_DAYS agrees with UTC now-minus-fetched_at math."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
     fresh_at = (datetime.now(UTC) - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
     make_db(datadir, "tinyamr", fresh_at, ())  # custom db, no provider
     make_db(datadir, "zold", "2020-01-01T00:00:00Z", ())  # not a provider name
-    make_db(datadir, "ncbi", "2020-01-01T00:00:00Z", ())  # provider, no snapshot
+    make_db(datadir, "ncbi", "2020-01-01T00:00:00Z", ())  # a real provider name
 
     result = outdated("--datadir", str(datadir))
 
@@ -174,11 +167,10 @@ def test_db_outdated_days_threshold_boundary(tmp_path: Path) -> None:
     assert rows(stale_result.stdout)["tinyamr"][3] == "stale"
 
 
-def test_db_outdated_snapshot_update_when_bundled_is_newer(tmp_path: Path) -> None:
-    """Given an installed card older than the bundled snapshot (real REGISTRY,
-    real packaged tar), When `db outdated`, Then card reports
-    stale+snapshot-update while a custom db of the same age reports plain
-    stale (no provider -> no bundle to compare)."""
+def test_db_outdated_provider_db_reports_plain_stale(tmp_path: Path) -> None:
+    """Given an installed card past the threshold, When `db outdated`, Then
+    the status is exactly `stale` — provider databases report the same two
+    statuses as custom ones (nothing is bundled anymore)."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
     make_db(datadir, "card", "2020-01-01T00:00:00Z", ())
@@ -188,46 +180,22 @@ def test_db_outdated_snapshot_update_when_bundled_is_newer(tmp_path: Path) -> No
 
     assert result.exit_code == 0
     table = rows(result.stdout)
-    assert table["card"][3] == "stale+snapshot-update"
+    assert table["card"][3] == "stale"
     assert table["tinyamr"][3] == "stale"
 
 
-def test_db_outdated_no_snapshot_update_when_installed_is_newer(tmp_path: Path) -> None:
-    """Given an installed card fetched AFTER the bundled snapshot date, When
-    `db outdated`, Then the status is plain ok — the bundle is not newer, so
-    no snapshot-update flag even for a snapshot-backed provider."""
+def test_db_outdated_provider_db_within_threshold_is_ok(tmp_path: Path) -> None:
+    """Given an installed card fetched yesterday, When `db outdated`, Then
+    the status is plain ok — provider databases get no extra flags."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
-    newer_than_bundle = (
-        datetime.now(UTC) - timedelta(days=1)
-    ).strftime(  # any run date > 2026-09-18 keeps this newer than the bundle
-        "%Y-%m-%dT%H:%M:%SZ"
-    )
-    assert newer_than_bundle > CARD_SNAPSHOT_FETCHED_AT  # fixture premise
-    make_db(datadir, "card", newer_than_bundle, ())
+    fresh_at = (datetime.now(UTC) - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    make_db(datadir, "card", fresh_at, ())
 
     result = outdated("--datadir", str(datadir))
 
     assert result.exit_code == 0
     assert rows(result.stdout)["card"][3] == "ok"
-
-
-def test_db_outdated_snapshot_update_only_when_stale_threshold_not_hit(
-    tmp_path: Path,
-) -> None:
-    """Given an installed card older than the bundle but within --days, When
-    `db outdated --days 36500` (a century), Then the status is
-    snapshot-update alone — the two flags combine but stay independent."""
-    datadir = tmp_path / "datadir"
-    datadir.mkdir()
-    # 2026-09-17T00:00:00Z: older than the bundle (23:14 same day), ~3 days
-    # old at test time — inside the 36500-day threshold.
-    make_db(datadir, "card", "2026-09-17T00:00:00Z", ())
-
-    result = outdated("--datadir", str(datadir), "--days", "36500")
-
-    assert result.exit_code == 0
-    assert rows(result.stdout)["card"][3] == "snapshot-update"
 
 
 def test_db_outdated_empty_datadir_is_database_error(tmp_path: Path) -> None:

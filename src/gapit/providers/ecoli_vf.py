@@ -1,5 +1,9 @@
 r"""ecoli_vf provider (phac-nml E. coli virulence factors) — transform only.
 
+The phac-nml repo labels itself Apache-2.0, but its own README states the
+content is "taken from the VFDB" — so the database content is VFDB-derived
+and CC BY-NC (non-commercial), pinned here per the license audit (2026-09).
+
 Upstream ``get_ecoli_vf`` (abricate-get_db 1.4.0) parses
 ``repaired_ecoli_vfs_shortnames.ffn`` in three steps per record::
 
@@ -67,8 +71,9 @@ def transform(workdir: Path) -> Iterable[Record]:
 PROVIDER = Provider(
     name=_NAME,
     description="E. coli virulence factors (phac-nml)",
+    vendor="PHAC-NML",
     source_urls=("https://github.com/phac-nml/ecoli_vf/raw/master/data/" + _SOURCE_FILE,),
     dbtype="nucl",
     transform=transform,
-    snapshot=None,
+    license="CC BY-NC 4.0 (VFDB-derived content)",
 )

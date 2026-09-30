@@ -21,18 +21,18 @@ makeblastdb -in /tmp/gapit-quickstart/db/tinyamr/sequences \
 export GAPIT_DATADIR=/tmp/gapit-quickstart/db
 ```
 
-`gapit db list` 展示提供商目录和安装状态（下面有删节；`--json` 返回
-`gapit.dblist/1` 文档）。夹具 `tinyamr` 是一个普通的自定义数据库，不是提供商，所以
+`gapit db list` 展示数据库目录和安装状态（下面有删节；`--json` 返回
+`gapit.dblist/1` 文档）。夹具 `tinyamr` 是一个普通的自定义数据库，不在目录里，所以
 不会出现在列表里，下一节的筛查会证明它可用：
 
 ```console
 $ gapit db list
-PROVIDER	STATUS	DBTYPE	DESCRIPTION
-argannot	available	nucl	ARG-ANNOT acquired resistance genes
-ncbi	available	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
+NAME	PROVIDER	STATUS	DBTYPE	DESCRIPTION
+argannot	IHU Méditerranée-Infection	available	nucl	ARG-ANNOT acquired resistance genes
+ncbi	NCBI	available	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
 ```
 
-（共十二个提供商，在这个临时数据目录里全部为 `available`。）
+（共十二个目录数据库，在这个临时数据目录里全部为 `available`。）
 
 ## 2. 筛查一个 contig 文件
 

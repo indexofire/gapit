@@ -161,6 +161,7 @@ def build_database(
     source_urls: Sequence[str],
     fetched_at: str,
     upstream_version: str = "",
+    content_license: str = "",
     quiet: bool = True,
     debug: bool = False,
 ) -> Manifest:
@@ -176,6 +177,10 @@ def build_database(
        the type, so the mol_type heuristic is skipped
     5. count records and capture ``blastn -version`` / ``minimap2 --version``
     6. write ``db_dir/gapit-manifest.json`` and return the Manifest
+
+    ``content_license`` stamps the database-content license into the manifest
+    when the provider pins one (kaptive GPL, card McMaster terms, vfdb CC
+    BY-NC); empty means omitted.
 
     No ``.mmi`` is built for either dbtype: reads mode indexes the FASTA in
     memory with the invocation preset's own parameters (minimap2 is
@@ -198,6 +203,7 @@ def build_database(
         n_records=count_records(records_path),
         dbtype=dbtype,
         upstream_version=upstream_version,
+        license=content_license or None,
         makeblastdb_version=tool_version_line(["blastn", "-version"]),
         # Kept although no .mmi is built: environment provenance for the
         # machine that produced the artifacts (spec'd in gapit.manifest/1).

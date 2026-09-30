@@ -247,7 +247,7 @@ def _tool_db_list(arguments: dict[str, Any]) -> str:
 
 def _tool_db_fetch(arguments: dict[str, Any]) -> str:
     receipts = perform_fetch(
-        _optional_string(arguments, "name"),
+        _required_string(arguments, "name"),
         _optional_path(arguments, "datadir"),
         force=_flag(arguments, "force"),
     )

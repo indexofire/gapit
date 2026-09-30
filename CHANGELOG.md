@@ -7,8 +7,63 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `gapit db list` renders a styled rich table (title "Databases"; cyan Provider, status-tinted
+  Status, yellow DBTYPE columns) when stdout is an interactive terminal. Piped or redirected
+  output keeps the byte-identical TSV, and `--json` is unchanged.
+- Provider license metadata surfaced in `gapit db list --json` (`license` per provider when
+  pinned) and stamped into the build manifest (card, vfdb, ecoli_vf, kaptive).
+- `vendor` field in `gapit.dblist/1` entries: the upstream maintainer organisation behind
+  every provider (NCBI, DTU CGE, Kaptive (klebgenomics), ...). Additive; `name` still
+  carries the database name passed to `--db`.
+
 ### Changed
 
+- Uniform help-on-bare: commands that require input now print their full help when
+  invoked with no arguments at all — `gapit screen`, `summary`, `schema`, `db`,
+  `db fetch`, `db install`, `db build`, `db search` (typer `no_args_is_help`). The
+  help exits 2, the same code the bare root app has always used under click's
+  no-args-is-help semantics (recorded reality; the pre-change bare `screen`/`summary`
+  also exited 2, but with a `gapit.error/1` envelope instead of help, and bare
+  `schema`/`db install`/`db build`/`db search` raised click missing-argument errors).
+  Invocations with flags present but input missing keep their typed usage-error
+  envelopes (exit 2). Commands valid with no arguments (`mcp`, `setupdb`, `db list`,
+  `db outdated`) are unchanged. Breaking for `db fetch`: an omitted NAME no longer
+  installs the default set — the default-set download is now explicit
+  (`gapit db fetch all`, same DEFAULT_DBS order and receipts; bare fetch prints help,
+  and `db fetch --flags` without a NAME is a typed usage error), because a bare
+  invocation silently starting a multi-database download was a footgun. The MCP
+  `db_fetch` tool aligns: `name` is required and accepts the literal `all`. Docs
+  updated in step (EN + zh); no output schemas or goldens changed.
+
+- Terminology sweep after the NAME/PROVIDER column split: user-facing text now reserves
+  PROVIDER for the upstream maintainer organisation and consistently calls the `--db`
+  value the database NAME. `gapit db fetch` help reads "Fetch and build database(s)"
+  with a "Database name" `[NAME]` argument help, `gapit db list` help reads "List known
+  databases (NAME, upstream PROVIDER) and their installed state", the `db` group help
+  says "database fetch" (was "provider fetch"), `db install` help says "no database
+  names" (was "no provider IDs"), and the MCP `db_fetch`/`db_list` tool descriptions use
+  database-name phrasing. The unknown-name error from `gapit db fetch` / the `db_fetch`
+  tool now reads `unknown database: NAME (available: ...)` with context key `db` (was
+  `unknown provider: ...` with context key `provider`); the error CODE stays `USAGE_ERROR`.
+  Docs updated in step (EN + zh). No flags, output schemas, exit codes, or internal
+  identifiers changed; the `gapit.dblist/1` `providers` array key is untouched.
+
+- `gapit db list` TSV header is now `NAME PROVIDER STATUS DBTYPE DESCRIPTION`: the old
+  PROVIDER column actually held the database name users pass to `--db`, so it is renamed
+  NAME, and a new PROVIDER column names the upstream maintainer organisation (the `vendor`
+  above). Breaking for TSV consumers (header change, 4 → 5 columns); the rich table gained
+  the same NAME/PROVIDER split and `gapit.dblist/1` `name` is unchanged.
+
+- card and vfdb unbundled to download-on-fetch providers (license compliance: their
+  non-commercial upstream terms — McMaster's for CARD, CC BY-NC for VFDB — are incompatible
+  with redistribution inside the MIT-licensed wheel). `ecoli_vf` pins its true license
+  (`CC BY-NC 4.0 (VFDB-derived content)` — the repo is labeled Apache but its README states
+  the content is taken from the VFDB). The bundled-snapshot archives, the snapshot-first
+  install path, the monthly snapshot-refresh CI workflow, and the `snapshot-update` /
+  `stale+snapshot-update` `db outdated` statuses are gone; `db outdated` now reports `ok`
+  or `stale` only.
 - Kaptive cluster providers renamed/expanded to the seven official Kaptive v3 install
   keywords — `kpsc_k`, `kpsc_o`, `kosc_k`, `kosc_o`, `ab_k`, `ab_o`, `ecoli_kps`
   (K. pneumoniae species complex K/O, K. oxytoca species complex K/O, A. baumannii K/OC,
@@ -19,6 +74,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Still GPL-3.0 download-on-fetch, never bundled; manifests record the new source URL,
   license, and citation note (Kaptive/Wyres et al. 2020). The upstream `.toml`
   identity-threshold metadata is not fetched in v1 (a future `typing.json` source).
+
+### Removed
+
+- `gapit db fetch --from-source` flag (meaningless now that no bundled snapshots exist:
+  every fetch downloads from upstream).
 
 ## [0.4.0] - 2026-09-30
 

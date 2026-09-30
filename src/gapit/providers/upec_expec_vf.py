@@ -76,10 +76,10 @@ def transform(workdir: Path) -> Iterator[Record]:
 PROVIDER = Provider(
     name=NAME,
     description="UPEC/ExPEC virulence genes (FordeGenomics)",
+    vendor="FordeGenomics",
     source_urls=(
         "https://raw.githubusercontent.com/FordeGenomics/ST167_Code/refs/heads/main/UPEC-ExPEC_VF/UPEC_ExPEC_VF.tsv",
     ),
     dbtype="nucl",
     transform=transform,
-    snapshot=None,
 )

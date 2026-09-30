@@ -21,18 +21,20 @@ from gapit.records import Manifest
 
 @dataclass(frozen=True, slots=True)
 class ClusterProvider:
-    """A GBK/GFF-backed cluster-database provider. ``license`` and ``note``
-    land in the build manifest for provenance; ``snapshot`` exists only to
-    mirror the Provider shape and is ALWAYS None — upstream licenses (e.g.
-    Kaptive's GPL-3.0) must never ship inside the wheel. Cluster loci are
-    always nucleotide, so dbtype is fixed."""
+    """A GBK/GFF-backed cluster-database provider. ``vendor`` names the
+    upstream maintainer organisation (Kaptive (klebgenomics), ...); ``name``
+    is the database name users pass to ``--db``. ``license`` and ``note``
+    land in the build manifest for provenance. Upstream licenses (e.g.
+    Kaptive's GPL-3.0) must never ship inside the wheel — every cluster
+    provider downloads on fetch. Cluster loci are always nucleotide, so
+    dbtype is fixed."""
 
     name: str
     description: str
+    vendor: str
     source_urls: tuple[str, ...]
     license: str
     note: str
-    snapshot: str | None = None
     dbtype: Dbtype = "nucl"
     kind: Literal["cluster"] = "cluster"
 

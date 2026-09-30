@@ -64,8 +64,8 @@ def transform(workdir: Path) -> Iterator[Record]:
 PROVIDER = Provider(
     name=NAME,
     description="MEGARes antimicrobial resistance genes",
+    vendor="MEG Lab",
     source_urls=("https://www.meglab.org/downloads/megares_v3.00.zip",),
     dbtype="nucl",
     transform=transform,
-    snapshot=None,
 )

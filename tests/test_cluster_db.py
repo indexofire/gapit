@@ -87,6 +87,7 @@ def _syn_provider(name: str) -> Provider:
     return Provider(
         name=name,
         description="synthetic provider for the cluster-kind tests",
+        vendor="Synthetica",
         source_urls=("file://unused",),
         dbtype="nucl",
         transform=transform,

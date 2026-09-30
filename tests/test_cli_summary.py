@@ -105,9 +105,11 @@ def test_quiet_silences_duplicate_warning() -> None:
     assert result.stderr == ""
 
 
-def test_no_files_exits_2() -> None:
-    """Given no arguments, When summarized, Then USAGE_ERROR envelope, exit 2."""
-    result = summary()
+def test_no_files_with_flag_exits_2() -> None:
+    """Given a flag but no report files (e.g. `summary --quiet`), When
+    summarized, Then USAGE_ERROR envelope, exit 2 — the typed guard. The
+    truly-bare case prints help instead (test_cli_bare_help.py)."""
+    result = summary("--quiet")
     assert result.exit_code == 2
     envelope = json.loads(result.stderr)
     assert envelope["code"] == "USAGE_ERROR"

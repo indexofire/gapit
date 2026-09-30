@@ -108,15 +108,18 @@ not on PATH. gapit exits 3 with the envelope naming the binary:
 Install BLAST+ and friends (pixi does this for you) and make sure they are on
 PATH.
 
-## What licenses apply to the bundled databases?
+## What licenses apply to the databases?
 
-gapit itself is MIT-licensed. Database content keeps its original
-upstream licenses (NCBI, CARD, CGE, and so on); gapit does not relicense it.
-Details in SPEC.md §9.
+gapit itself is MIT-licensed. No database content ships inside the package: every
+provider downloads from upstream at fetch time, and the content keeps its original
+licenses (NCBI public domain, CARD's McMaster non-commercial terms, VFDB's CC BY-NC,
+CGE, Kaptive's GPL-3.0, and so on); gapit does not relicense it. Providers that pin a
+license expose it in `gapit db list --json`. Details in SPEC.md §9.
 
 ## How do I add a new database to the default set?
 
-Write a provider module, drop a snapshot archive into
-`src/gapit/data/snapshots/`, and set `snapshot="<name>.tar.gz"` on the
-provider so `gapit db fetch` installs offline. The header format, transforms,
-and build pipeline are specified in SPEC.md §11.
+Write a provider module and fetch it by name: every provider downloads from its
+upstream source at fetch time, transforms the records, and builds locally — nothing is
+ever bundled (upstream licenses such as CARD's or VFDB's forbid redistribution inside an
+MIT-licensed distribution). The header format, transforms, and build pipeline are
+specified in SPEC.md §11.

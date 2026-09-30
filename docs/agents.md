@@ -60,7 +60,7 @@ For example, `gapit schema version` (real output):
 }
 ```
 
-Databases: the provider catalog and install state (`gapit db list --json`; real output,
+Databases: the database catalog and install state (`gapit db list --json`; real output,
 first two of twelve shown, trimmed):
 
 ```console
@@ -70,6 +70,7 @@ $ gapit db list --json
   "providers": [
     {
       "name": "argannot",
+      "vendor": "IHU Méditerranée-Infection",
       "description": "ARG-ANNOT acquired resistance genes",
       "dbtype": "nucl",
       "installed": true,
@@ -77,6 +78,7 @@ $ gapit db list --json
     },
     {
       "name": "bacmet2",
+      "vendor": "University of Gothenburg",
       "description": "BacMet2 experimentally confirmed biocide/resistance genes (protein)",
       "dbtype": "prot",
       "installed": true,

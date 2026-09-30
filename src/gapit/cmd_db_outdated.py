@@ -1,10 +1,9 @@
 """The `gapit db outdated` command: typer shell over the use-case
 (:mod:`gapit.db_query_ops`) — installed-database staleness report.
 
-Reports every installed database's age against a staleness threshold and
-the bundled snapshot date. Staleness is a REPORT, never an error state:
-exit 0 even when everything is stale. Read-only: no builds, no network,
-no datadir writes.
+Reports every installed database's age against a staleness threshold.
+Staleness is a REPORT, never an error state: exit 0 even when everything is
+stale. Read-only: no builds, no network, no datadir writes.
 """
 
 from typing import Annotated
@@ -35,8 +34,7 @@ def db_outdated_command(
     """Report installed database ages and available updates (exit 0 however
     stale things are — a report, not an error).
 
-    A database is `stale` past --days (default 90) and `snapshot-update`
-    when its provider's bundled snapshot is newer than the installed copy.
+    A database is `stale` past --days (default 90), `ok` otherwise.
     """
 
     def run() -> None:
