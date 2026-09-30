@@ -27,8 +27,7 @@ PROVIDER = ClusterProvider(
     name=NAME,
     description="E. coli group 2+3 capsular polysaccharide loci (Kaptive)",
     source_urls=(
-        "https://raw.githubusercontent.com/rgladstone/EC-K-typing/main/"
-        "EC-K-typing_group2and3.gbk",
+        "https://raw.githubusercontent.com/rgladstone/EC-K-typing/main/EC-K-typing_group2and3.gbk",
     ),
     license="GPL-3.0 (database content)",
     note=(

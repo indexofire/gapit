@@ -62,8 +62,7 @@ EXPECTED_SOURCES: dict[str, tuple[str, str]] = {
         "johannajkenyon/Abaumannii_surface_polysaccharide_loci",
     ),
     "ecoli_kps": (
-        "https://raw.githubusercontent.com/rgladstone/EC-K-typing/main/"
-        "EC-K-typing_group2and3.gbk",
+        "https://raw.githubusercontent.com/rgladstone/EC-K-typing/main/EC-K-typing_group2and3.gbk",
         "rgladstone/EC-K-typing",
     ),
 }
@@ -223,9 +222,7 @@ def test_db_list_marks_kaptive_providers_cluster_kind(kaptive_registry: Path) ->
     `db list --json`, Then fetched and unfetched kaptive entries alike carry
     kind cluster (gene providers stay gene)."""
     assert (
-        runner.invoke(
-            app, ["db", "fetch", "kosc_k", "--datadir", str(kaptive_registry)]
-        ).exit_code
+        runner.invoke(app, ["db", "fetch", "kosc_k", "--datadir", str(kaptive_registry)]).exit_code
         == 0
     )
     result = runner.invoke(app, ["db", "list", "--datadir", str(kaptive_registry), "--json"])
