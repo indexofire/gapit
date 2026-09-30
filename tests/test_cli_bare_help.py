@@ -10,6 +10,7 @@ former omitted-NAME default-set download cannot start by accident.
 """
 
 from pathlib import Path
+import re
 
 import pytest
 from typer.testing import CliRunner, Result
@@ -30,7 +31,11 @@ HELP_SENTINEL = "Show this message and exit."
 
 
 def _normalized(result: Result) -> str:
+    # GITHUB_ACTIONS=true makes typer force terminal styling on help output,
+    # splitting tokens with SGR runs — strip them before matching (the
+    # test_cli_completion.py precedent) and pin COLUMNS at invocation.
     text = result.stdout + result.stderr
+    text = re.compile(r"\x1b\[[0-9;]*m").sub("", text)
     for box_char in "│├└┼╭╮╰╯─":
         text = text.replace(box_char, " ")
     return " ".join(text.split())
@@ -55,7 +60,7 @@ def test_bare_invocation_prints_help(argv: list[str], monkeypatch: pytest.Monkey
     gapit.error envelope (REGISTRY emptied so a bare `db fetch` that leaked
     past help could never start a real download)."""
     monkeypatch.setattr("gapit.db_ops.REGISTRY", {})
-    result = runner.invoke(app, argv)
+    result = runner.invoke(app, argv, env={"COLUMNS": "100"})
     combined = _normalized(result)
     assert result.exit_code == BARE_HELP_EXIT
     assert "Usage:" in combined
