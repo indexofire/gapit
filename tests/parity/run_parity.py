@@ -3,7 +3,10 @@
 Run with: pixi run -e parity parity
 Requires the parity environment (abricate) and the default environment (gapit);
 the harness runs on the default env's python and merges both envs' PATHs so
-both tools share the same blastn binary.
+both tools share the same blast binaries. DB_NAMES covers the two nucl
+databases the corpus genes are drawn from (ncbi, card) plus one protein
+database (bacmet2) to exercise the blastx leg; the prot db ships inside
+abricate's own datadir.
 """
 
 import difflib
@@ -19,7 +22,7 @@ from gapit.db import make_blast_db
 PROJECT = Path(__file__).resolve().parents[2]
 CORPUS = Path(__file__).resolve().parent / "corpus"
 DEFAULT_BIN = PROJECT / ".pixi" / "envs" / "default" / "bin"
-DB_NAMES = ("ncbi", "card")
+DB_NAMES = ("ncbi", "card", "bacmet2")
 
 
 def fail(message: str) -> NoReturn:

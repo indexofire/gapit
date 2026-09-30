@@ -4,6 +4,24 @@ Embeds exact, ~95%-identity mutated, and ~60% truncated copies of real genes
 from abricate's ncbi/card databases, plus a junk contig. Deterministic: fixed
 seed, fixed selection rule (first suitable genes in file order).
 
+Corpus files (ncbi_a/ncbi_b = first two suitable ncbi genes in file order,
+card_a = first suitable card gene; suitable = unique name, 300..900 nt):
+
+- 01_exact_and_junk.fa: exact ncbi_a + card_a copies, plus a junk contig.
+- 02_mutated.fa: every-20th-base mutants (~95% identity) of ncbi_a and card_a.
+- 03_truncated.fa: exact ncbi_b plus its first 60% (coverage 60% -> filtered).
+- 04_reverse.fa: reverse complements (case-preserving) of the same genes —
+  exact revcomp of ncbi_a and card_a (minus-strand hits: STRAND '-', swapped
+  subject coords) and an every-20th-base mutant of ncbi_a, revcomped
+  (minus strand + mismatch positions in the COVERAGE_MAP).
+- 05_threshold.fa: boundaries around the default --minid 80/--mincov 80 —
+  ncbi_b truncated to 79% of its length (coverage just under mincov ->
+  filtered by both tools) and to 81% (kept), plus a seeded-random 21%
+  divergence copy of card_a (~79% identity, under blastn -perc_identity ->
+  no hit row at all). Divergence placement is random rather than periodic so
+  exact runs long enough to seed blastn (-task blastn, word 11) survive and
+  the identity filter, not seed absence, is what drops the hit.
+
 Run with the default env's python (requires the parity env to be installed):
     .pixi/envs/default/bin/python tests/parity/make_corpus.py
 """
@@ -61,6 +79,24 @@ def mutate(sequence: str, every: int) -> str:
     return "".join(letters)
 
 
+def revcomp(sequence: str) -> str:
+    """Reverse complement, preserving case (minus-strand embedding)."""
+    complement = {"A": "T", "C": "G", "G": "C", "T": "A", "a": "t", "c": "g", "g": "c", "t": "a"}
+    return "".join(complement.get(base, base) for base in reversed(sequence))
+
+
+def diverge(sequence: str, rate: float, seed: int) -> str:
+    """Seed-random substitution of a `rate` fraction of the bases. Unlike the
+    periodic mutate(), placement clumps, leaving exact runs long enough to
+    seed blastn — so the -perc_identity filter, not seed absence, drops the
+    resulting alignment."""
+    rng = random.Random(seed)
+    letters = list(sequence)
+    for i in sorted(rng.sample(range(len(letters)), int(rate * len(letters)))):
+        letters[i] = FLIP.get(letters[i], letters[i])
+    return "".join(letters)
+
+
 def junk(length: int) -> str:
     return "".join(random.Random(20260916).choices("ACGT", k=length))
 
@@ -106,6 +142,22 @@ def main() -> None:
         [
             (contig_id("exact_ncbi_", ncbi_b[0]), ncbi_b[1]),
             (contig_id("trunc60_ncbi_", ncbi_b[0]), ncbi_b[1][: int(0.6 * len(ncbi_b[1]))]),
+        ],
+    )
+    write_fasta(
+        CORPUS / "04_reverse.fa",
+        [
+            (contig_id("revcomp_ncbi_", ncbi_a[0]), revcomp(ncbi_a[1])),
+            (contig_id("revcomp_card_", card_a[0]), revcomp(card_a[1])),
+            (contig_id("revcomp95_ncbi_", ncbi_a[0]), revcomp(mutate(ncbi_a[1], 20))),
+        ],
+    )
+    write_fasta(
+        CORPUS / "05_threshold.fa",
+        [
+            (contig_id("cov79_ncbi_", ncbi_b[0]), ncbi_b[1][: int(0.79 * len(ncbi_b[1]))]),
+            (contig_id("cov81_ncbi_", ncbi_b[0]), ncbi_b[1][: int(0.81 * len(ncbi_b[1]))]),
+            (contig_id("mut79_card_", card_a[0]), diverge(card_a[1], 0.21, 20260917)),
         ],
     )
 

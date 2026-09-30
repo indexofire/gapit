@@ -146,6 +146,11 @@ consumes abricate-built datadirs.
   releases via `.github/workflows/release.yml` (OIDC trusted publishing, `workflow_dispatch`
   or `v*` tag). **Deferred by decision (2026-09-18, still open):** bioconda submission —
   recipe remains in-repo; sha256 placeholder to be replaced at submission time.
+- **Bioconda preparation (2026-09-29, submission HELD pending rightsholder go):** recipe
+  finalized (real PyPI sdist sha256, license_file, noarch python) and parity corpus
+  strengthened 6 → 15 byte-identical cases (minus-strand hits, coverage/identity threshold
+  boundaries, blastx protein-db leg via bacmet2) — quality gate for the abricate-replacement
+  claim before submitting to bioconda/bioconda-recipes.
 - **Contract change (2026-09-27, rightsholder decision):** `gapit list` and its
   `gapit.list/1` document removed; `gapit db list` (`gapit.dblist/1`) is the single
   listing surface and abricate `--list` byte-parity is intentionally dropped for it.

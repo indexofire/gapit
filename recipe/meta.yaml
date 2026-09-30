@@ -1,8 +1,7 @@
-# Bioconda-style recipe for gapit (Phase 8 Wave H5).
-# Submission to bioconda/bioconda-recipes is a manual follow-up for the user;
-# this in-repo recipe is the deliverable. Field sources:
-# version/license/python/deps mirror pyproject.toml exactly; the external
-# binaries mirror pixi.toml's conda dependencies.
+# Bioconda-ready recipe for gapit.
+# Field sources: version/license/python/deps mirror pyproject.toml exactly; the
+# external binaries mirror pixi.toml's conda dependencies. sha256 below hashes
+# the official PyPI sdist (verified against the release-workflow upload log).
 {% set name = "gapit" %}
 {% set version = "0.3.1" %}
 
@@ -11,12 +10,8 @@ package:
   version: {{ version }}
 
 source:
-  # gapit is not on PyPI yet. This is the standard noarch-python source URL;
-  # replace the sha256 with the PyPI sdist hash at submission time.
-  # The value below hashes the LOCAL hatchling sdist (dist/gapit-0.3.1.tar.gz)
-  # — local and PyPI sdists are not byte-identical (gzip), do not trust it.
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 24df143ed9647fc784fa29c776babfd880d3730d22004b997ed0aea3f105f5e3
+  sha256: 9360de57bd233c8dfb6dcebb2d8d9f60626127de7052fa5bbc4672e877ad65ff
 
 build:
   number: 0
@@ -37,7 +32,7 @@ requirements:
     - minimap2 >=2.24
 
 test:
-  # The repo's pytest suite (380 offline tests) is NOT run here: the sdist does
+  # The repo's pytest suite (610 offline tests) is NOT run here: the sdist does
   # not ship tests/ and bioconda-recipes carries only this recipe file. Full
   # suite coverage lives in the repo's own CI. These commands smoke-test the
   # installed console script end to end, including the bundled card snapshot
@@ -56,10 +51,9 @@ test:
 
 about:
   home: https://github.com/indexofire/gapit
-  # The repo ships an MIT LICENSE (root) and pyproject.toml declares SPDX MIT;
-  # add license_file before submitting.
   license: MIT
   license_family: MIT
+  license_file: LICENSE
   summary: Mass screening of contigs and reads for antimicrobial resistance and virulence genes
   description: >-
     Agent-first Python reimplementation of abricate: BLAST-based screening of
@@ -67,7 +61,7 @@ about:
     Markdown, FASTQ read screening via minimap2, and offline install of the
     card and vfdb databases from snapshots bundled in the package.
   dev_url: https://github.com/indexofire/gapit
-  doc_url: https://github.com/indexofire/gapit#readme
+  doc_url: https://indexofire.github.io/gapit/
 
 extra:
   recipe-maintainers:
