@@ -156,9 +156,7 @@ def test_fetch_provider_stamps_license_into_manifest(tmp_path: Path) -> None:
 
     plain = fetch_provider(syn_provider(url), tmp_path / "plain", fetched_at=FETCHED_AT)
     assert plain.license is None
-    assert "license" not in (tmp_path / "plain" / "gapit-manifest.json").read_text(
-        encoding="utf-8"
-    )
+    assert "license" not in (tmp_path / "plain" / "gapit-manifest.json").read_text(encoding="utf-8")
 
 
 def test_fetch_provider_refuses_overwrite_without_force(tmp_path: Path) -> None:

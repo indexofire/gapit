@@ -40,6 +40,7 @@ def _normalized(result: Result) -> str:
         text = text.replace(box_char, " ")
     return " ".join(text.split())
 
+
 BARE_COMMANDS = [
     pytest.param([], id="root"),
     pytest.param(["screen"], id="screen"),

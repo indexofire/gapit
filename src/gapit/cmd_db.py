@@ -41,10 +41,7 @@ def db_fetch_command(
     name: Annotated[
         str | None,
         typer.Argument(
-            help=(
-                "Database name (see: gapit db list), or 'all' for the default set"
-                " (card, vfdb)."
-            ),
+            help=("Database name (see: gapit db list), or 'all' for the default set (card, vfdb)."),
         ),
     ] = None,
     datadir: Datadir = None,

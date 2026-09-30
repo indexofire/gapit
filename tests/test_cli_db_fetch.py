@@ -308,9 +308,7 @@ def test_db_list_tty_renders_rich_table_not_tsv(
     assert "NAME\tPROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION" not in out
 
 
-def test_db_fetch_all_installs_default_dbs(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_db_fetch_all_installs_default_dbs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Given a registry whose card+vfdb providers point at a file:// fasta,
     When `db fetch all`, Then both defaults install in DEFAULT_DBS order
     over the download path with one JSON receipt line per db on stdout."""
