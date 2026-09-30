@@ -1,7 +1,7 @@
 site_name: gapit
 site_description: >-
-  Mass screening of contigs and reads for antimicrobial resistance and
-  virulence genes — an agent-first Python reimplementation of abricate.
+  Mass screening of contigs and reads for known genes — an agent-first
+  Python reimplementation of abricate.
 site_url: https://indexofire.github.io/gapit/
 repo_url: https://github.com/indexofire/gapit
 repo_name: indexofire/gapit

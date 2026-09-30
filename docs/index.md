@@ -1,9 +1,9 @@
 # gapit documentation
 
-gapit screens contig files and FASTQ reads for antimicrobial resistance (AMR) and virulence
-genes. It is an agent-first Python reimplementation of
-[abricate](https://github.com/tseemann/abricate): abricate-compatible TSV on stdout, plus
-first-class JSON and Markdown outputs with versioned schemas.
+gapit screens contig files and FASTQ reads for known genes — AMR, virulence, serotype,
+plasmid replicons, species targets, or any custom database. It is an agent-first Python
+reimplementation of [abricate](https://github.com/tseemann/abricate): abricate-compatible
+TSV on stdout, plus first-class JSON and Markdown outputs with versioned schemas.
 
 ## Pages
 
@@ -25,7 +25,7 @@ first-class JSON and Markdown outputs with versioned schemas.
 
 | Command | What it does | Docs |
 |---|---|---|
-| `gapit screen` | Screen contig files or FASTQ reads for AMR and virulence genes | [Screening](./screen.md) |
+| `gapit screen` | Screen contig files or FASTQ reads for known genes | [Screening](./screen.md) |
 | `gapit summary` | Summarize report table(s) into a gene presence/absence matrix | [Summary](./summary.md) |
 | `gapit db fetch` | Fetch and build provider database(s) into the datadir | [Databases](./databases.md) |
 | `gapit db list` | List database providers and their installed state | [Databases](./databases.md) |

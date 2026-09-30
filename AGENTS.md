@@ -1,7 +1,7 @@
 # AGENTS.md — gapit
 
 > Python reimplementation of [abricate](https://github.com/tseemann/abricate): mass screening of
-> contigs for antimicrobial resistance and virulence genes. **Agent-first**: every output is
+> contigs and reads for known genes. **Agent-first**: every output is
 > machine-readable (JSON / Markdown) by design, not as an afterthought.
 
 ## 1. Mission

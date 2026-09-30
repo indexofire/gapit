@@ -1,8 +1,9 @@
 # gapit
 
-Mass screening of contigs and reads for antimicrobial resistance and virulence genes. An
-agent-first Python reimplementation of [abricate](https://github.com/tseemann/abricate):
-byte-compatible TSV plus first-class JSON and Markdown.
+Mass screening of contigs and reads for known genes — AMR, virulence, serotype, plasmid
+replicons, species targets, or any custom database. An agent-first Python reimplementation
+of [abricate](https://github.com/tseemann/abricate): byte-compatible TSV plus first-class
+JSON and Markdown.
 
 ## Why gapit
 
