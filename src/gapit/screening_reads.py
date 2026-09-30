@@ -106,6 +106,11 @@ def _screen_lanes(
     to echo."""
     resolved = _resolve_read_preset(lanes, read_type, quiet)
     database = find_database(config.resolve_datadir(datadir), db_name)
+    if database.kind == "cluster":
+        usage_fail(
+            "cluster databases are assembly-contig screening only;"
+            " --r1/--r2 and --aligner minimap2 are not available"
+        )
     read_files = [r1_path for r1_path, _ in lanes] + [
         r2_path for _, r2_path in lanes if r2_path is not None
     ]

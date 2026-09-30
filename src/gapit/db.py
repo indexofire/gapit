@@ -40,11 +40,14 @@ class BlastDbInfo(BaseModel, frozen=True):
 
 
 class Database(BaseModel, frozen=True):
-    """One discovered database directory under the datadir."""
+    """One discovered database directory under the datadir. ``kind`` comes
+    from the gapit manifest (cluster databases declare it); legacy/abricate
+    directories without a manifest are gene databases."""
 
     name: str
     path: Path
     sequences_path: Path
+    kind: Literal["gene", "cluster"] = "gene"
 
 
 class DatabaseInfo(BaseModel, frozen=True):
@@ -164,13 +167,34 @@ def blast_db_info(db_prefix: Path) -> BlastDbInfo:
 
 def discover_databases(datadir: Path) -> list[Database]:
     """Immediate subdirectories of the datadir holding a readable ``sequences``
-    file, sorted by name."""
+    file, sorted by name, each tagged gene/cluster from its manifest."""
     databases: list[Database] = []
     for child in datadir.iterdir():
         sequences = child / "sequences"
         if child.is_dir() and sequences.is_file() and os.access(sequences, os.R_OK):
-            databases.append(Database(name=child.name, path=child, sequences_path=sequences))
+            databases.append(
+                Database(
+                    name=child.name,
+                    path=child,
+                    sequences_path=sequences,
+                    kind=_manifest_kind(child),
+                )
+            )
     return sorted(databases, key=lambda database: database.name)
+
+
+def _manifest_kind(db_dir: Path) -> Literal["gene", "cluster"]:
+    """The kind declared by the database's gapit manifest, ``"gene"`` for
+    legacy (manifest-less) directories. Same propagation contract as
+    :func:`_manifest_dbtype` (a malformed manifest is never swallowed)."""
+    from gapit.records import read_manifest
+
+    try:
+        return read_manifest(db_dir / "gapit-manifest.json").kind
+    except InputError as exc:
+        if exc.code != "INPUT_NOT_FOUND":
+            raise
+        return "gene"
 
 
 def _manifest_dbtype(db_dir: Path) -> Literal["nucl", "prot"] | None:

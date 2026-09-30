@@ -1,0 +1,29 @@
+LOCUS       AB819963           9395 bp    DNA     linear   BCT 01-JUL-2016
+DEFINITION  Synthetic record mirroring the real Kaptive O-locus style: most
+            CDS carry /gene, one names its orf only in /note, one is unnamed.
+ACCESSION   AB819963
+VERSION     AB819963.1
+KEYWORDS    .
+SOURCE      Klebsiella pneumoniae
+  ORGANISM  Klebsiella pneumoniae
+FEATURES             Location/Qualifiers
+     source          1..300
+                     /organism="Klebsiella pneumoniae"
+                     /mol_type="genomic DNA"
+                     /note="O locus: O8"
+                     /note="O type: special logic"
+     CDS             1..80
+                     /gene="wzm"
+                     /product="transport protein"
+     CDS             81..160
+                     /note="orf11"
+                     /product="putative glycosyltransferase"
+     CDS             161..240
+                     /product="hypothetical protein"
+ORIGIN
+         1 TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG
+        61 TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG
+       121 TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG
+       181 TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG
+       241 TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG
+//

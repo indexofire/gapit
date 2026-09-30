@@ -33,6 +33,9 @@ you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 | `--r2` | str | none | *Reads mode.* Comma-separated mate FASTQ file(s); must match `--r1` count. |
 | `--read-type` | sr\|map-ont\|map-hifi | `sr` for FASTQ, `map-ont` for FASTA | *Reads mode.* minimap2 preset; resolved from the detected input when omitted. |
 | `--min-breadth` | float | `90.0` | *Reads mode.* Minimum %breadth for presence. |
+| `--min-gene-cov` | float | `90.0` | *Cluster databases only.* Minimum %coverage for a gene `present` verdict. |
+| `--min-gene-id` | float | `90.0` | *Cluster databases only.* Minimum %identity for a gene `present` verdict. |
+| `--min-cluster-cov` | float | `96.0` | *Cluster databases only.* Minimum locus %coverage for a best-locus call. |
 
 \* Positional FILEs or `--fofn`, or reads mode via `--r1`. Positional files and `--r1`/`--r2`
 are mutually exclusive.
@@ -218,6 +221,57 @@ Merged-row semantics:
 
 Without the flag nothing about this path runs: default output stays byte-identical to
 abricate (the Notes below still apply in full).
+
+## Cluster databases (`kind: cluster`)
+
+When `--db` names a cluster database — built from GBK/GFF via
+[`gapit db build`](./databases.md#cluster-databases-gbkgff) or fetched from a kaptive
+provider — `gapit screen` dispatches to the **cluster engine** instead of the blastn gene
+pipeline. Nothing about the gene path changes: cluster-kind dispatch is additive and
+gene-kind screening is byte-identical to the pre-cluster behavior.
+
+How it works:
+
+- One **minimap2 `asm20`** invocation per input file (query = the file's contigs, target =
+  the database's locus FASTA, `--cs` short-form alignment trace).
+- Per-**locus** union coverage and identity come from the cs walk across all primary
+  alignments — records from multiple contigs **union**, so a locus fragmented across contig
+  boundaries still screens as fully present.
+- Every annotated **gene** gets a verdict: `present` (≥ `--min-gene-cov` coverage AND ≥
+  `--min-gene-id` identity), `partial` (≥ 50% coverage but failing a present threshold), or
+  `absent`.
+- Loci rank by coverage, identity, covered bases, then id; the rank-1 locus becomes the
+  file's **best call** when its coverage reaches `--min-cluster-cov` (default 96, a
+  kaptive-style confidence floor). Below the floor no call is made.
+
+Guards (usage errors, exit 2): `--minid`/`--mincov`/`--merge-fragments`/`--jobs`/`--aligner`
+are gene-engine options and are rejected on cluster databases; the three `--min-gene-*`/
+`--min-cluster-cov` flags are cluster-only and rejected elsewhere, including reads mode
+(cluster screening is assembly-FASTA only in v1).
+
+### Phenotype calls (`typing.json`)
+
+A cluster database may carry a `gapit.typing/1` scoring spec (installed with
+`gapit db build --typing FILE`). When it does, each file's best call is annotated with a
+**phenotype**:
+
+- Rules score independently — `weighted_genes` (gene presence with an identity floor and
+  optional negative markers), `cluster_match` (weighted locus coverage/identity/key-genes
+  components with per-component floors), or `learned_linear` (a trained sigmoid model over
+  named features) — and the decision layer applies the document's `cutoff` and
+  `ambiguity_margin`: a clear winner is called with `high` confidence, two rules inside the
+  margin yield an `ambiguous` call (phenotype null, both candidates listed), and a
+  sub-cutoff best falls back to the document's fallback string.
+- JSON (`gapit.cluster/1`) carries `best.phenotype` plus an additive `best.phenotype_detail`
+  block: `{score, confidence, components[], runner_up, ambiguous[]}` — the explainable
+  per-rule/per-component breakdown.
+- The TSV/CSV header gains a **PHENOTYPE** column after TYPE (`-` when ambiguous or
+  uncalled); untyped cluster databases keep the untyped header byte-identically.
+- A rule referencing a gene/locus the database lacks fails up front with the typed
+  `TYPING_UNKNOWN_GENE` error (also enforced at `db build --typing` time).
+
+Untyped cluster databases (the kaptive fetches, for now) report locus calls only — the
+kaptive-style output — with `phenotype` null.
 
 ## Notes
 

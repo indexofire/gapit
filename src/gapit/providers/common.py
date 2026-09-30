@@ -67,14 +67,15 @@ class Provider:
     dbtype: Dbtype
     transform: Callable[[Path], Iterable[Record]]
     snapshot: str | None = None
+    kind: Literal["gene"] = "gene"
 
 
-def _basename(url: str) -> str:
+def url_basename(url: str) -> str:
     """Final path segment of a URL, query string excluded ('' for a bare host)."""
     return urlparse(url).path.rstrip("/").rsplit("/", 1)[-1]
 
 
-def _download(url: str, dest: Path) -> None:
+def download_file(url: str, dest: Path) -> None:
     """Fetch ``url`` into ``dest`` atomically: urlopen a Request carrying
     the module User-Agent, stream the body into a hidden .part file beside
     ``dest`` in chunks, then os.replace. file:// URLs work (tests depend on
@@ -163,9 +164,9 @@ def _snapshot_path(provider: Provider) -> Path | None:
 
 def bundled_snapshot_manifest(provider: Provider) -> Manifest | None:
     """The provider's bundled snapshot manifest read in-memory, or None when
-    the provider ships no resolvable snapshot archive (read-only queries:
-    `db outdated` — same seam fetch_provider uses, so tests patch
-    ``_snapshot_path`` and both paths see the fake)."""
+    the provider ships no resolvable snapshot archive (cluster providers
+    never do — read-only queries: `db outdated` — same seam fetch_provider
+    uses, so tests patch ``_snapshot_path`` and both paths see the fake)."""
     archive = _snapshot_path(provider)
     return None if archive is None else read_snapshot_manifest(archive)
 
@@ -219,7 +220,7 @@ def fetch_provider(
     with TemporaryDirectory(dir=db_dir, prefix=".download.") as workdir_name:
         workdir = Path(workdir_name)
         for url in provider.source_urls:
-            _download(url, workdir / _basename(url))
+            download_file(url, workdir / url_basename(url))
         note(quiet, f"downloaded {len(provider.source_urls)} source file(s)")
         records = tuple(
             _normalize_record(record, provider.dbtype) for record in provider.transform(workdir)

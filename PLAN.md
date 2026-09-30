@@ -156,6 +156,27 @@ consumes abricate-built datadirs.
   listing surface and abricate `--list` byte-parity is intentionally dropped for it.
   Schema registry is now six documents (report, reads, reads2, summary, error, version).
   Breaking; recorded under \[Unreleased\] in CHANGELOG.md for the next minor bump.
+- **Gene-cluster feature, stage 2 (2026-09-30, additive):** `gapit screen` dispatches
+  cluster-kind databases to the minimap2 `asm20` cluster engine (`gapit.cluster/1`
+  document: best-locus call above `--min-cluster-cov` 96, per-gene
+  present/partial/absent verdicts at `--min-gene-cov`/`--min-gene-id` 90/90, cs-based
+  union coverage/identity, cross-contig fragmentation resilience; `phenotype` reserved
+  null for stage 3). Gene-kind screening is byte-identical (parity 15/15 + summary 6/6
+  unchanged); kind-mismatched flags are usage errors; reads mode rejects cluster dbs.
+  Schema registry gains `cluster` (stage 1 added `features`/`typing`). No version bump.
+- **Gene-cluster feature, stage 3 (2026-09-30, additive; feature complete):** the
+  `gapit.typing/1` evaluation engine (`typing_engine.py`: weighted_genes / cluster_match /
+  learned_linear scoring, cutoff + ambiguity-margin decision with an explainable
+  components breakdown) fills `best.phenotype` + additive `best.phenotype_detail` in
+  gapit.cluster/1 on typed databases; TSV gains a PHENOTYPE column as a typed-only
+  renderer variant (untyped output byte-identical; goldens for both rule kinds + the
+  ambiguous two-locus case). Unknown gene/locus references fail TYPING_UNKNOWN_GENE at
+  build and screen time. Four kaptive providers (`kaptive_k`/`_o`/`_ak`/`_oc`,
+  klebgenomics/Kaptive v2.0.9 pinned raw URLs — v3 decentralized its dbs; GPL-3.0
+  content, download-on-fetch, never bundled; manifest gains optional `license`/`note`).
+  `scripts/cluster_calibration.py` developer harness (score distribution, agreement
+  matrix, divergences) seeds the future learned_linear training loop (training itself
+  out of scope). Parity 15/15 + summary 6/6 unchanged; no version bump.
 
 ## Milestones
 

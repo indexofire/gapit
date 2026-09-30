@@ -97,6 +97,12 @@ gapit also reads datadirs built by abricate itself (legacy `~~~` headers). The r
 does not hold: gapit-native databases use the `gapit/v1` header format (see SPEC.md §11),
 which abricate cannot read. Protein databases such as `bacmet2` screen through blastx.
 
+Gene **cluster** databases are a second kind: `gapit db build NAME loci.gbk|gff3` builds a
+`kind: cluster` db (locus calls via minimap2, optional `--typing FILE` phenotype scoring),
+and the four `kaptive_k`/`kaptive_o`/`kaptive_ak`/`kaptive_oc` providers fetch the Kaptive
+Klebsiella and A. baumannii antigen-locus references at install time (GPL-3.0 content, so
+nothing is bundled — cite Kaptive/Wyres et al. 2020 for results).
+
 ## Output contract
 
 - **stdout purity.** Data on stdout, diagnostics on stderr, always. `--quiet` silences
@@ -143,7 +149,7 @@ Register it with an MCP client:
 | `pixi run lint` | ruff check |
 | `pixi run fmt` | ruff format |
 | `pixi run typecheck` | basedpyright (strict) |
-| `pixi run test` | pytest, 374 offline tests |
+| `pixi run test` | pytest, 778 offline tests |
 | `pixi run -e parity parity` | byte-diff screening vs real abricate |
 | `pixi run -e parity summary-parity` | byte-diff summary vs real abricate |
 

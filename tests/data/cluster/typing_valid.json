@@ -1,0 +1,31 @@
+{
+  "schema": "gapit.typing/1",
+  "rules": [
+    {
+      "model": "weighted_genes",
+      "phenotype": "K6",
+      "weights": {"wzx": 1.0, "manC": 2.0},
+      "negative": {"orfA": -1.0},
+      "identity_floor": 95.0,
+      "require_any": ["wzx", "manC"]
+    },
+    {
+      "model": "cluster_match",
+      "phenotype": "K7",
+      "coverage": {"weight": 0.6, "floor": 90.0},
+      "identity": {"weight": 0.4, "floor": 95.0},
+      "key_genes": {"weight": 1.0, "genes": ["wzx", "manC"]}
+    },
+    {
+      "model": "learned_linear",
+      "phenotype": "K8",
+      "features": ["gene:wzx:cov", "gene:manC:present", "cluster:KL9001:coverage"],
+      "weights": {"gene:wzx:cov": 0.7, "gene:manC:present": 0.3, "cluster:KL9001:coverage": -0.2},
+      "bias": -0.5,
+      "trained_on": {"corpus": "vp-serotypes-2026", "version": "1"}
+    }
+  ],
+  "cutoff": 0.9,
+  "ambiguity_margin": 0.05,
+  "fallback": "unknown"
+}

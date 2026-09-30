@@ -1,0 +1,19 @@
+LOCUS       KLJOIN             120 bp    DNA     linear   30-SEP-2026
+DEFINITION  Synthetic compound-CDS locus.
+ACCESSION   KLJOIN
+VERSION     KLJOIN
+KEYWORDS    .
+SOURCE      Vibrio syntheticus
+  ORGANISM  Vibrio syntheticus
+            .
+FEATURES             Location/Qualifiers
+     source          1..120
+                     /mol_type="genomic DNA"
+                     /note="K locus: KLJOIN"
+     CDS             join(10..40,60..90)
+                     /gene="jnk"
+                     /product="junction protein"
+ORIGIN
+         1 ttacgggcat cctaggcata ttacgggcat cctaggcata ttacgggcat cctaggcata
+        61 ttacgggcat cctaggcata ttacgggcat cctaggcata ttacgggcat cctaggcata
+//

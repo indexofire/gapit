@@ -94,8 +94,16 @@ class Manifest(BaseModel, frozen=True):
     sha256: str
     n_records: int = Field(ge=0)
     dbtype: Literal["nucl", "prot"]
-    header_format: Literal["gapit/v1"] = "gapit/v1"
+    # gene: per-gene records pipeline (default; legacy dirs are gene dbs).
+    # cluster: GBK/GFF-built gene-cluster db (features.json + locus FASTA).
+    kind: Literal["gene", "cluster"] = "gene"
+    # gapit/v1: tagged per-gene headers; plain: bare locus-id headers (cluster).
+    header_format: Literal["gapit/v1", "plain"] = "gapit/v1"
     upstream_version: str = ""
+    # Database-content provenance (kaptive-style cluster providers); None is
+    # omitted at serialization so pre-license manifests stay byte-identical.
+    license: str | None = None
+    note: str | None = None
     tool: ToolDocument = ToolDocument()
     makeblastdb_version: str = ""
     minimap2_version: str = ""
@@ -116,9 +124,10 @@ def _reason(exc: ValidationError) -> str:
 
 def write_manifest(manifest: Manifest, path: Path) -> None:
     """Write the manifest as indented JSON (by alias, ``schema`` first) with a
-    trailing newline, LF endings, UTF-8."""
+    trailing newline, LF endings, UTF-8. None-valued optional fields
+    (license/note) are omitted — every pre-existing manifest byte-identical."""
     with path.open("w", encoding="utf-8", newline="\n") as handle:
-        handle.write(manifest.model_dump_json(indent=2, by_alias=True))
+        handle.write(manifest.model_dump_json(indent=2, by_alias=True, exclude_none=True))
         handle.write("\n")
 
 

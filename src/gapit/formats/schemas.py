@@ -10,6 +10,7 @@ public surface (``gapit schema`` unknown-name message iterates it).
 from pydantic import BaseModel
 
 from gapit.errors import ErrorEnvelope
+from gapit.formats.cluster import ClusterDocument
 from gapit.formats.json import (
     Reads2Document,
     ReadsDocument,
@@ -17,12 +18,17 @@ from gapit.formats.json import (
     VersionDocument,
 )
 from gapit.formats.summary import SummaryDocument
+from gapit.gbfeatures import FeaturesDocument
+from gapit.typing_models import TypingDocument
 
 SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "report": ReportDocument,
     "reads": ReadsDocument,
     "reads2": Reads2Document,
+    "cluster": ClusterDocument,
     "summary": SummaryDocument,
     "error": ErrorEnvelope,
     "version": VersionDocument,
+    "features": FeaturesDocument,
+    "typing": TypingDocument,
 }

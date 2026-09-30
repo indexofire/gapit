@@ -1,0 +1,133 @@
+{
+  "schema": "gapit.cluster/1",
+  "tool": {
+    "name": "gapit",
+    "version": "0.3.1"
+  },
+  "created_at": "2026-09-30T12:00:00Z",
+  "params": {
+    "db": "cps",
+    "preset": "asm20",
+    "min_gene_cov": 90.0,
+    "min_gene_id": 90.0,
+    "min_cluster_cov": 96.0,
+    "threads": 1
+  },
+  "files": [
+    {
+      "file": "both.fa",
+      "best": {
+        "locus": "locusA",
+        "label": "K antigen locus A",
+        "type": "KL101",
+        "coverage_pct": 100.0,
+        "identity_pct": 100.0,
+        "genes_present": 3,
+        "genes_partial": 0,
+        "genes_absent": 0,
+        "phenotype": null,
+        "phenotype_detail": {
+          "score": 1.0,
+          "confidence": "ambiguous",
+          "components": [
+            {
+              "name": "wzx",
+              "score": 0.3333
+            },
+            {
+              "name": "gtrA",
+              "score": 0.3333
+            },
+            {
+              "name": "manC",
+              "score": 0.3333
+            }
+          ],
+          "runner_up": {
+            "phenotype": "K102",
+            "score": 1.0
+          },
+          "ambiguous": [
+            {
+              "phenotype": "K101",
+              "score": 1.0
+            },
+            {
+              "phenotype": "K102",
+              "score": 1.0
+            }
+          ]
+        }
+      },
+      "loci": [
+        {
+          "locus": "locusA",
+          "label": "K antigen locus A",
+          "type": "KL101",
+          "coverage_pct": 100.0,
+          "identity_pct": 100.0,
+          "rank": 1,
+          "genes": [
+            {
+              "gene_id": "wzx",
+              "start": 101,
+              "end": 500,
+              "strand": "-",
+              "coverage_pct": 100.0,
+              "identity_pct": 100.0,
+              "verdict": "present"
+            },
+            {
+              "gene_id": "gtrA",
+              "start": 501,
+              "end": 900,
+              "strand": "+",
+              "coverage_pct": 100.0,
+              "identity_pct": 100.0,
+              "verdict": "present"
+            },
+            {
+              "gene_id": "manC",
+              "start": 901,
+              "end": 1200,
+              "strand": "-",
+              "coverage_pct": 100.0,
+              "identity_pct": 100.0,
+              "verdict": "present"
+            }
+          ],
+          "missing": []
+        },
+        {
+          "locus": "locusB",
+          "label": "K antigen locus B",
+          "type": "KL102",
+          "coverage_pct": 100.0,
+          "identity_pct": 100.0,
+          "rank": 2,
+          "genes": [
+            {
+              "gene_id": "gtrA",
+              "start": 101,
+              "end": 500,
+              "strand": "+",
+              "coverage_pct": 100.0,
+              "identity_pct": 100.0,
+              "verdict": "present"
+            },
+            {
+              "gene_id": "orfX",
+              "start": 501,
+              "end": 900,
+              "strand": "-",
+              "coverage_pct": 100.0,
+              "identity_pct": 100.0,
+              "verdict": "present"
+            }
+          ],
+          "missing": []
+        }
+      ]
+    }
+  ]
+}

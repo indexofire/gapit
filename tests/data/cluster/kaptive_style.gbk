@@ -1,0 +1,48 @@
+LOCUS       KL106              160 bp    DNA     linear   30-SEP-2026
+DEFINITION  Synthetic kaptive-style K locus KL106.
+ACCESSION   KL106
+VERSION     KL106
+KEYWORDS    .
+SOURCE      Vibrio syntheticus
+  ORGANISM  Vibrio syntheticus
+            .
+FEATURES             Location/Qualifiers
+     source          1..160
+                     /mol_type="genomic DNA"
+                     /note="K locus: KL106"
+                     /note="K type: K6"
+     CDS             1..80
+                     /gene="kptA"
+                     /product="sugar transferase"
+     CDS             complement(81..160)
+                     /gene="kptB"
+                     /product="polymerase"
+ORIGIN
+         1 TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG
+        61 TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG
+       121 TCAGGATCCA AGGCTTACGG TCAGGATCCA AGGCTTACGG
+//
+LOCUS       KL107              140 bp    DNA     linear   30-SEP-2026
+DEFINITION  Synthetic kaptive-style K locus KL107.
+ACCESSION   KL107
+VERSION     KL107
+KEYWORDS    .
+SOURCE      Vibrio syntheticus
+  ORGANISM  Vibrio syntheticus
+            .
+FEATURES             Location/Qualifiers
+     source          1..140
+                     /mol_type="genomic DNA"
+                     /note="K locus: KL107"
+                     /note="K type: unknown"
+     CDS             1..70
+                     /gene="kptC"
+                     /product="flippase"
+     CDS             complement(71..140)
+                     /gene="kptD"
+                     /product="pyrophosphorylase"
+ORIGIN
+         1 AGCTTTCGGA ACCATTGCGA AGCTTTCGGA ACCATTGCGA AGCTTTCGGA ACCATTGCGA
+        61 AGCTTTCGGA ACCATTGCGA AGCTTTCGGA ACCATTGCGA AGCTTTCGGA ACCATTGCGA
+       121 AGCTTTCGGA ACCATTGCGA
+//

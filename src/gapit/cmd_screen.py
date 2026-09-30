@@ -18,6 +18,7 @@ from gapit.screening import (
     OutputFormat,
     run_screen,
 )
+from gapit.screening_cluster import reject_cluster_engine_flags
 from gapit.screening_reads import run_screen_assemblies, run_screen_reads
 
 
@@ -99,6 +100,22 @@ def screen_command(
     mincov: Annotated[
         float, typer.Option("--mincov", help="Minimum %coverage, 0 <= x <= 100.")
     ] = 80.0,
+    min_gene_cov: Annotated[
+        float,
+        typer.Option(
+            "--min-gene-cov", help="Cluster dbs: min %coverage for a present gene verdict."
+        ),
+    ] = 90.0,
+    min_gene_id: Annotated[
+        float,
+        typer.Option(
+            "--min-gene-id", help="Cluster dbs: min %identity for a present gene verdict."
+        ),
+    ] = 90.0,
+    min_cluster_cov: Annotated[
+        float,
+        typer.Option("--min-cluster-cov", help="Cluster dbs: min locus %coverage for a best call."),
+    ] = 96.0,
     threads: Annotated[int, typer.Option("--threads", help="BLAST worker threads.")] = 1,
     jobs: Annotated[
         int,
@@ -160,6 +177,7 @@ def screen_command(
                 usage_fail("--jobs is not available in reads mode")
             if merge_fragments:
                 usage_fail("--merge-fragments is not available in reads mode")
+            reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
             typer.echo(
                 run_screen_reads(
                     _split_read_list(r1 or "", "--r1"),
@@ -183,6 +201,7 @@ def screen_command(
         elif aligner is AlignerEnum.minimap2:
             if merge_fragments:
                 usage_fail("--merge-fragments is not available with --aligner minimap2")
+            reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
             typer.echo(
                 run_screen_assemblies(
                     files,
@@ -223,6 +242,9 @@ def screen_command(
                     output_format or OutputFormat.tsv,
                     merge_fragments=merge_fragments,
                     aligner=aligner,
+                    min_gene_cov=min_gene_cov,
+                    min_gene_id=min_gene_id,
+                    min_cluster_cov=min_cluster_cov,
                 ),
                 nl=False,
             )

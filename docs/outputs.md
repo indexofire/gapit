@@ -101,7 +101,7 @@ alignment is gapped. An ungapped full-length alignment prints 15 `=` characters,
 
 ## JSON
 
-Three screening surfaces emit versioned JSON documents, all requested with `--format json`.
+The screening surfaces emit versioned JSON documents, all requested with `--format json`.
 Every document starts with a `schema` field naming its contract. Field names are snake_case
 with explicit units (`identity_pct`, `coverage_pct`, `breadth_pct`). Numeric hit values are
 rounded to two decimals, matching what the TSV displays.
@@ -182,6 +182,20 @@ Each hit mirrors the TSV columns one to one:
 | `product` | string | Product description |
 | `resistance` | string | Resistance or functional category (frozen name, kept for TSV parity) |
 
+Two additive optional fields appear on hits produced by `gapit screen --merge-fragments`
+(cross-contig fragment merging; [screen.md](./screen.md#fragment-merging---merge-fragments))
+and are absent from every other row:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `merged` | boolean | Always `true`; marks a hit assembled from >= 2 gene fragments |
+| `fragments` | array | One `{contig, start, end, strand, identity_pct, coverage_pct}` entry per contributing fragment, sorted by `(contig, start)` |
+
+The merged hit itself carries the union `%COVERAGE`, the aligned-length-weighted mean
+`%IDENTITY`, summed `GAPS`, and the anchor fragment's query coordinates; `sequence` is the
+comma-joined contig list. These fields are additive to `gapit.report/1` (no rename, no
+retype, no schema version bump).
+
 ### gapit.reads/1 (reads and assembly screening)
 
 Reads mode reports per-gene coverage across the read set (or assembly; `--r1` accepts FASTQ and
@@ -235,6 +249,60 @@ thresholds off the output stays `gapit.reads/1`, byte-identical. Fields from
 Per-alignment identity is `100 * (alen - nm) / alen` (PAF block length and `NM:i:` tag; a row
 without NM counts as 100). See [reads.md](./reads.md#filtering-alignments-by-identity-and-mapq-gapitreads2)
 for the homolog worked example and threshold guidance.
+
+### gapit.cluster/1 (cluster-database screening)
+
+Screening a `kind: cluster` database (minimap2 `asm20` engine; [screen.md](./screen.md#cluster-databases-kind-cluster))
+emits one document per run: the best-locus call per file, every covered locus with its
+per-gene verdicts, and — on databases carrying a `typing.json` — the phenotype call with its
+explainable score breakdown. Fields from `gapit schema cluster`:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `schema` | string | Always `gapit.cluster/1` |
+| `tool` | object | `{name, version}` of gapit |
+| `created_at` | string | ISO-8601 UTC timestamp, second precision |
+| `params` | object | `db`, `preset` (always `asm20`), `min_gene_cov`, `min_gene_id`, `min_cluster_cov`, `threads` |
+| `files` | array | One entry per input file |
+| `files[].file` | string | Input path as given |
+| `files[].best` | object \| null | The best-locus call, null when no locus cleared `min_cluster_cov` |
+| `files[].loci` | array | Every covered locus in rank order (coverage desc, identity desc, covered bp desc, id asc) |
+
+The `best` block:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `best.locus` | string | Rank-1 locus id |
+| `best.label` / `best.type` | string | The locus label and type from the source notes (kaptive `K locus`/`K type` semantics) |
+| `best.coverage_pct` / `best.identity_pct` | number | Union coverage and matches-weighted identity over all records, two decimals |
+| `best.genes_present` / `genes_partial` / `genes_absent` | integer | Verdict counts for the best locus's annotated genes |
+| `best.phenotype` | string \| null | The typing call; null when ambiguous or on untyped databases |
+| `best.phenotype_detail` | object | Additive, present only on typed runs: `{score, confidence, components[{name, score}], runner_up, ambiguous[]}` |
+
+Each `loci[]` entry carries `locus`, `label`, `type`, `coverage_pct`, `identity_pct`,
+`rank`, `missing` (gene ids not fully present), and `genes[]` with per-gene `start`/`end`
+(1-based, locus coordinates), `strand`, `coverage_pct`, `identity_pct`, and `verdict`
+(`present`/`partial`/`absent`).
+
+`phenotype_detail.confidence` is `high` (winner ≥ cutoff and separated by ≥
+`ambiguity_margin`), `ambiguous` (two rules inside the margin: phenotype null, the top two
+listed in `ambiguous`), or `low` (below cutoff: the document's fallback string). Component
+names are the scored rule's own: gene ids for `weighted_genes`, `coverage`/`identity`/
+`key_genes` for `cluster_match`, feature strings (plus `bias`) for `learned_linear`.
+
+The TSV form is one row per file with the header `FILE BEST_LOCUS TYPE PHENOTYPE COVERAGE
+IDENTITY PRESENT PARTIAL MISSING_IDS` on typed databases (`PHENOTYPE` is `-` when
+ambiguous or uncalled) and the same header without `PHENOTYPE` on untyped ones. A file with
+no locus call renders `- - - 0.00 0.00 0 0 -`-shaped dashes.
+
+### gapit.features/1 and gapit.typing/1 (database-side documents)
+
+Two cluster-database artifacts are versioned documents you can introspect with `gapit
+schema` but that never appear on stdout: `features` (the `features.json` locus/gene feature
+table written by `db build`) and `typing` (the declarative scoring spec installed with
+`db build --typing FILE` — rules of kind `weighted_genes` / `cluster_match` /
+`learned_linear`, plus `cutoff`, `ambiguity_margin`, and `fallback`). The typing document is
+the contract the phenotype evaluator implements; see [databases.md](./databases.md#cluster-databases-gbkgff).
 
 ### gapit.summary/1 (summary matrix)
 
@@ -367,8 +435,11 @@ $ gapit --version --json
 {"schema":"gapit.version/1","name":"gapit","version":"0.3.1"}
 ```
 
-`gapit schema <name>` prints the JSON Schema for each document. The six names: `report`,
-`reads`, `reads2`, `summary`, `error`, `version`. A trimmed fragment of `gapit schema report`:
+`gapit schema <name>` prints the JSON Schema for each document. The nine names: `report`,
+`reads`, `reads2`, `cluster`, `summary`, `error`, `version`, plus the database-side
+documents `features` (gapit.features/1, a cluster db's feature table) and `typing`
+(gapit.typing/1, a cluster db's declarative scoring spec). A trimmed fragment of
+`gapit schema report`:
 
 ```json
 {

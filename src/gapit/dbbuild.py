@@ -138,7 +138,7 @@ def verify_sequences(sequences_path: Path, records_path: Path, name: str) -> Non
         raise _self_check_failed("", "extra_fasta_record")
 
 
-def _sha256(path: Path) -> str:
+def sha256_file(path: Path) -> str:
     """Streaming SHA256 of a file's bytes (1 MiB chunks)."""
     hasher = hashlib.sha256()
     with path.open("rb") as handle:
@@ -147,7 +147,7 @@ def _sha256(path: Path) -> str:
     return hasher.hexdigest()
 
 
-def _version_line(argv: list[str]) -> str:
+def tool_version_line(argv: list[str]) -> str:
     """First line of a version command's stdout ('' when it printed nothing)."""
     stdout = run_tool(argv).stdout
     return stdout.splitlines()[0].strip() if stdout else ""
@@ -187,7 +187,7 @@ def build_database(
     note(quiet, f"generated {sequences_path}")
     verify_sequences(sequences_path, records_path, name)
     note(quiet, f"self-check passed for {name}")
-    sha256 = _sha256(sequences_path)
+    sha256 = sha256_file(sequences_path)
     make_blast_db(sequences_path, name, dbtype=dbtype, debug=debug)
     note(quiet, f"BLAST index built ({dbtype})")
     manifest = Manifest(
@@ -198,10 +198,10 @@ def build_database(
         n_records=count_records(records_path),
         dbtype=dbtype,
         upstream_version=upstream_version,
-        makeblastdb_version=_version_line(["blastn", "-version"]),
+        makeblastdb_version=tool_version_line(["blastn", "-version"]),
         # Kept although no .mmi is built: environment provenance for the
         # machine that produced the artifacts (spec'd in gapit.manifest/1).
-        minimap2_version=_version_line(["minimap2", "--version"]),
+        minimap2_version=tool_version_line(["minimap2", "--version"]),
     )
     write_manifest(manifest, db_dir / "gapit-manifest.json")
     return manifest

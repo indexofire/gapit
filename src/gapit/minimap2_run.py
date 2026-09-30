@@ -15,7 +15,7 @@ from pathlib import Path
 
 from gapit.db import Database
 from gapit.errors import DependencyError, GapitError
-from gapit.paf import PafRecord, ReadType, parse_paf_row
+from gapit.paf import PafRecord, Preset, parse_paf_row
 
 
 def _stream_minimap2(argv: list[str], r1: Path) -> list[PafRecord]:
@@ -71,7 +71,7 @@ def run_minimap2(
     lanes: list[tuple[Path, Path | None]],
     database: Database,
     *,
-    read_type: ReadType,
+    read_type: Preset,
     threads: int,
     debug: bool = False,
     nm_tags: bool = False,
@@ -86,11 +86,12 @@ def run_minimap2(
     benchmarks slower than in-memory indexing (2026-09-19: blaCTX-M/blaSHV
     allele divergence, +1.2 s on the ncbi db). minimap2's pairing semantics
     for >2 input files are undocumented; per-lane runs (r1[i] alone or with
-    its mate r2[i]) are deterministic. With ``nm_tags``, ``--cs`` is added so
-    rows carry ``NM:i:`` (minimap2 omits NM from PAF output without it; the
-    alignments themselves are unchanged) — used by gapit.reads/2 identity
-    filtering. With ``debug``, echo each argv to stderr (abricate --debug
-    parity)."""
+    its mate r2[i]) are deterministic. ``read_type`` is the reads-mode preset
+    vocabulary or the cluster engine's ``asm20``. With ``nm_tags``, ``--cs``
+    is added so rows carry ``NM:i:`` and ``cs:Z:`` (minimap2 omits both from
+    PAF output without it; the alignments themselves are unchanged) — used by
+    gapit.reads/2 identity filtering and the cluster engine's per-gene math.
+    With ``debug``, echo each argv to stderr (abricate --debug parity)."""
     rows: list[PafRecord] = []
     for r1, r2 in lanes:
         argv = [

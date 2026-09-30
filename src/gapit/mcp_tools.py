@@ -31,6 +31,7 @@ from gapit.screening import (
     OutputFormat,
     run_screen,
 )
+from gapit.screening_cluster import reject_cluster_engine_flags
 from gapit.screening_reads import run_screen_assemblies, run_screen_reads
 from gapit.summary import SummaryParams, build_summary
 
@@ -122,11 +123,16 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     min_identity = _number(arguments, "min_identity", 0.0)
     min_mapq = _integer(arguments, "min_mapq", 0)
     merge_fragments = _flag(arguments, "mergeFragments")
+    min_gene_cov = _number(arguments, "minGeneCov", 90.0)
+    min_gene_id = _number(arguments, "minGeneId", 90.0)
+    min_cluster_cov = _number(arguments, "minClusterCov", 96.0)
     if aligner is AlignerEnum.minimap2:
         if merge_fragments:
             usage_fail("mergeFragments requires aligner blastn")
         # tsv is rejected by the use-case itself (reads-mode format rule);
-        # non-default minid/mincov too (blastn-only thresholds).
+        # non-default minid/mincov too (blastn-only thresholds), and the
+        # cluster thresholds are cluster-db-only flags.
+        reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
         return run_screen_assemblies(
             files,
             None,
@@ -162,6 +168,9 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
         debug=False,
         output_format=OutputFormat(output_format),
         merge_fragments=merge_fragments,
+        min_gene_cov=min_gene_cov,
+        min_gene_id=min_gene_id,
+        min_cluster_cov=min_cluster_cov,
     )
 
 

@@ -1,0 +1,73 @@
+LOCUS       KL9001             180 bp    DNA     linear   30-SEP-2026
+DEFINITION  Synthetic K locus KL9001 whole sequence.
+ACCESSION   KL9001
+VERSION     KL9001
+KEYWORDS    .
+SOURCE      Vibrio syntheticus
+  ORGANISM  Vibrio syntheticus
+            .
+COMMENT     Annotated with Bakta (synthetic fixture)
+FEATURES             Location/Qualifiers
+     source          1..180
+                     /mol_type="genomic DNA"
+                     /note="K locus: KL9001"
+     gene            complement(1..60)
+                     /locus_tag="KL9001_001"
+                     /gene="wzx"
+     CDS             complement(1..60)
+                     /locus_tag="KL9001_001"
+                     /gene="wzx"
+                     /product="capsule polysaccharide export protein"
+     gene            61..120
+                     /locus_tag="KL9001_002"
+     CDS             61..120
+                     /locus_tag="KL9001_002"
+                     /product="capsule polysaccharide polymerase"
+     gene            complement(121..180)
+                     /locus_tag="KL9001_003"
+                     /gene="manC"
+     CDS             complement(121..180)
+                     /locus_tag="KL9001_003"
+                     /gene="manC"
+                     /product="mannose-6-phosphate guanylyltransferase"
+ORIGIN
+         1 acgttgcaag gcttacgatc acgttgcaag gcttacgatc acgttgcaag gcttacgatc
+        61 acgttgcaag gcttacgatc acgttgcaag gcttacgatc acgttgcaag gcttacgatc
+       121 acgttgcaag gcttacgatc acgttgcaag gcttacgatc acgttgcaag gcttacgatc
+//
+LOCUS       KL9002             200 bp    DNA     linear   30-SEP-2026
+DEFINITION  Synthetic K locus KL9002 whole sequence.
+ACCESSION   KL9002
+VERSION     KL9002
+KEYWORDS    .
+SOURCE      Vibrio syntheticus
+  ORGANISM  Vibrio syntheticus
+            .
+COMMENT     Annotated with Bakta (synthetic fixture)
+FEATURES             Location/Qualifiers
+     source          1..200
+                     /mol_type="genomic DNA"
+                     /note="K locus: KL9002"
+     gene            5..70
+                     /locus_tag="KL9002_001"
+                     /gene="orfA"
+     CDS             5..70
+                     /locus_tag="KL9002_001"
+                     /gene="orfA"
+                     /product="hypothetical protein"
+     gene            complement(80..140)
+                     /locus_tag="KL9002_002"
+                     /gene="orfB"
+     CDS             complement(80..140)
+                     /locus_tag="KL9002_002"
+                     /gene="orfB"
+                     /product="glycosyltransferase"
+     CDS             150..200
+                     /locus_tag="KL9002_009"
+                     /product="putative acyltransferase"
+ORIGIN
+         1 ttgacgatcg gtaaccagtt ttgacgatcg gtaaccagtt ttgacgatcg gtaaccagtt
+        61 ttgacgatcg gtaaccagtt ttgacgatcg gtaaccagtt ttgacgatcg gtaaccagtt
+       121 ttgacgatcg gtaaccagtt ttgacgatcg gtaaccagtt ttgacgatcg gtaaccagtt
+       181 ttgacgatcg gtaaccagtt
+//

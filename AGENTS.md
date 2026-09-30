@@ -70,16 +70,26 @@ gapit/
 │   ├── dbcodec.py       # gapit/v1 tagged-header codec (percent-encoded ids)
 │   ├── records.py       # records.jsonl truth store + gapit.manifest/1 provenance
 │   ├── dbbuild.py       # deterministic native-db build pipeline with self-check
+│   ├── clusterbuild.py  # cluster-db build pipeline: GBK/GFF → locus FASTA + features.json + typing copy
+│   ├── cluster.py       # cluster-screening engine core: minimap2 asm20 → per-locus/per-gene calls
+│   ├── cluster_math.py  # cs-walk → union coverage/identity math + verdicts (pure functions)
 │   ├── db_ops.py        # db use-cases: provider fetch + list (shared CLI + MCP; no typer)
 │   ├── db_query_ops.py  # db use-cases: search + outdated over installed DBs (shared CLI + MCP)
-│   ├── db_build_ops.py  # db use-case: custom FASTA+TSV → native db build (shared CLI + MCP)
+│   ├── db_build_ops.py  # db use-case: custom FASTA+TSV → gene db, GBK/GFF → cluster db (shared CLI + MCP)
+│   ├── gbfeatures.py    # GenBank FEATURES/ORIGIN parser → LocusFeatures/GeneFeature + gapit.features/1
+│   ├── gffparse.py      # GFF3 parser (embedded ##FASTA or sidecar) → the same locus/gene models
+│   ├── typing_models.py # gapit.typing/1 scoring schema + the evaluation-result models
+│   ├── typing_engine.py # gapit.typing/1 evaluation: rule scoring → phenotype call + breakdown
 │   ├── blast.py         # blastn invocation + tabular output parsing
 │   ├── hits.py          # Hit model, identity/coverage computation, filtering, dedup
+│   ├── fragments.py     # opt-in --merge-fragments cross-contig gene-fragment merging
 │   ├── minimap.py       # COVERAGE_MAP construction (exact abricate arithmetic)
 │   ├── minimap2_run.py  # minimap2 invocation layer for reads mode (streaming PAF, --cs/NM tags)
 │   ├── paf.py           # PAF row parsing + interval arithmetic (minimap2 output boundary)
 │   ├── report.py        # Report model: the canonical in-memory result
-│   ├── screening.py     # blastn screen use-case + shared engine helpers (OutputFormat, AlignerEnum)
+│   ├── engines.py       # shared OutputFormat / AlignerEnum (leaf module for the three engines)
+│   ├── screening.py     # blastn screen use-case + the shared run_screen dispatcher
+│   ├── screening_cluster.py # cluster screen use-case: kind guards, typing wiring, rendering
 │   ├── screening_reads.py # minimap2 use-cases: --r1/--r2 reads + --aligner minimap2 assemblies
 │   ├── reads.py         # FASTQ mode: minimap2 PAF parsing, coverage breadth/depth, presence
 │   ├── summary.py       # summary core: parse report tables into a gene matrix
@@ -98,11 +108,15 @@ gapit/
 │   │   ├── tsv.py       # abricate-compatible TSV/CSV
 │   │   ├── json.py      # versioned JSON (gapit.report/1 et al.)
 │   │   ├── md.py        # Markdown (human + agent readable, YAML frontmatter)
+│   │   ├── cluster.py   # gapit.cluster/1 models + JSON/TSV renderers (typed variant)
+│   │   ├── cluster_md.py # gapit.cluster/1 Markdown renderer (Phenotype column when typed)
 │   │   ├── schemas.py   # registered output models behind `gapit schema`
 │   │   └── summary.py   # summary matrix renderers (TSV/CSV/JSON/MD)
-│   ├── providers/       # 12 DB providers + common.py helpers + snapshots.py loader
+│   ├── providers/       # 16 DB providers (12 gene + 4 kaptive cluster) + common.py + snapshots.py
 │   ├── data/snapshots/  # bundled card + vfdb snapshot archives (.tar.gz)
 │   └── py.typed
+├── scripts/
+│   └── cluster_calibration.py # developer calibration harness for typed cluster dbs
 └── tests/
     ├── data/            # tiny synthetic db + contigs + reads (fast, offline)
     ├── golden/          # expected outputs incl. abricate reference TSVs
@@ -142,7 +156,9 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 - **DB acquisition** `[gapit-extension]`: `gapit db fetch|list|search|outdated|build|install` —
   provider fetch (bundled card/vfdb snapshots install offline; `--from-source` forces upstream),
   provider listing, records.jsonl gene search, staleness report, custom FASTA→native-db build,
-  and SHA256-verified local-file install.
+  GBK/GFF→cluster-db build (`--typing` installs a validated `gapit.typing/1` spec), the four
+  download-on-fetch kaptive cluster providers (GPL content, never bundled), and SHA256-verified
+  local-file install.
 - **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing nine tools:
   read-only `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via
   minimap2), `summary`, `schema`, `db_list`, `db_search`, `db_outdated`, plus the datadir-mutating
@@ -175,7 +191,9 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   query contigs against one db → 15-field
   tabular hits → filter by identity / coverage thresholds → **dedup hits sharing identical
   `(contig, qstart, qend)`** (first/best BLAST row wins) → one TSV row per surviving hit.
-  abricate does **not** merge overlapping intervals — do not "improve" this on the default path.
+  abricate   does **not** merge overlapping intervals — do not "improve" this on the default path (the
+  opt-in `--merge-fragments` cross-contig extension is the one sanctioned exception:
+  `fragments.py`).
 - Key computed fields: `%COVERAGE = 100*(length-gaps)/slen` (filtered unrounded, displayed
   `%.2f`), `%IDENTITY` (BLAST pident, never post-filtered), `COVERAGE_MAP` (15-char minimap),
   `GAPS`. Exact formulas, the dedup rule, and the minimap arithmetic live in `SPEC.md` — when

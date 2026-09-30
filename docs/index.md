@@ -14,7 +14,7 @@ TSV on stdout, plus first-class JSON and Markdown outputs with versioned schemas
 | [Screening contigs](./screen.md) | `gapit screen` on FASTA/GBK/EMBL inputs: thresholds, filters, formats |
 | [Screening reads](./reads.md) | FASTQ and assembly FASTA through minimap2: `--r1`/`--r2`, presets, breadth-based presence, two-stage survey |
 | [Summary](./summary.md) | `gapit summary`: gene presence/absence matrix across report tables |
-| [Databases](./databases.md) | Providers, `gapit db fetch/list/install`, datadirs, native `gapit/v1` format |
+| [Databases](./databases.md) | Providers, `gapit db fetch/list/install`, datadirs, native `gapit/v1` format, cluster databases (GBK/GFF, typing.json, kaptive) |
 | [Custom databases](./custom-db.md) | `gapit db build` walkthrough: any FASTA to a screenable database, worked examples |
 | [Outputs](./outputs.md) | TSV/JSON/Markdown formats, schemas, error envelopes, exit codes |
 | [MCP server](./mcp.md) | `gapit mcp`: analysis + database tools for agent runtimes over stdio JSON-RPC |
@@ -27,11 +27,11 @@ TSV on stdout, plus first-class JSON and Markdown outputs with versioned schemas
 |---|---|---|
 | `gapit screen` | Screen contig files or FASTQ reads for known genes | [Screening](./screen.md) |
 | `gapit summary` | Summarize report table(s) into a gene presence/absence matrix | [Summary](./summary.md) |
-| `gapit db fetch` | Fetch and build provider database(s) into the datadir | [Databases](./databases.md) |
+| `gapit db fetch` | Fetch and build provider database(s) into the datadir (kaptive cluster dbs download on fetch) | [Databases](./databases.md) |
 | `gapit db list` | List database providers and their installed state | [Databases](./databases.md) |
 | `gapit db install` | Install a local file after verifying its SHA256 | [Databases](./databases.md) |
 | `gapit setupdb` | Build BLAST indices for all databases under the datadir | here |
-| `gapit schema` | Print the JSON Schema of a gapit output document (`report`, `reads`, `reads2`, `summary`, `error`, `version`) | [Outputs](./outputs.md) |
+| `gapit schema` | Print the JSON Schema of a gapit output document (`report`, `reads`, `reads2`, `cluster`, `summary`, `error`, `version`, `features`, `typing`) | [Outputs](./outputs.md) |
 | `gapit mcp` | Run the MCP stdio server (also installed as the `gapit-mcp` console script) | [MCP server](./mcp.md) |
 
 ## Project documents

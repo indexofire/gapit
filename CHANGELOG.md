@@ -9,6 +9,40 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Gene-cluster databases and cluster screening** (stages 1–3; the blastn gene path and
+  all existing outputs are untouched — parity stays byte-identical):
+  - `gapit db build NAME input.gbk|input.gff3` detects the input kind by suffix and builds
+    a `kind: cluster` database — locus FASTA `sequences`, `gapit.features/1` feature table
+    (`features.json`), makeblastdb index, manifest `kind: cluster` — with `--kind
+    gene|cluster` to override (usage error on contradiction). New parsers (no Biopython):
+    GenBank FEATURES/ORIGIN (Bakta/modern and kaptive-style source-note labels) and GFF3
+    (embedded `##FASTA` or sidecar); compound `join()` CDS locations are rejected with a
+    typed error.
+  - `gapit screen --db <cluster db>` dispatches to the minimap2 `asm20` cluster engine:
+    per-gene present/partial/absent verdicts (`--min-gene-cov`/`--min-gene-id`, default
+    90/90), cs-based union coverage/identity, cross-contig fragmentation resilience, and a
+    best-locus call above `--min-cluster-cov` (default 96). Output is the new
+    `gapit.cluster/1` document (json), the cluster TSV/CSV (one row per file), or
+    Markdown; kind-mismatched flags are usage errors; reads mode rejects cluster
+    databases. The MCP `screen` tool gains `minGeneCov`/`minGeneId`/`minClusterCov`.
+  - `--typing FILE` installs a validated `gapit.typing/1` declarative scoring spec into a
+    cluster db (`typing.json`). Screening a typed database annotates every best call with
+    a `phenotype` and an additive `phenotype_detail` breakdown (score, confidence,
+    per-rule components, runner-up, ambiguity pair); the TSV gains a PHENOTYPE column
+    (typed runs only — untyped output stays byte-identical). Three rule kinds —
+    `weighted_genes`, `cluster_match`, `learned_linear` (schema only; no training code) —
+    behind a `cutoff` + `ambiguity_margin` + `fallback` decision layer. Unknown gene/locus
+    references fail with `TYPING_UNKNOWN_GENE` at build AND screen time.
+  - Four kaptive cluster providers, `kaptive_k`, `kaptive_o`, `kaptive_ak`, `kaptive_oc`
+    (Klebsiella K/O and A. baumannii K/OC antigen loci; Wyres et al. 2020 — cite Kaptive).
+    The database content is GPL-3.0, so nothing is bundled: fetch downloads the pinned
+    Kaptive v2.0.9 GenBank files and builds cluster databases; manifests record the
+    source URL, `license`, and citation `note`. No typing model ships with them yet
+    (locus calls only, phenotype null).
+  - `scripts/cluster_calibration.py`: developer harness that screens a typed cluster db
+    against a labels TSV and prints the per-expected-phenotype score distribution, the
+    called×expected agreement matrix, and the divergence list (the v1 loop for future
+    learned_linear training).
 - `gapit screen --merge-fragments` (blastn contig mode only; off by default): merge gene
   fragments split across contig boundaries into one reported hit when their union subject
   coverage reaches `--mincov`. Merged rows carry additive optional `merged` and `fragments`

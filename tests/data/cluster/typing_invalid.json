@@ -1,0 +1,9 @@
+{
+  "schema": "gapit.typing/1",
+  "rules": [
+    {"model": "neural_net", "phenotype": "K9", "layers": [64, 32]}
+  ],
+  "cutoff": 0.9,
+  "ambiguity_margin": 0.05,
+  "fallback": "unknown"
+}

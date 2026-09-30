@@ -14,11 +14,18 @@ from gapit.errors import GapitError
 
 ReadType = Literal["sr", "map-ont", "map-hifi"]
 
+# The cluster engine's assembly-to-reference preset (the vpautils engine's
+# choice): outside the reads vocabulary, accepted by the minimap2 invocation
+# layer but never a legal gapit.reads/1 params.read_type value.
+ClusterPreset = Literal["asm20"]
+Preset = ReadType | ClusterPreset
+
 
 class PafRecord(BaseModel, frozen=True):
-    """One PAF alignment row: 12 required fields + primary flag (tp:A:P) and
+    """One PAF alignment row: 12 required fields + primary flag (tp:A:P),
     mismatch count (NM:i:, None when minimap2 emitted no NM tag — it only
-    does with ``--cs``)."""
+    does with ``--cs``), and the short-form cs alignment walk (cs:Z:, None
+    without ``--cs``; consumed by the cluster engine's per-gene math)."""
 
     qname: str
     qlen: int
@@ -34,11 +41,13 @@ class PafRecord(BaseModel, frozen=True):
     mapq: int
     is_primary: bool = True
     nm: int | None = None
+    cs: str | None = None
 
 
 def parse_paf_row(line: str) -> PafRecord:
     """Parse one tab-delimited PAF line; <12 fields is a hard error. Records
-    without a tp tag count as primary; NM:i: is extracted when present."""
+    without a tp tag count as primary; NM:i: and cs:Z: are extracted when
+    present."""
     fields = line.split("\t")
     if len(fields) < 12:
         raise GapitError(
@@ -47,11 +56,14 @@ def parse_paf_row(line: str) -> PafRecord:
         )
     is_primary = True
     nm: int | None = None
+    cs: str | None = None
     for tag in fields[12:]:
         if tag.startswith("tp:A:"):
             is_primary = tag == "tp:A:P"
         elif tag.startswith("NM:i:"):
             nm = int(tag[len("NM:i:") :])
+        elif tag.startswith("cs:Z:"):
+            cs = tag[len("cs:Z:") :]
     strand = fields[4]
     if strand not in ("+", "-"):
         raise GapitError(
@@ -75,6 +87,7 @@ def parse_paf_row(line: str) -> PafRecord:
         mapq=int(fields[11]),
         is_primary=is_primary,
         nm=nm,
+        cs=cs,
     )
 
 

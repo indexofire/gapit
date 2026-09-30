@@ -18,7 +18,7 @@ from gapit.mcp import register_mcp_command
 
 app = typer.Typer(
     name="gapit",
-    help="Mass screening of contigs for antimicrobial resistance and virulence genes.",
+    help="Mass screening of contigs and reads for known genes across reference databases.",
     no_args_is_help=True,
     add_completion=True,
     # -h alias for --help; click Context propagates this to all subcommands/sub-apps.
@@ -38,7 +38,7 @@ def main(
         typer.Option("--json", help="With --version: emit gapit.version/1 JSON."),
     ] = False,
 ) -> None:
-    """Mass screening of contigs for AMR and virulence genes."""
+    """Mass screening of contigs and reads for known genes across reference databases."""
     if show_version:
         if as_json:
             typer.echo(VersionDocument(version=__version__).model_dump_json(by_alias=True))
@@ -82,7 +82,10 @@ def schema(
     name: Annotated[
         str,
         typer.Argument(
-            help="Document to introspect: report, reads, reads2, summary, error, or version."
+            help=(
+                "Document to introspect: report, reads, reads2, summary, error, version,"
+                " features, or typing."
+            ),
         ),
     ],
 ) -> None:

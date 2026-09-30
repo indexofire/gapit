@@ -184,8 +184,10 @@ unknown `--db NAME` is a usage error (exit 2) listing what is installed.
 
 ## Providers
 
-Twelve providers ship with gapit. `card` and `vfdb` also ship as bundled snapshots inside
-the package, so they install with zero network access.
+Sixteen providers ship with gapit. `card` and `vfdb` also ship as bundled snapshots inside
+the package, so they install with zero network access. The four kaptive providers are
+**cluster** databases (downloaded and built at fetch time; GPL content is never bundled —
+see [Kaptive providers](#kaptive-providers-gpl-downloaded-on-fetch)).
 
 | Name | Content | dbtype |
 |---|---|---|
@@ -201,8 +203,30 @@ the package, so they install with zero network access.
 | `bacmet2` | BacMet2 experimentally confirmed biocide/resistance genes (protein) | prot |
 | `victors` | Victors virulence factors | nucl |
 | `upec_expec_vf` | UPEC/ExPEC virulence genes (FordeGenomics) | nucl |
+| `kaptive_k` | Kaptive Klebsiella K antigen loci (cluster; GPL-3.0, downloaded on fetch) | nucl |
+| `kaptive_o` | Kaptive Klebsiella O antigen loci (cluster; GPL-3.0, downloaded on fetch) | nucl |
+| `kaptive_ak` | Kaptive A. baumannii K antigen loci (cluster; GPL-3.0, downloaded on fetch) | nucl |
+| `kaptive_oc` | Kaptive A. baumannii OC antigen loci (cluster; GPL-3.0, downloaded on fetch) | nucl |
 
 Protein databases (`bacmet2`) screen through `blastx`; nucleotide ones through `blastn`.
+Cluster databases screen through the minimap2 cluster engine
+([screen.md](./screen.md#cluster-databases-kind-cluster)).
+
+### Kaptive providers (GPL, downloaded on fetch)
+
+The four `kaptive_*` providers wrap the reference databases of
+[Kaptive](https://github.com/klebgenomics/Kaptive) (Wyres et al., J Clin Microbiol 2020 —
+please cite Kaptive when you use results from these databases). Kaptive v3 moved the
+databases out of its git repository, so gapit pins the archived **v2.0.9 tag** raw URLs
+(stable direct downloads, verified 2026-09-30).
+
+The database content is **GPL-3.0**, while gapit is MIT — so nothing kaptive is ever
+bundled: `gapit db fetch kaptive_k` (and `_o`, `_ak`, `_oc`) downloads the GenBank file at
+fetch time and builds a `kind: cluster` database through the cluster pipeline. The manifest
+records the upstream URL, the `GPL-3.0 (database content)` license, and the citation note.
+No typing model ships with them (phenotype calls stay null); you get kaptive-style best
+locus calls, and you can later install your own `typing.json` semantics by rebuilding with
+`gapit db build --typing`.
 
 ## Fetching databases
 
@@ -363,6 +387,8 @@ versions. A real one, from the plasmidfinder database:
 | `dbtype` | string | `nucl` or `prot`, chosen explicitly at build time |
 | `header_format` | string | Always `gapit/v1` for gapit-built databases |
 | `upstream_version` | string | Upstream release label when the source has one |
+| `license` | string | Database-content license, present only when the provider declares one (kaptive: `GPL-3.0 (database content)`) |
+| `note` | string | Free-text provenance note (kaptive: source file + citation), present only when set |
 | `tool` | object | `{name, version}` of the gapit that built the database |
 | `makeblastdb_version` | string | BLAST+ version that built the index |
 | `minimap2_version` | string | minimap2 version in the build environment (reads mode indexes in memory; no `.mmi` is built) |
@@ -527,3 +553,79 @@ abricate datadirs take the same in-memory path.
 A complete `db build` walkthrough with worked examples for every header format, protein
 databases, metadata TSVs, and a troubleshooting table lives in
 [Custom databases](./custom-db.md).
+
+## Cluster databases (GBK/GFF)
+
+`gapit db build NAME input.gbk` (or `.gbff`, `.gb`, `.gff`, `.gff3`, each plain or
+`.gz`/`.bz2`) builds a different kind of database: one record = one gene locus. The input
+kind is detected by suffix (`--kind gene|cluster` must agree or the build is a usage
+error); the FASTA gene pipeline of the previous section is untouched.
+
+```console
+$ gapit db build mycps cps_loci.gbk --datadir ./db
+gapit: generated ./db/mycps/sequences
+gapit: self-check passed for mycps
+gapit: BLAST index built (nucl)
+{"db":"mycps","records":2,"dbtype":"nucl","destination":"./db/mycps"}
+```
+
+Parsing (no Biopython): GenBank records become loci (`LOCUS` name = locus id) with their
+`CDS` features as genes; the source-feature notes carry the label and type (kaptive
+`K locus:`/`K type:` style, with Bakta-style fallbacks to the locus id). GFF3 inputs take
+the sequences from an embedded `##FASTA` block or a `<stem>.fa/.fna/.fasta` sidecar.
+Compound `join()` CDS locations are rejected with a typed error — split the record or use
+simple CDS annotations.
+
+The artifacts differ from a gene database: `sequences` holds one bare-locus-id record per
+locus (plain headers — abricate cannot read these), `features.json` is the
+`gapit.features/1` feature table (introspect with `gapit schema features`), the manifest
+declares `kind: cluster`, and there is no `records.jsonl`. Screening dispatches to the
+minimap2 cluster engine ([screen.md](./screen.md#cluster-databases-kind-cluster)).
+
+### typing.json — declarative phenotype scoring
+
+`--typing FILE` installs a validated `gapit.typing/1` document into the database as
+`typing.json`; screening then annotates every best call with a phenotype and an explainable
+score breakdown (the PHENOTYPE TSV column and `phenotype_detail` in gapit.cluster/1 —
+[outputs.md](./outputs.md#gapitcluster1-cluster-database-screening)). A minimal
+`weighted_genes` example:
+
+```json
+{
+  "schema": "gapit.typing/1",
+  "rules": [
+    {
+      "model": "weighted_genes",
+      "phenotype": "K1",
+      "weights": {"wzx": 1.0, "wzy": 3.0},
+      "negative": {"rfaD": -1.0},
+      "identity_floor": 95.0,
+      "require_any": ["wzx", "wzy"]
+    }
+  ],
+  "cutoff": 0.9,
+  "ambiguity_margin": 0.05,
+  "fallback": "unknown"
+}
+```
+
+Three rule kinds exist — `weighted_genes` (gene presence with an identity floor, negative
+markers, and an any-of gate), `cluster_match` (weighted locus coverage/identity/key-genes
+components with per-component floors), and `learned_linear` (a trained sigmoid over named
+features `gene:<id>:<cov|ident|present>` / `cluster:<locus>:<coverage|identity>`) — plus
+the document-level `cutoff`, `ambiguity_margin`, and `fallback` the decision layer applies.
+The full schema prints with `gapit schema typing`. Validation is strict at build time: a
+malformed document fails with `TYPING_MALFORMED`, and a rule referencing a gene or locus
+the input does not carry fails with `TYPING_UNKNOWN_GENE` before any artifact is written
+(the same check reruns at screen time, so hand-edited databases cannot smuggle dead
+references).
+
+Tuning a typing document against labeled assemblies is what
+`scripts/cluster_calibration.py` is for (developer tool): it screens every labeled sample,
+prints the per-expected-phenotype score distribution, the called×expected agreement
+matrix, and the divergence list — the loop a future `learned_linear` training flow will
+consume:
+
+```console
+$ python scripts/cluster_calibration.py mycps --datadir ./db labels.tsv
+```

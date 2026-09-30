@@ -1,0 +1,22 @@
+{
+  "schema": "gapit.typing/1",
+  "rules": [
+    {
+      "model": "cluster_match",
+      "phenotype": "KL101-like",
+      "coverage": {"weight": 0.5, "floor": 90.0},
+      "identity": {"weight": 0.3, "floor": 95.0},
+      "key_genes": {"weight": 0.2, "genes": ["wzx", "manC"]}
+    },
+    {
+      "model": "cluster_match",
+      "phenotype": "KL102-like",
+      "coverage": {"weight": 0.5, "floor": 90.0},
+      "identity": {"weight": 0.3, "floor": 95.0},
+      "key_genes": {"weight": 0.2, "genes": ["orfX"]}
+    }
+  ],
+  "cutoff": 0.9,
+  "ambiguity_margin": 0.05,
+  "fallback": "unknown"
+}

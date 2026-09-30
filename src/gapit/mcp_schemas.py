@@ -31,7 +31,12 @@ TOOLS: list[dict[str, object]] = [
     _tool_entry(
         "screen",
         "Screen contig files for known genes (json = gapit.report/1;"
-        " aligner minimap2 = fast assembly survey emitting gapit.reads/1).",
+        " aligner minimap2 = fast assembly survey emitting gapit.reads/1)."
+        " A cluster-kind database dispatches to the cluster engine"
+        " (minimap2 asm20; json = gapit.cluster/1 with a best-locus call,"
+        " per-locus gene verdicts, the phenotype call + score breakdown"
+        " when the db carries a typing.json, and the"
+        " minGeneCov/minGeneId/minClusterCov thresholds).",
         dict(
             files=_FILES,
             db={"type": "string", "default": "ncbi"},
@@ -43,6 +48,9 @@ TOOLS: list[dict[str, object]] = [
             min_breadth={"type": "number", "minimum": 0, "maximum": 100, "default": 90},
             min_identity={"type": "number", "minimum": 0, "maximum": 100, "default": 0},
             min_mapq={"type": "integer", "minimum": 0, "default": 0},
+            minGeneCov={"type": "number", "minimum": 0, "maximum": 100, "default": 90},
+            minGeneId={"type": "number", "minimum": 0, "maximum": 100, "default": 90},
+            minClusterCov={"type": "number", "minimum": 0, "maximum": 100, "default": 96},
             datadir=_STR,
         ),
         ["files"],

@@ -23,7 +23,7 @@ from gapit import config
 from gapit.errors import DatabaseError, InputError, UsageError
 from gapit.proctools import note
 from gapit.providers import REGISTRY
-from gapit.providers.common import bundled_snapshot_manifest
+from gapit.providers.common import Provider, bundled_snapshot_manifest
 from gapit.records import Record, installed_db_dirs, read_manifest, read_records
 
 DEFAULT_LIMIT = 100
@@ -189,9 +189,10 @@ def _utc_timestamp(value: str, where: str) -> datetime:
 
 def _snapshot_newer(name: str, fetched: datetime) -> bool:
     """True when the provider's bundled snapshot manifest is newer than the
-    installed ``fetched`` (unknown provider / no bundle -> False)."""
+    installed ``fetched`` (unknown provider / cluster provider / no bundle
+    -> False; snapshots are gene-pipeline only)."""
     provider = REGISTRY.get(name)
-    if provider is None:
+    if provider is None or not isinstance(provider, Provider):
         return False
     archived = bundled_snapshot_manifest(provider)
     return archived is not None and fetched < _utc_timestamp(

@@ -1,10 +1,11 @@
 """The blastn contig-screening use-case plus helpers shared by both engines.
 
 The minimap2 engine use-cases (--r1/--r2 reads, --aligner minimap2 assemblies)
-live in screening_reads.py; this module keeps the abricate-parity contig
-pipeline, the shared database lookup, and the run_screen dispatcher.
-OutputFormat/AlignerEnum are imported from gapit.engines so every screening
-surface sees the same enums.
+live in screening_reads.py; the cluster engine's orchestration and db-kind
+guards live in screening_cluster.py (stage-3 split, both under the LOC
+ceiling); this module keeps the abricate-parity contig pipeline, the shared
+database lookup, and the run_screen dispatcher. OutputFormat/AlignerEnum are
+imported from gapit.engines so every screening surface sees the same enums.
 """
 
 import os
@@ -22,6 +23,12 @@ from gapit.formats.json import render_json
 from gapit.formats.md import render_markdown
 from gapit.formats.tsv import format_tsv
 from gapit.report import Report, ScreeningParams
+from gapit.screening_cluster import (
+    reject_cluster_engine_flags,
+    reject_gene_engine_flags,
+    resolve_cluster_params,
+    run_cluster_screen,
+)
 
 
 def _resolve_inputs(files: list[Path] | None, fofn: Path | None) -> list[Path]:
@@ -77,6 +84,9 @@ def run_screen(
     output_format: OutputFormat,
     merge_fragments: bool = False,
     aligner: AlignerEnum | None = None,
+    min_gene_cov: float = 90.0,
+    min_gene_id: float = 90.0,
+    min_cluster_cov: float = 96.0,
 ) -> str:
     """Screen each input file in order; buffer reports; render once at the
     end and return the output for the caller to echo.
@@ -86,6 +96,11 @@ def run_screen(
     DATABASE_NOT_INDEXED errors precede any "Processing:" stderr lines.
     ``merge_fragments`` is the opt-in cross-contig gene-fragment merge
     (gapit extension; default off keeps abricate parity).
+
+    A cluster-kind database dispatches to the minimap2 cluster engine
+    (gapit.cluster) after the kind guards: gene-engine flags on a cluster
+    db and cluster flags on a gene db are usage errors; the gene path below
+    the dispatch is byte-identical to the pre-cluster behavior.
     """
     if not 0.0 < minid <= 100.0:
         usage_fail(f"--minid must be in (0, 100]: got {minid}")
@@ -97,6 +112,19 @@ def run_screen(
         usage_fail(f"--jobs must be >= 1: got {jobs}")
     inputs = _resolve_inputs(files, fofn)
     database = find_database(config.resolve_datadir(datadir), db_name)
+    if database.kind == "cluster":
+        reject_gene_engine_flags(minid, mincov, merge_fragments, jobs, aligner)
+        return run_cluster_screen(
+            inputs,
+            database,
+            resolve_cluster_params(db_name, min_gene_cov, min_gene_id, min_cluster_cov, threads),
+            output_format=output_format,
+            noheader=noheader,
+            nopath=nopath,
+            quiet=quiet,
+            debug=debug,
+        )
+    reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
     params = ScreeningParams(db=db_name, minid=minid, mincov=mincov, threads=threads)
     ensure_blast()
     dbtype = db.blast_db_info(database.sequences_path).dbtype

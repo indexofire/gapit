@@ -1,0 +1,8 @@
+##gff-version 3
+##sequence-region cl1 1 180
+cl1	bakta	CDS	1	60	.	+	0	ID=cds_cl1_1;gene=wzxK;product=export protein
+cl1	bakta	gene	1	60	.	+	.	ID=gene_cl1_1;gene=wzxK
+cl1	bakta	CDS	61	120	.	-	0	ID=cds_cl1_2;locus_tag=cl1_002;product=polymerase
+cl1	bakta	CDS	121	180	.	+	0	ID=cds_cl1_3;gene=manC;product=transferase
+# mid-file comment line
+cl2	bakta	CDS	10	90	.	+	0	ID=cds_cl2_1;Name=bigA;product=big protein

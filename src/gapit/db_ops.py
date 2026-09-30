@@ -17,6 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from gapit import config
 from gapit.errors import UsageError
 from gapit.providers import REGISTRY
+from gapit.providers.cluster_common import ClusterProvider, fetch_cluster_provider
 from gapit.providers.common import Dbtype, fetch_provider
 from gapit.records import read_manifest
 
@@ -42,6 +43,9 @@ class DbListEntry(BaseModel, frozen=True):
     dbtype: str
     installed: bool
     records: int | None = None
+    # Installed providers inherit their manifest's kind (cluster for a
+    # GBK/GFF-built db shadowing a provider name); the default is gene.
+    kind: str = "gene"
 
 
 class DbListDocument(BaseModel, frozen=True):
@@ -81,15 +85,26 @@ def perform_fetch(
                 context={"provider": provider_name},
             )
         db_dir = config.ensure_datadir(datadir) / provider_name
-        manifest = fetch_provider(
-            provider,
-            db_dir,
-            fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            force=force,
-            quiet=quiet,
-            from_source=from_source,
-            debug=debug,
-        )
+        fetched_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+        if isinstance(provider, ClusterProvider):
+            manifest = fetch_cluster_provider(
+                provider,
+                db_dir,
+                fetched_at=fetched_at,
+                force=force,
+                quiet=quiet,
+                debug=debug,
+            )
+        else:
+            manifest = fetch_provider(
+                provider,
+                db_dir,
+                fetched_at=fetched_at,
+                force=force,
+                quiet=quiet,
+                from_source=from_source,
+                debug=debug,
+            )
         return ProviderReceipt(
             db=provider_name,
             records=manifest.n_records,
@@ -108,13 +123,15 @@ def db_list_entries(root: Path) -> list[DbListEntry]:
         provider = REGISTRY[provider_name]
         manifest_path = root / provider_name / "gapit-manifest.json"
         installed = manifest_path.is_file()
+        manifest = read_manifest(manifest_path) if installed else None
         entries.append(
             DbListEntry(
                 name=provider_name,
                 description=provider.description,
                 dbtype=provider.dbtype,
                 installed=installed,
-                records=read_manifest(manifest_path).n_records if installed else None,
+                records=manifest.n_records if manifest else None,
+                kind=manifest.kind if manifest else provider.kind,
             )
         )
     return entries

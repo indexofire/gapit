@@ -54,7 +54,7 @@ about:
   license: MIT
   license_family: MIT
   license_file: LICENSE
-  summary: Mass screening of contigs and reads for antimicrobial resistance and virulence genes
+  summary: Mass screening of contigs and reads for known genes
   description: >-
     Agent-first Python reimplementation of abricate: BLAST-based screening of
     assemblies with byte-compatible TSV output plus first-class JSON and

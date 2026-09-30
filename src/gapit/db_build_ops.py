@@ -1,11 +1,13 @@
 """The custom-database build use-case, shared by the CLI and MCP.
 
-Turns a user-supplied FASTA into a fully built gapit-native database via the
-existing pipeline (records.jsonl -> sequences + BLAST index + manifest,
-written last). This module is orchestration plus a metadata merge only — the
-building blocks live in records/dbbuild/fasta/dbcodec/db (SPEC.md §11 covers
-the build pipeline itself). The typer command (:mod:`gapit.cmd_db_build`)
-and the MCP tool (:mod:`gapit.mcp_tools`) are thin callers.
+Turns a user-supplied input into a fully built gapit-native database: FASTA
+inputs run the gene pipeline (records.jsonl -> sequences + BLAST index +
+manifest, written last), GBK/GFF inputs run the cluster pipeline (locus
+FASTA + features.json + manifest ``kind: cluster``, gapit.dbbuild). This
+module is orchestration plus kind dispatch + a metadata merge only — the
+building blocks live in records/dbbuild/fasta/dbcodec/db (SPEC.md §11). The
+typer command (:mod:`gapit.cmd_db_build`) and the MCP tool
+(:mod:`gapit.mcp_tools`) are thin callers.
 
 Header kind is detected PER RECORD (mixed files allowed): a ``gapit|``
 prefix decodes through the strict tagged codec, anything else through the
@@ -25,6 +27,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from gapit import config
+from gapit.clusterbuild import is_cluster_input, perform_cluster_build
 from gapit.db import mol_type
 from gapit.dbbuild import build_database
 from gapit.dbcodec import decode_seqid
@@ -33,10 +36,12 @@ from gapit.fasta import FastaRecord, iter_fasta
 from gapit.records import Record, write_records
 
 Dbtype = Literal["nucl", "prot"]
+Kind = Literal["gene", "cluster"]
 
 
 class BuildReceipt(BaseModel, frozen=True):
-    """One-line JSON success receipt for `db build` (mirrors db fetch)."""
+    """One-line JSON success receipt for `db build` (mirrors db fetch);
+    ``records`` counts genes for a gene build, loci for a cluster build."""
 
     db: str
     records: int
@@ -163,10 +168,19 @@ def perform_build(
     *,
     warn: Callable[[str], None],
     quiet: bool = True,
+    kind: Kind | None = None,
+    typing: Path | None = None,
 ) -> BuildReceipt:
     """Run the custom-build pipeline and return the receipt — the shared CLI
     + MCP path. Warnings go to the caller-supplied ``warn`` (CLI: stderr;
-    MCP: dropped — stderr is reserved for the protocol)."""
+    MCP: dropped — stderr is reserved for the protocol).
+
+    The input kind is detected by suffix (GBK/GFF -> cluster, else gene);
+    an explicit ``kind`` must agree with the detection or the call fails as
+    a usage error. Cluster builds take ``typing`` (a gapit.typing/1 spec,
+    validated then copied into the database); the FASTA-only ``tsv``/
+    ``dbtype``/``description`` options are rejected on the cluster branch.
+    """
 
     # Security/frozen rule: `Path(datadir) / name` REPLACES the base when name
     # is absolute (and `..` escapes it); plain names only, all else allowed.
@@ -182,12 +196,37 @@ def perform_build(
             code="INPUT_NOT_FOUND",
             context={"file": str(fasta)},
         )
+    detected: Kind = "cluster" if is_cluster_input(fasta) else "gene"
+    if kind is not None and kind != detected:
+        raise UsageError(
+            f"--kind {kind} contradicts the detected {detected} input format: {fasta.name}",
+            code="USAGE_ERROR",
+            context={"kind": kind, "detected": detected},
+        )
+    if typing is not None and detected == "gene":
+        raise UsageError(
+            "--typing requires a cluster database (GBK/GFF input)",
+            code="USAGE_ERROR",
+        )
+    if detected == "cluster" and (tsv is not None or dbtype is not None or description):
+        raise UsageError(
+            "--tsv/--dbtype/--description apply to FASTA (gene) builds only",
+            code="USAGE_ERROR",
+        )
     db_dir = config.ensure_datadir(datadir) / name
     if (db_dir / "gapit-manifest.json").is_file() and not force:
         raise DatabaseError(
             f"won't overwrite existing database {name} (use --force)",
             code="DB_ALREADY_EXISTS",
             context={"db": name},
+        )
+    if detected == "cluster":
+        manifest = perform_cluster_build(name, fasta, typing, db_dir, quiet=quiet)
+        return BuildReceipt(
+            db=name,
+            records=manifest.n_records,
+            dbtype=manifest.dbtype,
+            destination=str(db_dir),
         )
     records = [_to_record(fasta_record, name, description) for fasta_record in iter_fasta(fasta)]
     if tsv is not None:
