@@ -184,8 +184,8 @@ unknown `--db NAME` is a usage error (exit 2) listing what is installed.
 
 ## Providers
 
-Sixteen providers ship with gapit. `card` and `vfdb` also ship as bundled snapshots inside
-the package, so they install with zero network access. The four kaptive providers are
+Nineteen providers ship with gapit. `card` and `vfdb` also ship as bundled snapshots inside
+the package, so they install with zero network access. The seven kaptive providers are
 **cluster** databases (downloaded and built at fetch time; GPL content is never bundled —
 see [Kaptive providers](#kaptive-providers-gpl-downloaded-on-fetch)).
 
@@ -203,10 +203,13 @@ see [Kaptive providers](#kaptive-providers-gpl-downloaded-on-fetch)).
 | `bacmet2` | BacMet2 experimentally confirmed biocide/resistance genes (protein) | prot |
 | `victors` | Victors virulence factors | nucl |
 | `upec_expec_vf` | UPEC/ExPEC virulence genes (FordeGenomics) | nucl |
-| `kaptive_k` | Kaptive Klebsiella K antigen loci (cluster; GPL-3.0, downloaded on fetch) | nucl |
-| `kaptive_o` | Kaptive Klebsiella O antigen loci (cluster; GPL-3.0, downloaded on fetch) | nucl |
-| `kaptive_ak` | Kaptive A. baumannii K antigen loci (cluster; GPL-3.0, downloaded on fetch) | nucl |
-| `kaptive_oc` | Kaptive A. baumannii OC antigen loci (cluster; GPL-3.0, downloaded on fetch) | nucl |
+| `kpsc_k` | K. pneumoniae species complex K locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `kpsc_o` | K. pneumoniae species complex O locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `kosc_k` | K. oxytoca species complex K locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `kosc_o` | K. oxytoca species complex O locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `ab_k` | A. baumannii K locus (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `ab_o` | A. baumannii OC locus — official keyword `ab_o` (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
+| `ecoli_kps` | E. coli group 2+3 capsular polysaccharide loci (Kaptive; cluster, GPL-3.0, downloaded on fetch) | nucl |
 
 Protein databases (`bacmet2`) screen through `blastx`; nucleotide ones through `blastn`.
 Cluster databases screen through the minimap2 cluster engine
@@ -214,14 +217,21 @@ Cluster databases screen through the minimap2 cluster engine
 
 ### Kaptive providers (GPL, downloaded on fetch)
 
-The four `kaptive_*` providers wrap the reference databases of
+The seven kaptive providers wrap the reference databases of
 [Kaptive](https://github.com/klebgenomics/Kaptive) (Wyres et al., J Clin Microbiol 2020 —
-please cite Kaptive when you use results from these databases). Kaptive v3 moved the
-databases out of its git repository, so gapit pins the archived **v2.0.9 tag** raw URLs
-(stable direct downloads, verified 2026-09-30).
+please cite Kaptive when you use results from these databases). The provider names are the
+**official install keywords** from the Kaptive v3 database docs
+([Available databases](https://klebgenomics.github.io/Kaptive/db/overview.html#available-databases)),
+and each fetches its raw GenBank file from the head (`main`) of the actively curated
+per-species upstream repository — `klebgenomics/KpSC_surface_antigen_loci` (`kpsc_k`,
+`kpsc_o`), `klebgenomics/KoSC-surface-antigen-loci` (`kosc_k`, `kosc_o`),
+`johannajkenyon/Abaumannii_surface_polysaccharide_loci` (`ab_k`, `ab_o`), and
+`rgladstone/EC-K-typing` (`ecoli_kps`) — so a fetched database tracks current upstream
+curation rather than a frozen release. Those repos also ship `.toml` metadata with upstream
+identity thresholds; gapit does not fetch it in v1 (a future `typing.json` source).
 
 The database content is **GPL-3.0**, while gapit is MIT — so nothing kaptive is ever
-bundled: `gapit db fetch kaptive_k` (and `_o`, `_ak`, `_oc`) downloads the GenBank file at
+bundled: `gapit db fetch kpsc_k` (and the other six keywords) downloads the GenBank file at
 fetch time and builds a `kind: cluster` database through the cluster pipeline. The manifest
 records the upstream URL, the `GPL-3.0 (database content)` license, and the citation note.
 No typing model ships with them (phenotype calls stay null); you get kaptive-style best

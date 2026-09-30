@@ -99,8 +99,8 @@ which abricate cannot read. Protein databases such as `bacmet2` screen through b
 
 Gene **cluster** databases are a second kind: `gapit db build NAME loci.gbk|gff3` builds a
 `kind: cluster` db (locus calls via minimap2, optional `--typing FILE` phenotype scoring),
-and the four `kaptive_k`/`kaptive_o`/`kaptive_ak`/`kaptive_oc` providers fetch the Kaptive
-Klebsiella and A. baumannii antigen-locus references at install time (GPL-3.0 content, so
+and the seven Kaptive cluster databases (kpsc_k, kpsc_o, kosc_k, kosc_o, ab_k, ab_o,
+ecoli_kps) fetch the Kaptive antigen-locus references at install time (GPL-3.0 content, so
 nothing is bundled — cite Kaptive/Wyres et al. 2020 for results).
 
 ## Output contract

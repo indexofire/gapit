@@ -139,10 +139,46 @@ Each row is one report file; columns are the union of genes found. Cells hold
 %COVERAGE (`.` when absent), `NUM_FOUND` counts distinct genes. Add `--format json|md`
 for machine- or human-readable matrices; details in [Summary](./summary.md).
 
+## 5. Try the cluster engine
+
+Gene **cluster** databases are a second database kind: instead of individual genes, one
+record is a whole locus (Kaptive-style antigen loci, capsule clusters), built from
+GenBank/GFF input. The fixture `tests/data/cluster/screening.gbk` holds two synthetic
+loci; `--typing` installs a `gapit.typing/1` phenotype scoring spec alongside:
+
+```bash
+gapit db build tinykps tests/data/cluster/screening.gbk \
+  --datadir /tmp/gapit-quickstart/db \
+  --typing tests/data/cluster/typing_screen.json
+# pull one locus out of the db as a one-locus query assembly
+awk '/^>locusA$/{p=1} /^>/{if($0!~/>locusA$/)p=0} p' \
+  /tmp/gapit-quickstart/db/tinykps/sequences > /tmp/gapit-quickstart/locusA.fa
+gapit screen /tmp/gapit-quickstart/locusA.fa --db tinykps
+```
+
+Screening a cluster database dispatches to the minimap2 cluster engine; the TSV shape
+changes to one best-locus call per file, and the typing spec turns the call into a
+phenotype:
+
+```console
+Processing: /tmp/gapit-quickstart/locusA.fa
+Best locus in /tmp/gapit-quickstart/locusA.fa: locusA
+FILE	BEST_LOCUS	TYPE	PHENOTYPE	COVERAGE	IDENTITY	PRESENT	PARTIAL	MISSING_IDS
+/tmp/gapit-quickstart/locusA.fa	locusA	KL101	K101	100.00	100.00	3	0	-
+```
+
+`PHENOTYPE` is `-` when no phenotype clears the spec's cutoff or two tie inside its
+ambiguity margin (screen both loci at once and the K101/K102 tie does exactly that).
+The seven kaptive providers (`gapit db fetch kpsc_k`, `kpsc_o`, `kosc_k`, `kosc_o`,
+`ab_k`, `ab_o`, `ecoli_kps`) install
+real Kaptive locus databases the same way. Full detail in
+[Screening](./screen.md#cluster-databases-kind-cluster) and
+[Databases](./databases.md#cluster-databases-gbkgff).
+
 ## Next steps
 
 - [Screening](./screen.md): all contig-mode flags, thresholds, multiple inputs, `--jobs`
 - [Screening reads](./reads.md): FASTQ input through minimap2
-- [Databases](./databases.md): install real databases (`gapit db fetch`), providers, datadirs
+- [Databases](./databases.md): install real databases (`gapit db fetch`), providers, datadirs, cluster databases and typing specs
 - [Outputs](./outputs.md): formats, schemas, error envelopes, exit codes
 - [MCP server](./mcp.md) and [Agent guide](./agents.md): driving gapit from agents

@@ -5,6 +5,21 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Kaptive cluster providers renamed/expanded to the seven official Kaptive v3 install
+  keywords — `kpsc_k`, `kpsc_o`, `kosc_k`, `kosc_o`, `ab_k`, `ab_o`, `ecoli_kps`
+  (K. pneumoniae species complex K/O, K. oxytoca species complex K/O, A. baumannii K/OC,
+  E. coli group 2+3 capsular polysaccharide loci) — each sourcing its raw GenBank file
+  from `main` of the actively curated per-species upstream repos
+  (klebgenomics.github.io/Kaptive/db/overview.html#available-databases), so fetches track
+  current curation instead of the frozen v2.0.9 archives the four old providers pinned.
+  Still GPL-3.0 download-on-fetch, never bundled; manifests record the new source URL,
+  license, and citation note (Kaptive/Wyres et al. 2020). The upstream `.toml`
+  identity-threshold metadata is not fetched in v1 (a future `typing.json` source).
+
 ## [0.4.0] - 2026-09-30
 
 ### Added

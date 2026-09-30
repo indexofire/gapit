@@ -112,7 +112,7 @@ gapit/
 │   │   ├── cluster_md.py # gapit.cluster/1 Markdown renderer (Phenotype column when typed)
 │   │   ├── schemas.py   # registered output models behind `gapit schema`
 │   │   └── summary.py   # summary matrix renderers (TSV/CSV/JSON/MD)
-│   ├── providers/       # 16 DB providers (12 gene + 4 kaptive cluster) + common.py + snapshots.py
+│   ├── providers/       # 19 DB providers (12 gene + 7 kaptive cluster) + cluster_common.py + common.py + snapshots.py
 │   ├── data/snapshots/  # bundled card + vfdb snapshot archives (.tar.gz)
 │   └── py.typed
 ├── scripts/

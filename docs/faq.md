@@ -64,6 +64,17 @@ $ gapit setupdb
 Only gapit-native output goes the other way (abricate cannot read `gapit/v1`
 databases).
 
+## How do I screen gene clusters or Kaptive loci?
+
+Cluster databases are a second database kind, built from GenBank/GFF files
+with `gapit db build NAME loci.gbk` (optionally `--typing FILE` for phenotype
+calls) or fetched from the seven kaptive providers (`kpsc_k`, `kpsc_o`, `kosc_k`,
+`kosc_o`, `ab_k`, `ab_o`, `ecoli_kps` — the official Kaptive v3 install keywords).
+`gapit screen assembly.fa --db kpsc_k` dispatches to the
+minimap2 cluster engine and reports one best-locus call per file, with
+per-gene verdicts and, on typed databases, a phenotype. Details:
+`./screen.md` and `./databases.md`.
+
 ## What is the difference between `--threads` and `--jobs`?
 
 `--threads` is BLAST worker threads inside one screening run (passed to
