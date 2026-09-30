@@ -145,6 +145,7 @@ PIPE_HIT = Hit(
     gaps=3,
     identity_pct=99.14,
     coverage_pct=98.7,
+    aligned_len=3149,
 )
 
 

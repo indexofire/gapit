@@ -5,6 +5,17 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `gapit screen --merge-fragments` (blastn contig mode only; off by default): merge gene
+  fragments split across contig boundaries into one reported hit when their union subject
+  coverage reaches `--mincov`. Merged rows carry additive optional `merged` and `fragments`
+  fields in `gapit.report/1` JSON plus a Markdown detail line; the default path (and all
+  existing output) is untouched. The MCP `screen` tool gains the matching `mergeFragments`
+  boolean parameter.
+
 ## [0.3.1] - 2026-09-28
 
 ### Added

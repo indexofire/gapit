@@ -85,8 +85,14 @@ def test_hit_key_order_is_documented(reports: list[Report]) -> None:
         "accession",
         "product",
         "resistance",
+        "merged",
+        "fragments",
     ]
-    positions = [output.index(f'"{key}"') for key in keys]
+    # merged/fragments are merge-mode-only optionals: absent from default
+    # documents (exclude_none), so order is asserted over present keys only.
+    present = [key for key in keys if f'"{key}"' in output]
+    assert present == keys[:14]
+    positions = [output.index(f'"{key}"') for key in present]
     assert positions == sorted(positions)
 
 

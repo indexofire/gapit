@@ -25,7 +25,7 @@ _COLUMNS = (
 )
 
 
-def _md_cell(value: str) -> str:
+def md_cell(value: str) -> str:
     """Escape Markdown table metacharacters so cells cannot break the table
     (victors gene ids like ``gi|115534241:2616-3152`` contain pipes)."""
     return value.replace("\\", "\\\\").replace("|", "\\|")
@@ -78,7 +78,15 @@ def render_markdown(reports: Iterable[Report], params: ScreeningParams, *, now: 
                 hit.product,
                 hit.function,
             )
-            lines.append("| " + " | ".join(_md_cell(cell) for cell in cells) + " |")
+            lines.append("| " + " | ".join(md_cell(cell) for cell in cells) + " |")
+        for hit in report.hits:
+            if not hit.merged:
+                continue
+            spans = ", ".join(
+                f"`{fragment.contig}:{fragment.start}-{fragment.end}({fragment.strand})`"
+                for fragment in hit.fragments
+            )
+            lines.append(f"- `{hit.gene}` merged from {len(hit.fragments)} fragments: {spans}")
         lines.append("")
     return "\n".join(lines) + "\n"
 
@@ -155,7 +163,7 @@ def _render_reads_markdown(
             )
             if with_identity:
                 cells += (f"{gene.mean_identity_pct:.2f}",)
-            lines.append("| " + " | ".join(_md_cell(cell) for cell in cells) + " |")
+            lines.append("| " + " | ".join(md_cell(cell) for cell in cells) + " |")
         lines.append("")
     return "\n".join(lines) + "\n"
 

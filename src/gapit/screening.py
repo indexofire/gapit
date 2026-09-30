@@ -2,10 +2,11 @@
 
 The minimap2 engine use-cases (--r1/--r2 reads, --aligner minimap2 assemblies)
 live in screening_reads.py; this module keeps the abricate-parity contig
-pipeline and the shared OutputFormat / AlignerEnum / database lookup.
+pipeline, the shared database lookup, and the run_screen dispatcher.
+OutputFormat/AlignerEnum are imported from gapit.engines so every screening
+surface sees the same enums.
 """
 
-import enum
 import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
@@ -15,27 +16,12 @@ import typer
 
 from gapit import config, db
 from gapit.blast import ensure_blast, screen_file
+from gapit.engines import AlignerEnum, OutputFormat
 from gapit.errors import DatabaseError, InputError, ensure_input_file, usage_fail
 from gapit.formats.json import render_json
 from gapit.formats.md import render_markdown
 from gapit.formats.tsv import format_tsv
 from gapit.report import Report, ScreeningParams
-
-
-class OutputFormat(enum.Enum):
-    """Screen output formats."""
-
-    tsv = "tsv"
-    csv = "csv"
-    json = "json"
-    md = "md"
-
-
-class AlignerEnum(enum.Enum):
-    """Alignment engines for screen (SPEC.md §1/§10)."""
-
-    blastn = "blastn"
-    minimap2 = "minimap2"
 
 
 def _resolve_inputs(files: list[Path] | None, fofn: Path | None) -> list[Path]:
@@ -89,6 +75,8 @@ def run_screen(
     nopath: bool,
     debug: bool,
     output_format: OutputFormat,
+    merge_fragments: bool = False,
+    aligner: AlignerEnum | None = None,
 ) -> str:
     """Screen each input file in order; buffer reports; render once at the
     end and return the output for the caller to echo.
@@ -96,6 +84,8 @@ def run_screen(
     The per-run gates (blastn presence via ``ensure_blast``, dbtype via one
     ``blastdbcmd -info``) fire once up front, so MISSING_DEPENDENCY and
     DATABASE_NOT_INDEXED errors precede any "Processing:" stderr lines.
+    ``merge_fragments`` is the opt-in cross-contig gene-fragment merge
+    (gapit extension; default off keeps abricate parity).
     """
     if not 0.0 < minid <= 100.0:
         usage_fail(f"--minid must be in (0, 100]: got {minid}")
@@ -106,8 +96,8 @@ def run_screen(
     if jobs < 1:
         usage_fail(f"--jobs must be >= 1: got {jobs}")
     inputs = _resolve_inputs(files, fofn)
-    params = ScreeningParams(db=db_name, minid=minid, mincov=mincov, threads=threads)
     database = find_database(config.resolve_datadir(datadir), db_name)
+    params = ScreeningParams(db=db_name, minid=minid, mincov=mincov, threads=threads)
     ensure_blast()
     dbtype = db.blast_db_info(database.sequences_path).dbtype
     cpu_count = os.cpu_count()
@@ -118,7 +108,9 @@ def run_screen(
         for path in inputs:
             if not quiet:
                 typer.echo(f"Processing: {path}", err=True)
-            report = screen_file(path, database, params, dbtype=dbtype, debug=debug)
+            report = screen_file(
+                path, database, params, dbtype=dbtype, debug=debug, merge_fragments=merge_fragments
+            )
             if not quiet:
                 typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
             reports.append(report)
@@ -127,7 +119,9 @@ def run_screen(
         def screen_one(path: Path) -> Report:
             if not quiet:
                 typer.echo(f"Processing: {path}", err=True)
-            report = screen_file(path, database, params, dbtype=dbtype, debug=debug)
+            report = screen_file(
+                path, database, params, dbtype=dbtype, debug=debug, merge_fragments=merge_fragments
+            )
             if not quiet:
                 typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
             return report

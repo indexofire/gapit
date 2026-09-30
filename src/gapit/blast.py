@@ -11,7 +11,8 @@ from pydantic import BaseModel
 
 from gapit.db import Database
 from gapit.errors import DependencyError, GapitError, InputError
-from gapit.hits import process_rows
+from gapit.fragments import merge_fragment_hits
+from gapit.hits import process_rows, process_rows_with_partials
 from gapit.report import Report, ScreeningParams
 from gapit.seqconvert import SeqFormat, detect_format, to_fasta_lines
 
@@ -228,12 +229,22 @@ def screen_file(
     *,
     dbtype: Literal["nucl", "prot"],
     debug: bool = False,
+    merge_fragments: bool = False,
 ) -> Report:
     """Screen one input file against one database into a sorted Report.
 
     The caller owns the per-run gates (``ensure_blast`` and the one-shot
-    ``dbtype`` resolution) so a multi-file run pays each probe once."""
+    ``dbtype`` resolution) so a multi-file run pays each probe once. With
+    ``merge_fragments`` (opt-in gapit extension), sub-mincov dedup survivors
+    are folded into one hit per gene when their union coverage reaches mincov.
+    """
     rows = run_blastn(query, database, params, dbtype=dbtype, debug=debug)
-    hits = process_rows(rows, mincov=params.mincov, default_db=params.db)
+    if merge_fragments:
+        hits, partials = process_rows_with_partials(
+            rows, mincov=params.mincov, default_db=params.db
+        )
+        hits = merge_fragment_hits(hits, partials, mincov=params.mincov)
+    else:
+        hits = process_rows(rows, mincov=params.mincov, default_db=params.db)
     ordered = sorted(hits, key=lambda hit: (hit.sequence, hit.start))
     return Report(file=str(query), hits=tuple(ordered))

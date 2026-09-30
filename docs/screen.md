@@ -21,6 +21,7 @@ you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 | `--mincov` | float | `80.0` | Minimum %coverage, `0 <= x <= 100`. Post-filter on the unrounded float. |
 | `--threads` | int | `1` | BLAST worker threads (passed to `-num_threads`). |
 | `--jobs` | int | `1` | Screen N input files concurrently. Output order is always input order. |
+| `--merge-fragments` | flag | off | Merge gene fragments split across contigs (gapit extension; see below). |
 | `--fofn` | path | none | File of filenames; replaces the positional FILEs. |
 | `--quiet` | flag | off | Silence stderr diagnostics. |
 | `--noheader` | flag | off | Suppress the `#FILE ...` header row. |
@@ -185,6 +186,39 @@ Found 1 genes in tests/data/contigs/full.fa
 
 stdout is unchanged by `--debug`; it is a stderr-only flag.
 
+## Fragment merging (`--merge-fragments`)
+
+Draft assemblies often break one gene across a contig boundary: each contig then carries only
+a partial fragment of the gene, every fragment fails `--mincov 80` on its own, and the gene
+goes unreported. `--merge-fragments` (a gapit extension, off by default; blastn contig mode
+only — it is a usage error in reads mode or with `--aligner minimap2`) rescues exactly those
+genes:
+
+- After the usual per-hit filtering, gapit groups the sub-`mincov` fragments of a gene that
+  were deduped on `(contig, start, end)` and passed `--minid`.
+- If the **union** of the fragments' subject intervals covers `>= mincov` of the gene
+  (`100 * union_length / slen`, compared on the unrounded float, same boundary rule as the
+  per-hit filter) **and** at least two fragments are involved, one merged hit is reported.
+- Genes that already have one individually passing hit are never merged — their stray
+  partials are ignored. Groups whose union stays below `mincov` still report nothing.
+
+Merged-row semantics:
+
+- `%COVERAGE` is the union coverage; `%IDENTITY` is the aligned-length-weighted mean of the
+  fragment identities; `GAPS` and the `COVERAGE_MAP` '/' marker come from summed gap counts,
+  with the map binned over the interval union (same 15-char arithmetic as normal rows).
+- `SEQUENCE` is the comma-joined list of contig names carrying the fragments (sorted; fine
+  for TSV — avoid `--format csv` for merged rows, where a comma inside a field is ambiguous).
+- `START`/`END`/`STRAND` come from the **anchor**: the fragment with the largest aligned
+  length (ties: first in `(contig, start)` order). `COVERAGE` is the union's bounding span.
+- JSON (`gapit.report/1`) additionally carries `"merged": true` and a `fragments` array with
+  each fragment's `{contig, start, end, strand, identity_pct, coverage_pct}` — additive
+  optional fields, absent from every non-merged row. Markdown adds one detail line per
+  merged gene under the table.
+
+Without the flag nothing about this path runs: default output stays byte-identical to
+abricate (the Notes below still apply in full).
+
 ## Notes
 
 - **Coverage filter on the unrounded float.** `%COVERAGE = 100 * (length - gaps) / slen` is
@@ -196,6 +230,8 @@ stdout is unchanged by `--debug`; it is a stderr-only flag.
 - **Dedup, no merging.** BLAST rows with an identical `(contig, start, end)` query span are
   collapsed and the first row wins. Overlapping hits at *different* spans are all reported;
   gapit does not merge overlapping intervals. This matches abricate exactly and is a feature.
+  (The opt-in `--merge-fragments` mode above is the one sanctioned exception; the default
+  path never merges.)
 - **Protein databases.** Databases with `dbtype prot` (for example `bacmet2`) screen through
   `blastx`, which accepts no `-perc_identity`. gapit then prints
   `--minid is not applied to protein databases (abricate parity)` on stderr and keeps going.

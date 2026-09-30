@@ -196,6 +196,38 @@ def test_screen_call_honors_datadir_argument_without_env(
     assert hit["gene"] == "tetA"
 
 
+def test_screen_call_merge_fragments_returns_merged_hit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given tools/call screen with mergeFragments=true on the fragment
+    fixture, When served, Then the merged gene is reported with its fragments
+    array (absent from the same call without the flag)."""
+    datadir = tmp_path / "datadir"
+    shutil.copytree(Path(__file__).parent / "data" / "fragments" / "fragdb", datadir / "fragdb")
+    make_blast_db(datadir / "fragdb" / "sequences", "fragdb")
+    monkeypatch.setenv("GAPIT_DATADIR", str(datadir))
+    fixture = str(Path(__file__).parent / "data" / "fragments" / "split4060.fa")
+    (response,) = exchange(
+        tool_call("screen", {"files": [fixture], "db": "fragdb", "mergeFragments": True})
+    )
+    assert response["result"]["isError"] is False
+    (hit,) = json.loads(response["result"]["content"][0]["text"])["files"][0]["hits"]
+    assert hit["merged"] is True
+    assert [fragment["contig"] for fragment in hit["fragments"]] == ["contigA", "contigB"]
+    (plain,) = exchange(tool_call("screen", {"files": [fixture], "db": "fragdb"}))
+    assert json.loads(plain["result"]["content"][0]["text"])["files"][0]["hits"] == []
+
+
+def test_screen_call_merge_fragments_requires_blastn_aligner() -> None:
+    """Given mergeFragments=true with aligner minimap2, When served, Then a
+    usage error envelope (blastn-only parameter)."""
+    (response,) = exchange(
+        tool_call("screen", {"files": ["x.fa"], "mergeFragments": True, "aligner": "minimap2"})
+    )
+    assert response["result"]["isError"] is True
+    assert json.loads(response["result"]["content"][0]["text"])["code"] == "USAGE_ERROR"
+
+
 def test_summary_call_returns_summary_json() -> None:
     (response,) = exchange(
         tool_call(

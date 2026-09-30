@@ -13,7 +13,11 @@ import typer
 from gapit.dispatch import Datadir, dispatch
 from gapit.errors import usage_fail
 from gapit.reads import ReadTypeEnum
-from gapit.screening import AlignerEnum, OutputFormat, run_screen
+from gapit.screening import (
+    AlignerEnum,
+    OutputFormat,
+    run_screen,
+)
 from gapit.screening_reads import run_screen_assemblies, run_screen_reads
 
 
@@ -107,6 +111,17 @@ def screen_command(
             ),
         ),
     ] = 1,
+    merge_fragments: Annotated[
+        bool,
+        typer.Option(
+            "--merge-fragments/--no-merge-fragments",
+            help=(
+                "Merge gene fragments split across contigs (gapit extension): report one"
+                " hit when fragments of a gene that each fail --mincov jointly cover >= mincov"
+                " of the subject. blastn contig mode only."
+            ),
+        ),
+    ] = False,
     fofn: Annotated[
         Path | None,
         typer.Option("--fofn", help="File of filenames; replaces the positional FILEs."),
@@ -121,7 +136,7 @@ def screen_command(
     ] = None,
 ) -> None:
     """Screen contig files or FASTQ reads (R1 and R2 comma-lists, one lane
-    each) for AMR/virulence genes."""
+    each) for known genes (reference or custom databases)."""
 
     def run() -> None:
         if (r1 is not None or r2 is not None) and files:
@@ -143,6 +158,8 @@ def screen_command(
                 usage_fail("--nopath is not available in reads mode")
             if jobs != 1:
                 usage_fail("--jobs is not available in reads mode")
+            if merge_fragments:
+                usage_fail("--merge-fragments is not available in reads mode")
             typer.echo(
                 run_screen_reads(
                     _split_read_list(r1 or "", "--r1"),
@@ -164,6 +181,8 @@ def screen_command(
                 nl=False,
             )
         elif aligner is AlignerEnum.minimap2:
+            if merge_fragments:
+                usage_fail("--merge-fragments is not available with --aligner minimap2")
             typer.echo(
                 run_screen_assemblies(
                     files,
@@ -202,6 +221,8 @@ def screen_command(
                     nopath,
                     debug,
                     output_format or OutputFormat.tsv,
+                    merge_fragments=merge_fragments,
+                    aligner=aligner,
                 ),
                 nl=False,
             )

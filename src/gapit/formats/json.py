@@ -12,6 +12,17 @@ from gapit.reads import GeneCoverage, ReadsParams, ReadsReport
 from gapit.report import Report, ScreeningParams
 
 
+class FragmentDocument(BaseModel, frozen=True):
+    """One contributing fragment of a merged hit (merge mode only)."""
+
+    contig: str
+    start: int
+    end: int
+    strand: str
+    identity_pct: float
+    coverage_pct: float
+
+
 class HitDocument(BaseModel, frozen=True):
     """One hit — 1:1 with the TSV columns, snake_case, same string values."""
 
@@ -32,6 +43,11 @@ class HitDocument(BaseModel, frozen=True):
     # column); the value flows from Hit.function and carries functional
     # categories for native DBs (Wave F1 renamed the internal slot only).
     resistance: str
+    # Additive gapit extension (schema-compatible, no version bump): present
+    # only on --merge-fragments rows; None is excluded at serialization, so
+    # default-mode documents stay byte-identical.
+    merged: bool | None = None
+    fragments: list[FragmentDocument] | None = None
 
 
 class FileDocument(BaseModel, frozen=True):
@@ -194,6 +210,21 @@ def _hit_document(hit: Hit) -> HitDocument:
         accession=hit.accession,
         product=hit.product,
         resistance=hit.function,
+        merged=True if hit.merged else None,
+        fragments=(
+            [
+                FragmentDocument(
+                    contig=fragment.contig,
+                    start=fragment.start,
+                    end=fragment.end,
+                    strand=fragment.strand,
+                    identity_pct=round(fragment.identity_pct, 2),
+                    coverage_pct=round(fragment.coverage_pct, 2),
+                )
+                for fragment in hit.fragments
+            ]
+            or None
+        ),
     )
 
 
@@ -209,7 +240,7 @@ def render_json(reports: Iterable[Report], params: ScreeningParams, *, now: date
             for report in reports
         ],
     )
-    return document.model_dump_json(indent=2, by_alias=True)
+    return document.model_dump_json(indent=2, by_alias=True, exclude_none=True)
 
 
 def _gene_coverage_document(gene: GeneCoverage) -> GeneCoverageDocument:

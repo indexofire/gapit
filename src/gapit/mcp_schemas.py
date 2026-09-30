@@ -30,7 +30,7 @@ def _tool_entry(
 TOOLS: list[dict[str, object]] = [
     _tool_entry(
         "screen",
-        "Screen contig files for AMR/virulence genes (json = gapit.report/1;"
+        "Screen contig files for known genes (json = gapit.report/1;"
         " aligner minimap2 = fast assembly survey emitting gapit.reads/1).",
         dict(
             files=_FILES,
@@ -39,6 +39,7 @@ TOOLS: list[dict[str, object]] = [
             mincov={"type": "number"},
             format={"type": "string", "enum": ["json", "tsv", "md"], "default": "json"},
             aligner={"type": "string", "enum": ["blastn", "minimap2"], "default": "blastn"},
+            mergeFragments=_FLAG,
             min_breadth={"type": "number", "minimum": 0, "maximum": 100, "default": 90},
             min_identity={"type": "number", "minimum": 0, "maximum": 100, "default": 0},
             min_mapq={"type": "integer", "minimum": 0, "default": 0},

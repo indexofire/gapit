@@ -26,7 +26,11 @@ from gapit.errors import usage_fail
 from gapit.formats.schemas import SCHEMA_MODELS
 from gapit.formats.summary import render_summary_json
 from gapit.reads import ReadTypeEnum
-from gapit.screening import AlignerEnum, OutputFormat, run_screen
+from gapit.screening import (
+    AlignerEnum,
+    OutputFormat,
+    run_screen,
+)
 from gapit.screening_reads import run_screen_assemblies, run_screen_reads
 from gapit.summary import SummaryParams, build_summary
 
@@ -117,7 +121,10 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     min_breadth = _number(arguments, "min_breadth", 90.0)
     min_identity = _number(arguments, "min_identity", 0.0)
     min_mapq = _integer(arguments, "min_mapq", 0)
+    merge_fragments = _flag(arguments, "mergeFragments")
     if aligner is AlignerEnum.minimap2:
+        if merge_fragments:
+            usage_fail("mergeFragments requires aligner blastn")
         # tsv is rejected by the use-case itself (reads-mode format rule);
         # non-default minid/mincov too (blastn-only thresholds).
         return run_screen_assemblies(
@@ -154,6 +161,7 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
         nopath=False,
         debug=False,
         output_format=OutputFormat(output_format),
+        merge_fragments=merge_fragments,
     )
 
 
