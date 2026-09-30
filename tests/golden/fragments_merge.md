@@ -1,6 +1,6 @@
 ---
 schema: gapit.report/1
-tool: gapit 0.3.1
+tool: gapit 0.4.0
 created_at: 2026-09-17T12:00:00Z
 db: fragdb
 minid: 80.0

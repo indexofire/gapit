@@ -44,9 +44,9 @@ gapit --version
 
 ```console
 $ gapit --version
-gapit 0.3.1
+gapit 0.4.0
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.3.1"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.4.0"}
 ```
 
 ## External binaries
