@@ -9,8 +9,8 @@ their own suites); bare `db fetch` never reaches the use-case, so the
 former omitted-NAME default-set download cannot start by accident.
 """
 
-from pathlib import Path
 import re
+from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner, Result
