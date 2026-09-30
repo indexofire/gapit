@@ -48,6 +48,7 @@ summary-parity = ".pixi/envs/default/bin/python tests/parity/run_summary_parity.
 # gates environments (AGENTS.md §2 dependency discipline).
 [feature.docs.pypi-dependencies]
 mkdocs-material = ">=9.5"
+mkdocs-static-i18n = ">=1.2"
 
 [environments]
 default = ["py314"]

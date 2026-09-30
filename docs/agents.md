@@ -16,16 +16,20 @@ $ gapit --version --json
 {"schema":"gapit.version/1","name":"gapit","version":"0.4.0"}
 ```
 
-Output schemas. Six documents are introspectable: `report`, `reads`,
-`reads2`, `summary`, `error`, `version`. Each prints its full JSON Schema:
+Output schemas. Nine documents are introspectable: `report`, `reads`,
+`reads2`, `cluster`, `summary`, `error`, `version`, plus the database-side
+documents `features` and `typing`. Each prints its full JSON Schema:
 
 ```console
 $ gapit schema report      # gapit.report/1 (contig screening)
 $ gapit schema reads       # gapit.reads/1  (FASTQ screening)
 $ gapit schema reads2      # gapit.reads/2  (filtered FASTQ screening)
+$ gapit schema cluster     # gapit.cluster/1 (cluster-database screening)
 $ gapit schema summary     # gapit.summary/1
 $ gapit schema error       # gapit.error/1
 $ gapit schema version     # gapit.version/1
+$ gapit schema features    # gapit.features/1 (cluster db feature table)
+$ gapit schema typing      # gapit.typing/1 (cluster db scoring spec)
 ```
 
 For example, `gapit schema version` (real output):
@@ -112,7 +116,7 @@ Envelope details and error codes: `./outputs.md`.
 ## JSON stability policy
 
 - Every document self-identifies with a version string: `gapit.report/1`,
-  `gapit.reads/1`, `gapit.summary/1`, `gapit.error/1`,
+  `gapit.reads/1`, `gapit.cluster/1`, `gapit.summary/1`, `gapit.error/1`,
   `gapit.version/1`. Check `schema` first, dispatch on it.
 - Schemas follow semver. A minor bump never renames or retypes an existing
   field; new fields may appear, so ignore unknown keys rather than rejecting

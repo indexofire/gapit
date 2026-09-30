@@ -1,0 +1,103 @@
+# 安装 gapit
+
+两条安装路径：PyPI wheel（外部二进制由你提供），或者用 [pixi](https://pixi.sh) 从
+git 克隆安装（二进制由它代管）。
+
+## 从 PyPI 安装
+
+```bash
+pip install gapit
+```
+
+wheel 里打包了 Python 包、`gapit`/`gapit-mcp` console script，以及离线的
+`card`/`vfdb` 快照。它**不**打包 BLAST+ 和 minimap2：请先装好它们（见下文
+"外部二进制"一节，例如 `conda create -n gapit-env -c
+bioconda blast minimap2`）。
+
+## 从源码安装（pixi）
+
+### 前置条件
+
+- [git](https://git-scm.com) 和 [pixi](https://pixi.sh)。macOS/Linux 上：
+  `curl -fsSL https://pixi.sh/install.sh | bash`
+- 如果在 pixi 之外用 pip/pyproject 安装本包，需要 Python 3.11+。用 pixi 则无需操心：
+  环境自带 Python（开发环境锁定 3.14）。
+
+### 安装
+
+```bash
+git clone https://github.com/indexofire/gapit.git
+cd gapit
+pixi install
+```
+
+通过 pixi 运行 CLI，或者把环境的 bin 目录加进 PATH：
+
+```bash
+pixi run gapit --version
+# 或者，等价地：
+export PATH="$PWD/.pixi/envs/default/bin:$PATH"
+gapit --version
+```
+
+## 验证
+
+```console
+$ gapit --version
+gapit 0.4.0
+$ gapit --version --json
+{"schema":"gapit.version/1","name":"gapit","version":"0.4.0"}
+```
+
+## 外部二进制
+
+gapit 会调用 BLAST+（`blastn`、`blastx`、`makeblastdb`、`blastdbcmd`）和 `minimap2`。
+两者都来自 pixi 环境（conda-forge 和 bioconda），无需手动安装。如果你在 pixi 之外运行
+gapit，请自行确保这些二进制在 PATH 上。输入归一化（plain/gz/bz2 的 FASTA、FASTQ、
+GenBank、EMBL）是原生的，不需要 `any2fasta`。
+
+## 数据库引导
+
+筛查需要数据目录（`$GAPIT_DATADIR`，然后是 `~/.local/share/gapit/db`；可用
+`--datadir` 逐次覆盖）里至少有一个数据库。`card` 和 `vfdb` 随包内置、零网络安装；
+其他提供商在抓取时从上游下载。完整的提供商表见[数据库](./databases.md)。
+
+```bash
+gapit db fetch            # installs the default set (card, vfdb) into the default datadir
+```
+
+同样的安装动作放进一个临时数据目录，看看 fetch 会打印什么。进度行走 stderr，每个
+数据库一行 JSON 回执走 stdout：
+
+```console
+$ gapit db fetch --datadir /tmp/gapit-docs/dd
+gapit: installed card from bundled snapshot card.tar.gz
+gapit: generated /tmp/gapit-docs/dd/card/sequences
+gapit: self-check passed for card
+gapit: BLAST index built (nucl)
+{"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/gapit-docs/dd/card"}
+gapit: installed vfdb from bundled snapshot vfdb.tar.gz
+gapit: generated /tmp/gapit-docs/dd/vfdb/sequences
+gapit: self-check passed for vfdb
+gapit: BLAST index built (nucl)
+{"db":"vfdb","records":4769,"dbtype":"nucl","destination":"/tmp/gapit-docs/dd/vfdb"}
+```
+
+随时用 `gapit db list`（或 `gapit db list --json`）确认提供商目录和安装状态。
+
+## Shell 补全
+
+```bash
+gapit --install-completion   # bash, zsh, or fish; installs for the current shell
+gapit --show-completion      # print the completion script to copy or customize
+```
+
+## 升级
+
+```bash
+git pull
+pixi install
+```
+
+数据库内容不会随代码更新：重新运行 `gapit db fetch <name> --force`，从上游（或其
+内置快照）重建已安装的数据库。

@@ -30,6 +30,7 @@ TSV on stdout, plus first-class JSON and Markdown outputs with versioned schemas
 | `gapit db fetch` | Fetch and build provider database(s) into the datadir (kaptive cluster dbs download on fetch) | [Databases](./databases.md) |
 | `gapit db list` | List database providers and their installed state | [Databases](./databases.md) |
 | `gapit db install` | Install a local file after verifying its SHA256 | [Databases](./databases.md) |
+| `gapit db build` | Build a database from a gene FASTA, or from GBK/GFF loci as a cluster database (optionally with a `--typing` phenotype spec) | [Custom databases](./custom-db.md) |
 | `gapit setupdb` | Build BLAST indices for all databases under the datadir | here |
 | `gapit schema` | Print the JSON Schema of a gapit output document (`report`, `reads`, `reads2`, `cluster`, `summary`, `error`, `version`, `features`, `typing`) | [Outputs](./outputs.md) |
 | `gapit mcp` | Run the MCP stdio server (also installed as the `gapit-mcp` console script) | [MCP server](./mcp.md) |

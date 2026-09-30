@@ -183,7 +183,7 @@ Each hit mirrors the TSV columns one to one:
 | `resistance` | string | Resistance or functional category (frozen name, kept for TSV parity) |
 
 Two additive optional fields appear on hits produced by `gapit screen --merge-fragments`
-(cross-contig fragment merging; [screen.md](./screen.md#fragment-merging---merge-fragments))
+(cross-contig fragment merging; [screen.md](./screen.md#fragment-merging-merge-fragments))
 and are absent from every other row:
 
 | Field | Type | Meaning |
