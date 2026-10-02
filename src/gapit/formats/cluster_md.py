@@ -1,8 +1,11 @@
 """gapit.cluster/1 Markdown renderer.
 
-Split from formats/cluster.py at the 250-LOC ceiling (stage 3): the summary
-table (one row per file, a ``Phenotype`` column on typed databases), the
-best locus's gene table, and YAML frontmatter mirroring the engine params.
+Split from formats/cluster.py at the 250-LOC ceiling (stage 3): the per-file
+summary row (with a ``Phenotype`` column on typed databases), the best
+locus's gene table, and YAML frontmatter mirroring the engine params. The
+frontmatter is STATIC metadata only and each file's section carries its own
+summary row + gene table, so the document streams one chunk per file exactly
+like the TSV — no all-files summary table, no run totals.
 """
 
 from collections.abc import Iterable
@@ -50,35 +53,29 @@ def _phenotype_cell(report: ClusterReport) -> str:
     return report.best.phenotype
 
 
-def _summary_rows(files: list[ClusterReport], typed: bool) -> list[tuple[str, ...]]:
-    """One summary row per file; a null best renders the untyped dashes."""
-    rows: list[tuple[str, ...]] = []
-    for report in files:
-        if report.best is None:
-            rows.append((report.file, *("-",) * (8 if typed else 7)))
-            continue
-        best = report.best
-        phenotype = (_phenotype_cell(report),) if typed else ()
-        rows.append(
-            (
-                report.file,
-                best.locus,
-                best.type,
-                *phenotype,
-                f"{best.coverage_pct:.2f}",
-                f"{best.identity_pct:.2f}",
-                str(best.genes_present),
-                str(best.genes_partial),
-                ";".join(
-                    gene_id
-                    for locus in report.loci
-                    if locus.locus == best.locus
-                    for gene_id in locus.missing
-                )
-                or "-",
-            )
+def _summary_row(report: ClusterReport, typed: bool) -> tuple[str, ...]:
+    """One file's summary row; a null best renders the untyped dashes."""
+    if report.best is None:
+        return (report.file, *("-",) * (8 if typed else 7))
+    best = report.best
+    phenotype = (_phenotype_cell(report),) if typed else ()
+    return (
+        report.file,
+        best.locus,
+        best.type,
+        *phenotype,
+        f"{best.coverage_pct:.2f}",
+        f"{best.identity_pct:.2f}",
+        str(best.genes_present),
+        str(best.genes_partial),
+        ";".join(
+            gene_id
+            for locus in report.loci
+            if locus.locus == best.locus
+            for gene_id in locus.missing
         )
-    return rows
+        or "-",
+    )
 
 
 def _gene_rows(top: LocusCall) -> list[tuple[str, ...]]:
@@ -96,13 +93,10 @@ def _gene_rows(top: LocusCall) -> list[tuple[str, ...]]:
     ]
 
 
-def render_cluster_md(
-    reports: Iterable[ClusterReport], params: ClusterParams, *, now: datetime, typed: bool = False
-) -> str:
-    """Render cluster screening as deterministic Markdown: YAML frontmatter,
-    a per-file summary table (with the phenotype column on typed databases),
-    then the best locus's gene table per file."""
-    files = list(reports)
+def cluster_md_head(params: ClusterParams, *, now: datetime) -> str:
+    """The STATIC frontmatter + title chunk (schema, tool, timestamp,
+    thresholds — everything knowable before file 1), so a streaming caller
+    emits it first; the per-file sections follow one chunk per file."""
     lines: list[str] = [
         "---",
         "schema: gapit.cluster/1",
@@ -114,36 +108,57 @@ def render_cluster_md(
         f"min_gene_id: {params.min_gene_id}",
         f"min_cluster_cov: {params.min_cluster_cov}",
         f"threads: {params.threads}",
-        f"files: {len(files)}",
         "---",
         "",
         "# gapit cluster screening report",
         "",
-        *_md_table(
-            _SUMMARY_COLUMNS_TYPED if typed else _SUMMARY_COLUMNS, _summary_rows(files, typed)
-        ),
-        "",
     ]
-    for report in files:
-        lines.append(f"## `{report.file}`")
-        lines.append("")
-        top = next(
-            (locus for locus in report.loci if report.best and locus.locus == report.best.locus),
-            None,
-        )
-        if top is None:
-            lines.append("_No locus detected._")
-            lines.append("")
-            continue
-        if typed and report.best is not None and report.best.phenotype_detail is not None:
-            detail = report.best.phenotype_detail
-            lines.append(
-                f"Phenotype `{_phenotype_cell(report)}` (score {detail.score:.4f},"
-                f" {detail.confidence} confidence)"
-            )
-            lines.append("")
-        lines.append(f"Best locus `{top.locus}` ({top.label}, type {top.type}):")
-        lines.append("")
-        lines.extend(_md_table(_GENE_COLUMNS, _gene_rows(top)))
-        lines.append("")
     return "\n".join(lines) + "\n"
+
+
+def cluster_md_file_chunk(report: ClusterReport, *, typed: bool) -> str:
+    """One file's section, self-contained so it streams the moment the file
+    completes: heading, the file's summary row (one-row table with the same
+    columns the former all-files summary carried; a ``Phenotype`` column on
+    typed databases), phenotype detail line on typed databases, and the best
+    locus's gene table."""
+    lines: list[str] = [f"## `{report.file}`", ""]
+    lines.extend(
+        _md_table(
+            _SUMMARY_COLUMNS_TYPED if typed else _SUMMARY_COLUMNS, [_summary_row(report, typed)]
+        )
+    )
+    lines.append("")
+    top = next(
+        (locus for locus in report.loci if report.best and locus.locus == report.best.locus),
+        None,
+    )
+    if top is None:
+        lines.append("_No locus detected._")
+        lines.append("")
+        return "\n".join(lines) + "\n"
+    if typed and report.best is not None and report.best.phenotype_detail is not None:
+        detail = report.best.phenotype_detail
+        lines.append(
+            f"Phenotype `{_phenotype_cell(report)}` (score {detail.score:.4f},"
+            f" {detail.confidence} confidence)"
+        )
+        lines.append("")
+    lines.append(f"Best locus `{top.locus}` ({top.label}, type {top.type}):")
+    lines.append("")
+    lines.extend(_md_table(_GENE_COLUMNS, _gene_rows(top)))
+    lines.append("")
+    return "\n".join(lines) + "\n"
+
+
+def render_cluster_md(
+    reports: Iterable[ClusterReport], params: ClusterParams, *, now: datetime, typed: bool = False
+) -> str:
+    """Render cluster screening as deterministic Markdown: static YAML
+    frontmatter, then one section per file (its summary row with the
+    phenotype column on typed databases, then the best locus's gene table).
+    The head + file chunks concatenate to exactly this document."""
+    files = list(reports)
+    return cluster_md_head(params, now=now) + "".join(
+        cluster_md_file_chunk(report, typed=typed) for report in files
+    )

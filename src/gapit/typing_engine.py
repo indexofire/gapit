@@ -1,8 +1,10 @@
-"""The gapit.typing/1 evaluation engine (stage 3 of the gene-cluster feature).
+"""The gapit.typing evaluation engine — the cluster path (stage 3).
 
-Pure functions: a validated typing document plus one file's cluster results
-(stage 2's ClusterReport) become a phenotype call with an explainable score
-breakdown. The three rule models score independently —
+Pure functions: one typing SCHEME (:class:`gapit.typing_models.TypingScheme`
+— a gapit.typing/2 scheme, or the single scheme a gapit.typing/1 document
+degrades to) plus one file's cluster results (stage 2's ClusterReport)
+become a phenotype call with an explainable score breakdown. The three rule
+models score independently —
 ``weighted_genes`` normalizes gene-presence weights to [0, 1],
 ``cluster_match`` sums raw weighted locus components (per covered locus, best
 locus wins, rank-order tie-break; a component below its floor zeroes the
@@ -11,8 +13,10 @@ through a sigmoid — and the decision layer ranks rules by score desc
 (declared order on ties): top >= cutoff AND (top - second) >=
 ambiguity_margin calls the phenotype with ``high`` confidence; top >= cutoff
 with a thinner separation is ``ambiguous`` (phenotype null, the top two
-listed); otherwise the document's fallback with ``low`` confidence.
+listed); otherwise the scheme's fallback with ``low`` confidence.
 
+The gene-kind pathway (gapit.typing_result/1 calls over weighted_genes
+rules) lives in gapit.typing_gene and reuses this module's scorers verbatim.
 Reference validation (TYPING_UNKNOWN_GENE) lives in typing_models beside the
 schema; loading (typing.json beside sequences) in gapit.cluster beside
 load_features. Reports without a best call pass through unannotated.
@@ -22,14 +26,13 @@ import math
 
 from gapit.cluster import ClusterReport, GeneCall, LocusCall
 from gapit.errors import DatabaseError
-from gapit.typing_models import (
+from gapit.typing_decide import decide_scheme
+from gapit.typing_models import TypingScheme
+from gapit.typing_results import ScoreComponent, ScoredRule
+from gapit.typing_rules import (
     ClusterMatchRule,
+    ExactSetRule,
     LearnedLinearRule,
-    PhenotypeDetail,
-    PhenotypeScore,
-    ScoreComponent,
-    ScoredRule,
-    TypingDocument,
     WeightedGenesRule,
     parse_feature_name,
 )
@@ -50,8 +53,9 @@ def score_weighted_genes(
 ) -> tuple[float, tuple[ScoreComponent, ...]]:
     """Gene-presence score normalized to [0, 1] by the sum of positive
     weights (raw sum when that is 0). A gene counts when its verdict is
-    present AND identity_pct >= the rule's identity floor; an unsatisfied
-    require_any zeroes the rule outright."""
+    present, identity clears the rule's identity floor, and — when the
+    optional coverage_floor is set — coverage clears that too; an
+    unsatisfied require_any zeroes the rule outright."""
 
     def present(gene_id: str) -> bool:
         call = genes.get(gene_id)
@@ -59,6 +63,7 @@ def score_weighted_genes(
             call is not None
             and call.verdict == "present"
             and call.identity_pct >= rule.identity_floor
+            and (rule.coverage_floor is None or call.coverage_pct >= rule.coverage_floor)
         )
 
     if rule.require_any and not any(present(gene_id) for gene_id in rule.require_any):
@@ -74,6 +79,43 @@ def score_weighted_genes(
         _component(gene_id, score / denominator if denominator > 0 else score)
         for gene_id, score in contributions
     )
+
+
+def score_exact_set(
+    rule: ExactSetRule, genes: dict[str, GeneCall]
+) -> tuple[float, tuple[ScoreComponent, ...]]:
+    """Deterministic boolean gene-set match (Doumith/Shigella-style tables):
+    1.0 iff every ``requires`` gene is present, at least one
+    ``requires_any`` gene is present (when that set is non-empty), AND
+    every ``excludes`` gene is absent, else 0.0. Presence is the
+    weighted_genes floor semantics with both floors defaulting to 90; each
+    component carries that gene's constraint satisfaction (1.0 met / 0.0
+    missed), required genes first, then the any-of set, then excludes."""
+
+    def satisfied(gene_id: str) -> bool:
+        call = genes.get(gene_id)
+        return (
+            call is not None
+            and call.verdict == "present"
+            and call.identity_pct >= rule.identity_floor
+            and call.coverage_pct >= rule.coverage_floor
+        )
+
+    ok = (
+        all(satisfied(gene_id) for gene_id in rule.requires)
+        and (not rule.requires_any or any(satisfied(gene_id) for gene_id in rule.requires_any))
+        and all(not satisfied(gene_id) for gene_id in rule.excludes)
+    )
+    components = (
+        tuple(_component(gene_id, 1.0 if satisfied(gene_id) else 0.0) for gene_id in rule.requires)
+        + tuple(
+            _component(gene_id, 1.0 if satisfied(gene_id) else 0.0) for gene_id in rule.requires_any
+        )
+        + tuple(
+            _component(gene_id, 1.0 if not satisfied(gene_id) else 0.0) for gene_id in rule.excludes
+        )
+    )
+    return (1.0 if ok else 0.0), components
 
 
 def score_cluster_match(
@@ -174,73 +216,44 @@ def _malformed_metric(kind: str, name: str, metric: str) -> DatabaseError:
     )
 
 
-def decide_typing(
-    scored: list[ScoredRule], document: TypingDocument
-) -> tuple[str | None, PhenotypeDetail]:
-    """Rank evaluated rules (score desc, declared order on ties) and apply
-    the cutoff + ambiguity-margin decision; returns the phenotype string (or
-    None when ambiguous) plus the explainable detail of the winning rule."""
-    ranked = sorted(enumerate(scored), key=lambda pair: (-pair[1].score, pair[0]))
-    top = ranked[0][1]
-    second = ranked[1][1] if len(ranked) > 1 else None
-    separated = second is None or (top.score - second.score) >= document.ambiguity_margin
-    if top.score >= document.cutoff and separated:
-        phenotype, confidence = top.phenotype, "high"
-    elif top.score >= document.cutoff:
-        phenotype, confidence = None, "ambiguous"
-    else:
-        phenotype, confidence = document.fallback, "low"
-    return phenotype, PhenotypeDetail(
-        score=round(top.score, _DETAIL_PLACES),
-        confidence=confidence,
-        components=top.components,
-        runner_up=(
-            None
-            if second is None
-            else PhenotypeScore(
-                phenotype=second.phenotype, score=round(second.score, _DETAIL_PLACES)
-            )
-        ),
-        ambiguous=(
-            (
-                PhenotypeScore(phenotype=top.phenotype, score=round(top.score, _DETAIL_PLACES)),
-                PhenotypeScore(
-                    phenotype=second.phenotype, score=round(second.score, _DETAIL_PLACES)
-                ),
-            )
-            if confidence == "ambiguous" and second is not None
-            else ()
-        ),
-    )
-
-
-def score_rules(report: ClusterReport, document: TypingDocument) -> list[ScoredRule]:
-    """Every rule scored against one report (the shared dispatch behind
-    evaluate_typing; the calibration harness consumes it to read the score
-    of ANY phenotype's rule, not just the winner)."""
+def gene_calls(report: ClusterReport) -> dict[str, GeneCall]:
+    """One call per gene id across all loci (the first locus wins — the
+    fold score_rules scores against)."""
     genes: dict[str, GeneCall] = {}
     for locus in report.loci:
         for call in locus.genes:
             genes.setdefault(call.gene_id, call)
+    return genes
+
+
+def score_rules(report: ClusterReport, scheme: TypingScheme) -> list[ScoredRule]:
+    """Every rule of one scheme scored against one report (the shared
+    dispatch behind evaluate_typing; the calibration harness consumes it to
+    read the score of ANY phenotype's rule, not just the winner)."""
+    genes = gene_calls(report)
     scored: list[ScoredRule] = []
-    for rule in document.rules:
+    for rule in scheme.rules:
+        exact = False
         match rule:
             case WeightedGenesRule():
                 score, components = score_weighted_genes(rule, genes)
+            case ExactSetRule():
+                score, components = score_exact_set(rule, genes)
+                exact = True
             case ClusterMatchRule():
                 score, components = score_cluster_match(rule, report)
             case LearnedLinearRule():
                 score, components = score_learned_linear(rule, report, genes)
-        scored.append(ScoredRule(rule.phenotype, score, components))
+        scored.append(ScoredRule(rule.phenotype, score, components, tuple(rule.notes), exact))
     return scored
 
 
-def evaluate_typing(report: ClusterReport, document: TypingDocument) -> ClusterReport:
+def evaluate_typing(report: ClusterReport, scheme: TypingScheme) -> ClusterReport:
     """Annotate a file's report: best gains phenotype + phenotype_detail
     (reports without a best call pass through untouched)."""
     if report.best is None:
         return report
-    phenotype, detail = decide_typing(score_rules(report, document), document)
+    phenotype, detail = decide_scheme(scheme, score_rules(report, scheme), gene_calls(report))
     return report.model_copy(
         update={
             "best": report.best.model_copy(

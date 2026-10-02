@@ -5,10 +5,199 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] - 2026-10-02
+
+### Breaking
+
+- **`--format md` now streams per file, and the Markdown layout lost its run totals (MD goldens
+  and docs regenerated).** The Markdown frontmatter was dynamic — `files:`/`hits:` counts (and
+  the cluster report's all-files summary table) only exist once every file has screened, which
+  forced the renderer to buffer the whole document until the end. The frontmatter is now STATIC
+  metadata only (`schema`, `tool`, `created_at`, `db`, thresholds — everything knowable before
+  file 1): it prints first and each file's section (heading, table, merge-fragment lines; on
+  cluster databases the file's own summary row plus its gene table, replacing the global summary
+  table) prints the moment that file completes — head-of-line in input order under `--jobs`,
+  exactly like the tsv rows, with `--output` flushing per chunk. Run totals now live only in the
+  JSON document (`gapit.report/1` `files[]`/`hits`, `gapit.cluster/1`), which stays a single
+  buffered document by design. Update any parser that read `files:`/`hits:` from Markdown
+  frontmatter or expected the cluster summary table above the sections; per-file content is
+  unchanged byte-for-byte. Reads-mode Markdown (one document per run by construction) and
+  `gapit typing`'s Markdown are unchanged.
+
+- **`gapit screen --db` is now required (no default).** The silent `ncbi` default could
+  auto-materialize a bundled 8.4k-record database as a hidden side effect of a bare
+  `gapit screen contigs.fa`; a screen now refuses to run (typer usage error, exit 2) until
+  `--db NAME` is given explicitly. The MCP `screen`/`screen_reads` tools mirror the change:
+  `db` moved into each inputSchema's `required` array (default removed), and an absent
+  `db` returns the `gapit.error/1` USAGE_ERROR envelope. Update any invocation that relied
+  on the default.
+- **`gapit screen` no longer embeds phenotypes — designation moved to the new `gapit typing`
+  command (one-cycle revert; the embedded surfaces never released).** Screening a typed gene
+  database is now pure gene detection, byte-identical to screening an untyped one in every
+  format: the earlier-this-cycle `PHENOTYPE` column on the report TSV/CSV, the
+  `files[].phenotypes` object of `gapit.report/1`, and the Markdown phenotype lines are all
+  gone (the typing engine itself — rules, schemes, gates, compose — is unchanged, and
+  `typing.json` still ships with databases). The reads-mode guard that rejected typed gene
+  dbs (`gene-path typing is contig-mode only`) is gone with it: `--r1/--r2` and
+  `--aligner minimap2` screen typed gene databases like any other. The cluster path is
+  untouched — typed cluster databases keep their integrated designation (the
+  `gapit.cluster/1` phenotype block and the typed-only TSV `PHENOTYPE` column). The MCP
+  `screen` tool returns the pure report on typed gene dbs (a typing MCP tool is future
+  work). If you consumed `files[].phenotypes` from pre-release builds, switch to
+  `gapit typing` (below).
 
 ### Added
 
+- **`gapit typing RESULT.tsv [RESULT2.tsv ...]` — designation from screen results (the
+  rightsholder's two-stage CLI design).** Stage 1: `gapit screen -o result.tsv --db NAME`
+  detects genes; stage 2: `gapit typing result.tsv` reads the gapit/abricate screen table
+  (TSV or auto-detected CSV, several tables merge by their FILE column), resolves NAME from
+  the rows' shared `DATABASE` column under `--datadir` (bundled databases still materialize
+  on first use), folds every `(FILE, GENE)` to its best row by `(%IDENTITY, %COVERAGE)`
+  (first row wins ties — the same per-gene fold the report hits received), and runs the
+  existing typing engine over each FILE's genes. Output: default TSV with columns `FILE`,
+  `SCHEME`, `PHENOTYPE`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES` (ambiguous calls
+  render `-` and carry the candidate pair in NOTES; streamed per input file), `--format
+  json` as the new versioned **`gapit.typing_result/1`** document (`{schema, tool,
+  created_at, source, db, files[].phenotypes}` — full score breakdowns, introspectable via
+  `gapit schema typing_result`, also registered in the MCP `schema` tool), and
+  `--format md` (frontmatter + the same seven-column table); `-o FILE`/`-q` behave as
+  everywhere. Typed errors: mixed `DATABASE` values `DATABASE_MISMATCH`, a table with no
+  data rows `TYPING_NO_DATA` (a screened-no-hits file has no rows — the database is only
+  knowable from them), a database without a `typing.json` `TYPING_NO_SCHEME`, and a cluster
+  database `TYPING_CLUSTER_DB` (its typing is integrated in `gapit screen`). Equivalence is
+  locked end to end: the DEC matrix, serotyping fixtures, and the bundled `ecoli_dec`
+  assert the command's calls equal the calls the inline engine produced before the move,
+  with new goldens (`typing_markers.*`, `typing_serotyping.tsv`, `ecoli_dec_typing.tsv`).
+  The table also arrives on stdin: `gapit screen 1.fna --db NAME | gapit typing` types the
+  piped output with no file arguments (stdin must not be a terminal — a bare invocation at
+  a terminal still prints help), the explicit `gapit typing -` marker reads stdin even
+  under a terminal (until EOF), mixing `-` with file arguments is a usage error (v1:
+  either stdin or files), a piped table's JSON `source` renders as `["-"]`, and an empty
+  pipe is the usual `TYPING_NO_DATA` naming `-`. The three delivery forms (file, `-`,
+  pipe) are locked byte-identical.
+- **Short single-dash aliases for every CLI option (rightsholder UX directive).** Each option
+  on every command now pairs a short form with its long form — `--help`/`-h` style, e.g.
+  `gapit screen contigs.fa -d ncbi -f json` for `--db ncbi --format json`. Letters follow the
+  first-letter convention with uppercase on collision (`--db`/`-d` vs `--datadir`/`-D`;
+  `--minid`/`-i` vs `--min-identity`/`-I`), mnemonics where the first letter is taken
+  (`--min-gene-cov`/`-g`, `--read-type`/`-x`, `--r1`/`-1`), and `-v` for `--debug` (verbose).
+  Deliberate exceptions: boolean negative halves stay long-only (`--no-merge-fragments`) and
+  the typer-managed completion flags are untouched. Long forms are unchanged and remain the
+  documented canonical spelling; a regression test walks the built command tree proving every
+  option has a unique per-command short and byte-compares short vs long invocations.
+- **`gapit screen --output PATH` writes the report to a file (all engines, including
+  reads mode).** The file opens on the first output byte — truncating any existing file
+  (v1 overwrite semantics, never append) — every streamed chunk is flushed, and stdout
+  then carries no data (stderr diagnostics unchanged). An in-batch failure on file *k*
+  leaves files 1..*k-1*'s already-streamed output persisted in the file (or printed, on
+  stdout) before the typed error envelope and documented exit code; a run failing before
+  any output (usage/dependency/db errors) creates no file.
+- **Per-file streaming emission for tsv/csv.** `gapit screen` (blastn gene path and
+  cluster path) now emits results in input order as each file completes instead of
+  buffering everything until the end: the TSV/CSV header prints once screening starts and
+  each file's rows print the moment its file finishes — head-of-line under `--jobs N > 1`
+  (file *i* waits for 1..*i*, so output bytes stay identical to sequential runs).
+  Markdown sections are computed per file but the document (frontmatter totals) is emitted
+  once at the end; JSON stays a single buffered document. Chunk concatenation is
+  byte-identical to the former buffered render — goldens and abricate parity are
+  untouched. The use-cases gained an optional `emit: Callable[[str], None]` sink (default
+  `None` = buffered return exactly as before, so MCP and library callers are unchanged).
+
+- **Bundled databases — four audited provider snapshots join `ecoli_dec` in the wheel
+  (five bundles total).** `ncbi` (8373 records, public domain), `resfinder` (3206,
+  Apache-2.0), `ecoh` (597, BSD-3-Clause), and `upec_expec_vf` (77, MIT) now ship under
+  `src/gapit/data/dbs/<name>/` as point-in-time snapshots produced by the `db fetch`
+  provider pipeline itself (gapit/v1 headers; snapshot date recorded in `bundled.json`
+  as `snapshotted`, the metadata model's new field). `db fetch <name>` remains the
+  fresh-upstream update path for all four: it re-downloads the latest upstream content
+  and (with `--force`) overwrites the materialized datadir copy, whose manifest then
+  drops the `bundled` source stamp; a regression test pins the snapshot↔fetch
+  byte-identity for `resfinder` against a committed copy of the exact upstream archive,
+  and the provenance guard now scans ALL five bundles' headers for `VF*`/`VFDB`/`ARO:`
+  markers. `db list` merges registry-and-bundled names into ONE bundled-section row
+  (STATUS `bundled` → `installed (N)`; JSON `source: "bundled"`); registry rows for
+  non-bundled providers stay byte-identical. Wheel size 170 KiB → 1.5 MiB (+1.3 MiB for
+  the four snapshots; their `sequences` are ~13 MiB uncompressed). `db outdated` stays
+  manifest-based (bundled-vs-upstream staleness comparison is future work).
+- **Bundled databases — `ecoli_dec` ships install-time ready (zero-network first use).**
+  A new mechanism (`gapit.bundled`) lets license-clean, public-domain databases ride the
+  wheel under `src/gapit/data/dbs/<name>/` (`sequences` + optional `typing.json` +
+  `bundled.json` metadata: name, description, vendor, dbtype). The first database to use
+  it is `ecoli_dec`: the 17-record diarrheagenic E. coli marker panel with the dual-scheme
+  `gapit.typing/2` designation (gb4789_6 + risk_monitoring) — after the 2026-10 provenance
+  audit re-sourced all records to NCBI/DDBJ primary submissions. When `--db` names a
+  bundled database that is absent from the datadir, the screen path materializes it first
+  (one quiet-respecting stderr note, then the standard gene-build pipeline: records.jsonl,
+  gapit/v1 sequences, BLAST index, typing copy, manifest stamped with the additive
+  `source: "bundled"` field); a completely missing datadir is bootstrapped on this path
+  only. `gapit setupdb` materializes every bundled database alongside indexing; both paths
+  are idempotent (no-op once the manifest exists). `db list` gains a bundled section
+  between the registry rows and local extras on all four surfaces (TSV, rich table,
+  `--json`, MCP `db_list`): STATUS `bundled` before materialization, `installed (N)`
+  after, JSON `source: "bundled"` — registry and local rows stay byte-identical. Wheel
+  size 159 KiB → 170 KiB (+11 KiB for the panel).
+- **DEC dual-scheme designation + the `requires_any` exact_set primitive.** The
+  diarrheagenic E. coli placeholder is replaced by the real designation as TWO schemes over
+  one gene database (`tests/data/typing/schemes/dec.json`, the typing/2 multi-scheme
+  showcase): `gb4789_6` (GB 4789.6-2016 panel semantics — EAEC is any-of aggR/pic/astA)
+  and `risk_monitoring` (最新食品安全风险监测方案 — aggR mandatory), both exact
+  semantics (cutoff 1.0, margin 0.0) with the `uidA` control gene, the `non-DEC` fallback,
+  and one severity-ordered rule ladder (EHEC > STEC/EPEC > ETEC > EIEC > EAEC; hybrids
+  surface as the runner_up; `EPEC_atypical` declared after EHEC/STEC so stx+ isolates never
+  land there). To encode it, `exact_set` rules gained an optional `requires_any` any-of
+  gate (satisfied iff all `requires` present AND, when the set is non-empty, at least one
+  `requires_any` present AND no `excludes` present; `requires` is now optional when
+  `requires_any` carries the constraint; the three sets must be pairwise disjoint and not
+  all empty — `TYPING_MALFORMED` otherwise; additive within typing/2, no schema bump).
+  The synthetic fixture `dec.fa` carries all 14 gene names plus duplicate pic/sth records
+  mirroring the rightsholder db (duplicate records collapse by gene name:
+  `-culling_limit 1` keeps the best subject, the engine folds one call per name). The
+  definitional matrix is locked end to end — including the headline divergence
+  (pic+astA+uidA → EAEC under gb4789_6, non-DEC under risk_monitoring, golden
+  `gene_dec_pic_astA`) — and hybrid severity ties (stx2a+escV+aggR → EHEC with EAEC at
+  1.0 as runner_up). No output-schema, TSV, or parity changes.
+-   **typing/2 cycle complete — the scheme cookbook (stage 3)**, consolidating the typing/2
+  story: stage 1 promoted the typing document to `gapit.typing/2` named multi-scheme
+  documents (a `/1` document degrades to one anonymous `default` scheme; gene-kind builds
+  gained `--typing`, one call per scheme — first keyed into gapit.report/1's phenotypes
+  object, later moved to the `gapit typing` command), stage 2 added the six rule/scheme
+  primitives (entry below), and stage 3 proves the framework encodes real designation
+  schemes: six researched schemes as validated example documents with synthetic marker
+  fixtures in `tests/data/typing/schemes/`, each self-checked end to end by the new
+  `test_typing_schemes*.py` suites (build fixture db → screen → asserted phenotype calls)
+  with goldens for one representative call per scheme (doumith 4b, shigella mixed, the
+  vp O:K compose, cholerae inaba). The cookbook: the complete Doumith Listeria table
+  (Doumith et al. 2004, incl. the 4b*/IVb-v1 HGT caveat falling back to NT), a
+  ShigaTyper-semantics Shigella/EIEC skeleton (Wu et al. 2019: ipaH_c control, wzx
+  unique-group mixed calls, sonnei form I/II with the exact-tie ordering, the lacY EIEC
+  approximation with the S. boydii 9/15 exemptions), the meningotype serogroup panel
+  (Mothershed et al. 2004 + the synG EX7E allele-probe trick at identity_floor 99.5),
+  the Vibrio parahaemolyticus O/K Kaptive pattern (van der Graaf-van Bloois et al. 2023:
+  cluster_match bands, the O3/O13 combined label, OUT/KUT fallbacks, per-scheme databases
+  — a cluster db carries exactly one scheme), V. cholerae O1/O139 + Ogawa/Inaba (wbeT
+  single-SNP allele floor, the negative-wbeT Inaba rule, Hikojima not determinable, the
+  wbfZ junction-gene trap note), and a documented DEC placeholder awaiting the
+  rightsholder's curated panel. New bilingual docs page `docs/typing.md` / `typing.zh.md`
+  (framework reference, primitive tables, the cookbook with citations, the allele
+  probe-trick section and its future allele_match successor, calibration pointer), wired
+  into mkdocs nav (EN + zh), the doc indexes, and the databases pages. No schema, output,
+  or TSV parity changes; parity 15/15 + summary 6/6 unchanged.
+- typing/2 stage-2 rule primitives for declarative phenotype scoring (additive; existing
+  rule semantics, outputs, and goldens untouched): the `exact_set` rule (deterministic
+  boolean gene-set match with `requires`/`excludes` and 90/90-default identity/coverage
+  floors — a 1.0 tie involving a satisfied exact_set resolves by declaration order
+  instead of the ambiguity margin), optional `coverage_floor` on `weighted_genes` and
+  `exact_set`, scheme-level `control_gene` (absent control gene zeroes the scheme to its
+  fallback with a "control gene absent" note), scheme-level `unique_group` +
+  `mixed_phenotype` (multiple present group genes call the mixed phenotype with the pair
+  in `ambiguous`), `compose` schemes rendering `"{o_group}:{k_group}"` from sibling
+  schemes' calls (fallback strings flow through; an ambiguous ingredient yields a null
+  composition carrying that ingredient's variants), and rule-level `notes` surfaced
+  verbatim on winning phenotype calls. All new fields validate (`TYPING_MALFORMED`,
+  unknown gene references `TYPING_UNKNOWN_GENE`); rule models split into
+  `gapit.typing_rules` and the decision layer into `gapit.typing_decide` at the 250-LOC
+  ceiling.
 - `gapit db list` renders a styled rich table (title "Databases"; cyan Provider, status-tinted
   Status, yellow DBTYPE columns) when stdout is an interactive terminal. Piped or redirected
   output keeps the byte-identical TSV, and `--json` is unchanged.
@@ -79,6 +268,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - `gapit db fetch --from-source` flag (meaningless now that no bundled snapshots exist:
   every fetch downloads from upstream).
+
+### Fixed
+
+- **DEC panel provenance cleaning.** The original 17-record DEC panel carried two
+  VFDB-derived records (spotted past header inspection) plus VF-flavored metadata; all
+  records were re-sourced from NCBI/DDBJ primary submissions (100% same-allele, 5
+  replacements: bfpB, pic ×2, astA, stx2b, and the sth/stp/lt accessions re-verified),
+  and a regression test now mechanically asserts no `VF*` tags ride the bundled headers.
 
 ## [0.4.0] - 2026-09-30
 
@@ -157,6 +354,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- `gapit db list` now also lists databases installed into the datadir outside the provider
+  catalog: `db build` products (gene and cluster kinds) and manifest-less directories
+  (abricate-style or `db install` bytes) render after the registry entries, sorted by name,
+  with PROVIDER `local`, the record count from the manifest (FASTA count when absent), and
+  DBTYPE from the manifest / BLAST index suffix / letter heuristic. The gapit.dblist/1 JSON
+  gains them inside `providers` behind the additive `source: "local"` field — registry
+  entries simply lack the field, so pre-existing output is byte-identical; TSV, rich table,
+  and the MCP `db_list` tool share the same rows.
 - MCP server replies `-32600`/`-32602` to malformed requests that carry an `id` instead of
   silently dropping them.
 - A truncated gzip reads file raises a typed `INVALID_READS_FORMAT` error (exit 5) instead

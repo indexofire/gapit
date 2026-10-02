@@ -17,7 +17,10 @@ from rich.table import Table
 from rich.text import Text
 
 from gapit import config
+from gapit.bundled import BundledDatabase, bundled_databases
+from gapit.db import Database, discover_databases, mol_type
 from gapit.errors import UsageError
+from gapit.fasta import iter_fasta
 from gapit.providers import REGISTRY
 from gapit.providers.cluster_common import ClusterProvider, fetch_cluster_provider
 from gapit.providers.common import Dbtype, fetch_provider
@@ -31,6 +34,10 @@ DEFAULT_DBS = ("card", "vfdb")
 # The literal NAME that selects DEFAULT_DBS; not a provider name (REGISTRY
 # holds 19 names, none of which is "all").
 FETCH_ALL = "all"
+
+# PROVIDER cell for installed databases the registry does not know (db
+# build / db install / abricate-style directories).
+LOCAL_VENDOR = "local"
 
 
 class ProviderReceipt(BaseModel, frozen=True):
@@ -58,6 +65,12 @@ class DbListEntry(BaseModel, frozen=True):
     # Upstream content license when the provider pins one (card, vfdb,
     # ecoli_vf, kaptive); omitted otherwise.
     license: str | None = None
+    # "local" marks a datadir-discovered database the registry does not know
+    # (db build / db install product); "bundled" marks a database shipped in
+    # the wheel (gapit.bundled) whether or not it is materialized yet.
+    # Absent = registry catalog entry — the additive gapit.dblist/1 rule:
+    # pre-existing entries stay byte-identical.
+    source: Literal["local", "bundled"] | None = None
 
 
 class DbListDocument(BaseModel, frozen=True):
@@ -126,10 +139,91 @@ def perform_fetch(
         yield fetch_one(provider_name)
 
 
+def _detected_dbtype(database: Database) -> str:
+    """dbtype for a manifest-less database directory: BLAST index suffix
+    first (``.nin`` nucl / ``.pin`` prot), else abricate's ``mol_type``
+    heuristic over the sequence letters (the make_blast_db fallback)."""
+    sequences = database.sequences_path
+    for suffix, dbtype in ((".nin", "nucl"), (".pin", "prot")):
+        if sequences.with_name(f"{sequences.name}{suffix}").exists():
+            return dbtype
+    letters = "".join(record.sequence for record in iter_fasta(sequences))
+    return mol_type(letters)
+
+
+def _extra_entries(root: Path, bundled: frozenset[str]) -> list[DbListEntry]:
+    """Rows for installed databases neither the registry nor the wheel knows
+    — `db build` products, checksum-installed or abricate-style directories.
+    Bundled names are covered by their own rows above. Manifest-less
+    directories count their FASTA records and detect dbtype from the index;
+    DESCRIPTION comes from the manifest ``note`` when one is set. A malformed
+    manifest propagates (the db.py discovery contract)."""
+    entries: list[DbListEntry] = []
+    for database in discover_databases(root):
+        if database.name in REGISTRY or database.name in bundled:
+            continue
+        manifest_path = database.path / "gapit-manifest.json"
+        manifest = read_manifest(manifest_path) if manifest_path.is_file() else None
+        entries.append(
+            DbListEntry(
+                name=database.name,
+                vendor=LOCAL_VENDOR,
+                description=(manifest.note or "") if manifest else "",
+                dbtype=manifest.dbtype if manifest else _detected_dbtype(database),
+                installed=True,
+                records=(
+                    manifest.n_records
+                    if manifest
+                    else sum(1 for _ in iter_fasta(database.sequences_path))
+                ),
+                kind=database.kind,
+                source="local",
+            )
+        )
+    return entries
+
+
+def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbListEntry]:
+    """Rows for wheel-shipped databases: metadata (vendor, description,
+    dbtype) from ``bundled.json``; installed state and record count from a
+    materialized manifest under the datadir. A bundle whose directory exists
+    but never finished materializing (no manifest) lists as not installed —
+    the next screen/setupdb rebuilds it. A bundled name that is also a
+    registry provider (ncbi, resfinder, ...) appears ONLY here: the bundled
+    row replaces its registry row so one name is always one row."""
+    entries: list[DbListEntry] = []
+    for database in bundled:
+        manifest_path = root / database.name / "gapit-manifest.json"
+        manifest = read_manifest(manifest_path) if manifest_path.is_file() else None
+        entries.append(
+            DbListEntry(
+                name=database.name,
+                vendor=database.metadata.vendor,
+                description=database.metadata.description,
+                dbtype=manifest.dbtype if manifest else database.metadata.dbtype,
+                installed=manifest is not None,
+                records=manifest.n_records if manifest else None,
+                kind=manifest.kind if manifest else "gene",
+                source="bundled",
+            )
+        )
+    return entries
+
+
 def db_list_entries(root: Path) -> list[DbListEntry]:
-    """Database rows for the gapit.dblist/1 listing — shared CLI + MCP path."""
+    """Database rows for the gapit.dblist/1 listing — shared CLI + MCP path.
+
+    Registry providers first (alphabetical, bundled names skipped — their
+    rows come from the bundled section), then bundled databases by name,
+    then datadir-discovered extras by name, so local ``db build``/``db
+    install`` databases are never hidden.
+    """
+    bundled = tuple(bundled_databases())
+    bundled_names = frozenset(database.name for database in bundled)
     entries: list[DbListEntry] = []
     for provider_name in sorted(REGISTRY):
+        if provider_name in bundled_names:
+            continue
         provider = REGISTRY[provider_name]
         manifest_path = root / provider_name / "gapit-manifest.json"
         installed = manifest_path.is_file()
@@ -146,13 +240,17 @@ def db_list_entries(root: Path) -> list[DbListEntry]:
                 license=provider.license,
             )
         )
-    return entries
+    return entries + _bundled_entries(bundled, root) + _extra_entries(root, bundled_names)
 
 
 def db_list_status(entry: DbListEntry) -> str:
     """STATUS cell text shared by the TSV and the rich table — one source so
-    the two renderings can never diverge."""
-    return f"installed ({entry.records})" if entry.installed else "available"
+    the two renderings can never diverge. Bundled-but-not-materialized rows
+    read ``bundled`` (ready to materialize on first use); everything else
+    uninstalled reads ``available`` (fetch-time download)."""
+    if entry.installed:
+        return f"installed ({entry.records})"
+    return "bundled" if entry.source == "bundled" else "available"
 
 
 def db_list_table(entries: Sequence[DbListEntry]) -> Table:

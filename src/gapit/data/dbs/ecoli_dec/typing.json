@@ -1,0 +1,125 @@
+{
+  "schema": "gapit.typing/2",
+  "schemes": [
+    {
+      "name": "gb4789_6",
+      "rules": [
+        {
+          "model": "exact_set",
+          "phenotype": "EHEC",
+          "requires": ["escV"],
+          "requires_any": ["stx1a", "stx1b", "stx2a", "stx2b"],
+          "notes": [
+            "GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE)",
+            "severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up"
+          ]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "STEC",
+          "requires_any": ["stx1a", "stx1b", "stx2a", "stx2b"],
+          "excludes": ["escV"],
+          "notes": ["GB 4789.6-2016: stx (any subunit) without escV"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "EPEC",
+          "requires": ["escV", "bfpB"],
+          "notes": [
+            "GB 4789.6-2016: typical EPEC = escV + bfpB",
+            "escV+/bfpB-/stx- isolates fall to the next matching rule: EPEC_atypical"
+          ]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "EPEC_atypical",
+          "requires": ["escV"],
+          "excludes": ["bfpB", "stx1a", "stx1b", "stx2a", "stx2b"],
+          "notes": ["atypical EPEC = escV without bfpB; declared after EHEC/STEC so stx+ isolates never land here"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "ETEC",
+          "requires_any": ["lt", "sth", "stp"],
+          "notes": ["GB 4789.6-2016: any enterotoxin (lt/sth/stp)"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "EIEC",
+          "requires": ["invE"],
+          "notes": ["GB 4789.6-2016: invE invasion marker"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "EAEC",
+          "requires_any": ["aggR", "pic", "astA"],
+          "notes": ["GB 4789.6: any of aggR/pic/astA"]
+        }
+      ],
+      "cutoff": 1.0,
+      "ambiguity_margin": 0.0,
+      "fallback": "non-DEC",
+      "control_gene": "uidA"
+    },
+    {
+      "name": "risk_monitoring",
+      "rules": [
+        {
+          "model": "exact_set",
+          "phenotype": "EHEC",
+          "requires": ["escV"],
+          "requires_any": ["stx1a", "stx1b", "stx2a", "stx2b"],
+          "notes": [
+            "GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE)",
+            "severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up"
+          ]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "STEC",
+          "requires_any": ["stx1a", "stx1b", "stx2a", "stx2b"],
+          "excludes": ["escV"],
+          "notes": ["GB 4789.6-2016: stx (any subunit) without escV"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "EPEC",
+          "requires": ["escV", "bfpB"],
+          "notes": [
+            "GB 4789.6-2016: typical EPEC = escV + bfpB",
+            "escV+/bfpB-/stx- isolates fall to the next matching rule: EPEC_atypical"
+          ]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "EPEC_atypical",
+          "requires": ["escV"],
+          "excludes": ["bfpB", "stx1a", "stx1b", "stx2a", "stx2b"],
+          "notes": ["atypical EPEC = escV without bfpB; declared after EHEC/STEC so stx+ isolates never land here"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "ETEC",
+          "requires_any": ["lt", "sth", "stp"],
+          "notes": ["GB 4789.6-2016: any enterotoxin (lt/sth/stp)"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "EIEC",
+          "requires": ["invE"],
+          "notes": ["GB 4789.6-2016: invE invasion marker"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "EAEC",
+          "requires": ["aggR"],
+          "notes": ["最新食品安全风险监测方案: aggR required (pic/astA alone insufficient)"]
+        }
+      ],
+      "cutoff": 1.0,
+      "ambiguity_margin": 0.0,
+      "fallback": "non-DEC",
+      "control_gene": "uidA"
+    }
+  ]
+}

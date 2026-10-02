@@ -1,0 +1,7 @@
+{
+  "name": "ecoh",
+  "description": "E. coli O and H antigens (srst2 EcOH)",
+  "vendor": "Holt lab (srst2)",
+  "dbtype": "nucl",
+  "snapshotted": "2026-10-02"
+}

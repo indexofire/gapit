@@ -1,0 +1,22 @@
+{
+  "schema": "gapit.typing/1",
+  "rules": [
+    {
+      "model": "weighted_genes",
+      "phenotype": "EHEC",
+      "weights": {"marker_a": 1.0, "marker_c": 1.0},
+      "identity_floor": 90.0,
+      "require_any": ["marker_c"]
+    },
+    {
+      "model": "weighted_genes",
+      "phenotype": "EPEC",
+      "weights": {"marker_a": 1.0},
+      "negative": {"marker_c": -1.0},
+      "identity_floor": 90.0
+    }
+  ],
+  "cutoff": 0.9,
+  "ambiguity_margin": 0.05,
+  "fallback": "unassigned"
+}

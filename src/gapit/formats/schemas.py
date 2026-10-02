@@ -11,13 +11,10 @@ from pydantic import BaseModel
 
 from gapit.errors import ErrorEnvelope
 from gapit.formats.cluster import ClusterDocument
-from gapit.formats.json import (
-    Reads2Document,
-    ReadsDocument,
-    ReportDocument,
-    VersionDocument,
-)
+from gapit.formats.json import ReportDocument, VersionDocument
+from gapit.formats.reads_json import Reads2Document, ReadsDocument
 from gapit.formats.summary import SummaryDocument
+from gapit.formats.typing_result import TypingResultDocument
 from gapit.gbfeatures import FeaturesDocument
 from gapit.typing_models import TypingDocument
 
@@ -31,4 +28,5 @@ SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "version": VersionDocument,
     "features": FeaturesDocument,
     "typing": TypingDocument,
+    "typing_result": TypingResultDocument,
 }

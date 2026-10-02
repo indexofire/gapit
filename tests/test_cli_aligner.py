@@ -11,7 +11,7 @@ from typer.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.db import make_blast_db
-from gapit.formats.json import ReadsDocument
+from gapit.formats.reads_json import ReadsDocument
 
 AMR_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"

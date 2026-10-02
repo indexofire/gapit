@@ -19,7 +19,8 @@ from typer.testing import CliRunner
 
 from gapit.cli import app
 from gapit.dbbuild import build_database
-from gapit.formats.json import ReadsDocument, ReportDocument
+from gapit.formats.json import ReportDocument
+from gapit.formats.reads_json import ReadsDocument
 from gapit.records import Record, write_records
 
 DB = "tinygapit"

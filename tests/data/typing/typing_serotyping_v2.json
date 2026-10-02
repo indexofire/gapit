@@ -1,0 +1,71 @@
+{
+  "schema": "gapit.typing/2",
+  "schemes": [
+    {
+      "name": "doumith",
+      "rules": [
+        {
+          "model": "exact_set",
+          "phenotype": "1/2a-3a",
+          "requires": ["lmo0737"],
+          "excludes": ["lmo1118"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "1/2c-3c",
+          "requires": ["lmo1118", "lmo0733"],
+          "excludes": ["lmo0737"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "4b-4d-4e",
+          "requires": ["orf2110", "orf2870"],
+          "notes": ["4b/4d/4e share one PCR pattern (Doumith et al. 2004)"]
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "NT",
+      "control_gene": "prs"
+    },
+    {
+      "name": "o_group",
+      "rules": [
+        {"model": "exact_set", "phenotype": "O1", "requires": ["wzx_o1"]},
+        {"model": "exact_set", "phenotype": "O2", "requires": ["wzx_o2"]}
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "O?",
+      "unique_group": {"wzx": ["wzx_o1", "wzx_o2"]},
+      "mixed_phenotype": "mixed"
+    },
+    {
+      "name": "k_group",
+      "rules": [
+        {
+          "model": "weighted_genes",
+          "phenotype": "K13",
+          "weights": {"wzy_k13": 1.0},
+          "identity_floor": 90.0
+        },
+        {
+          "model": "weighted_genes",
+          "phenotype": "K64",
+          "weights": {"wzy_k64": 1.0},
+          "identity_floor": 90.0
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "K?"
+    },
+    {
+      "name": "serotype",
+      "compose": "{o_group}:{k_group}",
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "O?:K?"
+    }
+  ]
+}

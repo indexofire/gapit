@@ -1,4 +1,8 @@
-"""Human- and agent-readable Markdown reports (gapit.report/1, gapit.reads/1)."""
+"""Human- and agent-readable Markdown reports (gapit.report/1, gapit.reads/1).
+
+The report is pure gene detection (typed and untyped gene databases render
+byte-identically; designation renders from formats/typing_result.py).
+"""
 
 from collections.abc import Iterable
 from datetime import UTC, datetime
@@ -31,11 +35,11 @@ def md_cell(value: str) -> str:
     return value.replace("\\", "\\\\").replace("|", "\\|")
 
 
-def render_markdown(reports: Iterable[Report], params: ScreeningParams, *, now: datetime) -> str:
-    """Render screening results as deterministic Markdown: YAML frontmatter,
-    one section per file, stable table columns."""
-    files = list(reports)
-    total_hits = sum(len(report.hits) for report in files)
+def md_report_preamble(params: ScreeningParams, *, now: datetime) -> str:
+    """The frontmatter + title chunk: STATIC metadata only (schema, tool,
+    timestamp, thresholds — everything knowable before file 1), so a
+    streaming caller emits it first and then one section per file as it
+    completes. Run totals (files/hits) live in the JSON document, not here."""
     lines: list[str] = [
         "---",
         "schema: gapit.report/1",
@@ -45,50 +49,62 @@ def render_markdown(reports: Iterable[Report], params: ScreeningParams, *, now: 
         f"minid: {params.minid}",
         f"mincov: {params.mincov}",
         f"threads: {params.threads}",
-        f"files: {len(files)}",
-        f"hits: {total_hits}",
         "---",
         "",
         "# gapit screening report",
         "",
     ]
-    for report in files:
-        lines.append(f"## `{report.file}`")
-        lines.append("")
-        if not report.hits:
-            lines.append("_No hits._")
-            lines.append("")
-            continue
-        lines.append("| " + " | ".join(_COLUMNS) + " |")
-        lines.append("|" + "---|" * len(_COLUMNS))
-        for hit in report.hits:
-            cells = (
-                hit.sequence,
-                str(hit.start),
-                str(hit.end),
-                hit.strand,
-                hit.gene,
-                f"{hit.s_start}-{hit.s_end}/{hit.s_len}",
-                hit.coverage_map,
-                f"{hit.gap_openings}/{hit.gaps}",
-                f"{hit.coverage_pct:.2f}",
-                f"{hit.identity_pct:.2f}",
-                hit.database,
-                hit.accession,
-                hit.product,
-                hit.function,
-            )
-            lines.append("| " + " | ".join(md_cell(cell) for cell in cells) + " |")
-        for hit in report.hits:
-            if not hit.merged:
-                continue
-            spans = ", ".join(
-                f"`{fragment.contig}:{fragment.start}-{fragment.end}({fragment.strand})`"
-                for fragment in hit.fragments
-            )
-            lines.append(f"- `{hit.gene}` merged from {len(hit.fragments)} fragments: {spans}")
-        lines.append("")
     return "\n".join(lines) + "\n"
+
+
+def md_report_chunk(report: Report) -> str:
+    """One file's section: hits table and merged-fragment lines — the unit a
+    streaming caller computes as the file completes."""
+    lines: list[str] = [f"## `{report.file}`", ""]
+    if not report.hits:
+        lines.append("_No hits._")
+        lines.append("")
+        return "\n".join(lines) + "\n"
+    lines.append("| " + " | ".join(_COLUMNS) + " |")
+    lines.append("|" + "---|" * len(_COLUMNS))
+    for hit in report.hits:
+        cells = (
+            hit.sequence,
+            str(hit.start),
+            str(hit.end),
+            hit.strand,
+            hit.gene,
+            f"{hit.s_start}-{hit.s_end}/{hit.s_len}",
+            hit.coverage_map,
+            f"{hit.gap_openings}/{hit.gaps}",
+            f"{hit.coverage_pct:.2f}",
+            f"{hit.identity_pct:.2f}",
+            hit.database,
+            hit.accession,
+            hit.product,
+            hit.function,
+        )
+        lines.append("| " + " | ".join(md_cell(cell) for cell in cells) + " |")
+    for hit in report.hits:
+        if not hit.merged:
+            continue
+        spans = ", ".join(
+            f"`{fragment.contig}:{fragment.start}-{fragment.end}({fragment.strand})`"
+            for fragment in hit.fragments
+        )
+        lines.append(f"- `{hit.gene}` merged from {len(hit.fragments)} fragments: {spans}")
+    lines.append("")
+    return "\n".join(lines) + "\n"
+
+
+def render_markdown(reports: Iterable[Report], params: ScreeningParams, *, now: datetime) -> str:
+    """Render screening results as deterministic Markdown: static YAML
+    frontmatter, then one section per file, stable table columns. The
+    preamble + section chunks concatenate to exactly this document."""
+    reports = list(reports)
+    return md_report_preamble(params, now=now) + "".join(
+        md_report_chunk(report) for report in reports
+    )
 
 
 _READS_COLUMNS = (

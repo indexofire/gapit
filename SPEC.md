@@ -128,9 +128,10 @@ gene may leave box 0 as `.` since coords are 1-based) — do not "fix" them.
 
 Rows are sorted by SEQUENCE (lexicographic) then START (numeric) with a **stable** sort. Files
 are processed sequentially in argument order, concurrently with `--jobs` (stdout always in
-input order). gapit buffers all reports and renders once at the end — a failing file produces
-NO stdout (including the header), unlike upstream's partial streaming (all-or-nothing by
-design).
+input order). gapit streams: the TSV header prints once screening starts and each file's rows
+are emitted as the file completes — a failing file *k* leaves the already-emitted prefix
+(header + files 1..*k-1*) on stdout, then the typed error envelope (upstream abricate prints
+partial rows too; the all-or-nothing behavior was retired with per-file streaming).
 
 ## 5. TSV/CSV output
 

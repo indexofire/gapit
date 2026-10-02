@@ -30,13 +30,19 @@ def test_schema_features_selector() -> None:
 
 
 def test_schema_typing_selector() -> None:
-    """Given the new typing document, When `gapit schema typing`, Then its
-    JSON Schema prints with the rules/cutoff/margin/fallback properties."""
+    """Given the typing document, When `gapit schema typing`, Then its JSON
+    Schema prints the gapit.typing/2 surface: named schemes (each carrying
+    rules/cutoff/margin/fallback inside the TypingScheme definition), no
+    flat document-level rule fields."""
     result = runner.invoke(app, ["schema", "typing"])
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
-    for key in ("rules", "cutoff", "ambiguity_margin", "fallback"):
-        assert key in payload["properties"]
+    assert payload["properties"]["schema"]["const"] == "gapit.typing/2"
+    assert "schemes" in payload["properties"]
+    assert not {"rules", "cutoff", "ambiguity_margin", "fallback"} & set(payload["properties"])
+    scheme = payload["$defs"]["TypingScheme"]["properties"]
+    for key in ("name", "rules", "cutoff", "ambiguity_margin", "fallback"):
+        assert key in scheme
 
 
 def _legacy_dir(datadir: Path, name: str) -> None:

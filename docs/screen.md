@@ -9,33 +9,38 @@ Database setup is covered in [./databases.md](./databases.md); a full walk-throu
 
 ## Options
 
-Transcribed from `gapit screen --help` (gapit 0.4.0). Flags marked *reads mode* apply only when
+Transcribed from `gapit screen --help` (gapit 0.5.0). Flags marked *reads mode* apply only when
 you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 
-| Flag | Type | Default | Description |
-|---|---|---|---|
-| `FILE...` | path(s) | required* | Input FASTA/GBK/EMBL contig file(s) to screen. |
-| `--db` | str | `ncbi` | Database to screen against (datadir subdir). |
-| `--datadir` | path | `$GAPIT_DATADIR`, then `~/.local/share/gapit/db` | Database directory. |
-| `--minid` | float | `80.0` | Minimum %identity, `0 < x <= 100`. Enforced inside BLAST via `-perc_identity`. |
-| `--mincov` | float | `80.0` | Minimum %coverage, `0 <= x <= 100`. Post-filter on the unrounded float. |
-| `--threads` | int | `1` | BLAST worker threads (passed to `-num_threads`). |
-| `--jobs` | int | `1` | Screen N input files concurrently. Output order is always input order. |
-| `--merge-fragments` | flag | off | Merge gene fragments split across contigs (gapit extension; see below). |
-| `--fofn` | path | none | File of filenames; replaces the positional FILEs. |
-| `--quiet` | flag | off | Silence stderr diagnostics. |
-| `--noheader` | flag | off | Suppress the `#FILE ...` header row. |
-| `--nopath` | flag | off | Basename the FILE column. |
-| `--debug` | flag | off | Verbose stderr diagnostics; echoes each external command line. |
-| `--format` | tsv\|csv\|json\|md | `tsv` | Output format (reads mode defaults to json). |
-| `--aligner` | blastn\|minimap2 | input-based | Alignment engine (default: blastn for contig files, minimap2 for `--r1`/`--r2` reads). `--aligner minimap2` routes positional FASTA assemblies through the minimap2 engine (FASTA content required; see [./reads.md](./reads.md)). |
-| `--r1` | str | none | *Reads mode.* Reads or assembly FASTA file(s), comma-separated, one per lane. |
-| `--r2` | str | none | *Reads mode.* Comma-separated mate FASTQ file(s); must match `--r1` count. |
-| `--read-type` | sr\|map-ont\|map-hifi | `sr` for FASTQ, `map-ont` for FASTA | *Reads mode.* minimap2 preset; resolved from the detected input when omitted. |
-| `--min-breadth` | float | `90.0` | *Reads mode.* Minimum %breadth for presence. |
-| `--min-gene-cov` | float | `90.0` | *Cluster databases only.* Minimum %coverage for a gene `present` verdict. |
-| `--min-gene-id` | float | `90.0` | *Cluster databases only.* Minimum %identity for a gene `present` verdict. |
-| `--min-cluster-cov` | float | `96.0` | *Cluster databases only.* Minimum locus %coverage for a best-locus call. |
+Every option also accepts the single-dash short form listed in the **Short** column (e.g.
+`-d` for `--db`); long forms remain the canonical spelling, and boolean negative halves like
+`--no-merge-fragments` stay long-only.
+
+| Flag | Short | Type | Default | Description |
+|---|---|---|---|---|
+| `FILE...` | — | path(s) | required* | Input FASTA/GBK/EMBL contig file(s) to screen. |
+| `--db` | `-d` | str | required | Database to screen against (datadir subdir). No default: a screen never silently materializes a bundled database — pick one explicitly (`gapit db list`). |
+| `--datadir` | `-D` | path | `$GAPIT_DATADIR`, then `~/.local/share/gapit/db` | Database directory. |
+| `--minid` | `-i` | float | `80.0` | Minimum %identity, `0 < x <= 100`. Enforced inside BLAST via `-perc_identity`. |
+| `--mincov` | `-c` | float | `80.0` | Minimum %coverage, `0 <= x <= 100`. Post-filter on the unrounded float. |
+| `--threads` | `-t` | int | `1` | BLAST worker threads (passed to `-num_threads`). |
+| `--jobs` | `-j` | int | `1` | Screen N input files concurrently. Output order is always input order. |
+| `--merge-fragments` | `-m` | flag | off | Merge gene fragments split across contigs (gapit extension; see below). |
+| `--fofn` | `-F` | path | none | File of filenames; replaces the positional FILEs. |
+| `--quiet` | `-q` | flag | off | Silence stderr diagnostics. |
+| `--noheader` | `-n` | flag | off | Suppress the `#FILE ...` header row. |
+| `--nopath` | `-p` | flag | off | Basename the FILE column. |
+| `--debug` | `-v` | flag | off | Verbose stderr diagnostics; echoes each external command line. |
+| `--format` | `-f` | tsv\|csv\|json\|md | `tsv` | Output format (reads mode defaults to json). tsv/csv/md stream per completed file; json is written once at the end (single document). |
+| `--output` | `-o` | path | stdout | Write the report to PATH instead of stdout (truncates any existing file). Streaming formats flush per file; stdout then carries no data. |
+| `--aligner` | `-a` | blastn\|minimap2 | input-based | Alignment engine (default: blastn for contig files, minimap2 for `--r1`/`--r2` reads). `--aligner minimap2` routes positional FASTA assemblies through the minimap2 engine (FASTA content required; see [./reads.md](./reads.md)). |
+| `--r1` | `-1` | str | none | *Reads mode.* Reads or assembly FASTA file(s), comma-separated, one per lane. |
+| `--r2` | `-2` | str | none | *Reads mode.* Comma-separated mate FASTQ file(s); must match `--r1` count. |
+| `--read-type` | `-x` | sr\|map-ont\|map-hifi | `sr` for FASTQ, `map-ont` for FASTA | *Reads mode.* minimap2 preset; resolved from the detected input when omitted. |
+| `--min-breadth` | `-b` | float | `90.0` | *Reads mode.* Minimum %breadth for presence. |
+| `--min-gene-cov` | `-g` | float | `90.0` | *Cluster databases only.* Minimum %coverage for a gene `present` verdict. |
+| `--min-gene-id` | `-G` | float | `90.0` | *Cluster databases only.* Minimum %identity for a gene `present` verdict. |
+| `--min-cluster-cov` | `-C` | float | `96.0` | *Cluster databases only.* Minimum locus %coverage for a best-locus call. |
 
 \* Positional FILEs or `--fofn`, or reads mode via `--r1`. Positional files and `--r1`/`--r2`
 are mutually exclusive.
@@ -90,7 +95,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {
@@ -174,6 +179,82 @@ tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00
 
 With `--jobs 2` the two files are screened concurrently but stdout stays in input order, so the
 output is identical to the sequential run.
+
+### Typed gene databases: designation is a second command
+
+When `--db` names a gene database built with a `typing.json` (the bundled `ecoli_dec`, or
+any `gapit db build --typing` build), screening is pure gene detection: the output is the
+frozen 15-column abricate table byte-identically in every format — typed and untyped gene
+databases are indistinguishable on the screen surface. Designations come from the
+two-stage pipeline's second stage: write the table with `--output` (or redirect), then run
+[`gapit typing`](./typing.md#the-two-stage-designation-workflow) on it — or pipe it
+straight in, the canonical one-liner:
+
+```console
+$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --nopath --quiet
+$ gapit typing dec.tsv --quiet
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+dec_s3_stx2a_escV_aggR_uidA.fasta	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+```
+
+The piped form skips the intermediate file entirely — screen's stdout is typing's stdin
+(stdout purity holds on both sides: data on the pipe, diagnostics on stderr):
+
+```console
+$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db ecoli_dec --nopath --quiet | gapit typing --quiet
+```
+
+`gapit typing` reads stdin whenever it is not a terminal; `gapit typing -` is the explicit
+stdin marker (valid with a terminal attached — it reads until EOF). The full input
+contract lives in the [typing page](./typing.md#the-two-stage-designation-workflow).
+
+Cluster databases are the exception: their typing is integrated into the screen itself
+(the typed cluster TSV's `PHENOTYPE` column, [below](#cluster-databases-kind-cluster)).
+
+## Streaming and `--output`
+
+Long batch runs give feedback as they go, and the report can go to a file:
+
+- **tsv/csv/md stream per file.** The header (or Markdown frontmatter) prints once screening
+  starts, and each file's rows/section print the moment that file finishes — in input order,
+  always. Under `--jobs N > 1` emission is head-of-line: file *i*'s output waits until files
+  1..*i* are all done (the pool yields in input order), so bytes on stdout are identical to
+  the sequential run.
+- **md streams; json is written once, at the end.** The Markdown frontmatter is STATIC
+  metadata (schema, tool, `created_at`, db, thresholds — no run totals), so it can lead the
+  document and every file's section follows the moment the file completes, exactly like the
+  tsv rows. On cluster databases each file's section carries its own summary row and gene
+  table. Run totals (`files`, `hits`, ...) live in the JSON document, which is a single
+  object written once at the end.
+- **`--output PATH`** (all engines, including reads mode) writes the report to PATH instead of
+  stdout: the file opens on the first output byte (truncating any existing file — v1 overwrite
+  semantics, never append), every streamed chunk is flushed, and stdout then carries **no
+  data** (stderr diagnostics are unchanged).
+- **Errors mid-batch.** If file *k* fails after files 1..*k-1* streamed, the already-emitted
+  output persists — on stdout it is already printed; with `--output` the file keeps the
+  header/frontmatter plus files 1..*k-1* — and then the typed `gapit.error/1` envelope prints
+  on stderr with the documented exit code. A run that fails before any output (usage,
+  dependency, db errors) creates no `--output` file at all.
+
+### `--output`
+
+```console
+$ gapit screen tests/data/contigs/full.fa tests/data/contigs/gap.fa --db tinyamr --output report.tsv
+Processing: tests/data/contigs/full.fa
+Found 1 genes in tests/data/contigs/full.fa
+Processing: tests/data/contigs/gap.fa
+Found 1 genes in tests/data/contigs/gap.fa
+$ cat report.tsv
+#FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
+tests/data/contigs/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.00	100.00	tinyamr	NC_000913.3:100-900	tetracycline efflux pump TetA	TETRACYCLINE
+tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
+```
+
+The `Processing:`/`Found` lines are stderr; stdout is empty and `report.tsv` holds exactly the
+bytes the same run would print.
 
 ### `--debug`
 
@@ -290,6 +371,7 @@ kaptive-style output — with `phenotype` null.
   `blastx`, which accepts no `-perc_identity`. gapit then prints
   `--minid is not applied to protein databases (abricate parity)` on stderr and keeps going.
 - **Ordering.** Within a file, rows sort by SEQUENCE then START, stable. Rows for one file are
-  printed once that file finishes; files emit in input order even with `--jobs > 1`.
+  printed (or flushed to `--output`) once that file finishes; files emit in input order even
+  with `--jobs > 1` (head-of-line: file i waits for files 1..i).
 - **Exit codes.** 2 usage, 3 missing dependency, 4 database error, 5 input error, 1 unexpected.
   Failures print a `gapit.error/1` JSON envelope on stderr; see [./outputs.md](./outputs.md).

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gapit"
-version = "0.4.0"
+version = "0.5.0"
 description = "Mass screening of contigs and reads for known genes — agent-first Python reimplementation of abricate"
 readme = "README.md"
 authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]
@@ -45,9 +45,11 @@ gapit-mcp = "gapit.mcp:main"
 [tool.hatch.build.targets.wheel]
 packages = ["src/gapit"]
 # Hatchling's `packages` selection ships every non-gitignored file under the
-# package dir (no setuptools-style package_data needed). No database content
-# rides the wheel: every provider downloads from upstream at fetch time
-# (license compliance — CARD/VFDB terms forbid redistribution).
+# package dir (no setuptools-style package_data needed). The only database
+# content riding the wheel is the audited public-domain panel under
+# src/gapit/data/dbs/ (gapit.bundled); every provider still downloads from
+# upstream at fetch time (license compliance — CARD/VFDB terms forbid
+# redistribution).
 
 [tool.ruff]
 src = ["src"]

@@ -290,6 +290,34 @@ def test_db_build_missing_fasta_is_input_error(tmp_path: Path) -> None:
     assert envelope_code(text) == "INPUT_NOT_FOUND"
 
 
+# ------------------------------------------------------------------ list --
+
+
+def test_db_list_surfaces_locally_built_databases(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a datadir on $GAPIT_DATADIR holding a db_build product, When
+    db_list, Then the gapit.dblist/1 document gains that database as a
+    providers entry with the additive source=local field — locally built
+    databases are not invisible to MCP agents."""
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    monkeypatch.setenv("GAPIT_DATADIR", str(datadir))
+    fasta = tmp_path / "my_genes.fa"
+    fasta.write_text(f">demov2 demo beta-lactamase variant 2\n{SEQ_A}\n", encoding="utf-8")
+    is_error, text = call_tool("db_build", {"name": "myamr", "fasta": str(fasta)})
+    assert is_error is False
+
+    is_error, text = call_tool("db_list", {})
+
+    assert is_error is False
+    by_name = {entry["name"]: entry for entry in json.loads(text)["providers"]}
+    assert by_name["myamr"]["source"] == "local"
+    assert by_name["myamr"]["vendor"] == "local"
+    assert by_name["myamr"]["installed"] is True
+    assert by_name["myamr"]["records"] == 1
+
+
 # ----------------------------------------------------------------- fetch --
 
 

@@ -12,23 +12,24 @@ gapit 生来就是被程序驱动的。每个输出都以机器可读为设计�
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.4.0"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.0"}
 ```
 
-输出 schema。九个文档可自省：`report`、`reads`、`reads2`、`cluster`、`summary`、
-`error`、`version`，外加数据库侧文档 `features` 和 `typing`。每个都打印完整的
+输出 schema。十个文档可自省：`report`、`typing_result`、`reads`、`reads2`、`cluster`、
+`summary`、`error`、`version`，外加数据库侧文档 `features` 和 `typing`。每个都打印完整的
 JSON Schema：
 
 ```console
-$ gapit schema report      # gapit.report/1 (contig screening)
-$ gapit schema reads       # gapit.reads/1  (FASTQ screening)
-$ gapit schema reads2      # gapit.reads/2  (filtered FASTQ screening)
-$ gapit schema cluster     # gapit.cluster/1 (cluster-database screening)
-$ gapit schema summary     # gapit.summary/1
-$ gapit schema error       # gapit.error/1
-$ gapit schema version     # gapit.version/1
-$ gapit schema features    # gapit.features/1 (cluster db feature table)
-$ gapit schema typing      # gapit.typing/1 (cluster db scoring spec)
+$ gapit schema report          # gapit.report/1 (contig screening)
+$ gapit schema typing_result   # gapit.typing_result/1 (gapit typing 判定)
+$ gapit schema reads           # gapit.reads/1  (FASTQ screening)
+$ gapit schema reads2          # gapit.reads/2  (filtered FASTQ screening)
+$ gapit schema cluster         # gapit.cluster/1 (cluster-database screening)
+$ gapit schema summary         # gapit.summary/1
+$ gapit schema error           # gapit.error/1
+$ gapit schema version         # gapit.version/1
+$ gapit schema features        # gapit.features/1 (cluster db feature table)
+$ gapit schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
 ```
 
 例如 `gapit schema version`（真实输出）：

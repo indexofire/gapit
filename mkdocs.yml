@@ -40,6 +40,7 @@ plugins:
             Summarizing reports: 汇总报告
             Databases: 数据库
             Custom databases: 自定义数据库
+            Typing schemes: 分型方案
             Outputs: 输出
             MCP server: MCP 服务器
             gapit for agents: 面向 agent 的 gapit
@@ -61,6 +62,7 @@ nav:
   - Summarizing reports: summary.md
   - Databases: databases.md
   - Custom databases: custom-db.md
+  - Typing schemes: typing.md
   - Outputs: outputs.md
   - MCP server: mcp.md
   - gapit for agents: agents.md

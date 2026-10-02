@@ -2,7 +2,8 @@
 (minimap2) screening.
 
 Lives outside cli.py to keep that module small; cli.py registers it via
-``register_screen_command``.
+``register_screen_command``. The reads-mode argument rules (comma-list
+splitting, flag rejects) live in cmd_screen_reads_args.py.
 """
 
 from pathlib import Path
@@ -10,7 +11,8 @@ from typing import Annotated
 
 import typer
 
-from gapit.dispatch import Datadir, dispatch
+from gapit.cmd_screen_reads_args import reject_reads_mode_flags, split_read_list
+from gapit.dispatch import Datadir, dispatch, output_target
 from gapit.errors import usage_fail
 from gapit.reads import ReadTypeEnum
 from gapit.screening import (
@@ -22,15 +24,6 @@ from gapit.screening_cluster import reject_cluster_engine_flags
 from gapit.screening_reads import run_screen_assemblies, run_screen_reads
 
 
-def _split_read_list(raw: str, flag: str) -> list[Path]:
-    """Split a comma-separated --r1/--r2 value into paths; empty elements
-    are usage errors (an empty string would silently become the cwd)."""
-    parts = [part.strip() for part in raw.split(",")]
-    if any(not part for part in parts):
-        usage_fail(f"{flag} contains an empty element: {raw!r}")
-    return [Path(part) for part in parts]
-
-
 def screen_command(
     files: Annotated[
         list[Path] | None,
@@ -40,17 +33,21 @@ def screen_command(
         str | None,
         typer.Option(
             "--r1",
+            "-1",
             help="Comma-separated FASTQ reads or assembly FASTA file(s), one per lane.",
         ),
     ] = None,
     r2: Annotated[
         str | None,
-        typer.Option("--r2", help="Comma-separated mate FASTQ file(s); must match --r1 count."),
+        typer.Option(
+            "--r2", "-2", help="Comma-separated mate FASTQ file(s); must match --r1 count."
+        ),
     ] = None,
     read_type: Annotated[
         ReadTypeEnum | None,
         typer.Option(
             "--read-type",
+            "-x",
             help=(
                 "minimap2 preset for reads mode (default: sr for FASTQ, map-ont"
                 " for assembly FASTA)."
@@ -59,12 +56,13 @@ def screen_command(
     ] = None,
     min_breadth: Annotated[
         float,
-        typer.Option("--min-breadth", help="Reads mode: minimum %breadth for presence."),
+        typer.Option("--min-breadth", "-b", help="Reads mode: minimum %breadth for presence."),
     ] = 90.0,
     min_identity: Annotated[
         float,
         typer.Option(
             "--min-identity",
+            "-I",
             help=(
                 "Reads mode: minimum %identity per alignment, 0 <= x <= 100 (0 = off;"
                 " any nonzero value emits gapit.reads/2)."
@@ -75,6 +73,7 @@ def screen_command(
         int,
         typer.Option(
             "--min-mapq",
+            "-M",
             help=(
                 "Reads mode: minimum MAPQ per alignment (0 = off; any nonzero value"
                 " emits gapit.reads/2)."
@@ -85,42 +84,43 @@ def screen_command(
         AlignerEnum | None,
         typer.Option(
             "--aligner",
+            "-a",
             help=(
                 "Alignment engine (default: blastn for contig files, minimap2 for --r1/--r2 reads)."
             ),
         ),
     ] = None,
-    db: Annotated[
-        str, typer.Option("--db", help="Database to screen against (datadir subdir).")
-    ] = "ncbi",
     datadir: Datadir = None,
     minid: Annotated[
-        float, typer.Option("--minid", help="Minimum %identity, 0 < x <= 100.")
+        float, typer.Option("--minid", "-i", help="Minimum %identity, 0 < x <= 100.")
     ] = 80.0,
     mincov: Annotated[
-        float, typer.Option("--mincov", help="Minimum %coverage, 0 <= x <= 100.")
+        float, typer.Option("--mincov", "-c", help="Minimum %coverage, 0 <= x <= 100.")
     ] = 80.0,
     min_gene_cov: Annotated[
         float,
         typer.Option(
-            "--min-gene-cov", help="Cluster dbs: min %coverage for a present gene verdict."
+            "--min-gene-cov", "-g", help="Cluster dbs: min %coverage for a present gene verdict."
         ),
     ] = 90.0,
     min_gene_id: Annotated[
         float,
         typer.Option(
-            "--min-gene-id", help="Cluster dbs: min %identity for a present gene verdict."
+            "--min-gene-id", "-G", help="Cluster dbs: min %identity for a present gene verdict."
         ),
     ] = 90.0,
     min_cluster_cov: Annotated[
         float,
-        typer.Option("--min-cluster-cov", help="Cluster dbs: min locus %coverage for a best call."),
+        typer.Option(
+            "--min-cluster-cov", "-C", help="Cluster dbs: min locus %coverage for a best call."
+        ),
     ] = 96.0,
-    threads: Annotated[int, typer.Option("--threads", help="BLAST worker threads.")] = 1,
+    threads: Annotated[int, typer.Option("--threads", "-t", help="BLAST worker threads.")] = 1,
     jobs: Annotated[
         int,
         typer.Option(
             "--jobs",
+            "-j",
             help=(
                 "Screen N input files concurrently (gapit extension; output order is"
                 " always input order). Each worker runs its own BLAST against the"
@@ -132,6 +132,7 @@ def screen_command(
         bool,
         typer.Option(
             "--merge-fragments/--no-merge-fragments",
+            "-m",
             help=(
                 "Merge gene fragments split across contigs (gapit extension): report one"
                 " hit when fragments of a gene that each fail --mincov jointly cover >= mincov"
@@ -141,16 +142,47 @@ def screen_command(
     ] = False,
     fofn: Annotated[
         Path | None,
-        typer.Option("--fofn", help="File of filenames; replaces the positional FILEs."),
+        typer.Option("--fofn", "-F", help="File of filenames; replaces the positional FILEs."),
     ] = None,
-    quiet: Annotated[bool, typer.Option("--quiet", help="Silence stderr diagnostics.")] = False,
-    noheader: Annotated[bool, typer.Option("--noheader", help="Suppress the header row.")] = False,
-    nopath: Annotated[bool, typer.Option("--nopath", help="Basename the FILE column.")] = False,
-    debug: Annotated[bool, typer.Option("--debug", help="Verbose stderr diagnostics.")] = False,
+    quiet: Annotated[
+        bool, typer.Option("--quiet", "-q", help="Silence stderr diagnostics.")
+    ] = False,
+    noheader: Annotated[
+        bool, typer.Option("--noheader", "-n", help="Suppress the header row.")
+    ] = False,
+    nopath: Annotated[
+        bool, typer.Option("--nopath", "-p", help="Basename the FILE column.")
+    ] = False,
+    debug: Annotated[
+        bool, typer.Option("--debug", "-v", help="Verbose stderr diagnostics.")
+    ] = False,
     output_format: Annotated[
         OutputFormat | None,
-        typer.Option("--format", help="Output format (reads mode defaults to json)."),
+        typer.Option(
+            "--format",
+            "-f",
+            help=(
+                "Output format (reads mode defaults to json). tsv/csv/md stream per"
+                " completed file; json is written once at the end (single document)."
+            ),
+        ),
     ] = None,
+    output: Annotated[
+        Path | None,
+        typer.Option(
+            "--output",
+            "-o",
+            help=(
+                "Write the report to PATH instead of stdout (truncates; streamed chunks"
+                " are flushed per file; stdout then carries no data)."
+            ),
+        ),
+    ] = None,
+    *,
+    db: Annotated[
+        str,
+        typer.Option("--db", "-d", help="Database to screen against (required, no default)."),
+    ],
 ) -> None:
     """Screen contig files or FASTQ reads (R1 and R2 comma-lists, one lane
     each) for known genes (reference or custom databases)."""
@@ -166,66 +198,57 @@ def screen_command(
             and aligner is not AlignerEnum.minimap2
         ):
             usage_fail("--min-identity/--min-mapq are reads-mode only (minimap2 engine)")
-        if r1 is not None or r2 is not None:
-            if fofn is not None:
-                usage_fail("--fofn is not available in reads mode")
-            if noheader:
-                usage_fail("--noheader is not available in reads mode")
-            if nopath:
-                usage_fail("--nopath is not available in reads mode")
-            if jobs != 1:
-                usage_fail("--jobs is not available in reads mode")
-            if merge_fragments:
-                usage_fail("--merge-fragments is not available in reads mode")
-            reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
-            typer.echo(
-                run_screen_reads(
-                    _split_read_list(r1 or "", "--r1"),
-                    _split_read_list(r2, "--r2") if r2 is not None else None,
-                    db,
-                    datadir,
-                    read_type,
-                    min_breadth,
-                    min_identity,
-                    min_mapq,
-                    threads,
-                    output_format,
-                    quiet,
-                    debug,
-                    aligner=aligner,
-                    minid=minid,
-                    mincov=mincov,
-                ),
-                nl=False,
-            )
-        elif aligner is AlignerEnum.minimap2:
-            if merge_fragments:
-                usage_fail("--merge-fragments is not available with --aligner minimap2")
-            reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
-            typer.echo(
-                run_screen_assemblies(
-                    files,
-                    fofn,
-                    db,
-                    datadir,
-                    read_type,
-                    min_breadth,
-                    min_identity,
-                    min_mapq,
-                    threads,
-                    jobs,
-                    noheader,
-                    nopath,
-                    output_format,
-                    quiet,
-                    debug,
-                    minid=minid,
-                    mincov=mincov,
-                ),
-                nl=False,
-            )
-        else:
-            typer.echo(
+        with output_target(output) as deliver:
+            if r1 is not None or r2 is not None:
+                reject_reads_mode_flags(fofn, noheader, nopath, jobs, merge_fragments)
+                reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
+                deliver(
+                    run_screen_reads(
+                        split_read_list(r1 or "", "--r1"),
+                        split_read_list(r2, "--r2") if r2 is not None else None,
+                        db,
+                        datadir,
+                        read_type,
+                        min_breadth,
+                        min_identity,
+                        min_mapq,
+                        threads,
+                        output_format,
+                        quiet,
+                        debug,
+                        aligner=aligner,
+                        minid=minid,
+                        mincov=mincov,
+                    )
+                )
+            elif aligner is AlignerEnum.minimap2:
+                if merge_fragments:
+                    usage_fail("--merge-fragments is not available with --aligner minimap2")
+                reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
+                deliver(
+                    run_screen_assemblies(
+                        files,
+                        fofn,
+                        db,
+                        datadir,
+                        read_type,
+                        min_breadth,
+                        min_identity,
+                        min_mapq,
+                        threads,
+                        jobs,
+                        noheader,
+                        nopath,
+                        output_format,
+                        quiet,
+                        debug,
+                        minid=minid,
+                        mincov=mincov,
+                    )
+                )
+            else:
+                # run_screen emits its output through `deliver`; echoing the
+                # return value here would duplicate every byte.
                 run_screen(
                     files,
                     db,
@@ -245,9 +268,8 @@ def screen_command(
                     min_gene_cov=min_gene_cov,
                     min_gene_id=min_gene_id,
                     min_cluster_cov=min_cluster_cov,
-                ),
-                nl=False,
-            )
+                    emit=deliver,
+                )
 
     dispatch(run)
 

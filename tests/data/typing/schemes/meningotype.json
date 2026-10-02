@@ -1,0 +1,60 @@
+{
+  "schema": "gapit.typing/2",
+  "schemes": [
+    {
+      "name": "serogroup",
+      "rules": [
+        {
+          "model": "weighted_genes",
+          "phenotype": "A",
+          "weights": {"sacB": 1.0},
+          "identity_floor": 95.0,
+          "notes": [
+            "Panel after Mothershed et al. 2004 (J Clin Microbiol 42:320-328) as implemented by meningotype"
+          ]
+        },
+        {
+          "model": "weighted_genes",
+          "phenotype": "B",
+          "weights": {"synD": 1.0},
+          "identity_floor": 95.0
+        },
+        {
+          "model": "weighted_genes",
+          "phenotype": "C",
+          "weights": {"synE": 1.0},
+          "identity_floor": 95.0
+        },
+        {
+          "model": "weighted_genes",
+          "phenotype": "X",
+          "weights": {"xcbB": 1.0},
+          "identity_floor": 95.0
+        },
+        {
+          "model": "weighted_genes",
+          "phenotype": "W",
+          "weights": {"synG_EX7E_P": 1.0},
+          "identity_floor": 99.5,
+          "notes": [
+            "EX7E probe trick: the synG EX7E motif peptide at residue 3 reads P in serogroup W, G in Y, S in dual W/Y (meningotype menwy); a 99.5 identity floor means only the exact allele probe counts",
+            "The probe record stands alone (no full-length synG in the db): abricate's -culling_limit 1 would otherwise shadow the contained probe alignment"
+          ]
+        },
+        {
+          "model": "weighted_genes",
+          "phenotype": "Y",
+          "weights": {"synF": 0.5, "synG_EX7E_G": 0.5},
+          "identity_floor": 99.5,
+          "notes": [
+            "EX7E probe trick (see serogroup W): a dual W/Y strain (EX7E = S) clears neither allele probe and falls back to NG — allele-level ambiguity needs a future allele_match primitive"
+          ]
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "NG",
+      "control_gene": "ctrA"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "schema": "gapit.typing/2",
+  "schemes": [
+    {
+      "name": "o_group",
+      "rules": [
+        {
+          "model": "cluster_match",
+          "phenotype": "O1",
+          "coverage": {"weight": 0.55, "floor": 95.0},
+          "identity": {"weight": 0.25, "floor": 95.0},
+          "key_genes": {"weight": 0.2, "genes": ["o1_wzx", "o1_wzy"]}
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O3/O13",
+          "coverage": {"weight": 0.55, "floor": 95.0},
+          "identity": {"weight": 0.25, "floor": 95.0},
+          "key_genes": {"weight": 0.2, "genes": ["o3_wzx", "o3_wzy"]},
+          "notes": [
+            "O3 and O13 loci contain the same genes and cannot be distinguished by gene content — one combined label (van der Graaf-van Bloois et al. 2023, Microb Genom 9:mgen001007)"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O4",
+          "coverage": {"weight": 0.55, "floor": 95.0},
+          "identity": {"weight": 0.25, "floor": 95.0},
+          "key_genes": {"weight": 0.2, "genes": ["o4_wzx", "o4_wzy"]}
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "OUT"
+    },
+    {
+      "name": "k_group",
+      "rules": [
+        {
+          "model": "cluster_match",
+          "phenotype": "K6",
+          "coverage": {"weight": 0.55, "floor": 95.0},
+          "identity": {"weight": 0.25, "floor": 95.0},
+          "key_genes": {"weight": 0.2, "genes": ["k6_kpsM", "k6_wzy"]}
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K18",
+          "coverage": {"weight": 0.55, "floor": 95.0},
+          "identity": {"weight": 0.25, "floor": 95.0},
+          "key_genes": {"weight": 0.2, "genes": ["k18_kpsM", "k18_wzy"]}
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "KUT"
+    },
+    {
+      "name": "serotype",
+      "compose": "{o_group}:{k_group}",
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "OUT:KUT"
+    }
+  ]
+}

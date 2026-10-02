@@ -2,18 +2,22 @@
 
 import gzip
 import json
+import re
 import shutil
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Literal
 
 import pytest
 from pydantic import TypeAdapter
 from typer.testing import CliRunner, Result
 
+from gapit import screening as gapit_screening
 from gapit.cli import app
-from gapit.db import make_blast_db
-from gapit.errors import ErrorEnvelope
+from gapit.db import Database, make_blast_db
+from gapit.errors import ErrorEnvelope, InputError
+from gapit.report import Report, ScreeningParams
 from gapit.screening import OutputFormat, run_screen
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
@@ -23,6 +27,7 @@ MULTI_FILES = ["full.fa", "gap.fa", "none.fa", "sort.fa"]
 
 runner = CliRunner()
 envelope_adapter = TypeAdapter(ErrorEnvelope)
+ANSI_STYLE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 def last_envelope(stderr: str) -> ErrorEnvelope:
@@ -194,6 +199,207 @@ def test_no_input_files_exits_2(datadir: Path) -> None:
     result = screen(datadir)
     assert result.exit_code == 2
     assert json.loads(result.stderr)["code"] == "USAGE_ERROR"
+
+
+def test_missing_db_option_is_usage_error_exit_2(tmp_path: Path) -> None:
+    """Given a screen invocation without --db (no default since the
+    breaking change), When run, Then typer's missing-option usage error
+    exits 2 and no data reaches stdout."""
+    result = runner.invoke(app, ["screen", str(CONTIGS / "full.fa"), "--datadir", str(tmp_path)])
+    assert result.exit_code == 2
+    combined = result.stdout + result.stderr
+    assert "--db" in combined
+    assert result.stdout == ""
+
+
+def test_help_lists_output_flag_and_required_db() -> None:
+    """Given `gapit screen --help`, When inspected, Then --output is
+    documented and --db is marked required (click renders [required])."""
+    result = runner.invoke(app, ["screen", "--help"], env={"COLUMNS": "100"})
+    assert result.exit_code == 0
+    stripped = ANSI_STYLE.sub("", result.stdout)
+    assert "--output" in stripped
+    assert "--db" in stripped
+    assert "[required]" in stripped
+
+
+def test_output_file_receives_data_stdout_stays_empty(datadir: Path, tmp_path: Path) -> None:
+    """Given --output PATH on a multi-file tsv run, When screened, Then the
+    file holds exactly the bytes a plain run prints and stdout holds NO
+    data (stdout purity with --output; stderr chatter unchanged)."""
+    out_path = tmp_path / "out.tsv"
+    files = [str(CONTIGS / name) for name in MULTI_FILES]
+    plain = screen(datadir, "--nopath", *files)
+    assert plain.exit_code == 0
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            "--db",
+            "tinyamr",
+            "--datadir",
+            str(datadir),
+            "--nopath",
+            "--output",
+            str(out_path),
+            *files,
+        ],
+    )
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert "Processing:" in result.stderr
+    assert out_path.read_text(encoding="utf-8") == plain.stdout
+
+
+def test_output_json_writes_single_document(datadir: Path, tmp_path: Path) -> None:
+    """Given --output with --format json, When screened, Then the file is
+    the single buffered gapit.report/1 document and stdout is empty."""
+    out_path = tmp_path / "out.json"
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            str(CONTIGS / "full.fa"),
+            "--db",
+            "tinyamr",
+            "--datadir",
+            str(datadir),
+            "--quiet",
+            "--format",
+            "json",
+            "--output",
+            str(out_path),
+        ],
+    )
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    document = json.loads(out_path.read_text(encoding="utf-8"))
+    assert document["schema"] == "gapit.report/1"
+    assert document["params"]["db"] == "tinyamr"
+
+
+def test_output_md_persists_streamed_prefix_on_midbatch_failure(
+    datadir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given --output --format md where file 2 fails mid-batch, When
+    screened, Then the file keeps the static frontmatter plus file 1's
+    already-streamed section while stdout stays empty — md writes are
+    incremental per chunk, exactly like the tsv path."""
+    out_path = tmp_path / "out.md"
+    real = gapit_screening.screen_file
+
+    def fail_on_second(
+        query: Path,
+        database: Database,
+        params: ScreeningParams,
+        *,
+        dbtype: Literal["nucl", "prot"],
+        debug: bool = False,
+        merge_fragments: bool = False,
+    ) -> Report:
+        if query.name == "gap.fa":
+            raise InputError(f"boom in {query}", code="INVALID_INPUT", context={})
+        return real(
+            query, database, params, dbtype=dbtype, debug=debug, merge_fragments=merge_fragments
+        )
+
+    monkeypatch.setattr(gapit_screening, "screen_file", fail_on_second)
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            str(CONTIGS / "full.fa"),
+            str(CONTIGS / "gap.fa"),
+            "--db",
+            "tinyamr",
+            "--datadir",
+            str(datadir),
+            "--nopath",
+            "--format",
+            "md",
+            "--output",
+            str(out_path),
+        ],
+    )
+    assert result.exit_code == 5
+    assert result.stdout == ""
+    partial = out_path.read_text(encoding="utf-8")
+    assert partial.startswith("---\nschema: gapit.report/1\n")
+    assert f"## `{CONTIGS / 'full.fa'}`" in partial
+    assert f"## `{CONTIGS / 'gap.fa'}`" not in partial
+
+
+def test_output_truncates_existing_file(datadir: Path, tmp_path: Path) -> None:
+    """Given --output pointing at an existing file, When screened, Then the
+    run truncates it (v1 overwrite semantics, never append)."""
+    out_path = tmp_path / "out.tsv"
+    out_path.write_text("stale content that must disappear\n" * 20, encoding="utf-8")
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            str(CONTIGS / "full.fa"),
+            "--db",
+            "tinyamr",
+            "--datadir",
+            str(datadir),
+            "--quiet",
+            "--output",
+            str(out_path),
+        ],
+    )
+    assert result.exit_code == 0
+    assert "stale content" not in out_path.read_text(encoding="utf-8")
+    assert out_path.read_text(encoding="utf-8").startswith("#FILE\t")
+
+
+def test_output_persists_streamed_prefix_on_midbatch_failure(
+    datadir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given --output where file 2 fails mid-batch (monkeypatched blast
+    error), When screened, Then file 1's already-streamed rows persist in
+    the output file (header + file 1) while the typed envelope exits 5 —
+    the documented error interaction for streamed emission."""
+    out_path = tmp_path / "out.tsv"
+    real = gapit_screening.screen_file
+
+    def fail_on_second(
+        query: Path,
+        database: Database,
+        params: ScreeningParams,
+        *,
+        dbtype: Literal["nucl", "prot"],
+        debug: bool = False,
+        merge_fragments: bool = False,
+    ) -> Report:
+        if query.name == "gap.fa":
+            raise InputError(f"boom in {query}", code="INVALID_INPUT", context={})
+        return real(
+            query, database, params, dbtype=dbtype, debug=debug, merge_fragments=merge_fragments
+        )
+
+    monkeypatch.setattr(gapit_screening, "screen_file", fail_on_second)
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            str(CONTIGS / "full.fa"),
+            str(CONTIGS / "gap.fa"),
+            "--db",
+            "tinyamr",
+            "--datadir",
+            str(datadir),
+            "--nopath",
+            "--output",
+            str(out_path),
+        ],
+    )
+    assert result.exit_code == 5
+    assert result.stdout == ""
+    partial = out_path.read_text(encoding="utf-8")
+    assert partial.startswith("#FILE\t")
+    assert len(partial.splitlines()) == 2
+    assert partial.splitlines()[1].startswith("full.fa\t")
 
 
 def test_debug_echoes_normalize_and_blast_argv(datadir: Path) -> None:

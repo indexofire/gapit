@@ -1,0 +1,7 @@
+{
+  "name": "ncbi",
+  "description": "NCBI AMRFinderPlus (reference finder) curated AMR",
+  "vendor": "NCBI",
+  "dbtype": "nucl",
+  "snapshotted": "2026-10-02"
+}

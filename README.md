@@ -42,21 +42,26 @@ The package supports Python 3.11+; the dev environment pins 3.14.
 ## Quick start
 
 ```bash
-# Screen contigs (abricate-compatible TSV on stdout, --db defaults to ncbi)
+# Screen contigs (abricate-compatible TSV on stdout; --db is required)
 gapit screen contigs.fa --db ncbi
 
 # Agent- and human-readable outputs
 gapit screen contigs.fa --db ncbi --format json
-gapit screen contigs.fa --format md
+gapit screen contigs.fa --db ncbi --format md
+
+# Two-stage designation: screen writes the gene table, typing designates from it
+# (typed gene databases — the bundled ecoli_dec carries the dual-scheme DEC panel)
+gapit screen isolates.fa --db ecoli_dec --output dec.tsv
+gapit typing dec.tsv
 
 # Screen FASTQ reads; --read-type picks the minimap2 preset
 gapit screen --r1 sample_R1.fastq.gz --r2 sample_R2.fastq.gz --read-type sr --db card
-gapit screen --r1 ont_reads.fastq.gz --read-type map-ont --format json
+gapit screen --r1 ont_reads.fastq.gz --db ncbi --read-type map-ont --format json
 
 # Summarize report tables into a gene presence/absence matrix
 gapit summary *.tsv
 
-# Databases: every database downloads from upstream on first fetch
+# Databases: five ship in-wheel and work instantly; the rest download from upstream on fetch
 gapit db fetch all         # default set (card, vfdb)
 gapit db fetch ncbi
 gapit db list
@@ -75,14 +80,17 @@ presence defaults to 90% alignment breadth (`--min-breadth 90`).
 
 A database is a directory under the datadir, resolved from `$GAPIT_DATADIR`, then
 `~/.local/share/gapit/db` (override per call with `--datadir`). Twelve databases are built
-into the catalog; all of them download from upstream and build on `gapit db fetch` — nothing
-is bundled inside the package, because several upstream licenses (CARD's McMaster terms,
-VFDB's CC BY-NC, Kaptive's GPL-3.0) forbid redistribution inside an MIT-licensed
-distribution.
+into the catalog; all of them download from upstream and build on `gapit db fetch` — with
+five content-provenance-audited exceptions that ship inside the package (`ecoli_dec` plus
+the `ncbi`, `resfinder`, `ecoh`, `upec_expec_vf` snapshots: public domain / Apache-2.0 /
+BSD-3-Clause / MIT), materialized into the datadir on first use with zero network. Several
+upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0) forbid
+redistribution inside an MIT-licensed distribution, so everything else is fetch-on-demand
+— and `db fetch <name>` always refreshes a bundled name from the latest upstream.
 
 | Name | Content | dbtype |
 |---|---|---|
-| `ncbi` | NCBI AMRFinderPlus curated AMR (default db) | nucl |
+| `ncbi` | NCBI AMRFinderPlus curated AMR | nucl |
 | `card` | CARD protein homolog resistance models | nucl |
 | `resfinder` | CGE ResFinder acquired resistance genes | nucl |
 | `argannot` | ARG-ANNOT acquired resistance genes | nucl |
@@ -152,7 +160,7 @@ Register it with an MCP client:
 | `pixi run lint` | ruff check |
 | `pixi run fmt` | ruff format |
 | `pixi run typecheck` | basedpyright (strict) |
-| `pixi run test` | pytest, 776 offline tests |
+| `pixi run test` | pytest, 1024 offline tests |
 | `pixi run -e parity parity` | byte-diff screening vs real abricate |
 | `pixi run -e parity summary-parity` | byte-diff summary vs real abricate |
 
@@ -165,6 +173,7 @@ guide, `CHANGELOG.md` the change history.
 ## License
 
 gapit is MIT-licensed. It is a behavioral reimplementation of abricate (GPL-2.0) and
-copies no Perl code; abricate itself remains GPL-2.0. No database content ships inside
-the package: every provider downloads from upstream at fetch time, under its own
-license (SPEC.md §9).
+copies no Perl code; abricate itself remains GPL-2.0. The only database content inside
+the package is the five audited, permissively licensed bundles under `src/gapit/data/dbs/`
+(public domain / Apache-2.0 / BSD-3-Clause / MIT); every other provider downloads from
+upstream at fetch time, under its own license (SPEC.md §9).

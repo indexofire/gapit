@@ -1,13 +1,11 @@
 ---
 schema: gapit.report/1
-tool: gapit 0.4.0
+tool: gapit 0.5.0
 created_at: 2026-09-17T12:00:00Z
 db: fragdb
 minid: 80.0
 mincov: 80.0
 threads: 1
-files: 3
-hits: 2
 ---
 
 # gapit screening report

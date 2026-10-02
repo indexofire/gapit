@@ -2,8 +2,9 @@
 
 Turns parsed loci into a cluster database directory: locus FASTA
 ``sequences`` (one bare-id record per locus), the ``gapit.features/1``
-feature table (``features.json``), an optional validated ``gapit.typing/1``
-spec copied in as ``typing.json``, the makeblastdb nucl index (the gene-view
+feature table (``features.json``), an optional validated ``gapit.typing``
+spec (v1 or v2; cluster dbs evaluate one scheme) copied in as
+``typing.json``, the makeblastdb nucl index (the gene-view
 screening surface for stage 2), and the manifest — written LAST, certifying
 every artifact, with ``kind: cluster`` and plain locus-id headers.
 
@@ -34,7 +35,12 @@ from gapit.gbfeatures import (
 from gapit.gffparse import parse_gff3_features
 from gapit.proctools import note
 from gapit.records import Manifest, write_manifest
-from gapit.typing_models import read_typing_document, validate_references
+from gapit.typing_models import (
+    read_typing_document,
+    single_scheme,
+    typing_schema_of,
+    validate_references,
+)
 
 _WRAP_COLUMNS = 60
 
@@ -123,6 +129,7 @@ def build_cluster_database(
     typing: Path | None,
     source_urls: Sequence[str],
     fetched_at: str,
+    typing_schema: str = "",
     quiet: bool = True,
     debug: bool = False,
     content_license: str = "",
@@ -131,8 +138,10 @@ def build_cluster_database(
     """Build every cluster-db artifact in ``db_dir`` (manifest written LAST):
     locus FASTA -> features.json -> self-check -> optional typing copy ->
     makeblastdb (nucl; cluster loci are always nucleotide) -> manifest.
-    ``content_license``/``content_note`` carry database-content provenance (kaptive-style
-    providers); both default to empty and serialize only when set."""
+    ``typing_schema`` records the installed spec's gapit.typing version in
+    the manifest. ``content_license``/``content_note`` carry database-content
+    provenance (kaptive-style providers); both default to empty and
+    serialize only when set."""
     sequences_path = db_dir / "sequences"
     _write_locus_fasta(loci, sequences_path)
     note(quiet, f"generated {sequences_path}")
@@ -153,6 +162,7 @@ def build_cluster_database(
         dbtype="nucl",
         kind="cluster",
         header_format="plain",
+        typing_schema=typing_schema or None,
         makeblastdb_version=tool_version_line(["blastn", "-version"]),
         minimap2_version=tool_version_line(["minimap2", "--version"]),
         license=content_license or None,
@@ -166,13 +176,17 @@ def perform_cluster_build(
     name: str, fasta: Path, typing: Path | None, db_dir: Path, *, quiet: bool = True
 ) -> Manifest:
     """The cluster branch of the build use-case: parse the GBK/GFF input,
-    validate the typing spec (schema AND referenced ids — a rule naming a
-    gene/locus the input lacks fails before any artifact is written), then
-    build (callers shape the receipt)."""
+    validate the typing spec (schema, referenced ids, AND exactly one
+    scheme — gapit.cluster/1 has one phenotype slot — so a bad spec fails
+    before any artifact is written), then build (callers shape the
+    receipt)."""
     loci = parse_cluster_input(fasta)
+    typing_schema = ""
     if typing is not None:
         document = read_typing_document(typing)
+        single_scheme(document)
         validate_references(document, FeaturesDocument(loci=tuple(item.features for item in loci)))
+        typing_schema = typing_schema_of(typing)
     db_dir.mkdir(parents=True, exist_ok=True)
     return build_cluster_database(
         db_dir,
@@ -181,5 +195,6 @@ def perform_cluster_build(
         typing=typing,
         source_urls=("local",),
         fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        typing_schema=typing_schema,
         quiet=quiet,
     )

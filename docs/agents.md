@@ -13,23 +13,24 @@ Version, as one JSON line:
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.4.0"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.0"}
 ```
 
-Output schemas. Nine documents are introspectable: `report`, `reads`,
+Output schemas. Ten documents are introspectable: `report`, `typing_result`, `reads`,
 `reads2`, `cluster`, `summary`, `error`, `version`, plus the database-side
 documents `features` and `typing`. Each prints its full JSON Schema:
 
 ```console
-$ gapit schema report      # gapit.report/1 (contig screening)
-$ gapit schema reads       # gapit.reads/1  (FASTQ screening)
-$ gapit schema reads2      # gapit.reads/2  (filtered FASTQ screening)
-$ gapit schema cluster     # gapit.cluster/1 (cluster-database screening)
-$ gapit schema summary     # gapit.summary/1
-$ gapit schema error       # gapit.error/1
-$ gapit schema version     # gapit.version/1
-$ gapit schema features    # gapit.features/1 (cluster db feature table)
-$ gapit schema typing      # gapit.typing/1 (cluster db scoring spec)
+$ gapit schema report          # gapit.report/1 (contig screening)
+$ gapit schema typing_result   # gapit.typing_result/1 (gapit typing designation)
+$ gapit schema reads           # gapit.reads/1  (FASTQ screening)
+$ gapit schema reads2          # gapit.reads/2  (filtered FASTQ screening)
+$ gapit schema cluster         # gapit.cluster/1 (cluster-database screening)
+$ gapit schema summary         # gapit.summary/1
+$ gapit schema error           # gapit.error/1
+$ gapit schema version         # gapit.version/1
+$ gapit schema features        # gapit.features/1 (cluster db feature table)
+$ gapit schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
 ```
 
 For example, `gapit schema version` (real output):

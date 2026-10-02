@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 
 from pydantic import TypeAdapter
 
-from gapit.formats.json import (
+from gapit.formats.reads_json import (
     Reads2Document,
     render_reads2_json,
     render_reads_json,

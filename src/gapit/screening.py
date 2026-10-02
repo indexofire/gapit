@@ -9,19 +9,21 @@ imported from gapit.engines so every screening surface sees the same enums.
 """
 
 import os
+from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 
 import typer
 
-from gapit import config, db
+from gapit import db
 from gapit.blast import ensure_blast, screen_file
-from gapit.engines import AlignerEnum, OutputFormat
+from gapit.bundled import find_bundled, materialize_bundled, resolve_screen_datadir
+from gapit.engines import AlignerEnum, Emit, OutputFormat
 from gapit.errors import DatabaseError, InputError, ensure_input_file, usage_fail
 from gapit.formats.json import render_json
-from gapit.formats.md import render_markdown
-from gapit.formats.tsv import format_tsv
+from gapit.formats.md import md_report_chunk, md_report_preamble
+from gapit.formats.tsv import tsv_file_chunk, tsv_preamble
 from gapit.report import Report, ScreeningParams
 from gapit.screening_cluster import (
     reject_cluster_engine_flags,
@@ -54,12 +56,25 @@ def _resolve_inputs(files: list[Path] | None, fofn: Path | None) -> list[Path]:
     return inputs
 
 
-def find_database(datadir: Path, name: str) -> db.Database:
-    """Look up a database by name under the datadir; unknown names list what exists."""
+def find_database(datadir: Path, name: str, *, quiet: bool = False) -> db.Database:
+    """Look up a database by name under the datadir; unknown names list what
+    exists.
+
+    A BUNDLED database (gapit.bundled) that is absent from the datadir is
+    auto-materialized into it first — deterministic, zero network — so the
+    first screen works with no ``db fetch``. Already-materialized bundles
+    short-circuit above; a bundle directory left without its certifying
+    manifest (interrupted build) is rebuilt by the same path.
+    """
     databases = db.discover_databases(datadir)
     for database in databases:
         if database.name == name:
             return database
+    if find_bundled(name) is not None and not (datadir / name / "gapit-manifest.json").is_file():
+        materialize_bundled(name, datadir, quiet=quiet)
+        for database in db.discover_databases(datadir):
+            if database.name == name:
+                return database
     available = ", ".join(entry.name for entry in databases) or "(none)"
     raise DatabaseError(
         f"Database {name} is not in {datadir}. Available: {available}",
@@ -87,9 +102,16 @@ def run_screen(
     min_gene_cov: float = 90.0,
     min_gene_id: float = 90.0,
     min_cluster_cov: float = 96.0,
+    emit: Emit | None = None,
 ) -> str:
-    """Screen each input file in order; buffer reports; render once at the
-    end and return the output for the caller to echo.
+    """Screen each input file in order and render; returns the full output
+    for the caller to echo (MCP contract), and when ``emit`` is given also
+    hands each rendered chunk to it as soon as the chunk exists — tsv/csv/md
+    stream per completed file (input order, head-of-line under
+    ``--jobs``: file i waits for 1..i; md leads with its static frontmatter,
+    counts live in the JSON document only), while json is a single document
+    emitted once at the end. Emission order is document order, so chunk
+    concatenation is always byte-identical to the buffered return value.
 
     The per-run gates (blastn presence via ``ensure_blast``, dbtype via one
     ``blastdbcmd -info``) fire once up front, so MISSING_DEPENDENCY and
@@ -111,7 +133,7 @@ def run_screen(
     if jobs < 1:
         usage_fail(f"--jobs must be >= 1: got {jobs}")
     inputs = _resolve_inputs(files, fofn)
-    database = find_database(config.resolve_datadir(datadir), db_name)
+    database = find_database(resolve_screen_datadir(datadir, db_name), db_name, quiet=quiet)
     if database.kind == "cluster":
         reject_gene_engine_flags(minid, mincov, merge_fragments, jobs, aligner)
         return run_cluster_screen(
@@ -123,6 +145,7 @@ def run_screen(
             nopath=nopath,
             quiet=quiet,
             debug=debug,
+            emit=emit,
         )
     reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
     params = ScreeningParams(db=db_name, minid=minid, mincov=mincov, threads=threads)
@@ -131,37 +154,47 @@ def run_screen(
     cpu_count = os.cpu_count()
     if not quiet and cpu_count is not None and jobs * threads > cpu_count:
         typer.echo(f"--jobs {jobs} --threads {threads} oversubscribes {cpu_count} cpus", err=True)
-    reports: list[Report] = []
-    if jobs == 1:
-        for path in inputs:
-            if not quiet:
-                typer.echo(f"Processing: {path}", err=True)
-            report = screen_file(
-                path, database, params, dbtype=dbtype, debug=debug, merge_fragments=merge_fragments
-            )
-            if not quiet:
-                typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
-            reports.append(report)
-    else:
 
-        def screen_one(path: Path) -> Report:
-            if not quiet:
-                typer.echo(f"Processing: {path}", err=True)
-            report = screen_file(
-                path, database, params, dbtype=dbtype, debug=debug, merge_fragments=merge_fragments
-            )
-            if not quiet:
-                typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
-            return report
+    def screen_one(path: Path) -> Report:
+        if not quiet:
+            typer.echo(f"Processing: {path}", err=True)
+        report = screen_file(
+            path, database, params, dbtype=dbtype, debug=debug, merge_fragments=merge_fragments
+        )
+        if not quiet:
+            typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
+        return report
 
-        # Subprocess-bound work (GIL irrelevant); executor.map collects
+    def iter_reports() -> Iterator[Report]:
+        # Subprocess-bound work (GIL irrelevant); executor.map yields
         # positionally, so reports stay in input order (SPEC.md §4) and a
         # failing file raises at its position, like the sequential loop.
+        if jobs == 1:
+            yield from (screen_one(path) for path in inputs)
+            return
         with ThreadPoolExecutor(max_workers=jobs) as executor:
-            reports = list(executor.map(screen_one, inputs))
+            yield from executor.map(screen_one, inputs)
+
+    chunks: list[str] = []
+
+    def sink(chunk: str) -> None:
+        if chunk:
+            chunks.append(chunk)
+            if emit is not None:
+                emit(chunk)
+
     if output_format is OutputFormat.json:
-        return render_json(reports, params, now=datetime.now(UTC))
-    if output_format is OutputFormat.md:
-        return render_markdown(reports, params, now=datetime.now(UTC))
-    as_csv = output_format is OutputFormat.csv
-    return format_tsv(reports, csv=as_csv, noheader=noheader, nopath=nopath)
+        sink(render_json(list(iter_reports()), params, now=datetime.now(UTC)))
+    elif output_format is OutputFormat.md:
+        # Static frontmatter leads (knowable before file 1), then one
+        # section per file the moment it completes — exactly like tsv
+        # chunks, head-of-line in input order under --jobs.
+        sink(md_report_preamble(params, now=datetime.now(UTC)))
+        for report in iter_reports():
+            sink(md_report_chunk(report))
+    else:
+        as_csv = output_format is OutputFormat.csv
+        sink(tsv_preamble(csv=as_csv, noheader=noheader))
+        for report in iter_reports():
+            sink(tsv_file_chunk(report, csv=as_csv, nopath=nopath))
+    return "".join(chunks)

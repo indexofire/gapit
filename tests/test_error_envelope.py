@@ -69,7 +69,10 @@ def test_unknown_db_envelope(datadir: Path) -> None:
 
 
 def test_missing_input_file_envelope(datadir: Path) -> None:
-    result = runner.invoke(app, ["screen", "--datadir", str(datadir), str(datadir / "nope.fa")])
+    result = runner.invoke(
+        app,
+        ["screen", "--db", "tinyamr", "--datadir", str(datadir), str(datadir / "nope.fa")],
+    )
     assert result.exit_code == 5
     envelope = last_envelope(result.stderr)
     assert envelope.code == "INPUT_NOT_FOUND"
@@ -103,7 +106,17 @@ def test_junk_input_envelope(datadir: Path, tmp_path: Path) -> None:
 
 def test_invalid_minid_usage_envelope(datadir: Path) -> None:
     result = runner.invoke(
-        app, ["screen", "--minid", "0", "--datadir", str(datadir), str(CONTIGS / "full.fa")]
+        app,
+        [
+            "screen",
+            "--db",
+            "tinyamr",
+            "--minid",
+            "0",
+            "--datadir",
+            str(datadir),
+            str(CONTIGS / "full.fa"),
+        ],
     )
     assert result.exit_code == 2
     envelope = last_envelope(result.stderr)

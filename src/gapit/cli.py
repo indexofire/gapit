@@ -7,9 +7,11 @@ from typing import Annotated
 import typer
 
 from gapit import __version__, config, db
+from gapit.bundled import bundled_names, materialize_bundled
 from gapit.cmd_db import register_db_command
 from gapit.cmd_screen import register_screen_command
 from gapit.cmd_summary import register_summary_command
+from gapit.cmd_typing import register_typing_command
 from gapit.dispatch import Datadir, dispatch
 from gapit.errors import usage_fail
 from gapit.formats.json import VersionDocument
@@ -31,11 +33,11 @@ def main(
     ctx: typer.Context,
     show_version: Annotated[
         bool | None,
-        typer.Option("--version", help="Show version and exit."),
+        typer.Option("--version", "-V", help="Show version and exit."),
     ] = None,
     as_json: Annotated[
         bool,
-        typer.Option("--json", help="With --version: emit gapit.version/1 JSON."),
+        typer.Option("--json", "-J", help="With --version: emit gapit.version/1 JSON."),
     ] = False,
 ) -> None:
     """Mass screening of contigs and reads for known genes across reference databases."""
@@ -51,7 +53,11 @@ def main(
 
 
 def _setupdb(datadir: Path | None, debug: bool) -> None:
-    infos = db.list_databases(config.resolve_datadir(datadir), setupdb=True, debug=debug)
+    root = config.resolve_datadir(datadir)
+    for bundled_name in bundled_names():
+        if not (root / bundled_name / "gapit-manifest.json").is_file():
+            materialize_bundled(bundled_name, root, quiet=False)
+    infos = db.list_databases(root, setupdb=True, debug=debug)
     for info in infos:
         typer.echo(
             f"Indexed {info.name} ({info.n_sequences} sequences, {info.dbtype})",
@@ -64,14 +70,15 @@ def setupdb(
     datadir: Datadir = None,
     debug: Annotated[
         bool,
-        typer.Option("--debug", help="Echo external command lines to stderr."),
+        typer.Option("--debug", "-v", help="Echo external command lines to stderr."),
     ] = False,
 ) -> None:
-    """Build BLAST indices for all databases under the datadir."""
+    """Materialize bundled databases, then build BLAST indices for everything under the datadir."""
     dispatch(lambda: _setupdb(datadir, debug))
 
 
 register_screen_command(app)
+register_typing_command(app)
 register_summary_command(app)
 register_db_command(app)
 register_mcp_command(app)
@@ -84,7 +91,7 @@ def schema(
         typer.Argument(
             help=(
                 "Document to introspect: report, reads, reads2, summary, error, version,"
-                " features, or typing."
+                " features, typing, or typing_result."
             ),
         ),
     ],

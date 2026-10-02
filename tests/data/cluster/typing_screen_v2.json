@@ -1,0 +1,27 @@
+{
+  "schema": "gapit.typing/2",
+  "schemes": [
+    {
+      "name": "serotype",
+      "rules": [
+        {
+          "model": "weighted_genes",
+          "phenotype": "K101",
+          "weights": {"wzx": 1.0, "gtrA": 1.0, "manC": 1.0},
+          "identity_floor": 90.0,
+          "require_any": ["wzx", "manC"]
+        },
+        {
+          "model": "weighted_genes",
+          "phenotype": "K102",
+          "weights": {"orfX": 1.0},
+          "identity_floor": 90.0,
+          "require_any": ["orfX"]
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "unknown"
+    }
+  ]
+}

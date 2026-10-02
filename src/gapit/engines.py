@@ -1,4 +1,4 @@
-"""Engine and format enums shared by the screening use-cases.
+"""Engine and format plumbing shared by the screening use-cases.
 
 A leaf module (stage 3): the gene path (screening.py), the reads path
 (screening_reads.py), and the cluster path (screening_cluster.py) all branch
@@ -7,6 +7,12 @@ would have made a cycle.
 """
 
 import enum
+from collections.abc import Callable
+
+Emit = Callable[[str], None]
+"""A rendered-chunk sink: the use-cases call it in document order as each
+chunk exists (tsv/csv/md per completed file; json once at the end); chunk
+concatenation always equals the buffered return value."""
 
 
 class OutputFormat(enum.Enum):

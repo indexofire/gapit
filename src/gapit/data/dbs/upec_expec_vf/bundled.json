@@ -1,0 +1,7 @@
+{
+  "name": "upec_expec_vf",
+  "description": "UPEC/ExPEC virulence genes (FordeGenomics)",
+  "vendor": "FordeGenomics",
+  "dbtype": "nucl",
+  "snapshotted": "2026-10-02"
+}

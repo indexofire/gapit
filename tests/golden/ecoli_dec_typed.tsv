@@ -1,0 +1,8 @@
+#FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
+dec_s3_stx2a_escV_aggR_uidA.fasta	aggR|Z32523.1:1208-2005	1	798	+	aggR	1-798/798	===============	0/0	100.00	100.00	ecoli_dec	Z32523.1:1208-2005	fimbrial adhesin [aggR] [Escherichia coli]	
+dec_s3_stx2a_escV_aggR_uidA.fasta	escV|NC_002695.2:c4609170-4607143	1	2028	+	escV	1-2028/2028	===============	0/0	100.00	100.00	ecoli_dec	NC_002695.2:c4609170-4607143	[escV] [Escherichia coli O157:H7 str. Sakai]	
+dec_s3_stx2a_escV_aggR_uidA.fasta	stx2a|NC_002695.2:1267107-1268066	1	960	+	stx2a	1-960/960	===============	0/0	100.00	100.00	ecoli_dec	NC_002695.2:1267107-1268066	[stx2a] [Escherichia coli O157:H7 str. Sakai]	
+dec_s3_stx2a_escV_aggR_uidA.fasta	uidA|NC_000913.3:c1696071-1694260	1	1812	+	uidA	1-1812/1812	===============	0/0	100.00	100.00	ecoli_dec	NC_000913.3:c1696071-1694260	[uidA] [Escherichia coli K-12 substr. MG1655]	
+dec_s2_pic_astA_uidA.fasta	astA|AB042002.1:1-117	1	117	+	astA	1-117/117	===============	0/0	100.00	100.00	ecoli_dec	AB042002.1:1-117	[astA] [Escherichia coli O44:H18 042]	
+dec_s2_pic_astA_uidA.fasta	pic|NC_017626.1:c4928958-4924840	1	4119	+	pic	1-4119/4119	===============	0/0	100.00	100.00	ecoli_dec	NC_017626.1:c4928958-4924840	[pic] [Escherichia coli O44:H18 042]	
+dec_s2_pic_astA_uidA.fasta	uidA|NC_000913.3:c1696071-1694260	1	1812	+	uidA	1-1812/1812	===============	0/0	100.00	100.00	ecoli_dec	NC_000913.3:c1696071-1694260	[uidA] [Escherichia coli K-12 substr. MG1655]	

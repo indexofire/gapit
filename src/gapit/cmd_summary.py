@@ -24,15 +24,17 @@ def summary_command(
     ] = None,
     identity: Annotated[
         bool,
-        typer.Option("--identity", help="Cells show %IDENTITY instead of %COVERAGE."),
+        typer.Option("--identity", "-i", help="Cells show %IDENTITY instead of %COVERAGE."),
     ] = False,
     nopath: Annotated[
         bool,
-        typer.Option("--nopath", help="Basename row keys (FILE values / input filenames)."),
+        typer.Option("--nopath", "-p", help="Basename row keys (FILE values / input filenames)."),
     ] = False,
-    quiet: Annotated[bool, typer.Option("--quiet", help="Silence stderr diagnostics.")] = False,
+    quiet: Annotated[
+        bool, typer.Option("--quiet", "-q", help="Silence stderr diagnostics.")
+    ] = False,
     output_format: Annotated[
-        OutputFormat, typer.Option("--format", help="Output format.")
+        OutputFormat, typer.Option("--format", "-f", help="Output format.")
     ] = OutputFormat.tsv,
 ) -> None:
     """Summarize report table(s) into a gene presence/absence matrix."""

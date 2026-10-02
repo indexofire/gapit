@@ -1,0 +1,42 @@
+{
+  "schema": "gapit.typing/2",
+  "schemes": [
+    {
+      "name": "doumith",
+      "rules": [
+        {
+          "model": "exact_set",
+          "phenotype": "1/2a-3a",
+          "requires": ["lmo0737"],
+          "excludes": ["lmo1118", "orf2819", "orf2110"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "1/2c-3c",
+          "requires": ["lmo0737", "lmo1118"],
+          "excludes": ["orf2819", "orf2110"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "1/2b-3b-7",
+          "requires": ["orf2819"],
+          "excludes": ["lmo0737", "lmo1118", "orf2110"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "4b-4d-4e",
+          "requires": ["orf2819", "orf2110"],
+          "excludes": ["lmo0737", "lmo1118"],
+          "notes": [
+            "4b/4d/4e share one PCR pattern (Doumith et al. 2004, J Clin Microbiol 42:3819)",
+            "4b* (IVb-v1) strains carry the lineage-II lmo0737 cassette by horizontal gene transfer, match no plain pattern, and fall back to NT (J Clin Microbiol 2022, PMID 36472431)"
+          ]
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "NT",
+      "control_gene": "prs"
+    }
+  ]
+}

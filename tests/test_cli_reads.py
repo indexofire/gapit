@@ -13,8 +13,8 @@ from typer.testing import CliRunner
 from gapit.cli import app
 from gapit.errors import ErrorEnvelope
 from gapit.fasta import iter_fasta
-from gapit.formats.json import ReadsDocument, render_reads_json
 from gapit.formats.md import render_reads_markdown
+from gapit.formats.reads_json import ReadsDocument, render_reads_json
 from gapit.reads import ReadsParams, screen_reads
 
 READS_DB_DIR = Path(__file__).parent / "data" / "reads_db"
@@ -59,6 +59,37 @@ def test_reads_default_json(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> N
     assert entry.present is True
     assert "Screening reads:" in result.stderr
     assert "Detected 1 present genes" in result.stderr
+
+
+def test_reads_output_file_receives_document_stdout_empty(
+    datadir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given reads mode with --output, When run, Then the single
+    gapit.reads/1 document lands in the file, stdout stays empty, and the
+    stderr chatter is unchanged (same contract as the contig engines)."""
+    monkeypatch.chdir(READS)
+    out_path = tmp_path / "reads.json"
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            "--r1",
+            "tetx_full.fq",
+            "--db",
+            "tinyreads",
+            "--datadir",
+            str(datadir),
+            "--output",
+            str(out_path),
+        ],
+    )
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert "Screening reads:" in result.stderr
+    document = reads_adapter.validate_json(out_path.read_text(encoding="utf-8"))
+    assert document.schema_name == "gapit.reads/1"
+    (entry,) = document.files[0].genes
+    assert entry.gene == "tetX"
 
 
 def test_reads_and_positional_files_are_mutually_exclusive(

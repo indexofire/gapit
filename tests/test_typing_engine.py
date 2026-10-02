@@ -17,24 +17,28 @@ from gapit.cluster_math import Verdict
 from gapit.db import Database
 from gapit.errors import DatabaseError
 from gapit.gbfeatures import FeaturesDocument, GeneFeature, LocusFeatures
+from gapit.typing_decide import decide_typing
 from gapit.typing_engine import (
-    decide_typing,
     evaluate_typing,
     score_cluster_match,
     score_learned_linear,
     score_weighted_genes,
 )
 from gapit.typing_models import (
+    TypingDocument,
+    TypingDocumentV1,
+    TypingScheme,
+    single_scheme,
+    validate_references,
+)
+from gapit.typing_results import ScoreComponent, ScoredRule
+from gapit.typing_rules import (
     ClusterMatchRule,
     CoverageComponent,
     IdentityComponent,
     KeyGenesComponent,
     LearnedLinearRule,
-    ScoreComponent,
-    ScoredRule,
-    TypingDocument,
     WeightedGenesRule,
-    validate_references,
 )
 
 
@@ -367,16 +371,16 @@ class TestLearnedLinear:
         assert raised.value.code == "TYPING_MALFORMED"
 
 
-def document(rules: list[object], cutoff: float = 0.9, margin: float = 0.05) -> TypingDocument:
+def scheme(rules: list[object], cutoff: float = 0.9, margin: float = 0.05) -> TypingScheme:
     if not rules:  # the schema demands >= 1 rule; decision tests score separately
         rules = [
             WeightedGenesRule(
                 model="weighted_genes", phenotype="unused", weights={}, identity_floor=0.0
             )
         ]
-    return TypingDocument.model_validate(
+    return TypingScheme.model_validate(
         {
-            "schema": "gapit.typing/1",
+            "name": "default",
             "rules": rules,
             "cutoff": cutoff,
             "ambiguity_margin": margin,
@@ -385,18 +389,22 @@ def document(rules: list[object], cutoff: float = 0.9, margin: float = 0.05) -> 
     )
 
 
+def document(rules: list[object], cutoff: float = 0.9, margin: float = 0.05) -> TypingDocument:
+    return TypingDocument.model_validate({"schemes": [scheme(rules, cutoff, margin).model_dump()]})
+
+
 class TestDecision:
     def test_clear_winner_is_called_with_high_confidence(self) -> None:
         """Given a top rule above cutoff separated from second by at least
         the margin, When decided, Then the phenotype is called with high
         confidence and the runner-up recorded."""
-        doc = document([])
+        decision = scheme([])
         phenotype, detail = decide_typing(
             [
                 ScoredRule(phenotype="K1", score=0.95, components=()),
                 ScoredRule(phenotype="K2", score=0.5, components=()),
             ],
-            doc,
+            decision,
         )
         assert phenotype == "K1"
         assert detail.confidence == "high"
@@ -414,7 +422,7 @@ class TestDecision:
                 ScoredRule(phenotype="K1", score=0.95, components=()),
                 ScoredRule(phenotype="K2", score=0.92, components=()),
             ],
-            document([]),
+            scheme([]),
         )
         assert phenotype is None
         assert detail.confidence == "ambiguous"
@@ -427,7 +435,7 @@ class TestDecision:
         """Given every rule below cutoff, When decided, Then the fallback
         string is returned with low confidence."""
         phenotype, detail = decide_typing(
-            [ScoredRule(phenotype="K1", score=0.5, components=())], document([])
+            [ScoredRule(phenotype="K1", score=0.5, components=())], scheme([])
         )
         assert phenotype == "unknown"
         assert detail.confidence == "low"
@@ -436,7 +444,7 @@ class TestDecision:
         """Given exactly one rule above cutoff, When decided, Then it is
         called (no second rule exists to create ambiguity)."""
         phenotype, detail = decide_typing(
-            [ScoredRule(phenotype="K1", score=0.95, components=())], document([])
+            [ScoredRule(phenotype="K1", score=0.95, components=())], scheme([])
         )
         assert phenotype == "K1"
         assert detail.confidence == "high"
@@ -450,7 +458,7 @@ class TestDecision:
                 ScoredRule(phenotype="K1", score=0.95, components=()),
                 ScoredRule(phenotype="K2", score=0.95, components=()),
             ],
-            document([], margin=0.0),
+            scheme([], margin=0.0),
         )
         assert phenotype == "K1"
         assert detail.confidence == "high"
@@ -458,7 +466,7 @@ class TestDecision:
 
 
 class TestEvaluateTyping:
-    DOC = document(
+    SCHEME = scheme(
         [
             WeightedGenesRule(
                 model="weighted_genes",
@@ -478,7 +486,7 @@ class TestEvaluateTyping:
         When evaluated, Then best carries phenotype K1 with a detail whose
         components explain it."""
         loci = [locus_call("locusA", [gene("wzx"), gene("manC")])]
-        typed = evaluate_typing(report(loci), self.DOC)
+        typed = evaluate_typing(report(loci), self.SCHEME)
         assert typed.best is not None
         assert typed.best.phenotype == "K1"
         detail = typed.best.phenotype_detail
@@ -493,13 +501,13 @@ class TestEvaluateTyping:
         is returned unchanged (nothing to annotate)."""
         low = report([locus_call("locusA", [gene("wzx")], coverage=50.0)])
         assert low.best is None
-        assert evaluate_typing(low, self.DOC) == low
+        assert evaluate_typing(low, self.SCHEME) == low
 
     def test_fallback_phenotype_when_below_cutoff(self) -> None:
         """Given no rule clearing the cutoff, When evaluated, Then the
         phenotype is the document's fallback string."""
         loci = [locus_call("locusA", [gene("wzx", verdict="absent")])]
-        typed = evaluate_typing(report(loci), self.DOC)
+        typed = evaluate_typing(report(loci), self.SCHEME)
         assert typed.best is not None
         assert typed.best.phenotype == "unknown"
         assert typed.best.phenotype_detail is not None
@@ -630,9 +638,10 @@ class TestLoadTyping:
 
     def test_present_file_loads_document(self, tmp_path: Path) -> None:
         """Given typing.json in the db directory, When loaded, Then the
-        validated gapit.typing/1 document comes back."""
+        validated document comes back (a typing/1 file degrades to one
+        default scheme whose thresholds survive)."""
         (tmp_path / "typing.json").write_text(
-            TypingDocument.model_validate(
+            TypingDocumentV1.model_validate(
                 {
                     "schema": "gapit.typing/1",
                     "rules": [
@@ -647,7 +656,7 @@ class TestLoadTyping:
                     "ambiguity_margin": 0.05,
                     "fallback": "unknown",
                 }
-            ).model_dump_json(),
+            ).model_dump_json(by_alias=True),
             encoding="utf-8",
         )
         database = Database(
@@ -655,7 +664,7 @@ class TestLoadTyping:
         )
         loaded = load_typing(database)
         assert loaded is not None
-        assert loaded.cutoff == 0.9
+        assert single_scheme(loaded).cutoff == 0.9
 
 
 # ScoredRule must remain a plain value type (sorting + field access in the

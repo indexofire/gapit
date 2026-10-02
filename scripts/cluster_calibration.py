@@ -30,7 +30,9 @@ from pathlib import Path
 from gapit import config
 from gapit.cluster import ClusterParams, load_features, load_typing, screen_cluster_file
 from gapit.screening import find_database
-from gapit.typing_engine import decide_typing, score_rules
+from gapit.typing_decide import decide_typing
+from gapit.typing_engine import score_rules
+from gapit.typing_models import single_scheme
 
 NO_CALL = "(no call)"
 AMBIGUOUS = "-"
@@ -59,12 +61,13 @@ def calibrate(
         raise SystemExit(
             f"error: database {db_name} carries no typing.json (calibration needs a typed db)"
         )
+    scheme = single_scheme(typing_document)
     params = ClusterParams(db=db_name, **thresholds)
     results: list[SampleResult] = []
     for sample, expected in labels:
         report = screen_cluster_file(Path(sample), database, load_features(database), params)
-        scored = score_rules(report, typing_document)
-        phenotype, detail = decide_typing(scored, typing_document)
+        scored = score_rules(report, scheme)
+        phenotype, detail = decide_typing(scored, scheme)
         if report.best is None:
             called, called_score, confidence = NO_CALL, 0.0, "no-locus"
         else:

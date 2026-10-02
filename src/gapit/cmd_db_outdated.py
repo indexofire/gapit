@@ -23,13 +23,17 @@ def db_outdated_command(
     datadir: Datadir = None,
     days: Annotated[
         int,
-        typer.Option("--days", min=0, help="Staleness threshold in days (stale past this age)."),
+        typer.Option(
+            "--days", "-d", min=0, help="Staleness threshold in days (stale past this age)."
+        ),
     ] = DEFAULT_STALE_DAYS,
     as_json: Annotated[
         bool,
-        typer.Option("--json", help="Print machine-readable JSON instead of a table."),
+        typer.Option("--json", "-J", help="Print machine-readable JSON instead of a table."),
     ] = False,
-    quiet: Annotated[bool, typer.Option("--quiet", help="Silence stderr diagnostics.")] = False,
+    quiet: Annotated[
+        bool, typer.Option("--quiet", "-q", help="Silence stderr diagnostics.")
+    ] = False,
 ) -> None:
     """Report installed database ages and available updates (exit 0 however
     stale things are — a report, not an error).

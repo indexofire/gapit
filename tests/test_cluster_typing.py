@@ -25,6 +25,7 @@ from gapit.fasta import iter_fasta
 from gapit.formats.cluster import format_cluster_tsv, render_cluster_json
 from gapit.formats.cluster_md import render_cluster_md
 from gapit.typing_engine import evaluate_typing
+from gapit.typing_models import single_scheme
 
 DATA = Path(__file__).parent / "data" / "cluster"
 GOLDEN = Path(__file__).parent / "golden"
@@ -266,7 +267,7 @@ class TestGoldens:
         typing_document = load_typing(database)
         assert typing_document is not None
         report = screen_cluster_file(sample, database, features, PARAMS)
-        return evaluate_typing(report, typing_document)
+        return evaluate_typing(report, single_scheme(typing_document))
 
     def _check(self, name: str, rendered: str) -> None:
         golden = GOLDEN / f"cluster_{name}"
@@ -276,8 +277,14 @@ class TestGoldens:
         ("fixture", "sample", "prefix"),
         [
             ("typing_screen.json", "exact", "typing_exact"),
-            ("typing_screen_cm.json", "exact", "typing_cm_exact"),
             ("typing_screen.json", "both", "typing_ambiguous"),
+            ("typing_screen_cm.json", "exact", "typing_cm_exact"),
+            # v1-as-default-scheme equivalence: the typing/2 mirror of the
+            # weighted_genes fixture (same rules, one named scheme) must
+            # render the SAME goldens byte-for-byte — scheme names never
+            # leak into gapit.cluster/1.
+            ("typing_screen_v2.json", "exact", "typing_exact"),
+            ("typing_screen_v2.json", "both", "typing_ambiguous"),
         ],
     )
     def test_typed_goldens(

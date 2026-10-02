@@ -100,10 +100,18 @@ class Manifest(BaseModel, frozen=True):
     # gapit/v1: tagged per-gene headers; plain: bare locus-id headers (cluster).
     header_format: Literal["gapit/v1", "plain"] = "gapit/v1"
     upstream_version: str = ""
+    # Typing provenance: the gapit.typing schema tag of the installed
+    # typing.json (None when the database is untyped; omitted at
+    # serialization so pre-typing manifests stay byte-identical).
+    typing_schema: str | None = None
     # Database-content provenance (kaptive-style cluster providers); None is
     # omitted at serialization so pre-license manifests stay byte-identical.
     license: str | None = None
     note: str | None = None
+    # "bundled" marks a database materialized from the wheel's own content
+    # (gapit.bundled — public-domain panels); None is omitted at
+    # serialization so every other manifest stays byte-identical.
+    source: Literal["bundled"] | None = None
     tool: ToolDocument = ToolDocument()
     makeblastdb_version: str = ""
     minimap2_version: str = ""

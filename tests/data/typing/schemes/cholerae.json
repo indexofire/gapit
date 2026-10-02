@@ -1,0 +1,58 @@
+{
+  "schema": "gapit.typing/2",
+  "schemes": [
+    {
+      "name": "serogroup",
+      "rules": [
+        {
+          "model": "cluster_match",
+          "phenotype": "O1",
+          "coverage": {"weight": 0.55, "floor": 95.0},
+          "identity": {"weight": 0.25, "floor": 95.0},
+          "key_genes": {"weight": 0.2, "genes": ["wbeV", "wbeW"]}
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O139",
+          "coverage": {"weight": 0.55, "floor": 95.0},
+          "identity": {"weight": 0.25, "floor": 95.0},
+          "key_genes": {"weight": 0.2, "genes": ["wbmV", "wbmW"]},
+          "notes": [
+            "Keyed on the whole wbm locus, never on wbfZ alone: the wb* cassette is exchanged through the conserved gmhD/rjg junctions, so environmental serogroups can carry O139-like cassettes and trip single-gene wbfZ assays (Sozhamannan et al. 1999, Infect Immun 67:6215)"
+          ]
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "non-O1/non-O139"
+    },
+    {
+      "name": "subserotype",
+      "rules": [
+        {
+          "model": "weighted_genes",
+          "phenotype": "ogawa",
+          "weights": {"wbeT": 1.0},
+          "identity_floor": 99.9,
+          "notes": [
+            "The Ogawa/Inaba determinant is single mutations in the wbeT (rfbT) methyltransferase: intact wbeT = Ogawa, inactivating mutation = Inaba (Stroeher et al. 1992, PNAS 89:2566; BMC Microbiol 2013, 13:173) — hence the 99.9 allele floor"
+          ]
+        },
+        {
+          "model": "weighted_genes",
+          "phenotype": "inaba",
+          "weights": {"wbeV": 1.0},
+          "negative": {"wbeT": -2.0},
+          "identity_floor": 99.9,
+          "notes": [
+            "Inaba = O1 background (wbeV) with wbeT not clearing the 99.9 floor",
+            "Hikojima (both Ogawa and Inaba antigens) is rare and unstable with no stable reference — not determinable by this scheme"
+          ]
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "undetermined"
+    }
+  ]
+}

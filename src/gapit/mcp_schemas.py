@@ -39,7 +39,7 @@ TOOLS: list[dict[str, object]] = [
         " minGeneCov/minGeneId/minClusterCov thresholds).",
         dict(
             files=_FILES,
-            db={"type": "string", "default": "ncbi"},
+            db=_STR,
             minid={"type": "number"},
             mincov={"type": "number"},
             format={"type": "string", "enum": ["json", "tsv", "md"], "default": "json"},
@@ -53,7 +53,7 @@ TOOLS: list[dict[str, object]] = [
             minClusterCov={"type": "number", "minimum": 0, "maximum": 100, "default": 96},
             datadir=_STR,
         ),
-        ["files"],
+        ["files", "db"],
     ),
     _tool_entry(
         "screen_reads",
@@ -68,10 +68,10 @@ TOOLS: list[dict[str, object]] = [
             min_identity={"type": "number", "minimum": 0, "maximum": 100, "default": 0},
             min_mapq={"type": "integer", "minimum": 0, "default": 0},
             format={"type": "string", "enum": ["json", "md"], "default": "json"},
-            db={"type": "string", "default": "ncbi"},
+            db=_STR,
             datadir=_STR,
         ),
-        ["r1"],
+        ["r1", "db"],
     ),
     _tool_entry(
         "summary",

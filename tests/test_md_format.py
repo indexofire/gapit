@@ -74,15 +74,11 @@ def test_frontmatter_keys_and_values(reports: list[Report]) -> None:
         "minid",
         "mincov",
         "threads",
-        "files",
-        "hits",
     ]
     assert meta["schema"] == "gapit.report/1"
     assert meta["tool"].startswith("gapit ")
     assert meta["created_at"] == "2026-09-17T12:00:00Z"
     assert meta["db"] == "tinyamr"
-    assert meta["files"] == "4"
-    assert meta["hits"] == "6"
 
 
 def test_table_header_row_is_exact(reports: list[Report]) -> None:

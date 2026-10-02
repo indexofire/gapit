@@ -18,6 +18,7 @@ provider-style normalization, this is the user's curated truth.
 """
 
 import csv
+import shutil
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -34,6 +35,8 @@ from gapit.dbcodec import decode_seqid
 from gapit.errors import DatabaseError, InputError, UsageError
 from gapit.fasta import FastaRecord, iter_fasta
 from gapit.records import Record, write_records
+from gapit.typing_gene import validate_gene_typing
+from gapit.typing_models import read_typing_document, typing_schema_of
 
 Dbtype = Literal["nucl", "prot"]
 Kind = Literal["gene", "cluster"]
@@ -170,6 +173,7 @@ def perform_build(
     quiet: bool = True,
     kind: Kind | None = None,
     typing: Path | None = None,
+    source: Literal["bundled"] | None = None,
 ) -> BuildReceipt:
     """Run the custom-build pipeline and return the receipt — the shared CLI
     + MCP path. Warnings go to the caller-supplied ``warn`` (CLI: stderr;
@@ -177,8 +181,9 @@ def perform_build(
 
     The input kind is detected by suffix (GBK/GFF -> cluster, else gene);
     an explicit ``kind`` must agree with the detection or the call fails as
-    a usage error. Cluster builds take ``typing`` (a gapit.typing/1 spec,
-    validated then copied into the database); the FASTA-only ``tsv``/
+    a usage error. Both branches take ``typing`` (a gapit.typing/1 or /2
+    spec, validated — gene references against the FASTA records on the gene
+    branch — then copied into the database); the FASTA-only ``tsv``/
     ``dbtype``/``description`` options are rejected on the cluster branch.
     """
 
@@ -203,11 +208,6 @@ def perform_build(
             code="USAGE_ERROR",
             context={"kind": kind, "detected": detected},
         )
-    if typing is not None and detected == "gene":
-        raise UsageError(
-            "--typing requires a cluster database (GBK/GFF input)",
-            code="USAGE_ERROR",
-        )
     if detected == "cluster" and (tsv is not None or dbtype is not None or description):
         raise UsageError(
             "--tsv/--dbtype/--description apply to FASTA (gene) builds only",
@@ -231,14 +231,23 @@ def perform_build(
     records = [_to_record(fasta_record, name, description) for fasta_record in iter_fasta(fasta)]
     if tsv is not None:
         records = _merge(records, _read_metadata(tsv, warn), warn)
+    typing_schema = ""
+    if typing is not None:
+        document = read_typing_document(typing)
+        validate_gene_typing(document, frozenset(record.gene for record in records))
+        typing_schema = typing_schema_of(typing)
     db_dir.mkdir(parents=True, exist_ok=True)
     write_records(records, db_dir / "records.jsonl")
+    if typing is not None:
+        shutil.copyfile(typing, db_dir / "typing.json")
     manifest = build_database(
         db_dir,
         name=name,
         dbtype=_resolve_dbtype(dbtype, records),
         source_urls=("local",),
         fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        typing_schema=typing_schema,
+        source=source,
         quiet=quiet,
     )
     return BuildReceipt(

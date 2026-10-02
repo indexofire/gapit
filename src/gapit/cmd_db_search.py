@@ -25,25 +25,29 @@ def db_search_command(
     datadir: Datadir = None,
     db: Annotated[
         str | None,
-        typer.Option("--db", help="Restrict the scan to one installed database."),
+        typer.Option("--db", "-d", help="Restrict the scan to one installed database."),
     ] = None,
     field: Annotated[
         SearchField,
-        typer.Option("--field", help="Field to match: gene, accession, function, product, any."),
+        typer.Option(
+            "--field", "-f", help="Field to match: gene, accession, function, product, any."
+        ),
     ] = SearchField.any,
     exact: Annotated[
         bool,
-        typer.Option("--exact", help="Full-field equality instead of substring."),
+        typer.Option("--exact", "-e", help="Full-field equality instead of substring."),
     ] = False,
     limit: Annotated[
         int,
-        typer.Option("--limit", min=0, help="Max hits to print (0 = unlimited)."),
+        typer.Option("--limit", "-l", min=0, help="Max hits to print (0 = unlimited)."),
     ] = DEFAULT_LIMIT,
     as_json: Annotated[
         bool,
-        typer.Option("--json", help="Print JSONL lines instead of TSV rows."),
+        typer.Option("--json", "-J", help="Print JSONL lines instead of TSV rows."),
     ] = False,
-    quiet: Annotated[bool, typer.Option("--quiet", help="Silence stderr diagnostics.")] = False,
+    quiet: Annotated[
+        bool, typer.Option("--quiet", "-q", help="Silence stderr diagnostics.")
+    ] = False,
 ) -> None:
     """Search records.jsonl across installed databases (zero hits exit 0)."""
 

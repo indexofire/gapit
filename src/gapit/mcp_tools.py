@@ -107,7 +107,7 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     files = _paths(arguments, "files")
     if not files:
         usage_fail("no input files given (files is required)")
-    db_name = _string(arguments, "db", "ncbi")
+    db_name = _required_string(arguments, "db")
     datadir = _optional_path(arguments, "datadir")
     minid = _number(arguments, "minid", 80.0)
     mincov = _number(arguments, "mincov", 80.0)
@@ -210,7 +210,7 @@ def _tool_screen_reads(arguments: dict[str, Any]) -> str:
     return run_screen_reads(
         r1,
         r2,
-        _string(arguments, "db", "ncbi"),
+        _required_string(arguments, "db"),
         _optional_path(arguments, "datadir"),
         read_type,
         min_breadth,

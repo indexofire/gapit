@@ -37,10 +37,10 @@ transcribed from the live `tools/list` `inputSchema` objects.
 
 | Tool | Arguments | Returns |
 |---|---|---|
-| `screen` | `files` (array of strings, required), `db` (string, default `ncbi`), `minid` (number), `mincov` (number), `format` (string: `json` \| `tsv` \| `md`, default `json`), `aligner` (string: `blastn` \| `minimap2`, default `blastn`), `mergeFragments` (boolean, default `false`; blastn only — cross-contig fragment merging), `min_breadth` (number 0–100, default `90`; minimap2 only), `min_identity` (number 0–100, default `0`; minimap2 only), `min_mapq` (integer ≥ 0, default `0`; minimap2 only), `minGeneCov` (number 0–100, default `90`; cluster dbs only), `minGeneId` (number 0–100, default `90`; cluster dbs only), `minClusterCov` (number 0–100, default `96`; cluster dbs only), `datadir` (string) | Report text: `gapit.report/1` JSON by default, TSV or Markdown per `format`; `aligner minimap2` runs the reads engine and emits `gapit.reads/1`. A cluster-kind `db` emits `gapit.cluster/1`: best-locus call, per-gene verdicts, and — when the database carries a `typing.json` — the phenotype call with its `phenotype_detail` score breakdown |
-| `screen_reads` | `r1` (array of strings, required — one path per lane), `r2` (array of strings, same count as `r1`), `read_type` (string: `sr` \| `map-ont` \| `map-hifi`, default `sr`), `min_breadth` (number 0–100, default `90`), `min_identity` (number 0–100, default `0`), `min_mapq` (integer ≥ 0, default `0`), `format` (string: `json` \| `md`, default `json`), `db` (string, default `ncbi`), `datadir` (string) | `gapit.reads/1` JSON by default or Markdown per `format`; `min_identity`/`min_mapq` > 0 switches to `gapit.reads/2` |
+| `screen` | `files` (array of strings, required), `db` (string, required — no default), `minid` (number), `mincov` (number), `format` (string: `json` \| `tsv` \| `md`, default `json`), `aligner` (string: `blastn` \| `minimap2`, default `blastn`), `mergeFragments` (boolean, default `false`; blastn only — cross-contig fragment merging), `min_breadth` (number 0–100, default `90`; minimap2 only), `min_identity` (number 0–100, default `0`; minimap2 only), `min_mapq` (integer ≥ 0, default `0`; minimap2 only), `minGeneCov` (number 0–100, default `90`; cluster dbs only), `minGeneId` (number 0–100, default `90`; cluster dbs only), `minClusterCov` (number 0–100, default `96`; cluster dbs only), `datadir` (string) | Report text: `gapit.report/1` JSON by default, TSV or Markdown per `format`; `aligner minimap2` runs the reads engine and emits `gapit.reads/1`. A cluster-kind `db` emits `gapit.cluster/1`: best-locus call, per-gene verdicts, and — when the database carries a `typing.json` — the phenotype call with its `phenotype_detail` score breakdown |
+| `screen_reads` | `r1` (array of strings, required — one path per lane), `r2` (array of strings, same count as `r1`), `read_type` (string: `sr` \| `map-ont` \| `map-hifi`, default `sr`), `min_breadth` (number 0–100, default `90`), `min_identity` (number 0–100, default `0`), `min_mapq` (integer ≥ 0, default `0`), `format` (string: `json` \| `md`, default `json`), `db` (string, required — no default), `datadir` (string) | `gapit.reads/1` JSON by default or Markdown per `format`; `min_identity`/`min_mapq` > 0 switches to `gapit.reads/2` |
 | `summary` | `files` (array of report table paths, required), `identity` (boolean), `nopath` (boolean) | `gapit.summary/1` JSON |
-| `schema` | `name` (string, required, one of `cluster`, `error`, `features`, `reads`, `reads2`, `report`, `summary`, `typing`, `version`) | The JSON Schema of that output document |
+| `schema` | `name` (string, required, one of `cluster`, `error`, `features`, `reads`, `reads2`, `report`, `summary`, `typing`, `typing_result`, `version`) | The JSON Schema of that output document |
 | `db_list` | none | `gapit.dblist/1`: database names, install state, record counts |
 | `db_fetch` | `name` (string, required — a database NAME, or `all` for the card+vfdb default set), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line per database (`db`, `records`, `dbtype`, `destination`). Every database downloads from its upstream provider, so installs need network and can take minutes |
 | `db_build` | `name` (string, required), `fasta` (string, required — a LOCAL filesystem path), `tsv` (string), `dbtype` (string: `nucl` \| `prot`), `description` (string), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line (`db`, `records`, `dbtype`, `destination`) |
@@ -94,14 +94,14 @@ EOF
 Response line 1, verbatim:
 
 ```text
-{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.4.0"}}}
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.5.0"}}}
 ```
 
 Response line 2 (real output, elided in the middle; each tool carries its full
 `inputSchema`):
 
 ```text
-{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for known genes (json = gapit.report/1; aligner minimap2 = fast assembly survey emitting gapit.reads/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string","default":"ncbi"}, ... },"required":["files"]}}, {"name":"screen_reads","description":"Screen FASTQ reads for genes via minimap2 (json = gapit.reads/1; min_identity/min_mapq > 0 emits gapit.reads/2). Returns the rendered document.","inputSchema":{"type":"object","properties":{"r1":{"type":"array","items":{"type":"string"}},"r2":{"type":"array","items":{"type":"string"}},"read_type":{"type":"string","enum":["sr","map-ont","map-hifi"],"default":"sr"}, ... },"required":["r1"]}}, {"name":"summary", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
+{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for known genes (json = gapit.report/1; aligner minimap2 = fast assembly survey emitting gapit.reads/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string"}, ... },"required":["files","db"]}}, {"name":"screen_reads","description":"Screen FASTQ reads for genes via minimap2 (json = gapit.reads/1; min_identity/min_mapq > 0 emits gapit.reads/2). Returns the rendered document.","inputSchema":{"type":"object","properties":{"r1":{"type":"array","items":{"type":"string"}},"r2":{"type":"array","items":{"type":"string"}},"read_type":{"type":"string","enum":["sr","map-ont","map-hifi"],"default":"sr"}, ... },"required":["r1","db"]}}, {"name":"summary", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
 ```
 
 Response line 3 (real output, text content elided). The screen result rides in
@@ -117,7 +117,7 @@ the same run):
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.4.0"},
+  "tool": {"name": "gapit", "version": "0.5.0"},
   "created_at": "2026-09-19T01:15:44Z",
   "params": {"db": "tinyamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [
@@ -173,7 +173,7 @@ the same run):
 ```json
 {
   "schema": "gapit.reads/1",
-  "tool": {"name": "gapit", "version": "0.4.0"},
+  "tool": {"name": "gapit", "version": "0.5.0"},
   "created_at": "2026-09-22T00:07:35Z",
   "params": {
     "db": "tinyreads",
@@ -248,7 +248,7 @@ hit is the gene the agent just built the database from (real output):
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.4.0"},
+  "tool": {"name": "gapit", "version": "0.5.0"},
   "created_at": "2026-09-20T13:38:39Z",
   "params": {"db": "myamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [

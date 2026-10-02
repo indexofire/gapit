@@ -287,6 +287,12 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
         "NAME\tPROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION\n"
         f"{SYN}\tSynthetica\tinstalled (2)\tnucl\t{SYN_DESCRIPTION}\n"
         f"{OTHER}\tExample Org\tavailable\tnucl\tavailable but never fetched in these tests\n"
+        "ecoh\tHolt lab (srst2)\tbundled\tnucl\tE. coli O and H antigens (srst2 EcOH)\n"
+        "ecoli_dec\tgapit-curated (public-domain sources)\tbundled\tnucl\t"
+        "Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)\n"
+        "ncbi\tNCBI\tbundled\tnucl\tNCBI AMRFinderPlus (reference finder) curated AMR\n"
+        "resfinder\tDTU CGE\tbundled\tnucl\tCGE ResFinder acquired resistance genes\n"
+        "upec_expec_vf\tFordeGenomics\tbundled\tnucl\tUPEC/ExPEC virulence genes (FordeGenomics)\n"
     )
 
 

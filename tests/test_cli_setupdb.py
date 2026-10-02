@@ -26,27 +26,58 @@ def make_datadir(tmp_path: Path) -> Path:
 
 def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
     """Given the fixture, When setupdb runs and then databases are listed,
-    Then exit 0, one Indexed stderr line, and an abricate-style row for
-    tinyamr."""
+    Then exit 0, all five bundled databases materialize (one stderr note
+    each, alphabetical) alongside tinyamr's Indexed line, and the listing
+    carries all six databases."""
     datadir = make_datadir(tmp_path)
     setup = runner.invoke(app, ["setupdb", "--datadir", str(datadir)])
     assert setup.exit_code == 0
-    assert setup.stderr.strip() == "Indexed tinyamr (3 sequences, nucl)"
+    stderr_lines = setup.stderr.splitlines()
+    assert stderr_lines[:5] == [
+        f"gapit: materializing bundled database {name} ({records} records) into {datadir}"
+        for name, records in (
+            ("ecoh", 597),
+            ("ecoli_dec", 17),
+            ("ncbi", 8373),
+            ("resfinder", 3206),
+            ("upec_expec_vf", 77),
+        )
+    ]
+    assert stderr_lines[5:] == [
+        "Indexed ecoh (597 sequences, nucl)",
+        "Indexed ecoli_dec (17 sequences, nucl)",
+        "Indexed ncbi (8373 sequences, nucl)",
+        "Indexed resfinder (3206 sequences, nucl)",
+        "Indexed tinyamr (3 sequences, nucl)",
+        "Indexed upec_expec_vf (77 sequences, nucl)",
+    ]
 
-    (info,) = list_databases(datadir, setupdb=False)
-    assert info.name == "tinyamr"
-    assert info.n_sequences == 3
-    assert info.dbtype == "nucl"
-    assert re.fullmatch(r"\d{4}-[A-Za-z]{3}-\d{2}", info.date)
+    infos = list_databases(datadir, setupdb=False)
+    assert [info.name for info in infos] == [
+        "ecoh",
+        "ecoli_dec",
+        "ncbi",
+        "resfinder",
+        "tinyamr",
+        "upec_expec_vf",
+    ]
+    tinyamr = infos[4]
+    assert tinyamr.n_sequences == 3
+    assert tinyamr.dbtype == "nucl"
+    assert re.fullmatch(r"\d{4}-[A-Za-z]{3}-\d{2}", tinyamr.date)
 
 
-def test_setupdb_on_empty_datadir_exits_0(tmp_path: Path) -> None:
-    """Given an empty datadir, When setupdb runs, Then exit 0 with nothing indexed."""
+def test_setupdb_on_empty_datadir_materializes_bundled(tmp_path: Path) -> None:
+    """Given an empty datadir, When setupdb runs, Then exit 0 with the
+    bundled ecoli_dec materialized into it (manifest, typing, BLAST index)."""
     datadir = tmp_path / "empty"
     datadir.mkdir()
     setup = runner.invoke(app, ["setupdb", "--datadir", str(datadir)])
     assert setup.exit_code == 0
-    assert setup.stderr == ""
+    assert "materializing bundled database ecoli_dec" in setup.stderr
+    assert "Indexed ecoli_dec (17 sequences, nucl)" in setup.stderr
+    assert (datadir / "ecoli_dec" / "gapit-manifest.json").is_file()
+    assert (datadir / "ecoli_dec" / "typing.json").is_file()
 
 
 def test_setupdb_debug_echoes_makeblastdb_argv(tmp_path: Path) -> None:
@@ -85,8 +116,10 @@ def test_setupdb_honors_manifest_dbtype_on_reindex(tmp_path: Path) -> None:
         index_file.unlink()
     setup = runner.invoke(app, ["setupdb", "--datadir", str(datadir)])
     assert setup.exit_code == 0
-    assert setup.stderr.strip() == "Indexed agtcprot (2 sequences, prot)"
+    assert "Indexed agtcprot (2 sequences, prot)" in setup.stderr.splitlines()
     assert (db_dir / "sequences.pin").is_file()
     assert not (db_dir / "sequences.nin").exists()
-    (info,) = list_databases(datadir, setupdb=False)
-    assert info.dbtype == "prot"
+    agtcprot = next(
+        info for info in list_databases(datadir, setupdb=False) if info.name == "agtcprot"
+    )
+    assert agtcprot.dbtype == "prot"

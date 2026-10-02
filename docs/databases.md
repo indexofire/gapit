@@ -27,26 +27,44 @@ $ gapit db list --datadir /no/such/dir
 ```console
 $ gapit db list
 NAME	PROVIDER	STATUS	DBTYPE	DESCRIPTION
-argannot	IHU Méditerranée-Infection	installed (2224)	nucl	ARG-ANNOT acquired resistance genes
-bacmet2	University of Gothenburg	installed (746)	prot	BacMet2 experimentally confirmed biocide/resistance genes (protein)
-card	McMaster University	installed (6059)	nucl	CARD protein homolog resistance models
-ecoh	Holt lab (srst2)	installed (597)	nucl	E. coli O and H antigens (srst2 EcOH)
-ecoli_vf	PHAC-NML	installed (2701)	nucl	E. coli virulence factors (phac-nml)
-megares	MEG Lab	installed (7425)	nucl	MEGARes antimicrobial resistance genes
-ncbi	NCBI	installed (8373)	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
-plasmidfinder	DTU CGE	installed (488)	nucl	CGE PlasmidFinder replicons
-resfinder	DTU CGE	installed (3206)	nucl	CGE ResFinder acquired resistance genes
-upec_expec_vf	FordeGenomics	installed (77)	nucl	UPEC/ExPEC virulence genes (FordeGenomics)
-vfdb	USTC (VFDB)	installed (4769)	nucl	VFDB virulence factors (set A, nucleotide)
-victors	University of Chicago	installed (4402)	nucl	Victors virulence factors
+ab_k	Kaptive (Kenyon lab)	available	nucl	A. baumannii K locus (Kaptive)
+ab_o	Kaptive (Kenyon lab)	available	nucl	A. baumannii OC locus — official keyword ab_o (Kaptive)
+argannot	IHU Méditerranée-Infection	available	nucl	ARG-ANNOT acquired resistance genes
+bacmet2	University of Gothenburg	available	prot	BacMet2 experimentally confirmed biocide/resistance genes (protein)
+card	McMaster University	available	nucl	CARD protein homolog resistance models
+ecoli_kps	Kaptive (Gladstone lab)	available	nucl	E. coli group 2+3 capsular polysaccharide loci (Kaptive)
+ecoli_vf	PHAC-NML	available	nucl	E. coli virulence factors (phac-nml)
+kosc_k	Kaptive (klebgenomics)	available	nucl	K. oxytoca species complex K locus (Kaptive)
+kosc_o	Kaptive (klebgenomics)	available	nucl	K. oxytoca species complex O locus (Kaptive)
+kpsc_k	Kaptive (klebgenomics)	available	nucl	K. pneumoniae species complex K locus (Kaptive)
+kpsc_o	Kaptive (klebgenomics)	available	nucl	K. pneumoniae species complex O locus (Kaptive)
+megares	MEG Lab	available	nucl	MEGARes antimicrobial resistance genes
+plasmidfinder	DTU CGE	available	nucl	CGE PlasmidFinder replicons
+vfdb	USTC (VFDB)	available	nucl	VFDB virulence factors (set A, nucleotide)
+victors	University of Chicago	available	nucl	Victors virulence factors
+ecoh	Holt lab (srst2)	bundled	nucl	E. coli O and H antigens (srst2 EcOH)
+ecoli_dec	gapit-curated (public-domain sources)	bundled	nucl	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)
+ncbi	NCBI	bundled	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
+resfinder	DTU CGE	bundled	nucl	CGE ResFinder acquired resistance genes
+upec_expec_vf	FordeGenomics	bundled	nucl	UPEC/ExPEC virulence genes (FordeGenomics)
 ```
 
 NAME is the database name you pass to `--db`; PROVIDER names the upstream maintainer
 organisation. STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`
-exists, with N the record count, otherwise `available`. On an interactive terminal the
-same rows render as a styled rich table; piped or redirected output always stays the
-plain TSV above. For agents, `--json` emits a `gapit.dblist/1` document
-(first three entries shown, output trimmed):
+exists, with N the record count, otherwise `available`. The last five rows are the
+wheel-shipped [bundled](#bundled-databases-install-time-ready) databases, alphabetical:
+`bundled` before materialization, `installed (N)` after. Four of them (`ecoh`, `ncbi`,
+`resfinder`, `upec_expec_vf`) are also registry providers — such names render exactly
+once, in the bundled section (never as a duplicate registry `available` row), and
+`gapit db fetch <name>` remains their fresh-upstream update path. Databases installed
+into the datadir outside the catalog also appear, after the bundled section and sorted by
+name: `db build` products (gene and cluster kinds alike) and manifest-less directories
+(abricate-style or `db install` bytes) render with PROVIDER `local`, the record count
+from the manifest — or counted from the FASTA when no manifest exists — and DBTYPE from
+the manifest, the BLAST index suffix, or abricate's letter heuristic, in that order.
+On an interactive terminal the same rows render as a styled rich table; piped or
+redirected output always stays the plain TSV above. For agents, `--json` emits a
+`gapit.dblist/1` document (first three entries shown, output trimmed):
 
 ```console
 $ gapit db list --json
@@ -92,11 +110,62 @@ $ gapit db list --json
 | `providers[].installed` | boolean | True when a manifest exists in the datadir |
 | `providers[].records` | integer | Record count, omitted when the database isn't installed |
 | `providers[].license` | string | Upstream content license, omitted unless the provider pins one (card, vfdb, ecoli_vf, kaptive) |
+| `providers[].source` | string | `local` for a datadir-discovered database outside the catalog (`db build` / `db install`), `bundled` for a wheel-shipped database (see below); absent for registry entries |
 
 `gapit db list` is the single listing surface: the database catalog above, with `--json`
 returning the `gapit.dblist/1` document. (The former standalone listing command and its
 schema were removed; abricate `--list` byte-parity is intentionally dropped for this
 surface.) See [outputs.md](./outputs.md).
+
+## Bundled databases (install-time ready)
+
+Most databases download from upstream at `db fetch` time because their licenses forbid
+redistribution (see [Providers](#providers)). A small set of **bundled** databases ships
+inside the gapit wheel instead — five databases whose content provenance was audited
+record-by-record (public-domain sources, or Apache-2.0 / BSD-3-Clause / MIT panels;
+GPL and non-commercial content never rides the wheel). Nothing to download, nothing to
+accept: a bundled database works out of the box.
+
+| Name | Content | Snapshot | Typed |
+|---|---|---|---|
+| `ecoh` | E. coli O and H antigens (597 records, srst2 EcOH) | 2026-10-02 | — |
+| `ecoli_dec` | Diarrheagenic E. coli marker panel (17 records, GB 4789.6 + risk-monitoring designation) | 2026-10-02 | `gapit.typing/2` (schemes `gb4789_6`, `risk_monitoring`) |
+| `ncbi` | NCBI AMRFinderPlus curated AMR (8373 records) | 2026-10-02 | — |
+| `resfinder` | CGE ResFinder acquired resistance genes (3206 records) | 2026-10-02 | — |
+| `upec_expec_vf` | UPEC/ExPEC virulence genes (77 records, FordeGenomics) | 2026-10-02 | — |
+
+**License provenance.** Every `ecoli_dec` record was re-sourced from primary
+public-domain submissions (NCBI RefSeq/GenBank/DDBJ accessions, same alleles as the
+rightsholder panel); two VFDB-derived records found in the original panel were removed
+and replaced during the 2026-10 audit. The four provider snapshots (`ecoh`, `ncbi`,
+`resfinder`, `upec_expec_vf`) passed the 2026-10 content-level audit across **all**
+records: NCBI AMRFinderPlus content is public domain (US government work), the CGE
+ResFinder database is Apache-2.0, srst2's EcOH is BSD-3-Clause, and FordeGenomics'
+UPEC-ExPEC panel is MIT — all four permits redistribution inside the MIT-licensed wheel.
+A regression test pins that no `VF*` / `VFDB` / `ARO:` tags appear in any of the five
+bundles' headers.
+
+**Snapshots are point-in-time.** Each snapshot's `sequences` file is byte-for-byte what
+`gapit db fetch <name>` produces from upstream on the snapshot date (a regression test
+proves the byte-identity for `resfinder` against a pinned copy of the upstream archive).
+The wheel copy therefore drifts as upstream curation moves on: `gapit db fetch <name>`
+(alone, or with `--force` to overwrite a materialized copy) re-downloads the **latest**
+upstream content and rebuilds the datadir database — the freshness path. `bundled.json`
+records the snapshot date for reference. (`db outdated` stays manifest-based in v1:
+it reports the materialization/fetch time of what is installed, not bundled-vs-upstream
+drift — comparing the wheel snapshots against latest upstream is future work.)
+
+**How materialization works.** The first `gapit screen ... --db <bundled-name>` against
+a datadir that does not hold the database builds it there automatically — one stderr note
+(`gapit: materializing bundled database ecoli_dec (17 records) into <datadir>`,
+silenced by `--quiet`), then the standard gene-build pipeline: `records.jsonl`, the
+`sequences` FASTA with gapit/v1 headers, the BLAST index, the `typing.json` copy when the
+bundle ships one, and a manifest stamped `source: "bundled"`. Deterministic, zero
+network. A missing datadir is created on this path only; `gapit setupdb` materializes
+every bundled database alongside indexing; re-running either is a no-op once the
+manifest exists. `db list` shows the database as `bundled` before that and
+`installed (17)` after — on all four listing surfaces (TSV, rich table, `--json`, MCP
+`db_list`).
 
 ## Checking database freshness
 
@@ -127,8 +196,11 @@ card	2020-01-01T00:00:00Z	2454.55	stale
 
 Staleness is a report, never an error state: the command exits 0 however stale things are.
 Exit 4 (`DATADIR_NOT_FOUND`, `DATADIR_EMPTY`) covers a missing datadir or one with no installed
-databases; an unparseable `fetched_at` is `MANIFEST_MALFORMED` (exit 5). For agents, `--json`
-emits a `gapit.dboutdated/1` document (a CLI listing like `gapit.dblist/1`, not registered with
+databases; an unparseable `fetched_at` is `MANIFEST_MALFORMED` (exit 5). For bundled
+databases the report is manifest-based as everywhere else: a materialized bundle ages
+from its materialization time, and no bundled-vs-upstream comparison happens in v1
+(see [Bundled databases](#bundled-databases-install-time-ready) — future work). For
+agents, `--json` emits a `gapit.dboutdated/1` document (a CLI listing like `gapit.dblist/1`, not registered with
 `gapit schema`):
 
 ```console
@@ -191,7 +263,8 @@ unknown `--db NAME` is a usage error (exit 2) listing what is installed.
 ## Providers
 
 Nineteen providers ship with gapit. Every one of them — `card` and `vfdb` included —
-downloads from its upstream source at fetch time: nothing is bundled inside the package,
+downloads from its upstream source at fetch time: with the exception of the five
+audited, permissively licensed bundles above, nothing is bundled inside the package,
 because several upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's
 GPL-3.0) forbid redistribution inside an MIT-licensed distribution. The seven kaptive
 providers are **cluster** databases (built through the cluster pipeline at fetch time —
@@ -199,7 +272,7 @@ see [Kaptive providers](#kaptive-providers-gpl-downloaded-on-fetch)).
 
 | Name | Maintainer | Content | dbtype |
 |---|---|---|---|
-| `ncbi` | NCBI | NCBI AMRFinderPlus (reference finder) curated AMR (default db) | nucl |
+| `ncbi` | NCBI | NCBI AMRFinderPlus (reference finder) curated AMR | nucl |
 | `card` | McMaster University | CARD protein homolog resistance models | nucl |
 | `resfinder` | DTU CGE | CGE ResFinder acquired resistance genes | nucl |
 | `argannot` | IHU Méditerranée-Infection | ARG-ANNOT acquired resistance genes | nucl |
@@ -379,7 +452,7 @@ versions. A real one, from the plasmidfinder database:
   "upstream_version": "",
   "tool": {
     "name": "gapit",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "makeblastdb_version": "blastn: 2.17.0+",
   "minimap2_version": "2.31-r1302"
@@ -594,9 +667,10 @@ minimap2 cluster engine ([screen.md](./screen.md#cluster-databases-kind-cluster)
 
 ### typing.json — declarative phenotype scoring
 
-`--typing FILE` installs a validated `gapit.typing/1` document into the database as
-`typing.json`; screening then annotates every best call with a phenotype and an explainable
-score breakdown (the PHENOTYPE TSV column and `phenotype_detail` in gapit.cluster/1 —
+`--typing FILE` installs a validated `gapit.typing/1` or `gapit.typing/2` document into
+the database as `typing.json`; screening then annotates every best call with a phenotype
+and an explainable score breakdown (the PHENOTYPE TSV column and `phenotype_detail` in
+gapit.cluster/1 —
 [outputs.md](./outputs.md#gapitcluster1-cluster-database-screening)). A minimal
 `weighted_genes` example:
 
@@ -629,6 +703,36 @@ malformed document fails with `TYPING_MALFORMED`, and a rule referencing a gene 
 the input does not carry fails with `TYPING_UNKNOWN_GENE` before any artifact is written
 (the same check reruns at screen time, so hand-edited databases cannot smuggle dead
 references).
+
+`gapit.typing/2` wraps the same rules in NAMED schemes (`schemes:
+[{"name": "pathotype", "rules": [...], "cutoff": ..., "ambiguity_margin": ...,
+"fallback": ...}]`, names `[a-z0-9_]` and unique); a `/1` document loads as one
+anonymous `default` scheme, so existing typed databases keep their output. `--typing`
+also works on GENE (FASTA) builds — `weighted_genes` rules only in v1, gene references
+checked against the FASTA records. A typed gene db screens exactly like an untyped one
+(pure gene detection); its designations come from the two-stage pipeline — `gapit screen
+-o result.tsv` writes the table, and `gapit typing result.tsv` renders one call per
+scheme as `gapit.typing_result/1`
+([typing.md](./typing.md#the-two-stage-designation-workflow)).
+
+typing/2 stage 2 adds six rule/scheme primitives (all optional and additive; full
+detail in `gapit schema typing`): the `exact_set` rule (Doumith/Shigella-style marker
+tables — score 1.0 iff every `requires` gene is present AND every `excludes` gene is
+absent, floors defaulting to 90/90; a 1.0 tie involving a satisfied exact_set resolves
+by declaration order instead of the ambiguity margin), an optional `coverage_floor` on
+`weighted_genes`/`exact_set`, scheme-level `control_gene` (prs/ipaH-style gate: when
+absent the whole scheme outputs its fallback with a "control gene absent" note),
+`unique_group` + `mixed_phenotype` (when more than one gene of a group is present, the
+scheme calls the mixed phenotype with the pair in `ambiguous`), `compose` schemes
+(`"{o_group}:{k_group}"` rendered from sibling schemes' calls — fallback strings flow
+through, an ambiguous ingredient yields a null composition carrying that ingredient's
+variants), and rule-level `notes` surfaced verbatim on winning calls.
+
+Six researched designation schemes — the complete Doumith Listeria table, ShigaTyper-semantics
+Shigella/EIEC, the meningotype serogroup panel with allele probes, the Vibrio parahaemolyticus
+O/K Kaptive pattern, V. cholerae O1/O139 + Ogawa/Inaba, and a documented DEC placeholder — are
+encoded as validated example documents (synthetic marker fixtures, self-checked by the test
+suite) and walked through in [Typing schemes](./typing.md).
 
 Tuning a typing document against labeled assemblies is what
 `scripts/cluster_calibration.py` is for (developer tool): it screens every labeled sample,

@@ -19,7 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gapit.cluster import BestCall, ClusterParams, ClusterReport, GeneCall, LocusCall
 from gapit.formats.json import ToolDocument, utc_timestamp
-from gapit.typing_models import PhenotypeDetail
+from gapit.typing_results import PhenotypeDetail
 
 CLUSTER_TSV_HEADER = "FILE\tBEST_LOCUS\tTYPE\tCOVERAGE\tIDENTITY\tPRESENT\tPARTIAL\tMISSING_IDS"
 CLUSTER_TSV_HEADER_TYPED = (
@@ -205,6 +205,20 @@ def _tsv_row(report: ClusterReport, sep: str, nopath: bool, typed: bool) -> str:
     return sep.join(cells)
 
 
+def cluster_tsv_preamble(*, csv: bool, noheader: bool, typed: bool) -> str:
+    """The cluster header chunk ("" under noheader; sinks skip empties)."""
+    if noheader:
+        return ""
+    header = CLUSTER_TSV_HEADER_TYPED if typed else CLUSTER_TSV_HEADER
+    return header.replace("\t", "," if csv else "\t") + "\n"
+
+
+def cluster_tsv_file_chunk(report: ClusterReport, *, csv: bool, nopath: bool, typed: bool) -> str:
+    """One file's chunk: its single table row (the streaming unit the
+    cluster use-case emits as each file's report exists)."""
+    return _tsv_row(report, "," if csv else "\t", nopath, typed) + "\n"
+
+
 def format_cluster_tsv(
     reports: Iterable[ClusterReport],
     *,
@@ -217,8 +231,6 @@ def format_cluster_tsv(
     (one row per file; abricate-unrelated by design). Typed databases gain
     the PHENOTYPE column after TYPE; untyped output keeps the stage-2
     header and rows byte-identically."""
-    sep = "," if csv else "\t"
-    header = CLUSTER_TSV_HEADER_TYPED if typed else CLUSTER_TSV_HEADER
-    lines = [] if noheader else [header.replace("\t", sep)]
-    lines.extend(_tsv_row(report, sep, nopath, typed) for report in reports)
-    return "".join(line + "\n" for line in lines)
+    return cluster_tsv_preamble(csv=csv, noheader=noheader, typed=typed) + "".join(
+        cluster_tsv_file_chunk(report, csv=csv, nopath=nopath, typed=typed) for report in reports
+    )

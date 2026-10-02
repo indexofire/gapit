@@ -8,11 +8,15 @@
 ## stdout 与 stderr
 
 - **stdout 只承载数据**：TSV/CSV 表、JSON 文档、Markdown 报告，或 `gapit db fetch`
-  与 `gapit db install` 打印的单行回执。
+  与 `gapit db install` 打印的单行回执。使用 `gapit screen --output PATH` 时数据改写
+  入该文件，stdout 保持为空。
 - **stderr 承载诊断**：筛查期间的 `Processing: <file>` 等进度行、抓取进度、警告。
   `--quiet` 静默 stderr；绝不触碰 stdout。
 - 输出是确定性的：稳定的排序、固定的工具参数、数据载荷内没有墙钟时间戳（只有
   `created_at` 元数据字段）。
+- **发射时机**（`gapit screen`）：tsv/csv/md 流式输出 —— 先表头或静态 frontmatter，
+  随后每个文件完成的那一刻输出该文件的行/小节（输入顺序；`--jobs` 下按队头阻塞）。
+  json 是单一文档，在结束时一次性写出。两种方式的拼接字节完全一致。
 
 ## TSV（默认格式）
 
@@ -92,6 +96,25 @@ minimap 用 15 个字符格勾画比对落在基因的什么位置：
 - 不同 query 跨度上的重叠基因都报告。共享同一 `(contig, start, end)` 的命中去重，
   第一条 BLAST 行胜出。默认路径不合并区间；这与 abricate 一致。
 
+### typed 基因数据库：判定是第二条命令
+
+携带 `typing.json` 的基因数据库（**typed** 数据库 —— 捆绑的 `ecoli_dec` 即是示例）
+的筛查输出与 untyped 完全相同：上面冻结的 15 列 abricate 表，每种格式都逐字节一致。
+判定是两阶段流水线的第二阶段 —— [`gapit typing`](./typing.zh.md#两阶段判定工作流)
+读取筛查结果表并渲染判定（真实输出；结果表由 `screen --output` 写出）：
+
+```console
+$ gapit screen dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --quiet
+$ gapit typing dec.tsv --quiet
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+```
+
+无 aggR 的 pic+astA 谱是头条分歧 —— GB 4789.6 判 EAEC，而风险监测 scheme 回退到
+non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出里（完全没有数据行的表是
+`TYPING_NO_DATA` 输入错误）。
+
 ## JSON
 
 各筛查入口在 `--format json` 下输出带版本号的 JSON 文档。每个文档以 `schema` 字段
@@ -107,7 +130,7 @@ minimap 用 15 个字符格勾画比对落在基因的什么位置：
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -185,6 +208,79 @@ minimap 用 15 个字符格勾画比对落在基因的什么位置：
 合并 hit 本身携带并集 `%COVERAGE`、按比对长度加权的均值 `%IDENTITY`、求和的
 `GAPS`，以及锚点片段的 query 坐标；`sequence` 是逗号串接的 contig 列表。这些字段
 对 `gapit.report/1` 是累加的（无重命名、无改型、无 schema 版本号变更）。
+
+### gapit.typing_result/1（从筛查结果判定）
+
+`gapit typing RESULT.tsv [RESULT2.tsv ...]` 读取一份或多份 gapit/abricate 筛查结果
+表（TSV 或 CSV），从所有行共享的 `DATABASE` 列解析数据库，并对其 `typing.json` 在
+每个 FILE 的基因上评估 —— 每个 `(FILE, GENE)` 折叠为其 `(%IDENTITY, %COVERAGE)`
+最佳的行。真实文档（有裁剪）：
+
+```json
+{
+  "schema": "gapit.typing_result/1",
+  "tool": {"name": "gapit", "version": "0.5.0"},
+  "created_at": "2026-10-02T10:04:55Z",
+  "source": ["dec.tsv"],
+  "db": "ecoli_dec",
+  "files": [
+    {
+      "file": "dec_s2_pic_astA_uidA.fasta",
+      "phenotypes": {
+        "gb4789_6": {
+          "phenotype": "EAEC",
+          "score": 1.0,
+          "confidence": "high",
+          "components": [
+            {"name": "aggR", "score": 0.0},
+            {"name": "pic", "score": 1.0},
+            {"name": "astA", "score": 1.0}
+          ],
+          "runner_up": {"phenotype": "EHEC", "score": 0.0},
+          "notes": ["GB 4789.6: any of aggR/pic/astA"]
+        },
+        "risk_monitoring": {
+          "phenotype": "non-DEC",
+          "score": 0.0,
+          "confidence": "low",
+          "components": [
+            {"name": "escV", "score": 0.0},
+            {"name": "stx1a", "score": 0.0},
+            {"name": "stx1b", "score": 0.0},
+            {"name": "stx2a", "score": 0.0},
+            {"name": "stx2b", "score": 0.0}
+          ],
+          "runner_up": {"phenotype": "STEC", "score": 0.0},
+          "notes": [
+            "GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE)",
+            "severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+| 字段 | 类型 | 含义 |
+|---|---|---|
+| `schema` | string | 恒为 `gapit.typing_result/1` |
+| `tool` | object | gapit 的 `{name, version}` |
+| `created_at` | string | ISO-8601 UTC 时间戳，秒精度 |
+| `source` | array | 按输入原样的结果表路径 |
+| `db` | string | 所有行共同筛查的数据库 |
+| `files` | array | 每个有数据行的 FILE 一项，按首次出现顺序 |
+| `files[].phenotypes` | object | scheme 名 → 其判定（下述累加结构） |
+
+每条判定携带 `phenotype`（歧义为 null）、`score`、`confidence`
+（`high`/`ambiguous`/`low`）、`components[{name, score}]`，以及可选的 `runner_up`、
+`ambiguous[]`（并列的一对）与 `notes[]` —— 与评估器在基因簇路径上产出的结构相同。
+TSV/Markdown 投影把每条判定压平为 `FILE`、`SCHEME`、`PHENOTYPE`、`CONFIDENCE`、
+`SCORE`、`RUNNER_UP`、`NOTES` 七列：歧义判定的表型渲染 `-`、候选对写入 NOTES
+（runner-up 单元格同样为 `-`——候选对已说明一切）。类型化错误：行间 `DATABASE`
+值混杂为 `DATABASE_MISMATCH`，无数据行的表为 `TYPING_NO_DATA`，无 `typing.json` 的
+数据库为 `TYPING_NO_SCHEME`，基因簇数据库为 `TYPING_CLUSTER_DB`（其判定集成在
+`gapit screen` 内）。其 JSON Schema 用 `gapit schema typing_result` 打印。
 
 ### gapit.reads/1（reads 与 assembly 筛查）
 
@@ -302,7 +398,7 @@ typing 的数据库是同一个表头去掉 `PHENOTYPE`。没有位点判定的�
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -355,11 +451,12 @@ schema 名带 semver（`gapit.report/1`）。在一个主版本内，既有字�
 
 ## Markdown
 
-`--format md` 把同样的数据渲染成人类可读的 Markdown 报告：YAML frontmatter
-（`schema`、`tool`、`created_at`、`db`、`minid`、`mincov`、`threads`、`files`、
-`hits`），随后每个输入文件一节，用管道表承载与 TSV 相同的 15 列。reads 模式和汇总
-模式有类似的 Markdown 形式。frontmatter 给解析器一个稳定的表头；表格在终端或编辑
-器里读起来很自然。
+`--format md` 把同样的数据渲染成人类可读的 Markdown 报告：**静态** YAML frontmatter
+（`schema`、`tool`、`created_at`、`db`、`minid`、`mincov`、`threads` —— 不含运行总数，
+总数由 JSON 文档承载），随后每个输入文件一节，用管道表承载与 TSV 相同的 15 列。
+frontmatter 在第一个文件之前即可知，因此 md 与 tsv 行一样逐文件流式输出。reads 模式
+和汇总模式有类似的 Markdown 形式。frontmatter 给解析器一个稳定的表头；表格在终端
+或编辑器里读起来很自然。
 
 ## 错误
 
@@ -390,7 +487,7 @@ schema 名带 semver（`gapit.report/1`）。在一个主版本内，既有字�
 筛查不存在的文件退出码 5，stderr 真实输出：
 
 ```console
-$ gapit screen /nonexistent/contigs.fa
+$ gapit screen /nonexistent/contigs.fa --db ncbi
 {"schema":"gapit.error/1","code":"INPUT_NOT_FOUND","message":"input file not found or unreadable: /nonexistent/contigs.fa","context":{"file":"/nonexistent/contigs.fa"}}
 $ echo $?
 5
@@ -420,12 +517,13 @@ agent 只凭二进制就能发现整个契约。
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.4.0"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.0"}
 ```
 
-`gapit schema <name>` 打印每个文档的 JSON Schema。九个名字：`report`、`reads`、
-`reads2`、`cluster`、`summary`、`error`、`version`，外加数据库侧文档 `features`
-（gapit.features/1，基因簇数据库的特征表）和 `typing`（gapit.typing/1，基因簇数据
+`gapit schema <name>` 打印每个文档的 JSON Schema。十个名字：`report`、
+`typing_result`、`reads`、`reads2`、`cluster`、`summary`、`error`、`version`，外加
+数据库侧文档 `features`（gapit.features/1，基因簇数据库的特征表）和 `typing`
+（gapit.typing/1，基因簇数据
 库的声明式评分规范）。`gapit schema report` 的裁剪片段：
 
 ```json

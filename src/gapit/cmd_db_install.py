@@ -101,12 +101,12 @@ def db_install_command(
     ],
     sha256: Annotated[
         str,
-        typer.Option("--sha256", help="Expected SHA256 digest of the source (64 hex chars)."),
+        typer.Option("--sha256", "-s", help="Expected SHA256 digest of the source (64 hex chars)."),
     ],
     output: Annotated[
         Path,
         typer.Option(
-            "--output", help="Destination path; replaced atomically only after verification."
+            "--output", "-o", help="Destination path; replaced atomically only after verification."
         ),
     ],
 ) -> None:

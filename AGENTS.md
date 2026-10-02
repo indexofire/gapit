@@ -62,7 +62,7 @@ gapit/
 │   ├── __init__.py
 │   ├── cli.py           # typer entrypoint: screen / summary / db / setupdb / schema / mcp
 │   ├── config.py        # datadir resolution, defaults, env vars
-│   ├── dispatch.py      # shared CLI dispatch (error envelope → exit codes) + --datadir option
+│   ├── dispatch.py      # shared CLI dispatch (error envelope → exit codes) + --datadir option + --output target
 │   ├── proctools.py     # external-tool plumbing: argv subprocess runner + stderr notes
 │   ├── fasta.py         # streaming FASTA reader + shared gz/bz2 text opener
 │   ├── seqconvert.py    # native input normalization: fa/fq/gbk/embl (±gz/bz2) → FASTA
@@ -78,8 +78,13 @@ gapit/
 │   ├── db_build_ops.py  # db use-case: custom FASTA+TSV → gene db, GBK/GFF → cluster db (shared CLI + MCP)
 │   ├── gbfeatures.py    # GenBank FEATURES/ORIGIN parser → LocusFeatures/GeneFeature + gapit.features/1
 │   ├── gffparse.py      # GFF3 parser (embedded ##FASTA or sidecar) → the same locus/gene models
-│   ├── typing_models.py # gapit.typing/1 scoring schema + the evaluation-result models
-│   ├── typing_engine.py # gapit.typing/1 evaluation: rule scoring → phenotype call + breakdown
+│   ├── typing_models.py # gapit.typing schema (rules + named schemes; /1 degrades to one default scheme)
+│   ├── typing_rules.py  # gapit.typing rule models (weighted_genes/exact_set/cluster_match/learned_linear) + reference checks
+│   ├── typing_decide.py # typing decision layer: ranking, control-gene gate, unique-group mixed override
+│   ├── typing_results.py # typing evaluation-result models (PhenotypeDetail, SchemeCall)
+│   ├── typing_engine.py # typing evaluation, cluster path: rule scoring → phenotype call + breakdown
+│   ├── typing_gene.py   # typing evaluation, gene path (DEC markers): hits → per-scheme report phenotypes
+│   ├── bundled.py       # bundled databases: discovery + materialize-into-datadir (public-domain panels)
 │   ├── blast.py         # blastn invocation + tabular output parsing
 │   ├── hits.py          # Hit model, identity/coverage computation, filtering, dedup
 │   ├── fragments.py     # opt-in --merge-fragments cross-contig gene-fragment merging
@@ -88,13 +93,17 @@ gapit/
 │   ├── paf.py           # PAF row parsing + interval arithmetic (minimap2 output boundary)
 │   ├── report.py        # Report model: the canonical in-memory result
 │   ├── engines.py       # shared OutputFormat / AlignerEnum (leaf module for the three engines)
-│   ├── screening.py     # blastn screen use-case + the shared run_screen dispatcher
+│   ├── screening.py      # blastn screen use-case + the shared run_screen dispatcher
 │   ├── screening_cluster.py # cluster screen use-case: kind guards, typing wiring, rendering
 │   ├── screening_reads.py # minimap2 use-cases: --r1/--r2 reads + --aligner minimap2 assemblies
-│   ├── reads.py         # FASTQ mode: minimap2 PAF parsing, coverage breadth/depth, presence
+│   ├── typing_input.py   # `gapit typing` input: screen TSV/CSV → per-FILE folded GeneCalls
+│   ├── typing_ops.py     # `gapit typing` use-case: resolve db, run the engine, render
+│   ├── reads.py          # FASTQ mode: minimap2 PAF parsing, coverage breadth/depth, presence
 │   ├── summary.py       # summary core: parse report tables into a gene matrix
 │   ├── cmd_screen.py    # `gapit screen` CLI (registered from cli.py)
+│   ├── cmd_screen_reads_args.py # reads-mode CLI arg rules (comma split + flag rejects)
 │   ├── cmd_summary.py   # `gapit summary` CLI (registered from cli.py)
+│   ├── cmd_typing.py    # `gapit typing` CLI (registered from cli.py)
 │   ├── cmd_db.py        # `gapit db` command group (fetch | list; registers the subcommands)
 │   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
 │   ├── cmd_db_build.py  # `gapit db build` CLI (custom FASTA → native db)
@@ -105,11 +114,13 @@ gapit/
 │   ├── mcp_schemas.py   # MCP tools/list declarations (names, descriptions, inputSchemas)
 │   ├── errors.py        # typed errors + JSON error envelope
 │   ├── formats/
-│   │   ├── tsv.py       # abricate-compatible TSV/CSV
+│   │   ├── tsv.py       # abricate-compatible TSV/CSV (phenotype-free in every typing version)
 │   │   ├── json.py      # versioned JSON (gapit.report/1 et al.)
+│   │   ├── reads_json.py # versioned JSON (gapit.reads/1, gapit.reads/2)
 │   │   ├── md.py        # Markdown (human + agent readable, YAML frontmatter)
 │   │   ├── cluster.py   # gapit.cluster/1 models + JSON/TSV renderers (typed variant)
 │   │   ├── cluster_md.py # gapit.cluster/1 Markdown renderer (Phenotype column when typed)
+│   │   ├── typing_result.py # gapit.typing_result/1 models + TSV/JSON/MD renderers
 │   │   ├── schemas.py   # registered output models behind `gapit schema`
 │   │   └── summary.py   # summary matrix renderers (TSV/CSV/JSON/MD)
 │   ├── providers/       # 19 database provider modules (12 gene + 7 kaptive cluster) + cluster_common.py + common.py
@@ -144,7 +155,8 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 
 - **Formats**: `--format tsv|csv|json|md` (default `tsv` for abricate compatibility).
 - **JSON**: top-level `"schema": "gapit.report/1"`; schema introspectable via
-  `gapit schema report | reads | reads2 | summary | list | error | version`. Keys are snake_case,
+  `gapit schema report | reads | reads2 | summary | list | error | version` (plus
+  `cluster | features | typing | typing_result`). Keys are snake_case,
   units explicit (`identity_pct`, `coverage_pct`). Semver the schema; never rename or
   retype a field in a minor bump.
 - **Markdown**: YAML frontmatter (tool version, db, params, ISO-8601 UTC timestamp) + tables a
@@ -152,13 +164,25 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 - **Errors**: failures print a JSON envelope to stderr
   `{"schema": "gapit.error/1", "code": "...", "message": "...", "context": {...}}` and exit with a
   documented non-zero code (2 = usage, 3 = missing dependency, 4 = db error, 5 = input error).
+- **Typing** `[gapit-extension]`: two-stage designation — `gapit screen -o result.tsv --db NAME`
+  detects genes (screen output is phenotype-free; typed and untyped gene dbs screen
+  byte-identically), then `gapit typing result.tsv [-D|-f|-o|-q]` designates from the screen
+  table (`gapit.typing_result/1`; cluster dbs refuse — their typing rides the screen).
+  No typing MCP tool yet (future work).
 - **DB acquisition** `[gapit-extension]`: `gapit db fetch|list|search|outdated|build|install` —
   database fetch from the provider catalog (every provider downloads from upstream at fetch
-  time — nothing is bundled inside the wheel, a license-compliance requirement: CARD/VFDB
-  terms are non-commercial and forbid riding an MIT distribution), database listing,
+  time — nothing catalog-side is bundled inside the wheel beyond the sanctioned exceptions,
+  a license-compliance requirement: CARD/VFDB terms are non-commercial and Kaptive is GPL,
+  so none of those may ride an MIT distribution; the sanctioned exceptions are the five
+  content-provenance-audited bundles under `src/gapit/data/dbs/` — the public-domain
+  `ecoli_dec` panel plus four permissively licensed provider snapshots (`ncbi` public
+  domain, `resfinder` Apache-2.0, `ecoh` BSD-3-Clause, `upec_expec_vf` MIT; GPL/NC content
+  is never bundled) — materialized into the datadir on first use via `bundled.py`, with
+  `db fetch <name>` still the fresh-upstream refresh path),
+  database listing,
   records.jsonl gene search, staleness
   report, custom FASTA→native-db build, GBK/GFF→cluster-db build (`--typing` installs a
-  validated `gapit.typing/1` spec), the four download-on-fetch kaptive cluster providers
+  validated `gapit.typing/1` or `/2` spec on either kind), the four download-on-fetch kaptive cluster providers
   (GPL content, never bundled), and SHA256-verified local-file install.
 - **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing nine tools:
   read-only `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via

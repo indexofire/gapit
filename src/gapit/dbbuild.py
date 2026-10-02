@@ -162,6 +162,8 @@ def build_database(
     fetched_at: str,
     upstream_version: str = "",
     content_license: str = "",
+    typing_schema: str = "",
+    source: Literal["bundled"] | None = None,
     quiet: bool = True,
     debug: bool = False,
 ) -> Manifest:
@@ -203,7 +205,9 @@ def build_database(
         n_records=count_records(records_path),
         dbtype=dbtype,
         upstream_version=upstream_version,
+        typing_schema=typing_schema or None,
         license=content_license or None,
+        source=source,
         makeblastdb_version=tool_version_line(["blastn", "-version"]),
         # Kept although no .mmi is built: environment provenance for the
         # machine that produced the artifacts (spec'd in gapit.manifest/1).

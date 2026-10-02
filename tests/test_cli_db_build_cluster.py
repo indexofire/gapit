@@ -18,7 +18,7 @@ from gapit.cli import app
 from gapit.errors import ErrorEnvelope
 from gapit.gbfeatures import FeaturesDocument
 from gapit.records import read_manifest
-from gapit.typing_models import TypingDocument
+from gapit.typing_models import read_typing_document, single_scheme
 
 DATA = Path(__file__).parent / "data" / "cluster"
 DB = "myclusters"
@@ -175,8 +175,8 @@ def test_db_build_typing_validated_and_copied(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.stderr
     copied = datadir / DB / "typing.json"
     assert copied.read_bytes() == (DATA / "typing_valid.json").read_bytes()
-    document = TypingDocument.model_validate_json(copied.read_text(encoding="utf-8"))
-    assert document.fallback == "unknown"
+    assert single_scheme(read_typing_document(copied)).fallback == "unknown"
+    assert read_manifest(datadir / DB / "gapit-manifest.json").typing_schema == "gapit.typing/1"
 
 
 def test_db_build_typing_invalid_stops_the_build(tmp_path: Path) -> None:
@@ -200,9 +200,11 @@ def test_db_build_typing_invalid_stops_the_build(tmp_path: Path) -> None:
     assert not (datadir / DB / "gapit-manifest.json").exists()
 
 
-def test_db_build_typing_with_gene_kind_is_usage_error(tmp_path: Path) -> None:
-    """Given a FASTA gene build with --typing, When built, Then exit 2 —
-    the option belongs to cluster builds only."""
+def test_db_build_typing_with_gene_kind_validates_references(tmp_path: Path) -> None:
+    """Given a FASTA gene build with --typing (typing/2 stage 1: gene builds
+    take typing specs too), When the document references genes the FASTA
+    lacks, Then exit 4 TYPING_UNKNOWN_GENE — the cluster build precedent —
+    and nothing is built."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
     fasta = tmp_path / "genes.fa"
@@ -212,8 +214,11 @@ def test_db_build_typing_with_gene_kind_is_usage_error(tmp_path: Path) -> None:
         DB, str(fasta), "--datadir", str(datadir), "--typing", str(DATA / "typing_valid.json")
     )
 
-    assert result.exit_code == 2
-    assert last_envelope(result.stderr).code == "USAGE_ERROR"
+    assert result.exit_code == 4
+    envelope = last_envelope(result.stderr)
+    assert envelope.code == "TYPING_UNKNOWN_GENE"
+    assert envelope.context["gene"] == "wzx"
+    assert not (datadir / DB / "gapit-manifest.json").exists()
 
 
 def test_db_build_cluster_input_rejects_gene_options(tmp_path: Path) -> None:

@@ -78,18 +78,33 @@ def amr_datadir(tmp_path: Path) -> Path:
 
 
 def reads_args(reads_datadir: Path, **overrides: object) -> dict[str, object]:
-    """Default screen_reads arguments for one paired tetX lane."""
+    """Default screen_reads arguments for one paired tetX lane (a None
+    override drops the key — how the no-db error path is exercised)."""
     args: dict[str, object] = {
         "r1": [str(READS / "tetx_R1.fq")],
         "r2": [str(READS / "tetx_R2.fq")],
         "db": "tinyreads",
         "datadir": str(reads_datadir),
     }
-    args.update(overrides)
+    for key, value in overrides.items():
+        if value is None:
+            args.pop(key, None)
+        else:
+            args[key] = value
     return args
 
 
 # ----------------------------------------------------------- screen_reads --
+
+
+def test_screen_reads_without_db_is_usage_error(reads_datadir: Path) -> None:
+    """Given tools/call screen_reads with r1 but no db (required since the
+    breaking change removed the ncbi default), When served, Then
+    isError=true with the USAGE_ERROR envelope naming db."""
+    is_error, text = call_tool("screen_reads", reads_args(reads_datadir, db=None))
+    assert is_error is True
+    assert envelope_code(text) == "USAGE_ERROR"
+    assert "db" in text
 
 
 def test_screen_reads_paired_fastq_returns_reads1_json(reads_datadir: Path) -> None:

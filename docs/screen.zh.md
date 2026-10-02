@@ -9,33 +9,37 @@
 
 ## 选项
 
-转写自 `gapit screen --help`（gapit 0.4.0）。标记为 *reads 模式* 的参数只在传入
+转写自 `gapit screen --help`（gapit 0.5.0）。标记为 *reads 模式* 的参数只在传入
 `--r1`/`--r2` 时生效，记录在 [./reads.md](./reads.md)。
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `FILE...` | 路径 | 必填* | 要筛查的 FASTA/GBK/EMBL contig 输入文件。 |
-| `--db` | str | `ncbi` | 用于筛查的数据库（数据目录的子目录）。 |
-| `--datadir` | path | `$GAPIT_DATADIR`，然后 `~/.local/share/gapit/db` | 数据库目录。 |
-| `--minid` | float | `80.0` | 最小一致性百分比，`0 < x <= 100`。在 BLAST 内部通过 `-perc_identity` 强制执行。 |
-| `--mincov` | float | `80.0` | 最小覆盖度百分比，`0 <= x <= 100`。对未取整的浮点值做后置过滤。 |
-| `--threads` | int | `1` | BLAST 工作线程数（传给 `-num_threads`）。 |
-| `--jobs` | int | `1` | 并发筛查 N 个输入文件。输出顺序始终是输入顺序。 |
-| `--merge-fragments` | 开关 | 关闭 | 合并被 contig 边界拆开的基因片段（gapit 扩展；见下文）。 |
-| `--fofn` | path | 无 | 文件名列表文件；取代位置参数 FILE。 |
-| `--quiet` | 开关 | 关闭 | 静默 stderr 诊断。 |
-| `--noheader` | 开关 | 关闭 | 不输出 `#FILE ...` 表头行。 |
-| `--nopath` | 开关 | 关闭 | FILE 列只保留文件名。 |
-| `--debug` | 开关 | 关闭 | 详细的 stderr 诊断；回显每条外部命令行。 |
-| `--format` | tsv\|csv\|json\|md | `tsv` | 输出格式（reads 模式默认 json）。 |
-| `--aligner` | blastn\|minimap2 | 按输入决定 | 比对引擎（默认：contig 文件用 blastn，`--r1`/`--r2` reads 用 minimap2）。`--aligner minimap2` 把位置参数给出的 FASTA 装配体送进 minimap2 引擎（要求 FASTA 内容；见 [./reads.md](./reads.md)）。 |
-| `--r1` | str | 无 | *reads 模式。* reads 或 assembly FASTA 文件，逗号分隔，每条 lane 一个。 |
-| `--r2` | str | 无 | *reads 模式。* 逗号分隔的 mate FASTQ 文件；数量必须与 `--r1` 一致。 |
-| `--read-type` | sr\|map-ont\|map-hifi | FASTQ 用 `sr`，FASTA 用 `map-ont` | *reads 模式。* minimap2 预设；省略时按检测到的输入解析。 |
-| `--min-breadth` | float | `90.0` | *reads 模式。* 判定存在的最小广度百分比。 |
-| `--min-gene-cov` | float | `90.0` | *仅基因簇数据库。* 基因判定为 `present` 的最小覆盖度百分比。 |
-| `--min-gene-id` | float | `90.0` | *仅基因簇数据库。* 基因判定为 `present` 的最小一致性百分比。 |
-| `--min-cluster-cov` | float | `96.0` | *仅基因簇数据库。* 最佳位点判定的最小位点覆盖度百分比。 |
+每个选项都接受 **短** 列给出的单横线短形式（例如 `--db` 的 `-d`）；长形式仍是规范写法，
+布尔否定形式（如 `--no-merge-fragments`）保持只有长形式。
+
+| 参数 | 短 | 类型 | 默认值 | 说明 |
+|---|---|---|---|---|
+| `FILE...` | — | 路径 | 必填* | 要筛查的 FASTA/GBK/EMBL contig 输入文件。 |
+| `--db` | `-d` | str | 必填 | 用于筛查的数据库（数据目录的子目录）。没有默认值：一次筛查绝不会悄悄物化内置数据库 —— 请显式选择（`gapit db list`）。 |
+| `--datadir` | `-D` | path | `$GAPIT_DATADIR`，然后 `~/.local/share/gapit/db` | 数据库目录。 |
+| `--minid` | `-i` | float | `80.0` | 最小一致性百分比，`0 < x <= 100`。在 BLAST 内部通过 `-perc_identity` 强制执行。 |
+| `--mincov` | `-c` | float | `80.0` | 最小覆盖度百分比，`0 <= x <= 100`。对未取整的浮点值做后置过滤。 |
+| `--threads` | `-t` | int | `1` | BLAST 工作线程数（传给 `-num_threads`）。 |
+| `--jobs` | `-j` | int | `1` | 并发筛查 N 个输入文件。输出顺序始终是输入顺序。 |
+| `--merge-fragments` | `-m` | 开关 | 关闭 | 合并被 contig 边界拆开的基因片段（gapit 扩展；见下文）。 |
+| `--fofn` | `-F` | path | 无 | 文件名列表文件；取代位置参数 FILE。 |
+| `--quiet` | `-q` | 开关 | 关闭 | 静默 stderr 诊断。 |
+| `--noheader` | `-n` | 开关 | 关闭 | 不输出 `#FILE ...` 表头行。 |
+| `--nopath` | `-p` | 开关 | 关闭 | FILE 列只保留文件名。 |
+| `--debug` | `-v` | 开关 | 关闭 | 详细的 stderr 诊断；回显每条外部命令行。 |
+| `--format` | `-f` | tsv\|csv\|json\|md | `tsv` | 输出格式（reads 模式默认 json）。tsv/csv/md 每完成一个文件就流出该文件的行/小节；json 在结束时一次性写出（单一文档）。 |
+| `--output` | `-o` | path | stdout | 把报告写入 PATH 而不是 stdout（截断已存在的文件）。流式格式逐文件刷新；此时 stdout 不输出任何数据。 |
+| `--aligner` | `-a` | blastn\|minimap2 | 按输入决定 | 比对引擎（默认：contig 文件用 blastn，`--r1`/`--r2` reads 用 minimap2）。`--aligner minimap2` 把位置参数给出的 FASTA 装配体送进 minimap2 引擎（要求 FASTA 内容；见 [./reads.md](./reads.md)）。 |
+| `--r1` | `-1` | str | 无 | *reads 模式。* reads 或 assembly FASTA 文件，逗号分隔，每条 lane 一个。 |
+| `--r2` | `-2` | str | 无 | *reads 模式。* 逗号分隔的 mate FASTQ 文件；数量必须与 `--r1` 一致。 |
+| `--read-type` | `-x` | sr\|map-ont\|map-hifi | FASTQ 用 `sr`，FASTA 用 `map-ont` | *reads 模式。* minimap2 预设；省略时按检测到的输入解析。 |
+| `--min-breadth` | `-b` | float | `90.0` | *reads 模式。* 判定存在的最小广度百分比。 |
+| `--min-gene-cov` | `-g` | float | `90.0` | *仅基因簇数据库。* 基因判定为 `present` 的最小覆盖度百分比。 |
+| `--min-gene-id` | `-G` | float | `90.0` | *仅基因簇数据库。* 基因判定为 `present` 的最小一致性百分比。 |
+| `--min-cluster-cov` | `-C` | float | `96.0` | *仅基因簇数据库。* 最佳位点判定的最小位点覆盖度百分比。 |
 
 \* 位置参数 FILE 或 `--fofn`，或经 `--r1` 进入 reads 模式。位置文件与 `--r1`/`--r2`
 互斥。
@@ -90,7 +94,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {
@@ -174,6 +178,76 @@ tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00
 
 用 `--jobs 2` 时两个文件并发筛查，但 stdout 仍按输入顺序排列，输出与串行运行完全
 一致。
+
+### typed 基因数据库：判定是第二条命令
+
+当 `--db` 指向带 `typing.json` 构建的基因数据库（捆绑的 `ecoli_dec`，或任何
+`gapit db build --typing` 构建）时，筛查是纯基因检测：每种格式的输出都是逐字节相同
+的冻结 15 列 abricate 表——typed 与 untyped 基因数据库在筛查面上无法区分。判定来自
+两阶段流水线的第二阶段：用 `--output`（或重定向）写出结果表，再对它运行
+[`gapit typing`](./typing.zh.md#两阶段判定工作流)——或者直接经管道送入，规范一行式：
+
+```console
+$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --nopath --quiet
+$ gapit typing dec.tsv --quiet
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+dec_s3_stx2a_escV_aggR_uidA.fasta	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+```
+
+管道形式完全省去中间文件——screen 的 stdout 就是 typing 的 stdin（两侧都保持
+stdout 纯净：数据走管道，诊断信息走 stderr）：
+
+```console
+$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db ecoli_dec --nopath --quiet | gapit typing --quiet
+```
+
+只要 stdin 不是终端，`gapit typing` 就从中读取；`gapit typing -` 是显式 stdin
+标记（挂着终端也有效——读取直到 EOF）。完整的输入契约见
+[typing 页面](./typing.zh.md#两阶段判定工作流)。
+
+基因簇数据库是例外：其判定集成在筛查本身（typed 基因簇 TSV 的 `PHENOTYPE` 列，
+见[下文](#基因簇数据库-kind-cluster)）。
+
+## 流式输出与 `--output`
+
+长时间的批量筛查可以边跑边反馈，报告也可以直接落盘：
+
+- **tsv/csv/md 按文件流式输出。** 表头（或 Markdown frontmatter）在筛查开始时打印
+  一次，每个文件的行/小节在该文件完成的那一刻打印 —— 顺序始终是输入顺序。
+  `--jobs N > 1` 时采用队头阻塞式发射：第 *i* 个文件的输出要等文件 1..*i* 全部完成
+  才流出（线程池按输入顺序产出），因此 stdout 字节与串行运行完全一致。
+- **md 流式输出；json 在结束时一次性写出。** Markdown frontmatter 是**静态**元数据
+  （schema、tool、`created_at`、db、阈值 —— 不含运行总数），因此可以先行输出，每个
+  文件的小节随文件完成即时流出，与 tsv 行完全一致。基因簇数据库的每个文件小节自带
+  该文件的摘要行和基因表。运行总数（`files`、`hits` 等）由 JSON 文档承载 —— json 是
+  单一对象，在结束时一次性写出。
+- **`--output PATH`**（所有引擎，含 reads 模式）把报告写入 PATH 而不是 stdout：文
+  件在第一个输出字节时打开（截断已存在的文件 —— v1 为覆盖语义，不追加），每个流
+  式分块都刷新落盘，此时 stdout **不输出任何数据**（stderr 诊断不变）。
+- **批内出错。** 若文件 1..*k-1* 已流出后第 *k* 个文件失败，已发射的输出原样保留
+  —— stdout 上已打印；`--output` 文件里保留表头/frontmatter 和文件 1..*k-1* ——
+  然后在 stderr 打印类型化的 `gapit.error/1` 信封并按文档退出码退出。在任何输出产
+  生之前就失败的运行（用法、依赖、数据库错误）根本不会创建 `--output` 文件。
+
+### `--output`
+
+```console
+$ gapit screen tests/data/contigs/full.fa tests/data/contigs/gap.fa --db tinyamr --output report.tsv
+Processing: tests/data/contigs/full.fa
+Found 1 genes in tests/data/contigs/full.fa
+Processing: tests/data/contigs/gap.fa
+Found 1 genes in tests/data/contigs/gap.fa
+$ cat report.tsv
+#FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
+tests/data/contigs/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.00	100.00	tinyamr	NC_000913.3:100-900	tetracycline efflux pump TetA	TETRACYCLINE
+tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
+```
+
+`Processing:`/`Found` 行走 stderr；stdout 为空，`report.tsv` 的内容与同一运行打印
+的字节完全相同。
 
 ### `--debug`
 
@@ -281,6 +355,7 @@ FILE` 安装）。有它时，每个文件的最佳判定都会注释上一个**
   blastx 不接受 `-perc_identity`。gapit 会在 stderr 打印
   `--minid is not applied to protein databases (abricate parity)` 并继续运行。
 - **排序。** 单个文件内，行按 SEQUENCE 再按 START 稳定排序。一个文件的行在该文件完
-  成后输出；即使 `--jobs > 1`，文件仍按输入顺序输出。
+  成后输出（或刷新到 `--output`）；即使 `--jobs > 1`，文件仍按输入顺序输出（队头
+  阻塞：第 i 个文件等文件 1..i）。
 - **退出码。** 2 用法错误，3 缺依赖，4 数据库错误，5 输入错误，1 意外错误。失败时
   在 stderr 打印 `gapit.error/1` JSON 信封；见 [./outputs.md](./outputs.md)。

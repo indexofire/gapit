@@ -34,10 +34,10 @@ shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0�
 
 | 工具 | 参数 | 返回 |
 |---|---|---|
-| `screen` | `files`（字符串数组，必填）、`db`（string，默认 `ncbi`）、`minid`（number）、`mincov`（number）、`format`（string：`json` \| `tsv` \| `md`，默认 `json`）、`aligner`（string：`blastn` \| `minimap2`，默认 `blastn`）、`mergeFragments`（boolean，默认 `false`；仅 blastn：跨 contig 片段合并）、`min_breadth`（number 0-100，默认 `90`；仅 minimap2）、`min_identity`（number 0-100，默认 `0`；仅 minimap2）、`min_mapq`（integer ≥ 0，默认 `0`；仅 minimap2）、`minGeneCov`（number 0-100，默认 `90`；仅 cluster 数据库）、`minGeneId`（number 0-100，默认 `90`；仅 cluster 数据库）、`minClusterCov`（number 0-100，默认 `96`；仅 cluster 数据库）、`datadir`（string） | 报告文本：默认 `gapit.report/1` JSON，按 `format` 也可为 TSV 或 Markdown；`aligner minimap2` 跑 reads 引擎并输出 `gapit.reads/1`。cluster 类型的 `db` 输出 `gapit.cluster/1`：最佳位点判定、逐基因判定，数据库携带 `typing.json` 时还有带 `phenotype_detail` 分数分解的表型判定 |
-| `screen_reads` | `r1`（字符串数组，必填，每条 lane 一个路径）、`r2`（字符串数组，数量与 `r1` 相同）、`read_type`（string：`sr` \| `map-ont` \| `map-hifi`，默认 `sr`）、`min_breadth`（number 0-100，默认 `90`）、`min_identity`（number 0-100，默认 `0`）、`min_mapq`（integer ≥ 0，默认 `0`）、`format`（string：`json` \| `md`，默认 `json`）、`db`（string，默认 `ncbi`）、`datadir`（string） | 默认 `gapit.reads/1` JSON，按 `format` 可为 Markdown；`min_identity`/`min_mapq` > 0 切换为 `gapit.reads/2` |
+| `screen` | `files`（字符串数组，必填）、`db`（string，必填 —— 无默认值）、`minid`（number）、`mincov`（number）、`format`（string：`json` \| `tsv` \| `md`，默认 `json`）、`aligner`（string：`blastn` \| `minimap2`，默认 `blastn`）、`mergeFragments`（boolean，默认 `false`；仅 blastn：跨 contig 片段合并）、`min_breadth`（number 0-100，默认 `90`；仅 minimap2）、`min_identity`（number 0-100，默认 `0`；仅 minimap2）、`min_mapq`（integer ≥ 0，默认 `0`；仅 minimap2）、`minGeneCov`（number 0-100，默认 `90`；仅 cluster 数据库）、`minGeneId`（number 0-100，默认 `90`；仅 cluster 数据库）、`minClusterCov`（number 0-100，默认 `96`；仅 cluster 数据库）、`datadir`（string） | 报告文本：默认 `gapit.report/1` JSON，按 `format` 也可为 TSV 或 Markdown；`aligner minimap2` 跑 reads 引擎并输出 `gapit.reads/1`。cluster 类型的 `db` 输出 `gapit.cluster/1`：最佳位点判定、逐基因判定，数据库携带 `typing.json` 时还有带 `phenotype_detail` 分数分解的表型判定 |
+| `screen_reads` | `r1`（字符串数组，必填，每条 lane 一个路径）、`r2`（字符串数组，数量与 `r1` 相同）、`read_type`（string：`sr` \| `map-ont` \| `map-hifi`，默认 `sr`）、`min_breadth`（number 0-100，默认 `90`）、`min_identity`（number 0-100，默认 `0`）、`min_mapq`（integer ≥ 0，默认 `0`）、`format`（string：`json` \| `md`，默认 `json`）、`db`（string，必填 —— 无默认值）、`datadir`（string） | 默认 `gapit.reads/1` JSON，按 `format` 可为 Markdown；`min_identity`/`min_mapq` > 0 切换为 `gapit.reads/2` |
 | `summary` | `files`（报告表路径数组，必填）、`identity`（boolean）、`nopath`（boolean） | `gapit.summary/1` JSON |
-| `schema` | `name`（string，必填，取值 `cluster`、`error`、`features`、`reads`、`reads2`、`report`、`summary`、`typing`、`version` 之一） | 该输出文档的 JSON Schema |
+| `schema` | `name`（string，必填，取值 `cluster`、`error`、`features`、`reads`、`reads2`、`report`、`summary`、`typing`、`typing_result`、`version` 之一） | 该输出文档的 JSON Schema |
 | `db_list` | 无 | `gapit.dblist/1`：数据库名、安装状态、记录数 |
 | `db_fetch` | `name`（string，必填——数据库名，或 `all` 表示 card+vfdb 默认集合）、`datadir`（string）、`force`（boolean，默认 `false`） | 每个数据库一行 JSON 回执（`db`、`records`、`dbtype`、`destination`）。每个数据库都从其上游提供商下载，安装需要网络且可能耗时数分钟 |
 | `db_build` | `name`（string，必填）、`fasta`（string，必填，本地文件系统路径）、`tsv`（string）、`dbtype`（string：`nucl` \| `prot`）、`description`（string）、`datadir`（string）、`force`（boolean，默认 `false`） | 一行 JSON 回执（`db`、`records`、`dbtype`、`destination`） |
@@ -88,13 +88,13 @@ EOF
 响应第 1 行，原样：
 
 ```text
-{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.4.0"}}}
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.5.0"}}}
 ```
 
 响应第 2 行（真实输出，中段省略；每个工具携带完整的 `inputSchema`）：
 
 ```text
-{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for known genes (json = gapit.report/1; aligner minimap2 = fast assembly survey emitting gapit.reads/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string","default":"ncbi"}, ... },"required":["files"]}}, {"name":"screen_reads","description":"Screen FASTQ reads for genes via minimap2 (json = gapit.reads/1; min_identity/min_mapq > 0 emits gapit.reads/2). Returns the rendered document.","inputSchema":{"type":"object","properties":{"r1":{"type":"array","items":{"type":"string"}},"r2":{"type":"array","items":{"type":"string"}},"read_type":{"type":"string","enum":["sr","map-ont","map-hifi"],"default":"sr"}, ... },"required":["r1"]}}, {"name":"summary", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
+{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for known genes (json = gapit.report/1; aligner minimap2 = fast assembly survey emitting gapit.reads/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string"}, ... },"required":["files","db"]}}, {"name":"screen_reads","description":"Screen FASTQ reads for genes via minimap2 (json = gapit.reads/1; min_identity/min_mapq > 0 emits gapit.reads/2). Returns the rendered document.","inputSchema":{"type":"object","properties":{"r1":{"type":"array","items":{"type":"string"}},"r2":{"type":"array","items":{"type":"string"}},"read_type":{"type":"string","enum":["sr","map-ont","map-hifi"],"default":"sr"}, ... },"required":["r1","db"]}}, {"name":"summary", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
 ```
 
 响应第 3 行（真实输出，text 内容省略）。screen 结果以 JSON 字符串的形式位于
@@ -109,7 +109,7 @@ EOF
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.4.0"},
+  "tool": {"name": "gapit", "version": "0.5.0"},
   "created_at": "2026-09-19T01:15:44Z",
   "params": {"db": "tinyamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [
@@ -163,7 +163,7 @@ EOF
 ```json
 {
   "schema": "gapit.reads/1",
-  "tool": {"name": "gapit", "version": "0.4.0"},
+  "tool": {"name": "gapit", "version": "0.5.0"},
   "created_at": "2026-09-22T00:07:35Z",
   "params": {
     "db": "tinyreads",
@@ -236,7 +236,7 @@ export GAPIT_DATADIR=/tmp/gapit-mcp-demo/datadir
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.4.0"},
+  "tool": {"name": "gapit", "version": "0.5.0"},
   "created_at": "2026-09-20T13:38:39Z",
   "params": {"db": "myamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [

@@ -33,7 +33,8 @@ from gapit.errors import DatabaseError, GapitError
 from gapit.gbfeatures import FeaturesDocument, LocusFeatures
 from gapit.minimap2_run import run_minimap2
 from gapit.paf import PafRecord
-from gapit.typing_models import PhenotypeDetail, TypingDocument, read_typing_document
+from gapit.typing_models import TypingDocument, read_typing_document
+from gapit.typing_results import PhenotypeDetail
 
 
 class ClusterParams(BaseModel, frozen=True):

@@ -3,8 +3,10 @@
 fully built gapit-native database. FASTA inputs build gene databases
 (records.jsonl -> sequences + BLAST index + manifest, written last);
 GBK/GFF inputs build cluster databases (locus FASTA + gapit.features/1
-feature table + manifest ``kind: cluster``, plus an optional validated
-gapit.typing/1 scoring spec via --typing).
+feature table + manifest ``kind: cluster``). Both branches accept a
+``--typing`` scoring spec (gapit.typing/1 or /2): validated against the
+input's records, copied into the database as ``typing.json``, and recorded
+in the manifest's ``typing_schema``.
 """
 
 from pathlib import Path
@@ -33,45 +35,56 @@ def db_build_command(
     tsv: Annotated[
         Path | None,
         typer.Option(
-            "--tsv", help="Metadata TSV: header row with gene/accession/function columns."
+            "--tsv", "-t", help="Metadata TSV: header row with gene/accession/function columns."
         ),
     ] = None,
     dbtype: Annotated[
         Dbtype | None,
-        typer.Option("--dbtype", help="Force nucl or prot (default: auto-detect)."),
+        typer.Option("--dbtype", "-d", help="Force nucl or prot (default: auto-detect)."),
     ] = None,
     kind: Annotated[
         Kind | None,
         typer.Option(
             "--kind",
+            "-k",
             help="Force gene or cluster (default: auto-detect by suffix; must agree with it).",
         ),
     ] = None,
     typing: Annotated[
         Path | None,
         typer.Option(
-            "--typing", help="gapit.typing/1 scoring spec, validated and copied into a cluster db."
+            "--typing",
+            "-T",
+            help=(
+                "gapit.typing/1 or /2 scoring spec: validated, copied into the db,"
+                " recorded in its manifest."
+            ),
         ),
     ] = None,
     datadir: Annotated[
         Path | None,
         typer.Option(
             "--datadir",
+            "-D",
             help="Database directory (default: $GAPIT_DATADIR, then ~/.local/share/gapit/db).",
         ),
     ] = None,
     description: Annotated[
         str,
         typer.Option(
+            # -e (second letter): -d/-D are taken by --dbtype/--datadir.
             "--description",
+            "-e",
             help="Default product for records whose FASTA header has no description text.",
         ),
     ] = "",
     force: Annotated[
         bool,
-        typer.Option("--force", help="Overwrite the database if it already exists."),
+        typer.Option("--force", "-f", help="Overwrite the database if it already exists."),
     ] = False,
-    quiet: Annotated[bool, typer.Option("--quiet", help="Silence stderr diagnostics.")] = False,
+    quiet: Annotated[
+        bool, typer.Option("--quiet", "-q", help="Silence stderr diagnostics.")
+    ] = False,
 ) -> None:
     """Build a custom gapit-native database from a FASTA/GBK/GFF3 input."""
 

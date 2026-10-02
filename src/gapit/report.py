@@ -18,7 +18,9 @@ class Report(BaseModel, frozen=True):
     """Canonical in-memory result of screening one input file.
 
     Hits are sorted (sequence, start) before construction; the tuple is the
-    final, stable order.
+    final, stable order. Screening is pure gene detection: typed and
+    untyped gene databases produce byte-identical reports (designation is
+    the ``gapit typing`` command's job).
     """
 
     file: str

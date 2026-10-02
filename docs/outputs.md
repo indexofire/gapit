@@ -9,11 +9,16 @@ reading this page. See also [screen.md](./screen.md), [reads.md](./reads.md), an
 ## stdout and stderr
 
 - **stdout carries data only**: the TSV/CSV table, the JSON document, the Markdown report,
-  or the one-line receipts printed by `gapit db fetch` and `gapit db install`.
+  or the one-line receipts printed by `gapit db fetch` and `gapit db install`. With
+  `gapit screen --output PATH` the data goes to the file instead and stdout stays empty.
 - **stderr carries diagnostics**: progress lines like `Processing: <file>` during screening,
   fetch progress, warnings. `--quiet` silences stderr; it never touches stdout.
 - Output is deterministic: stable sort orders, fixed tool parameters, no wall-clock
   timestamps inside data payloads (only the `created_at` metadata field).
+- **Emission timing** (`gapit screen`): tsv/csv/md stream — the header or static frontmatter
+  first, then each file's rows/section the moment that file finishes (input order;
+  head-of-line under `--jobs`). json is a single document written once at the end. The
+  concatenated bytes are identical either way.
 
 ## TSV (default format)
 
@@ -99,6 +104,27 @@ alignment is gapped. An ungapped full-length alignment prints 15 `=` characters,
   `(contig, start, end)` deduplicate, first BLAST row wins. No interval merging happens on
   the default path; this matches abricate.
 
+### Typed gene databases: designation is a second command
+
+A gene database carrying a `typing.json` (a **typed** database — the bundled `ecoli_dec` is
+the example) screens exactly like an untyped one: the frozen 15-column abricate table above,
+byte-for-byte, in every format. Designation is the second stage of the two-stage pipeline —
+[`gapit typing`](./typing.md#the-two-stage-designation-workflow) reads a screen result
+table and renders the calls (real output; `screen --output` wrote the table):
+
+```console
+$ gapit screen dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --quiet
+$ gapit typing dec.tsv --quiet
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+```
+
+The pic+astA profile without aggR is the headline divergence — GB 4789.6 calls EAEC while
+the risk-monitoring scheme falls back to non-DEC. Zero-hit files emit no screen rows, so
+they cannot appear in a typing run (a table with no data rows at all is the
+`TYPING_NO_DATA` input error).
+
 ## JSON
 
 The screening surfaces emit versioned JSON documents, all requested with `--format json`.
@@ -115,7 +141,7 @@ Real document, same run as the TSV above:
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -195,6 +221,81 @@ The merged hit itself carries the union `%COVERAGE`, the aligned-length-weighted
 `%IDENTITY`, summed `GAPS`, and the anchor fragment's query coordinates; `sequence` is the
 comma-joined contig list. These fields are additive to `gapit.report/1` (no rename, no
 retype, no schema version bump).
+
+### gapit.typing_result/1 (designation from screen results)
+
+`gapit typing RESULT.tsv [RESULT2.tsv ...]` reads one or more gapit/abricate screen result
+tables (TSV or CSV), resolves the database from the rows' shared `DATABASE` column, and
+evaluates its `typing.json` over each FILE's genes — every `(FILE, GENE)` folds to its best
+row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
+
+```json
+{
+  "schema": "gapit.typing_result/1",
+  "tool": {"name": "gapit", "version": "0.5.0"},
+  "created_at": "2026-10-02T10:04:55Z",
+  "source": ["dec.tsv"],
+  "db": "ecoli_dec",
+  "files": [
+    {
+      "file": "dec_s2_pic_astA_uidA.fasta",
+      "phenotypes": {
+        "gb4789_6": {
+          "phenotype": "EAEC",
+          "score": 1.0,
+          "confidence": "high",
+          "components": [
+            {"name": "aggR", "score": 0.0},
+            {"name": "pic", "score": 1.0},
+            {"name": "astA", "score": 1.0}
+          ],
+          "runner_up": {"phenotype": "EHEC", "score": 0.0},
+          "notes": ["GB 4789.6: any of aggR/pic/astA"]
+        },
+        "risk_monitoring": {
+          "phenotype": "non-DEC",
+          "score": 0.0,
+          "confidence": "low",
+          "components": [
+            {"name": "escV", "score": 0.0},
+            {"name": "stx1a", "score": 0.0},
+            {"name": "stx1b", "score": 0.0},
+            {"name": "stx2a", "score": 0.0},
+            {"name": "stx2b", "score": 0.0}
+          ],
+          "runner_up": {"phenotype": "STEC", "score": 0.0},
+          "notes": [
+            "GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE)",
+            "severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `schema` | string | Always `gapit.typing_result/1` |
+| `tool` | object | `{name, version}` of gapit |
+| `created_at` | string | ISO-8601 UTC timestamp, second precision |
+| `source` | array | The result table path(s) as given |
+| `db` | string | The database every row screened against |
+| `files` | array | One entry per FILE that has data rows, first-appearance order |
+| `files[].phenotypes` | object | Scheme name → its call (the additive shape below) |
+
+Each call carries `phenotype` (null on an ambiguous call), `score`, `confidence`
+(`high`/`ambiguous`/`low`), `components[{name, score}]`, and the optional `runner_up`,
+`ambiguous[]` (the tied pair), and `notes[]` — the same bodies the evaluator produces on
+the cluster path. The TSV/Markdown projection flattens each call to the seven `FILE`,
+`SCHEME`, `PHENOTYPE`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES` columns: ambiguous
+calls render `-` for the phenotype and carry the candidate pair in `NOTES` (the runner-up
+cell also renders `-` there — the pair already speaks). Typed errors: mixed `DATABASE`
+values across rows are `DATABASE_MISMATCH`, a table with no data rows `TYPING_NO_DATA`,
+a database without a `typing.json` `TYPING_NO_SCHEME`, and a cluster database
+`TYPING_CLUSTER_DB` (its typing is integrated into `gapit screen`). Its JSON Schema prints
+with `gapit schema typing_result`.
 
 ### gapit.reads/1 (reads and assembly screening)
 
@@ -314,7 +415,7 @@ summarizing two report files, one with a `tetA` hit and one with none:
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -367,11 +468,13 @@ never renamed or retyped; additive changes come with a schema-version bump and a
 
 ## Markdown
 
-`--format md` renders the same data as a human-readable Markdown report: YAML frontmatter
-(`schema`, `tool`, `created_at`, `db`, `minid`, `mincov`, `threads`, `files`, `hits`),
-then one section per input file containing the same 15 columns as the TSV in a pipe table.
-Reads mode and summary mode have analogous Markdown forms. Frontmatter gives parsers a
-stable header; the tables read naturally in a terminal or editor.
+`--format md` renders the same data as a human-readable Markdown report: a STATIC YAML
+frontmatter (`schema`, `tool`, `created_at`, `db`, `minid`, `mincov`, `threads` — no run
+totals, which live in the JSON document), then one section per input file containing the
+same 15 columns as the TSV in a pipe table. The frontmatter is knowable before the first
+file, so md streams per file exactly like the tsv rows. Reads mode and summary mode have
+analogous Markdown forms. Frontmatter gives parsers a stable header; the tables read
+naturally in a terminal or editor.
 
 ## Errors
 
@@ -402,7 +505,7 @@ The exit code tells you the failure class:
 Screening a file that doesn't exist exits 5 with this real stderr line:
 
 ```console
-$ gapit screen /nonexistent/contigs.fa
+$ gapit screen /nonexistent/contigs.fa --db ncbi
 {"schema":"gapit.error/1","code":"INPUT_NOT_FOUND","message":"input file not found or unreadable: /nonexistent/contigs.fa","context":{"file":"/nonexistent/contigs.fa"}}
 $ echo $?
 5
@@ -432,13 +535,13 @@ An agent can discover the whole contract from the binary alone.
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.4.0"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.0"}
 ```
 
-`gapit schema <name>` prints the JSON Schema for each document. The nine names: `report`,
-`reads`, `reads2`, `cluster`, `summary`, `error`, `version`, plus the database-side
-documents `features` (gapit.features/1, a cluster db's feature table) and `typing`
-(gapit.typing/1, a cluster db's declarative scoring spec). A trimmed fragment of
+`gapit schema <name>` prints the JSON Schema for each document. The ten names: `report`,
+`typing_result`, `reads`, `reads2`, `cluster`, `summary`, `error`, `version`, plus the
+database-side documents `features` (gapit.features/1, a cluster db's feature table) and
+`typing` (gapit.typing/1, a cluster db's declarative scoring spec). A trimmed fragment of
 `gapit schema report`:
 
 ```json

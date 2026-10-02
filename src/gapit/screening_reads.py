@@ -10,10 +10,10 @@ from pathlib import Path
 
 import typer
 
-from gapit import config
+from gapit.bundled import resolve_screen_datadir
 from gapit.errors import ensure_input_file, usage_fail
-from gapit.formats.json import render_reads2_json, render_reads_json
 from gapit.formats.md import render_reads2_markdown, render_reads_markdown
+from gapit.formats.reads_json import render_reads2_json, render_reads_json
 from gapit.reads import (
     ReadFileKind,
     ReadsParams,
@@ -105,7 +105,7 @@ def _screen_lanes(
     gapit.reads/1 byte-identical. Returns the rendered output for the caller
     to echo."""
     resolved = _resolve_read_preset(lanes, read_type, quiet)
-    database = find_database(config.resolve_datadir(datadir), db_name)
+    database = find_database(resolve_screen_datadir(datadir, db_name), db_name, quiet=quiet)
     if database.kind == "cluster":
         usage_fail(
             "cluster databases are assembly-contig screening only;"

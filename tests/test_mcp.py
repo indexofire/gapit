@@ -118,7 +118,9 @@ def test_tools_list_advertises_nine_tools_with_schemas() -> None:
         assert tool["inputSchema"]["type"] == "object"
         assert "properties" in tool["inputSchema"]
         assert "required" in tool["inputSchema"]
-    assert by_name["screen"]["inputSchema"]["required"] == ["files"]
+    assert by_name["screen"]["inputSchema"]["required"] == ["files", "db"]
+    assert by_name["screen"]["inputSchema"]["properties"]["db"] == {"type": "string"}
+    assert by_name["screen_reads"]["inputSchema"]["required"] == ["r1", "db"]
     assert by_name["summary"]["inputSchema"]["required"] == ["files"]
     assert by_name["schema"]["inputSchema"]["required"] == ["name"]
     assert by_name["db_build"]["inputSchema"]["required"] == ["name", "fasta"]
@@ -174,6 +176,18 @@ def test_screen_call_rejects_missing_files_argument(datadir: Path) -> None:
     assert json.loads(response["result"]["content"][0]["text"])["code"] == "USAGE_ERROR"
 
 
+def test_screen_call_without_db_is_usage_error(datadir: Path) -> None:
+    """Given tools/call screen with files but no db (required since the
+    breaking change removed the ncbi default), When served, Then
+    isError=true with the gapit.error/1 USAGE_ERROR envelope."""
+    (response,) = exchange(tool_call("screen", {"files": [str(CONTIGS / "full.fa")]}))
+    assert response["result"]["isError"] is True
+    envelope = json.loads(response["result"]["content"][0]["text"])
+    assert envelope["schema"] == "gapit.error/1"
+    assert envelope["code"] == "USAGE_ERROR"
+    assert "db" in envelope["message"]
+
+
 def test_screen_call_honors_datadir_argument_without_env(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -222,7 +236,10 @@ def test_screen_call_merge_fragments_requires_blastn_aligner() -> None:
     """Given mergeFragments=true with aligner minimap2, When served, Then a
     usage error envelope (blastn-only parameter)."""
     (response,) = exchange(
-        tool_call("screen", {"files": ["x.fa"], "mergeFragments": True, "aligner": "minimap2"})
+        tool_call(
+            "screen",
+            {"files": ["x.fa"], "db": "tinyamr", "mergeFragments": True, "aligner": "minimap2"},
+        )
     )
     assert response["result"]["isError"] is True
     assert json.loads(response["result"]["content"][0]["text"])["code"] == "USAGE_ERROR"

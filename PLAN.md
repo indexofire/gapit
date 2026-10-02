@@ -177,6 +177,55 @@ consumes abricate-built datadirs.
   `scripts/cluster_calibration.py` developer harness (score distribution, agreement
   matrix, divergences) seeds the future learned_linear training loop (training itself
   out of scope). Parity 15/15 + summary 6/6 unchanged; no version bump.
+- **Typing framework stage 1 (2026-10-01, additive):** `gapit.typing/2` — named
+  multi-scheme documents (`schemes: [{name, rules, cutoff, ambiguity_margin,
+  fallback}]`, names `[a-z0-9_]+` unique; rule models unchanged). A `/1` document
+  degrades to one anonymous `default` scheme, so every existing typed cluster db and
+  stage-3 golden stays byte-identical (cluster path additionally requires exactly one
+  scheme: `gapit.cluster/1` has one phenotype slot). Gene-kind builds gain
+  `--typing` (DEC marker-panel pathway, `typing_gene.py`): weighted_genes rules only,
+  gene references validated against the FASTA records (TYPING_UNKNOWN_GENE at build
+  time), gene presence = best surviving blastn hit clearing the rule's identity_floor.
+  `gapit.report/1` gains the additive `files[].phenotypes` object keyed by scheme name
+  (JSON + Markdown only — the report TSV is abricate-parity frozen, deliberately no
+  phenotype column); untyped output byte-identical. `gapit.manifest/1` records the
+  installed spec's `typing_schema` tag. Typed gene dbs reject reads mode
+  (`--r1/--r2`, `--aligner minimap2`) as usage errors (contig-mode only, v1).
+  `gapit schema typing` now prints the /2 model. Stage 2 (planned) adds rule
+  primitives: exact_set / coverage_floor / unique_group / control_gene / compose.
+  Parity 15/15 + summary 6/6 unchanged; no version bump.
+- **Typing framework stages 2–3 (2026-10-01, additive; cycle complete):** stage 2 added
+  the six rule/scheme primitives (exact_set with the declaration-order 1.0-tie
+  exception, coverage_floor, control_gene, unique_group + mixed_phenotype, compose
+  schemes, rule notes; rule models split into `typing_rules.py`, the decision layer into
+  `typing_decide.py` at the 250-LOC ceiling). Stage 3 proves the framework encodes real
+  designation schemes: six researched schemes as validated example documents + synthetic
+  marker fixtures in `tests/data/typing/schemes/` (complete Doumith table with the
+  4b*/IVb-v1 HGT caveat, ShigaTyper-semantics Shigella/EIEC skeleton, meningotype panel
+  with the synG EX7E allele-probe trick at identity_floor 99.5, the VP O/K Kaptive
+  pattern — per-scheme cluster databases, the O3/O13 combined label, OUT/KUT fallbacks,
+  the `{o_group}:{k_group}` compose documented — V. cholerae O1/O139 + Ogawa/Inaba via
+  the wbeT single-SNP allele floor and the negative-wbeT Inaba rule with the wbfZ
+  junction-gene trap note, and a DEC placeholder awaiting the rightsholder's curated
+  panel), self-checked end to end by `test_typing_schemes*.py` with goldens per scheme
+  (doumith 4b, shigella mixed, vp O:K compose, cholerae inaba). New bilingual docs page
+  `docs/typing.md`/`typing.zh.md` (primitive reference, the cookbook with citations,
+  the allele probe-trick section and its future allele_match successor, calibration
+  pointer). DEC real content lands when the user supplies the rightsholder's reference
+  code. Parity 15/15 + summary 6/6 unchanged; no version bump.
+- **Two-stage designation CLI (2026-10-02, rightsholder design; one-cycle revert of the
+  gene-screen phenotypes surfaces — never released):** `gapit screen` is pure gene
+  detection (typed and untyped gene dbs screen byte-identically in every format; the
+  stage-1 `files[].phenotypes` object, the report TSV/CSV PHENOTYPE column, the MD
+  phenotype lines, and the typed-gene-db reads-mode guard are all gone), and the new
+  `gapit typing RESULT.tsv [...]` command designates from the screen table:
+  `typing_input.py` parses/folds per-FILE best rows (DATABASE_MISMATCH / TYPING_NO_DATA /
+  SCREEN_TABLE_MALFORMED at the boundary), `typing_ops.py` resolves the db and runs the
+  unchanged engine, `formats/typing_result.py` renders the new versioned
+  `gapit.typing_result/1` document (registered in the schema registry) plus the
+  seven-column TSV/MD table. Cluster typing stays integrated in `gapit screen`
+  (`TYPING_CLUSTER_DB` on the command). No typing MCP tool yet (future work). Parity
+  15/15 + summary 6/6 unchanged; no version bump.
 
 ## Milestones
 

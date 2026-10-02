@@ -23,7 +23,7 @@ from pydantic import TypeAdapter
 from typer.testing import CliRunner
 
 from gapit.cli import app
-from gapit.formats.json import Reads2Document, ReadsDocument
+from gapit.formats.reads_json import Reads2Document, ReadsDocument
 
 READS2_DB = Path(__file__).parent / "data" / "reads2_db"
 READS2 = Path(__file__).parent / "data" / "reads2"

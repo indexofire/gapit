@@ -1,0 +1,74 @@
+{
+  "schema": "gapit.typing/2",
+  "schemes": [
+    {
+      "name": "shigella",
+      "rules": [
+        {
+          "model": "exact_set",
+          "phenotype": "S. sonnei form I",
+          "requires": ["Ss_wzx", "Ss_wzy"],
+          "notes": [
+            "Declared before the form II rule: a form I sample carrying Ss_methylase (phase-variable antigen OFF) satisfies both at 1.0 and the exact_set tie resolves by declaration order"
+          ]
+        },
+        {
+          "model": "weighted_genes",
+          "phenotype": "S. sonnei form II",
+          "weights": {"Ss_methylase": 1.0},
+          "identity_floor": 90.0,
+          "notes": [
+            "Form II: the form-I antigen is phase-variable via Ss_methylase and no panel wzx is detected (ShigaTyper checkpoint semantics)"
+          ]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "S. dysenteriae 1",
+          "requires": ["Sd1_wzx", "Sd1_rfp"],
+          "notes": [
+            "Sd1_rfp intact; an rfp-negative strain (phenotypically antigen-1-negative, ShigaTyper reports 'rfp-') needs its own Sd1_wzx-only rule in a full panel"
+          ]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "S. flexneri 2a",
+          "requires": ["Sf_wzx", "Sf_wzy", "gtrII"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "S. flexneri 2b",
+          "requires": ["Sf_wzx", "Sf_wzy", "gtrII", "gtrX"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "S. flexneri 3a",
+          "requires": ["Sf_wzx", "Sf_wzy", "gtrX", "Oac"]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "S. flexneri Y/novel",
+          "requires": ["Sf_wzx", "Sf_wzy"],
+          "excludes": ["gtrII", "gtrX", "Oac"],
+          "notes": [
+            "Catch-all for the S. flexneri base without a listed conversion set: with a full gtr/Oac panel this splits into Y (no conversion genes) and ShigaTyper's 'novel serotype' (unlisted conversion set)"
+          ]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "EIEC",
+          "requires": ["EclacY"],
+          "excludes": ["Sb9_wzx", "Sb15_wzx"],
+          "notes": [
+            "Approximation of ShigaTyper checkpoint 3 (Wu et al. 2019, Appl Environ Microbiol 85:e00165-19): EIEC = lacY+ with the S. boydii 9/15 exemptions excluded; cadA and ipaB plasmid-coverage nuances are not modelled"
+          ]
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "not Shigella or EIEC",
+      "control_gene": "ipaH_c",
+      "unique_group": {"wzx": ["Ss_wzx", "Sf_wzx", "Sd1_wzx", "Sb9_wzx", "Sb15_wzx"]},
+      "mixed_phenotype": "mixed Shigella serotypes"
+    }
+  ]
+}

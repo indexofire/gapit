@@ -47,12 +47,14 @@ def db_fetch_command(
     datadir: Datadir = None,
     force: Annotated[
         bool,
-        typer.Option("--force", help="Overwrite the database if it already exists."),
+        typer.Option("--force", "-f", help="Overwrite the database if it already exists."),
     ] = False,
-    quiet: Annotated[bool, typer.Option("--quiet", help="Silence stderr diagnostics.")] = False,
+    quiet: Annotated[
+        bool, typer.Option("--quiet", "-q", help="Silence stderr diagnostics.")
+    ] = False,
     debug: Annotated[
         bool,
-        typer.Option("--debug", help="Echo external command lines to stderr."),
+        typer.Option("--debug", "-v", help="Echo external command lines to stderr."),
     ] = False,
 ) -> None:
     """Fetch and build database(s) into <datadir>/NAME.
@@ -77,7 +79,7 @@ def db_list_command(
     datadir: Datadir = None,
     as_json: Annotated[
         bool,
-        typer.Option("--json", help="Print machine-readable JSON instead of a table."),
+        typer.Option("--json", "-J", help="Print machine-readable JSON instead of a table."),
     ] = False,
 ) -> None:
     """List known databases (NAME, upstream PROVIDER) and their installed state."""

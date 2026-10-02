@@ -27,7 +27,7 @@ gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map
 ## 选项
 
 reads 模式走同一条 `gapit screen` 命令；以下是适用的参数（转写自 `gapit screen
---help`，gapit 0.4.0）。这里未列出的 contig 模式参数（`--minid`、`--mincov`、
+--help`，gapit 0.5.0）。这里未列出的 contig 模式参数（`--minid`、`--mincov`、
 `--jobs`、`--fofn`、`--noheader`、`--nopath`）不适用。
 
 | 参数 | 类型 | 默认值 | 说明 |
@@ -38,7 +38,7 @@ reads 模式走同一条 `gapit screen` 命令；以下是适用的参数（转�
 | `--min-breadth` | float | `90.0` | 判定存在的最小广度百分比。 |
 | `--min-identity` | float | `0.0`（关闭） | 单条比对的最小一致性百分比（0-100）；任意非零值开启 gapit.reads/2 过滤（见下文）。 |
 | `--min-mapq` | int | `0`（关闭） | 单条比对的最小 MAPQ；任意非零值开启 gapit.reads/2 过滤。 |
-| `--db` | str | `ncbi` | 用于筛查的数据库（数据目录的子目录）。 |
+| `--db` | str | 必填 | 用于筛查的数据库（数据目录的子目录）。没有默认值 —— 请显式选择（`gapit db list`）。 |
 | `--datadir` | path | `$GAPIT_DATADIR`，然后 `~/.local/share/gapit/db` | 数据库目录。 |
 | `--threads` | int | `1` | minimap2 工作线程数。 |
 | `--quiet` | 开关 | 关闭 | 静默 stderr 诊断（包括 assembly-FASTA 提示）。 |
@@ -215,7 +215,7 @@ Markdown 形式：
 $ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format md --quiet
 ---
 schema: gapit.reads/2
-tool: gapit 0.4.0
+tool: gapit 0.5.0
 created_at: 2026-09-20T14:23:33Z
 db: homologs
 read_type: map-ont
@@ -254,7 +254,7 @@ Detected 1 present genes in tetx_full.fq
   "schema": "gapit.reads/1",
   "tool": {
     "name": "gapit",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "created_at": "2026-09-19T01:12:25Z",
   "params": {
@@ -351,7 +351,7 @@ $ gapit screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --quiet
 $ gapit screen --r1 tetx_full.fq --db tinyreads --format md
 ---
 schema: gapit.reads/1
-tool: gapit 0.4.0
+tool: gapit 0.5.0
 created_at: 2026-09-19T01:12:25Z
 db: tinyreads
 read_type: sr
@@ -445,7 +445,7 @@ Detected 2 present genes in /tmp/gapit-demo/assembly.fa
   "schema": "gapit.reads/1",
   "tool": {
     "name": "gapit",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "created_at": "2026-09-19T14:23:00Z",
   "params": {
@@ -503,7 +503,7 @@ minimap2 一段完全跳过 BLAST 索引，把 assembly 送进 minimap2 引擎�
    性应用一致性与覆盖度下限。
 
 真实数字，一株 K. pneumoniae RefSeq assembly（GCF_000240185.1，5.3 Mb，`--db ncbi`，
-单线程，gapit 0.4.0）：
+单线程，gapit 0.5.0）：
 
 ```console
 $ # Stage 1: survey, ~0.9 s
