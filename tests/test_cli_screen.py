@@ -204,10 +204,11 @@ def test_no_input_files_exits_2(datadir: Path) -> None:
 def test_missing_db_option_is_usage_error_exit_2(tmp_path: Path) -> None:
     """Given a screen invocation without --db (no default since the
     breaking change), When run, Then typer's missing-option usage error
-    exits 2 and no data reaches stdout."""
+    exits 2 and no data reaches stdout (ANSI-stripped: GITHUB_ACTIONS
+    styling splits the option token)."""
     result = runner.invoke(app, ["screen", str(CONTIGS / "full.fa"), "--datadir", str(tmp_path)])
     assert result.exit_code == 2
-    combined = result.stdout + result.stderr
+    combined = ANSI_STYLE.sub("", result.stdout + result.stderr)
     assert "--db" in combined
     assert result.stdout == ""
 
