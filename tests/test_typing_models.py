@@ -608,20 +608,20 @@ class TestComposeValidation:
 
 
 class TestStage2References:
-    def document_with(self, scheme: dict[str, object]) -> TypingDocument:
-        return read_typing_document(write_document(Path("/tmp/opencode"), v2_document([scheme])))
+    def document_with(self, scheme: dict[str, object], tmp_path: Path) -> TypingDocument:
+        return read_typing_document(write_document(tmp_path, v2_document([scheme])))
 
-    def test_unknown_exact_set_gene_raises(self) -> None:
+    def test_unknown_exact_set_gene_raises(self, tmp_path: Path) -> None:
         """Given an exact_set rule referencing a gene the features lack,
         When validated, Then TYPING_UNKNOWN_GENE names the gene and rule."""
         scheme = scheme_document("doumith") | {"rules": [EXACT_SET_RULE]}
         with pytest.raises(DatabaseError) as raised:
-            validate_references(self.document_with(scheme), FEATURES)
+            validate_references(self.document_with(scheme, tmp_path), FEATURES)
         assert raised.value.code == "TYPING_UNKNOWN_GENE"
         assert raised.value.context["gene"] == "orf2110"
         assert raised.value.context["rule"] == "4b-4d-4e"
 
-    def test_unknown_requires_any_gene_raises(self) -> None:
+    def test_unknown_requires_any_gene_raises(self, tmp_path: Path) -> None:
         """Given an exact_set rule whose requires_any references a gene the
         features lack, When validated, Then TYPING_UNKNOWN_GENE (the any-of
         set is checked like every other gene reference)."""
@@ -633,11 +633,11 @@ class TestStage2References:
         }
         scheme = scheme_document("dec") | {"rules": [rule]}
         with pytest.raises(DatabaseError) as raised:
-            validate_references(self.document_with(scheme), FEATURES)
+            validate_references(self.document_with(scheme, tmp_path), FEATURES)
         assert raised.value.code == "TYPING_UNKNOWN_GENE"
         assert raised.value.context["gene"] == "aggR"
 
-    def test_unknown_control_gene_raises(self) -> None:
+    def test_unknown_control_gene_raises(self, tmp_path: Path) -> None:
         """Given a scheme whose control gene is not in the features, When
         validated, Then TYPING_UNKNOWN_GENE names the scheme."""
         scheme = scheme_document("doumith") | {
@@ -645,12 +645,12 @@ class TestStage2References:
             "control_gene": "ipaH",
         }
         with pytest.raises(DatabaseError) as raised:
-            validate_references(self.document_with(scheme), FEATURES)
+            validate_references(self.document_with(scheme, tmp_path), FEATURES)
         assert raised.value.code == "TYPING_UNKNOWN_GENE"
         assert raised.value.context["scheme"] == "doumith"
         assert raised.value.context["gene"] == "ipaH"
 
-    def test_unknown_unique_group_member_raises(self) -> None:
+    def test_unknown_unique_group_member_raises(self, tmp_path: Path) -> None:
         """Given a unique group with a member the features lack, When
         validated, Then TYPING_UNKNOWN_GENE names the scheme."""
         scheme = scheme_document("o_group") | {
@@ -659,11 +659,11 @@ class TestStage2References:
             "mixed_phenotype": "mixed",
         }
         with pytest.raises(DatabaseError) as raised:
-            validate_references(self.document_with(scheme), FEATURES)
+            validate_references(self.document_with(scheme, tmp_path), FEATURES)
         assert raised.value.code == "TYPING_UNKNOWN_GENE"
         assert raised.value.context["gene"] == "wzx_o1"
 
-    def test_gene_build_checks_scheme_genes(self) -> None:
+    def test_gene_build_checks_scheme_genes(self, tmp_path: Path) -> None:
         """Given a gene-path document whose unique group references a gene
         the FASTA lacks, When the build validates, Then
         TYPING_UNKNOWN_GENE names the scheme."""
@@ -673,6 +673,6 @@ class TestStage2References:
             "mixed_phenotype": "mixed",
         }
         with pytest.raises(DatabaseError) as raised:
-            validate_gene_typing(self.document_with(scheme), frozenset({"prs"}))
+            validate_gene_typing(self.document_with(scheme, tmp_path), frozenset({"prs"}))
         assert raised.value.code == "TYPING_UNKNOWN_GENE"
         assert raised.value.context["scheme"] == "o_group"
