@@ -2,7 +2,9 @@
 
 `gapit screen --r1/--r2` maps raw FASTQ reads, or whole assembly FASTA files, against a gene
 database with minimap2 and calls gene presence from alignment breadth. abricate cannot screen
-reads at all; this mode is a gapit extension, so its defaults differ from the contig pipeline.
+reads at all; this mode is a gapit extension — its presence threshold (`--min-breadth`)
+differs from the contig pipeline's identity/coverage floors, while the output-format default
+(tsv) is the same human default as everywhere else.
 
 Requires no BLAST indexing: minimap2 indexes the db `sequences` FASTA in memory. Databases:
 [./databases.md](./databases.md). Contig mode: [./screen.md](./screen.md).
@@ -17,7 +19,8 @@ gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map
 - Lane i pairs `r1[i]` with `r2[i]`, so the `--r2` count must equal the `--r1` count.
 - All lanes aggregate into one sample: per-gene metrics pool every lane's alignments, and a
   gene can reach the breadth threshold through the union of sub-threshold lanes.
-- Reads mode and positional contig files are mutually exclusive; `--r2` without `--r1` is a
+- Reads mode and positional contig files are mutually exclusive — except for the all-FASTQ
+  wildcard below, which enters reads mode positionally. `--r2` without `--r1` is a
   usage error (exit 2). Gzipped input works.
 - **Input detection.** Each `--r1`/`--r2` file is detected from content at validation time:
   the first non-whitespace byte `>` means FASTA, `@` means FASTQ (gzip-wrapped files are
@@ -25,11 +28,96 @@ gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map
   `INVALID_READS_FORMAT`. Mixing FASTA and FASTQ within one `--r1` list, pairing FASTA with
   `--r2`, or giving FASTA an explicit `sr`/`map-hifi` preset are usage errors (exit 2).
 
+## Screening a wildcard of FASTQ files (auto-paired samples)
+
+`--r1`/`--r2` name the lanes yourself. For batch jobs it is simpler to hand `screen` the
+shell's glob and let gapit infer the samples:
+
+```console
+$ gapit screen -d ecoli_dec *.gz
+```
+
+When **every** positional file is FASTQ — a `.fastq`/`.fq` extension (optionally `.gz`), or
+content that sniffs as FASTQ when the extension is ambiguous — the command enters reads mode
+without `--r1`/`--r2`. Files are grouped into samples by filename, after stripping the read
+extension (case-insensitive):
+
+| Mate markers (longest suffix wins) | Example pair | Sample key |
+|---|---|---|
+| `_R1_001` / `_R2_001` (bcl2fastq) | `run_S1_L001_R1_001.fastq.gz` + `run_S1_L001_R2_001.fastq.gz` | `run_S1_L001` — an `_L00x` lane tag stays part of the sample |
+| `_R1` / `_R2` | `s2_R1.fq.gz` + `s2_R2.fq.gz` | `s2` |
+| `_1` / `_2` | `s1_1.fq.gz` + `s1_2.fq.gz` | `s1` |
+| `.1` / `.2` | `a.1.fastq` + `a.2.fastq` | `a` |
+
+Marker matching is case-insensitive. A file with no detectable marker is its own single-end
+sample keyed by its stripped stem. The document carries **one `files[]` entry per sample**
+(each entry's `reads` field holds the sample key; the lane files are listed on stderr), with
+per-gene metrics unioned over that sample's lanes:
+
+```json
+"files": [
+  {"reads": ["s1"], "genes": [{"gene": "tetX", "...": "..."}]},
+  {"reads": ["s2"], "genes": [{"gene": "tetX", "...": "..."}]}
+]
+```
+
+- **Unpairable files warn, never error.** A marked file whose mate is missing from the glob
+  screens single-end with one stderr `WARNING: no mate found for X — screening single-end`
+  (silenced by `--quiet`); same for marker-less files.
+- **Duplicate identical basenames merge** as extra lanes of one sample (multi-lane runs in
+  separate lane directories), paired in sorted order; surplus files fall back to single-end
+  with the warning.
+- Samples sort lexicographically, so the output is deterministic regardless of glob order.
+- The reads-mode guards apply unchanged for `--minid`/`--mincov`, `--fofn`, `--noheader`,
+  `--nopath`, and `--merge-fragments`; `--min-identity`/`--min-mapq` work (they are
+  reads-mode flags here, not errors). `--jobs` is legal ONLY on this wildcard path (the
+  `--r1`/`--r2` single-sample invocation rejects it) — see
+  [Parallelism and streaming](#parallelism-and-streaming-wildcard-batches) below.
+- `--read-type` resolves exactly as on the `--r1`/`--r2` path: content detection picks `sr`
+  for FASTQ unless you set a preset.
+- Mixing FASTA and FASTQ positionals is a usage error (exit 2) naming the reads files:
+  `mixed assembly and reads inputs; screen them separately: ...`. An explicit
+  `--aligner blastn` or `--aligner minimap2` keeps its own routing (the engines' frozen
+  guards apply); the wildcard auto-detect is a default-engine behavior.
+- bzip2-compressed FASTQ names are not classified from extension (the reads engine reads
+  plain and gzipped input); such files keep the contig pipeline they have today.
+
+### Parallelism and streaming (wildcard batches)
+
+`--jobs N`/`-j N` screens N samples concurrently, with the contig path's exact contract:
+each worker runs its own minimap2 against the shared db, `--jobs × --threads` beyond the
+cpu count draws one stderr oversubscription note, and a sample's failure raises at its
+position in sample order (exit code and envelope identical to the sequential run). Results
+always come out in sample order — `-j 8` stdout is byte-identical to `-j 1`.
+
+Output streams per completed sample, head-of-line in sample order under `--jobs`:
+
+- **tsv** (the default) streams: the `#SAMPLE` header line leads, then each sample's gene
+  rows land the moment that sample's screening completes (one row per gene, sample key in
+  the first column; a gene-less sample contributes none). `--format csv` is the comma
+  spelling of the same table. tsv is the human default on every gapit surface — the
+  single-sample `--r1`/`--r2` and `--aligner minimap2` paths default to it too; pass
+  `--format json` instead when you want the single document for an agent.
+- **md** leads with a STATIC frontmatter (schema, tool, `created_at`, db, thresholds — no
+  run totals on this path; they live in the JSON document), then one `## <sample>` section
+  the moment that sample's screening completes.
+- **json** (opt-in on this path) stays a single document written once at the end — the
+  same rule as the contig path's json.
+- `--output PATH` writes the streamed chunks incrementally (each chunk flushed; stdout
+  then carries no data). If sample *k* fails mid-batch, samples 1..*k-1* persist in the
+  file — the json variant renders nothing at all, since its single document only exists
+  at the end.
+
+The single-sample `--r1`/`--r2` path differs on two points: no `--jobs`, and its Markdown
+frontmatter keeps the `files:`/`genes_found:` totals (its tsv default renders the same
+table, one chunk for the one sample).
+
 ## Options
 
 Reads mode runs through the same `gapit screen` command; these are the flags that apply
 (transcribed from `gapit screen --help`, gapit 0.5.0). Contig-mode flags not listed here
-(`--minid`, `--mincov`, `--jobs`, `--fofn`, `--noheader`, `--nopath`) do not apply.
+(`--minid`, `--mincov`, `--fofn`, `--noheader`, `--nopath`) do not apply; `--jobs` applies
+to the wildcard path only.
 
 | Flag | Type | Default | Description |
 |---|---|---|---|
@@ -42,9 +130,10 @@ Reads mode runs through the same `gapit screen` command; these are the flags tha
 | `--db` | str | required | Database to screen against (datadir subdir). No default — pick one explicitly (`gapit db list`). |
 | `--datadir` | path | `$GAPIT_DATADIR`, then `~/.local/share/gapit/db` | Database directory. |
 | `--threads` | int | `1` | minimap2 worker threads. |
+| `--jobs` | int | `1` | Wildcard path only: screen N samples concurrently (`--r1`/`--r2` rejects it). Output order is always sample order. |
 | `--quiet` | flag | off | Silence stderr diagnostics (including the assembly-FASTA note). |
 | `--debug` | flag | off | Verbose stderr diagnostics; echoes the minimap2 command line. |
-| `--format` | tsv\|csv\|json\|md | `json` | Output format. `tsv` and `csv` are rejected in reads mode. |
+| `--format` | tsv\|csv\|json\|md | `tsv` | Output format. Reads default to the streaming tsv table (csv = comma spelling) on every path; `--format json` is the agent's single `gapit.reads/1`(+`/2`) document, `--format md` the Markdown form. |
 
 `--minid` and `--mincov` do NOT apply to reads mode. Presence is decided by breadth only.
 
@@ -83,16 +172,33 @@ you may also want to lower it. Per-read identity and MAPQ filtering are opt-in v
 
 ## Output
 
-The default is JSON, schema `gapit.reads/1`:
+By default the reads table lists **present genes only** (the `PRESENT` column is
+therefore always `yes`); `--all-genes` / `-A` adds the absent calls (breadth below
+the threshold). The table's last column is `PRODUCT` (the contig table keeps the
+abricate `RESISTANCE` column; reads tables do not carry it).
+
+
+The default is the streaming **tsv** table (tsv is the human default on every gapit surface;
+`--format csv` is its comma spelling):
+
+```console
+$ gapit screen --r1 tetx_full.fq --db tinyreads
+Screening reads: tetx_full.fq
+Detected 1 present genes in tetx_full.fq
+#SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
+tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determinant tetX	TETRACYCLINE
+```
+
+(The `Screening reads:`/`Detected` lines are stderr; stdout is the table.)
+
+`--format json` produces the versioned agent document, schema `gapit.reads/1`:
 
 - `files[]` mirrors the input: each entry lists the reads it screened and the genes found.
 - Gene entries sort by `breadth_pct` descending, then gene name.
 - Introspect the schema with `gapit schema reads`; details in
   [./outputs.md](./outputs.md).
 
-`--format md` produces the Markdown form with YAML frontmatter. `--format tsv` and `--format
-csv` are rejected: reads results are nested per sample, not flat rows, so there is no
-abricate-shaped table to emit. The refusal is a usage error, exit 2, with the usual envelope.
+`--format md` produces the Markdown form with YAML frontmatter.
 
 ## Filtering alignments by identity and MAPQ (gapit.reads/2)
 
@@ -142,7 +248,7 @@ $ mkdir -p /tmp/gapit-demo/readdb
 $ cp -r tests/data/reads2_db/homologs /tmp/gapit-demo/readdb/
 $ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
 $ cd tests/data/reads2
-$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --quiet
+$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -181,7 +287,7 @@ $ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --quiet
 the true gene's ~98% alignments:
 
 ```console
-$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --quiet
+$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format json --quiet
 {
   "schema": "gapit.reads/2",
   ...
@@ -258,6 +364,15 @@ $ cd tests/data/reads
 $ gapit screen --r1 tetx_full.fq --db tinyreads
 Screening reads: tetx_full.fq
 Detected 1 present genes in tetx_full.fq
+#SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
+tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determinant tetX	TETRACYCLINE
+```
+
+(The `Screening reads:` and `Detected N present genes` lines are stderr; stdout is the
+table. `--format json` swaps in the versioned document:
+
+```console
+$ gapit screen --r1 tetx_full.fq --db tinyreads --format json
 {
   "schema": "gapit.reads/1",
   "tool": {
@@ -295,15 +410,13 @@ Detected 1 present genes in tetx_full.fq
 }
 ```
 
-The `Screening reads:` and `Detected N present genes` lines are stderr; stdout is pure JSON.
-
 ### Paired-end and multiple lanes
 
 One paired lane: pass both mates. Two single-end lanes as one sample: comma-join them. Both
 aggregate to the same result here:
 
 ```console
-$ gapit screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --quiet
+$ gapit screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -326,7 +439,7 @@ $ gapit screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --quiet
     }
   ]
 }
-$ gapit screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --quiet
+$ gapit screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -385,7 +498,7 @@ reported with `present: false`; lowering the threshold flips the call without to
 metrics:
 
 ```console
-$ gapit screen --r1 suly_partial.fq --db tinyreads --quiet
+$ gapit screen --r1 suly_partial.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -401,7 +514,7 @@ $ gapit screen --r1 suly_partial.fq --db tinyreads --quiet
     }
   ]
 }
-$ gapit screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --quiet
+$ gapit screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -419,13 +532,18 @@ $ gapit screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --quiet
 }
 ```
 
-### TSV and CSV are rejected
+### The default table
+
+The default run IS the table (tsv is the human default on every gapit surface; `--format
+csv` is the comma spelling):
 
 ```console
-$ gapit screen --r1 tetx_full.fq --db tinyreads --format tsv; echo "exit=$?"
-{"schema":"gapit.error/1","code":"USAGE_ERROR","message":"--format tsv|csv is not available in reads mode (use json or md)","context":{}}
-exit=2
+$ gapit screen --r1 tetx_full.fq --db tinyreads
+#SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
+tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determinant tetX	TETRACYCLINE
 ```
+
+The sample key leads; pass `--format json` when an agent needs the versioned document.
 
 ## Screening assemblies (fast presence survey)
 
@@ -437,8 +555,9 @@ FASTQ; what changes is the preset: content detection forces `map-ont` (a contigu
 contig, for example, aligns to only ~14% of its gene under `sr` because short-read soft-clipping
 wrecks long-query alignments), and gapit says so on stderr. Each contig acts as one long read:
 `reads_mapped` counts contigs, `mean_depth` hovers around the covered fraction, and `present`
-still means `breadth_pct >= --min-breadth`. The output stays `gapit.reads/1`;
-`params.read_type` reports the resolved preset.
+still means `breadth_pct >= --min-breadth`. The document stays `gapit.reads/1`;
+`params.read_type` reports the resolved preset. The default output is the streaming tsv
+table (one chunk, the one sample); `--format json` gives the document shown below.
 
 Using the tinyreads fixture as a stand-in assembly (any multi-contig FASTA behaves the same):
 
@@ -447,7 +566,7 @@ $ mkdir -p /tmp/gapit-demo/readdb
 $ cp -r tests/data/reads_db/tinyreads /tmp/gapit-demo/readdb/
 $ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
 $ cp tests/data/reads_db/tinyreads/sequences /tmp/gapit-demo/assembly.fa
-$ gapit screen --aligner minimap2 /tmp/gapit-demo/assembly.fa --db tinyreads
+$ gapit screen --aligner minimap2 /tmp/gapit-demo/assembly.fa --db tinyreads --format json
 assembly FASTA detected; using map-ont
 Screening reads: /tmp/gapit-demo/assembly.fa
 Detected 2 present genes in /tmp/gapit-demo/assembly.fa
@@ -518,7 +637,7 @@ single-threaded, gapit 0.5.0):
 
 ```console
 $ # Stage 1: survey, ~0.9 s
-$ gapit screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 50 --quiet
+$ gapit screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 50 --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...

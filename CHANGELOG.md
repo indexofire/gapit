@@ -5,6 +5,126 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Illumina FASTQ wildcard support: `gapit screen -d ecoli_dec *.gz` screens a shell glob
+  of reads without `--r1`/`--r2`** (rightsholder batch workflow). When every positional file
+  is FASTQ — a `.fastq`/`.fq` (± `.gz`) extension, or content sniffed as FASTQ when the
+  extension is ambiguous (via the existing `detect_read_kind`; known contig extensions and
+  garbage content keep today's contig pipeline untouched) — the command enters reads mode
+  and auto-pairs samples from filenames (`gapit.readpairs`, new): mate markers `_R1_001`/
+  `_R2_001` (bcl2fastq; an `_L00x` lane tag stays in the sample key), `_R1`/`_R2`, `_1`/`_2`,
+  `.1`/`.2`, all case-insensitive, longest suffix first, extensions `.fastq`/`.fq` ×
+  `.gz`/`.bz2` stripped before matching. The document carries one `files[]` entry per sample
+  (`reads[]` holds the sample key; per-gene metrics union over the sample's lanes; samples
+  sorted lexicographically). A file whose mate is missing, or with no detectable marker,
+  screens single-end with a quiet-respecting stderr `WARNING: no mate found for X —
+  screening single-end` — a warning, never an error. Duplicate identical basenames merge as
+  extra lanes of one sample. Mixing FASTA and FASTQ positionals is a usage error naming the
+  reads files; the reads-mode guards fire as on `--r1`/`--r2` (`--minid`/`--mincov`,
+  `--merge-fragments`, ... rejected), while `--min-identity`/`--min-mapq` now work on this
+  path (gapit.reads/2). `--read-type` keeps
+  the content-based preset resolution (`sr` for FASTQ). **`--jobs` is legal on this path
+  only** (the `--r1`/`--r2` single-sample invocation keeps the frozen rejection): samples
+  screen concurrently through a ThreadPoolExecutor whose positional yields keep output in
+  sample order byte-identical to `-j 1` (a failing sample raises at its position; the
+  `--jobs × --threads` oversubscription stderr note and the `--jobs >= 1` validation mirror
+   the contig path). **Output defaults to streaming tsv on this path**: the `#SAMPLE` header
+   leads, then each sample's gene rows land the moment its screening completes (`--format
+   csv` is the comma spelling), so a terminal shows per-sample results as they arrive; json
+   stays the opt-in single document written at the end (`--format json`; since the same
+   cycle's format-unification it is the opt-in on the `--r1`/`--r2` path too — see Changed).
+   md emits
+  a static frontmatter first (no run totals on this path — totals live in the JSON
+  document; the `--r1`/`--r2` render keeps its `files:`/`genes_found:` frontmatter
+  unchanged) then one `## <sample>` section per completed sample, head-of-line in sample
+  order under `--jobs`; `--output` writes the streamed chunks incrementally, so a
+  mid-batch failure persists samples 1..k-1 (tsv/md) and nothing at all (json). The
+  single-sample `--r1`/`--r2` path, the blastn contig path, and
+  the explicit `--aligner` routings are unchanged.
+- **`gapit typing` closes every TSV/MD row with a `GENES` column and `gapit.typing_result/1`
+  gains the additive per-file `genes` list** (schema stays `/1`; additive field, the
+  0.5.0 shape unchanged otherwise): the FILE's present gene names — the folded best hits the
+  designation ran on — sorted alphabetically and `;`-joined, repeated on each of the FILE's
+  scheme rows so each call is auditable against the hits that drove it. JSON carries the same
+  list as `files[].genes`.
+- **`gapit summary` reads its report table from stdin** — the pipe twin of `gapit typing`:
+  `gapit screen -d ecoli_dec *.fna --quiet | gapit summary` summarizes the batched screen
+  output straight off the pipe (a piped table is one input, so dutch mode applies — one row
+  per FILE value, byte-identical to summarizing the `-o`-written table). Stdin is read
+  whenever stdin is not a terminal; a bare invocation at a terminal keeps printing help;
+  `gapit summary -` is the explicit stdin marker (reads until EOF even under a terminal);
+  mixing `-` with file arguments is a usage error; non-UTF-8 stdin is the `SUMMARY_MALFORMED`
+  envelope naming `-`. The flag-but-no-file invocation (`summary --quiet` with a pipe) now
+  reads stdin instead of the former USAGE_ERROR.
+
+- **`--db` now also answers to the word-style alias `-db`** (on `gapit screen` and
+  `gapit db search`): `-db ecoli_dec` parses exactly like `--db ecoli_dec`, matching the
+  tar-style single-dash habit that previously misparsed as `-d b` + a positional. The
+  space-separated form is the supported one — click binds an attached `-dbecoli_dec` to
+  `-d` with value `becoli_dec` (the original failure), which the new guard below catches.
+
+### Fixed
+
+- **A positional argument that names a known database but is missing on disk now fails with
+  a targeted usage error (exit 2)** instead of the generic INPUT_NOT_FOUND (exit 5) plus a
+  starved downstream pipe: `gapit screen -d b ecoli_dec X.fna` (the stripped `-db` misparse
+  shape) reports `input file not found: 'ecoli_dec' — it is a database NAME; screen takes
+  databases via --db/-d/-db (e.g. --db ecoli_dec), positional arguments are genome files`.
+  Database names are matched against the provider catalog, bundled wheel content, and
+  installed datadir databases; ordinary missing files keep today's INPUT_NOT_FOUND.
+
+### Changed
+
+- **Breaking: `gapit screen` reads mode now defaults to streaming tsv on EVERY path** —
+  `--r1`/`--r2` and `--aligner minimap2` join the positional wildcard (and the blastn contig
+  path) with tsv as the human default; json/md are the explicit agent opt-ins. tsv is the
+  human default on every surface; json (`gapit.reads/1`/`2`) and md are the opt-ins for
+  agents. The default output is the same streaming `#SAMPLE` table the wildcard emits (one
+  chunk for the single sample; preamble + chunk compose exactly the buffered render);
+  `--format csv` is the comma spelling, `--format json`/`--format md` unchanged. The former
+  reads json default shipped ≤0.5.0 — invocations that relied on it must now pass
+  `--format json` (the tsv/csv reads-mode usage rejection is gone with it). The MCP
+  `screen`/`screen_reads` tools are unchanged: they pass `format` explicitly and still
+  return json by default (the agents' surface).
+
+## [Unreleased]
+
+### Added
+
+- `gapit summary --coverage` / `-c`: cells show %COVERAGE values (`;`-joined), reproducing the
+  classic abricate `--summary` cell shape byte-for-byte (the parity harness now runs in this
+  mode). `-ic` combines both metrics: each hit renders `identity/coverage`. `gapit typing` TSV/MD: the `GENES` column moved to follow `PHENOTYPE`
+  (was last; additive JSON `files[].genes` unchanged).
+
+### Changed
+
+- **Breaking**: `gapit summary` default cells are now the presence call (`+` / `-`) instead of
+  %COVERAGE values — pass `--coverage` to restore the previous cell shape.
+
+### Changed
+
+- **Project stance**: from v0.5.0 onward gapit pursues its own contract — abricate parity is no
+  longer a design goal. The contig TSV stays a frozen historical baseline (kept for existing
+  pipelines); the parity harness is a regression reference, not a release gate. New surfaces may
+  diverge from abricate by design. (AGENTS.md updated accordingly.)
+- Reads tables: the default lists present genes only (`--all-genes` / `-A` adds absent
+  calls) and the last column is `PRODUCT` (the `RESISTANCE` column is dropped from reads
+  tables; the contig table keeps it).
+
+### Fixed
+
+- **Reads-mode breadth accuracy (26ECO0071 astA)**: minimap2 now always runs with `--cs`
+  and the `sr` preset carries `-k11 -w6 -B2`. Two stacked defects silently dropped
+  diverged-allele genes from FASTQ screening (the assembly/BLAST path found astA, reads did
+  not): (1) the stock `sr` seed (k=21) finds no exact run on a ~90%-identity 117 bp gene —
+  zero alignments regardless of scoring; (2) minimap2's no-CIGAR mode emits clipped
+  alignment coordinates (57% vs 100% breadth on the same data). Presence calls and typing
+  inputs derived from reads screening change accordingly; the reads goldens were regenerated
+  deliberately.
+
 ## [0.5.0] - 2026-10-02
 
 ### Breaking

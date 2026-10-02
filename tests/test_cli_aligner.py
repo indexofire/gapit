@@ -78,9 +78,10 @@ def test_matrix_positional_fasta_with_minimap2_runs_reads_engine(
     reads_datadir: Path,
 ) -> None:
     """Given a positional assembly FASTA with --aligner minimap2 (row 2), When
-    screened, Then the minimap2 engine runs: gapit.reads/1 JSON with the
-    resolved map-ont preset and the detection note on stderr only."""
-    result = screen_reads(reads_datadir, "--aligner", "minimap2", str(ASSEMBLY))
+    screened, Then the minimap2 engine runs: gapit.reads/1 JSON (explicit
+    opt-in; the default is the tsv table) with the resolved map-ont preset and
+    the detection note on stderr only."""
+    result = screen_reads(reads_datadir, "--aligner", "minimap2", "--format", "json", str(ASSEMBLY))
     assert result.exit_code == 0
     document = reads_adapter.validate_json(result.stdout)
     assert document.schema_name == "gapit.reads/1"
@@ -130,9 +131,10 @@ def test_matrix_reads_default_is_minimap2(
     reads_datadir: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given --r1 FASTQ with no --aligner (row 4), When screened, Then the
-    reads path runs unchanged (gapit.reads/1, sr preset)."""
+    reads path runs unchanged (gapit.reads/1 under explicit --format json,
+    sr preset)."""
     monkeypatch.chdir(READS)
-    result = screen_reads(reads_datadir, "--r1", "tetx_full.fq")
+    result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--format", "json")
     assert result.exit_code == 0
     document = reads_adapter.validate_json(result.stdout)
     assert document.schema_name == "gapit.reads/1"
@@ -146,8 +148,10 @@ def test_matrix_reads_minimap2_explicit_is_equivalent(
     valid), When compared to the default run, Then the reads documents are
     identical apart from the wall-clock timestamp."""
     monkeypatch.chdir(READS)
-    explicit = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--aligner", "minimap2")
-    default = screen_reads(reads_datadir, "--r1", "tetx_full.fq")
+    explicit = screen_reads(
+        reads_datadir, "--r1", "tetx_full.fq", "--aligner", "minimap2", "--format", "json"
+    )
+    default = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--format", "json")
     assert explicit.exit_code == 0
     assert default.exit_code == 0
     assert reads_document(explicit) == reads_document(default)
@@ -181,7 +185,14 @@ def test_minimap2_positional_read_type_map_ont_is_silent(reads_datadir: Path) ->
     positional FASTA, When screened, Then it succeeds with no detection note
     (the user already chose the preset)."""
     result = screen_reads(
-        reads_datadir, "--aligner", "minimap2", "--read-type", "map-ont", str(ASSEMBLY)
+        reads_datadir,
+        "--aligner",
+        "minimap2",
+        "--read-type",
+        "map-ont",
+        "--format",
+        "json",
+        str(ASSEMBLY),
     )
     assert result.exit_code == 0
     assert "assembly FASTA detected" not in result.stderr
@@ -190,26 +201,43 @@ def test_minimap2_positional_read_type_map_ont_is_silent(reads_datadir: Path) ->
 
 
 def test_minimap2_positional_min_breadth_applies(reads_datadir: Path) -> None:
-    """Given --aligner minimap2 with --min-breadth 96 on the fixture assembly
-    (tetX 97.79% breadth, sulY 95.79%), When screened, Then only tetX is
-    present: --min-breadth flows through the positional route."""
+    """Given --aligner minimap2 with --min-breadth 96 on the self-survey
+    fixture (both genes 100% breadth with the always-on --cs coordinates),
+    When screened, Then both are present: --min-breadth flows through the
+    positional route (the pre-cs 95.79% sulY clipping is fixed; the filter
+    itself is exercised by the boundary test below)."""
     result = screen_reads(
-        reads_datadir, "--aligner", "minimap2", "--min-breadth", "96", str(ASSEMBLY)
+        reads_datadir,
+        "--aligner",
+        "minimap2",
+        "--min-breadth",
+        "96",
+        "--format",
+        "json",
+        str(ASSEMBLY),
     )
     assert result.exit_code == 0
     document = reads_adapter.validate_json(result.stdout)
     genes = {entry.gene: entry.present for entry in document.files[0].genes}
-    assert genes == {"tetX": True, "sulY": False}
+    assert genes == {"tetX": True, "sulY": True}
 
 
-def test_minimap2_positional_format_tsv_exits_2(reads_datadir: Path) -> None:
-    """Given --aligner minimap2 with --format tsv, When screened, Then the
-    reads output contract rejects it (json is the default)."""
-    result = screen_reads(reads_datadir, "--aligner", "minimap2", "--format", "tsv", str(ASSEMBLY))
-    assert result.exit_code == 2
-    error = envelope(result.stderr)
-    assert error["code"] == "USAGE_ERROR"
-    assert error["message"] == "--format tsv|csv is not available in reads mode (use json or md)"
+def test_minimap2_positional_default_is_streaming_tsv(reads_datadir: Path) -> None:
+    """Given --aligner minimap2 with NO --format, When screened, Then the
+    streaming reads TSV table on stdout (tsv is the human default on every
+    surface) — byte-identical to the explicit --format tsv run."""
+    default = screen_reads(reads_datadir, "--aligner", "minimap2", str(ASSEMBLY))
+    explicit = screen_reads(
+        reads_datadir, "--aligner", "minimap2", "--format", "tsv", str(ASSEMBLY)
+    )
+    assert default.exit_code == 0
+    assert explicit.exit_code == 0
+    assert default.stdout == explicit.stdout
+    header, *rows = default.stdout.splitlines()
+    assert header == (
+        "#SAMPLE\tGENE\tBREADTH%\tDEPTH\tREADS\tPRESENT\tDATABASE\tACCESSION\tPRODUCT"
+    )
+    assert {row.split("\t")[1] for row in rows} == {"tetX", "sulY"}
 
 
 def test_minimap2_positional_missing_file_exits_5(reads_datadir: Path) -> None:
@@ -300,7 +328,7 @@ def test_reads_mode_accepts_explicit_jobs_one(
     """Given --r1 with an explicit --jobs 1 (the default), When screened,
     Then it succeeds: the guard rejects only jobs != 1."""
     monkeypatch.chdir(READS)
-    result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--jobs", "1")
+    result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--jobs", "1", "--format", "json")
     assert result.exit_code == 0
     assert reads_adapter.validate_json(result.stdout).schema_name == "gapit.reads/1"
 

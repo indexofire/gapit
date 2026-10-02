@@ -97,12 +97,6 @@ def _flag(arguments: dict[str, Any], key: str) -> bool:
     return value
 
 
-def _optional_output_format(name: str) -> OutputFormat | None:
-    """Map an already-validated format name onto the reads use-case's
-    OutputFormat|None (None = the json default, SPEC.md §10)."""
-    return None if name == "json" else OutputFormat(name)
-
-
 def _tool_screen(arguments: dict[str, Any]) -> str:
     files = _paths(arguments, "files")
     if not files:
@@ -129,9 +123,9 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     if aligner is AlignerEnum.minimap2:
         if merge_fragments:
             usage_fail("mergeFragments requires aligner blastn")
-        # tsv is rejected by the use-case itself (reads-mode format rule);
-        # non-default minid/mincov too (blastn-only thresholds), and the
-        # cluster thresholds are cluster-db-only flags.
+        # Non-default minid/mincov are rejected by the use-case too
+        # (blastn-only thresholds), and the cluster thresholds are
+        # cluster-db-only flags.
         reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
         return run_screen_assemblies(
             files,
@@ -146,7 +140,7 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
             jobs=1,
             noheader=False,
             nopath=False,
-            output_format=_optional_output_format(output_format),
+            output_format=OutputFormat(output_format),
             quiet=True,
             minid=minid,
             mincov=mincov,
@@ -217,7 +211,7 @@ def _tool_screen_reads(arguments: dict[str, Any]) -> str:
         min_identity,
         min_mapq,
         threads=1,
-        output_format=_optional_output_format(output_format),
+        output_format=OutputFormat(output_format),
         quiet=True,
     )
 

@@ -3,6 +3,10 @@
 Mirrors abricate 1.4.0 ``summary_table`` (SPEC.md §6) exactly where it is
 defined, and replaces its silent-undef edges with typed InputErrors
 (``SUMMARY_MALFORMED``) — a documented [gapit-extension] divergence.
+
+Tables arrive as paths or as already-read text (the piped-stdin table the
+CLI hands in, labeled :data:`STDIN_LABEL`) — stdin is one more input and
+follows the same parser path, error labels included.
 """
 
 from collections.abc import Callable
@@ -16,6 +20,12 @@ from gapit.errors import InputError
 FIELDSEP = ";"
 ABSENT = "."
 
+#: The table label for stdin input — the conventional ``-`` marker. Kept as
+#: an independent twin of gapit.typing_input.STDIN_LABEL: the two table
+#: parsers duplicate their tiny helpers rather than cross-import
+#: (see also ``_detect_separator`` below).
+STDIN_LABEL = "-"
+
 Warn = Callable[[str], None]
 
 
@@ -23,12 +33,25 @@ class SummaryParams(BaseModel, frozen=True):
     """Summary parameters in effect (metric + path display)."""
 
     identity: bool = False
+    coverage: bool = False
     nopath: bool = False
 
     @property
     def metric(self) -> Literal["%COVERAGE", "%IDENTITY"]:
-        """The report column summarized into cells."""
+        """The primary report column summarized into cells."""
         return "%IDENTITY" if self.identity else "%COVERAGE"
+
+    @property
+    def metrics(self) -> tuple[Literal["%IDENTITY", "%COVERAGE"], ...]:
+        """The report columns joined per hit: identity/coverage under -ic."""
+        if self.identity and self.coverage:
+            return ("%IDENTITY", "%COVERAGE")
+        return ("%IDENTITY",) if self.identity else ("%COVERAGE",)
+
+    @property
+    def presence_cells(self) -> bool:
+        """Default display: '+', presence / '-', absence (no metric shown)."""
+        return not self.identity and not self.coverage
 
 
 class SummaryRow(BaseModel, frozen=True):
@@ -87,35 +110,46 @@ def _detect_separator(text: str) -> str:
     return "\t"
 
 
-def _malformed(path: Path, line_number: int, detail: str) -> InputError:
+def _malformed(label: str, line_number: int, detail: str) -> InputError:
     return InputError(
-        f"malformed report row: {detail} ({path}:{line_number})",
+        f"malformed report row: {detail} ({label}:{line_number})",
         code="SUMMARY_MALFORMED",
-        context={"file": str(path), "line": str(line_number)},
+        context={"file": label, "line": str(line_number)},
     )
 
 
-def build_summary(paths: list[Path], params: SummaryParams, *, warn: Warn) -> SummaryMatrix:
-    """Aggregate report table(s) into the summary matrix.
+def build_summary(
+    paths: list[Path], params: SummaryParams, *, warn: Warn, stdin_text: str | None = None
+) -> SummaryMatrix:
+    """Aggregate report table(s) into the summary matrix. ``stdin_text``,
+    when given, is one more already-read table labeled ``-`` (the piped
+    screen output; a batched multi-FILE table summarizes as one input).
 
-    Dutch mode (exactly one input) keys rows by each table row's FILE column;
-    otherwise rows are keyed by input filename as given. Rows are sorted by
-    that key — not by display label — matching upstream. The first row seen
-    anywhere is the column map (upstream ``@hdr``); later '#' rows are skipped.
+    Dutch mode (exactly one input, file or stdin) keys rows by each table
+    row's FILE column; otherwise rows are keyed by input filename as given.
+    Rows are sorted by that key — not by display label — matching upstream.
+    The first row seen anywhere is the column map (upstream ``@hdr``);
+    later '#' rows are skipped.
     """
-    dutch = len(paths) == 1
-    data: dict[str, dict[str, list[str]]] = {}
+    sources: list[tuple[str, str]] = []
     seen: set[str] = set()
-    indexes: dict[str, int] | None = None
     for path in paths:
         key = str(path)
         if key in seen:
             warn(f"Skipping duplicate file: {key}")
             continue
         seen.add(key)
-        text = _read_report(path)
+        sources.append((key, _read_report(path)))
+    if stdin_text is not None:
+        sources.append((STDIN_LABEL, stdin_text))
+    # Input count as GIVEN (pre-dedup): a repeated path is still two inputs
+    # for dutch purposes, matching upstream (duplicate-file rows key by filename).
+    dutch = len(paths) + (stdin_text is not None) == 1
+    data: dict[str, dict[str, list[str]]] = {}
+    indexes: dict[str, int] | None = None
+    for label, text in sources:
         if not dutch:
-            data[key] = {}
+            data[label] = {}
         separator = _detect_separator(text)
         for line_number, line in enumerate(_lines(text), start=1):
             columns = line.split(separator)
@@ -126,18 +160,21 @@ def build_summary(paths: list[Path], params: SummaryParams, *, warn: Warn) -> Su
                 continue
             assert indexes is not None  # set on the first line, before any data row
             gene_at = indexes.get("GENE")
-            metric_at = indexes.get(params.metric)
+            metric_ats = [indexes.get(name) for name in params.metrics]
             if gene_at is None:
-                raise _malformed(path, line_number, "header has no GENE column")
-            if metric_at is None:
-                raise _malformed(path, line_number, f"header has no {params.metric} column")
-            if len(columns) <= max(gene_at, metric_at):
+                raise _malformed(label, line_number, "header has no GENE column")
+            missing = [n for n, at in zip(params.metrics, metric_ats, strict=True) if at is None]
+            if missing:
+                raise _malformed(label, line_number, f"header has no {missing[0]} column")
+            last = max(at for at in metric_ats if at is not None)
+            if len(columns) <= max(gene_at, last):
                 raise _malformed(
-                    path, line_number, f"expected >= {max(gene_at, metric_at) + 1} columns"
+                    label, line_number, f"expected >= {max(gene_at, last) + 1} columns"
                 )
-            gene, value = columns[gene_at], columns[metric_at]
+            value = "/".join(columns[at] for at in metric_ats if at is not None)
+            gene = columns[gene_at]
             file_key = PurePath(columns[0]).name if params.nopath else columns[0]
-            row_key = file_key if dutch else key
+            row_key = file_key if dutch else label
             data.setdefault(row_key, {}).setdefault(gene, []).append(value)
     genes = tuple(sorted({gene for hits in data.values() for gene in hits}))
     rows = tuple(

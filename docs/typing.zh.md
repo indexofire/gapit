@@ -15,9 +15,9 @@
 ```console
 $ gapit screen contigs.fa --db ecoli_dec --output result.tsv --quiet
 $ gapit typing result.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
-contigs.fa	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	...
-contigs.fa	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	...
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
+contigs.fa	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	...	escV;stx2a;uidA
+contigs.fa	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	...	escV;stx2a;uidA
 ```
 
 第一阶段是纯基因检测：typed 基因数据库与 untyped 的筛查输出逐字节相同——每种格式
@@ -40,10 +40,12 @@ $ gapit screen 1.fna --db ecoli_dec --quiet | gapit typing --quiet
 用法：`gapit typing RESULT.tsv [RESULT2.tsv ...] [-D datadir] [-f tsv|json|md] [-o FILE]
 [-q]`，或如上经管道输入（`-` 为显式 stdin）。默认 TSV 按 (FILE, scheme) 一行，列为
 `FILE`、`SCHEME`、`PHENOTYPE`、
-`CONFIDENCE`、`SCORE`、`RUNNER_UP`、`NOTES`——歧义判定的表型（与 runner-up）渲染为
-`-`，候选对写入 NOTES；`json` 输出 `gapit.typing_result/1`（完整分数分解；
+`CONFIDENCE`、`SCORE`、`RUNNER_UP`、`NOTES`、`GENES`——歧义判定的表型（与 runner-up）
+渲染为 `-`，候选对写入 NOTES；`GENES` 以该 FILE 的 present 基因名（排序后、`;` 串接）
+收尾每行，且在该 FILE 的每个 scheme 行上重复——即驱动该判定的命中，一目了然。
+`json` 输出 `gapit.typing_result/1`（完整分数分解外加同样的逐文件 `genes` 列表；
 `gapit schema typing_result`）；`md` 在标明数据库与来源表的 frontmatter 下渲染同样的
-七列表。类型化错误：`DATABASE` 值混杂为 `DATABASE_MISMATCH`，无数据行的表为
+八列表。类型化错误：`DATABASE` 值混杂为 `DATABASE_MISMATCH`，无数据行的表为
 `TYPING_NO_DATA`（要评估的数据库只能从数据行得知），无 `typing.json` 的数据库为
 `TYPING_NO_SCHEME`，基因簇数据库为 `TYPING_CLUSTER_DB`——基因簇判定不经过该命令。
 
@@ -76,7 +78,7 @@ $ gapit screen 1.fna --db ecoli_dec --quiet | gapit typing --quiet
 
 | 数据库类型 | 输入 | 引擎 | 判定出现的位置 |
 |---|---|---|---|
-| **gene（基因）** | 标记 FASTA | blastn 基因路径 | 对筛查结果运行 `gapit typing`：`gapit.typing_result/1`（JSON）与七列 TSV/MD 表 |
+| **gene（基因）** | 标记 FASTA | blastn 基因路径 | 对筛查结果运行 `gapit typing`：`gapit.typing_result/1`（JSON）与八列 TSV/MD 表 |
 | **cluster（基因簇）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gapit screen` 内：`gapit.cluster/1` 的 `best.phenotype` + `best.phenotype_detail`，以及仅限已分型数据库的 TSV `PHENOTYPE` 列 |
 
 按类型区分的两条硬约束：
@@ -287,8 +289,8 @@ $ gapit db build doumith doumith.fa --typing doumith.json
 
 $ gapit screen lm_4b.fa --db doumith --output lm_4b.tsv --quiet
 $ gapit typing lm_4b.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
-lm_4b.fa	doumith	4b-4d-4e	high	1.0000	1/2a-3a (0.0000)	...
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
+lm_4b.fa	doumith	4b-4d-4e	high	1.0000	1/2a-3a (0.0000)	...	orf2110;orf2819;prs
 
 $ gapit screen vc_inaba.fa --db vc_subserotype --quiet
 FILE      BEST_LOCUS  TYPE  PHENOTYPE  COVERAGE  IDENTITY  PRESENT  PARTIAL  MISSING_IDS

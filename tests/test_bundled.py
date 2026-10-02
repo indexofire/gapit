@@ -303,7 +303,7 @@ def test_typed_screen_golden_hybrid_and_headline(tmp_path: Path) -> None:
 
 def test_typing_golden_hybrid_and_headline(tmp_path: Path) -> None:
     """Given the screened hybrid + headline tables, When typed as the
-    DEFAULT TSV, Then the seven-column designation output is byte-identical
+    DEFAULT TSV, Then the eight-column designation output is byte-identical
     to the committed golden — the hybrid's EHEC/EHEC beside the headline
     EAEC/non-DEC divergence."""
     datadir = tmp_path / "datadir"
@@ -329,6 +329,42 @@ def test_typing_golden_hybrid_and_headline(tmp_path: Path) -> None:
     result = runner.invoke(app, ["typing", str(table), "--datadir", str(datadir), "--quiet"])
     assert result.exit_code == 0, result.stderr
     assert result.stdout == (GOLDEN / "ecoli_dec_typing.tsv").read_text(encoding="utf-8")
+
+
+def test_typing_genes_column_lists_sorted_present_genes(tmp_path: Path) -> None:
+    """Given the screened hybrid + headline tables, When typed as TSV, Then
+    every row closes with its FILE's present gene names — sorted
+    alphabetically, ``;``-joined with no space — the same list repeating on
+    each of the FILE's scheme rows (the audit trail behind the call)."""
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    table = tmp_path / "screen.tsv"
+    screened = runner.invoke(
+        app,
+        [
+            "screen",
+            str(S3),
+            str(S2),
+            "--db",
+            "ecoli_dec",
+            "--datadir",
+            str(datadir),
+            "--nopath",
+            "-o",
+            str(table),
+            "--quiet",
+        ],
+    )
+    assert screened.exit_code == 0, screened.stderr
+    result = runner.invoke(app, ["typing", str(table), "--datadir", str(datadir), "--quiet"])
+    assert result.exit_code == 0, result.stderr
+    lines = result.stdout.splitlines()
+    assert lines[0].split("\t")[3] == "GENES"  # column follows PHENOTYPE
+    hybrid = [line for line in lines[1:] if line.startswith("dec_s3_stx2a_escV_aggR_uidA.fasta")]
+    headline = [line for line in lines[1:] if line.startswith("dec_s2_pic_astA_uidA.fasta")]
+    assert len(hybrid) == 2 and len(headline) == 2
+    assert [line.split("\t")[3] for line in hybrid] == ["aggR;escV;stx2a;uidA"] * 2
+    assert [line.split("\t")[3] for line in headline] == ["astA;pic;uidA"] * 2
 
 
 # ------------------------------------------------- provider snapshot bundles --

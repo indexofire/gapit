@@ -16,5 +16,5 @@ genes_found: 1
 
 | Gene | Breadth% | Depth | Reads | Present | Database | Accession | Product | Resistance |
 |---|---|---|---|---|---|---|---|---|
-| tetX | 97.70 | 2.09 | 12 | yes | tinyreads | SYN-001 | extended resistance determinant tetX | TETRACYCLINE |
+| tetX | 100.00 | 2.30 | 12 | yes | tinyreads | SYN-001 | extended resistance determinant tetX | TETRACYCLINE |
 

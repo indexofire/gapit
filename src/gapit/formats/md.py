@@ -122,6 +122,37 @@ _READS_COLUMNS = (
 _READS2_COLUMNS = (*_READS_COLUMNS, "Identity%")
 
 
+def _reads_md_section(report: ReadsReport, columns: tuple[str, ...], with_identity: bool) -> str:
+    """One sample's section: heading keyed by its reads, then the gene table
+    (or the no-genes note) — the unit a streaming caller emits as the sample
+    completes. Shared by the buffered --r1/--r2 render and the positional
+    wildcard chunks, so both produce identical section bytes."""
+    lines: list[str] = [f"## `{', '.join(report.reads)}`", ""]
+    if not report.genes:
+        lines.append("_No genes detected._")
+        lines.append("")
+        return "".join(f"{line}\n" for line in lines)
+    lines.append("| " + " | ".join(columns) + " |")
+    lines.append("|" + "---|" * len(columns))
+    for gene in report.genes:
+        cells = (
+            gene.gene,
+            f"{gene.breadth_pct:.2f}",
+            f"{gene.mean_depth:.2f}",
+            str(gene.reads_mapped),
+            "yes" if gene.present else "no",
+            gene.database,
+            gene.accession,
+            gene.product,
+            gene.function,
+        )
+        if with_identity:
+            cells += (f"{gene.mean_identity_pct:.2f}",)
+        lines.append("| " + " | ".join(md_cell(cell) for cell in cells) + " |")
+    lines.append("")
+    return "".join(f"{line}\n" for line in lines)
+
+
 def _render_reads_markdown(
     reports: Iterable[ReadsReport],
     params: ReadsParams,
@@ -156,32 +187,11 @@ def _render_reads_markdown(
         "# gapit read screening report",
         "",
     ]
-    for report in files:
-        lines.append(f"## `{', '.join(report.reads)}`")
-        lines.append("")
-        if not report.genes:
-            lines.append("_No genes detected._")
-            lines.append("")
-            continue
-        lines.append("| " + " | ".join(columns) + " |")
-        lines.append("|" + "---|" * len(columns))
-        for gene in report.genes:
-            cells = (
-                gene.gene,
-                f"{gene.breadth_pct:.2f}",
-                f"{gene.mean_depth:.2f}",
-                str(gene.reads_mapped),
-                "yes" if gene.present else "no",
-                gene.database,
-                gene.accession,
-                gene.product,
-                gene.function,
-            )
-            if with_identity:
-                cells += (f"{gene.mean_identity_pct:.2f}",)
-            lines.append("| " + " | ".join(md_cell(cell) for cell in cells) + " |")
-        lines.append("")
-    return "\n".join(lines) + "\n"
+    return (
+        "\n".join(lines)
+        + "\n"
+        + "".join(_reads_md_section(report, columns, with_identity) for report in files)
+    )
 
 
 def render_reads_markdown(
@@ -212,3 +222,34 @@ def render_reads2_markdown(
         columns=_READS2_COLUMNS,
         with_identity=True,
     )
+
+
+def reads_md_preamble(params: ReadsParams, *, now: datetime, reads2: bool = False) -> str:
+    """The STATIC frontmatter + title chunk for the positional wildcard path
+    (the md_report_preamble / cluster_md_head precedent): schema, tool,
+    timestamp, thresholds — everything knowable before sample 1 — so a
+    streaming caller emits it first and then one section per sample as it
+    completes. Run totals (files/genes_found) live in the JSON document; the
+    buffered single-sample --r1/--r2 render keeps its totals-bearing
+    frontmatter unchanged."""
+    lines: list[str] = [
+        "---",
+        "schema: gapit.reads/2" if reads2 else "schema: gapit.reads/1",
+        f"tool: gapit {__version__}",
+        f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
+        f"db: {params.db}",
+        f"read_type: {params.read_type}",
+        f"min_breadth: {params.min_breadth}",
+        f"threads: {params.threads}",
+    ]
+    if reads2:
+        lines.append(f"min_identity: {params.min_identity}")
+        lines.append(f"min_mapq: {params.min_mapq}")
+    lines += ["---", "", "# gapit read screening report", ""]
+    return "\n".join(lines) + "\n"
+
+
+def reads_md_chunk(report: ReadsReport, *, reads2: bool = False) -> str:
+    """One sample's section — the unit a streaming caller emits the moment
+    that sample's screening completes (reads/2 adds the Identity% cell)."""
+    return _reads_md_section(report, _READS2_COLUMNS if reads2 else _READS_COLUMNS, reads2)

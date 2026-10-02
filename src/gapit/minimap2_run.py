@@ -101,6 +101,13 @@ def run_minimap2(
             "-t",
             str(threads),
         ]
+        if read_type == "sr":
+            # Diverged-allele sensitivity for short reads: the stock sr seed
+            # (k=21) finds no exact run on a ~90%-identity 117 bp marker gene
+            # (26ECO0071 astA: 0 alignments at k=21, 55% primary breadth at
+            # k=13, 100% at k=11), silently flipping typing calls. k=11 + a
+            # softer mismatch cost recover it; presence stays breadth-gated.
+            argv += ["-k11", "-w6", "-B2"]
         if nm_tags:
             argv.append("--cs")
         # Input paths go to argv absolutized: an absolute path starts with

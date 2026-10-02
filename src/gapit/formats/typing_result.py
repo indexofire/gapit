@@ -1,11 +1,14 @@
 """gapit.typing_result/1 — the `gapit typing` output document and renderers.
 
 One result per (FILE, scheme): the designated phenotype with its
-explainable breakdown. TSV/MD flatten each call to the seven reporting
-columns (ambiguous calls render ``-`` and carry the candidate pair in
-NOTES); JSON keeps the full :class:`gapit.typing_results.SchemeCall`
-objects, the additive shape the inline engine produced before designation
-moved to the command.
+explainable breakdown. TSV/MD flatten each call to the eight reporting
+columns — the call's seven, then ``GENES``: the FILE's present gene names
+(sorted, ``;``-joined), repeated on each of the FILE's scheme rows so every
+call is auditable against the hits that drove it. Ambiguous calls render
+``-`` and carry the candidate pair in NOTES; JSON keeps the full
+:class:`gapit.typing_results.SchemeCall` objects plus the additive
+``genes`` list, the additive shape the inline engine produced before
+designation moved to the command.
 """
 
 from collections.abc import Iterable, Sequence
@@ -19,21 +22,25 @@ from gapit.formats.json import ToolDocument, utc_timestamp
 from gapit.formats.md import md_cell
 from gapit.typing_results import PhenotypeScore, SchemeCall
 
-COLUMNS = ("FILE", "SCHEME", "PHENOTYPE", "CONFIDENCE", "SCORE", "RUNNER_UP", "NOTES")
+COLUMNS = ("FILE", "SCHEME", "PHENOTYPE", "GENES", "CONFIDENCE", "SCORE", "RUNNER_UP", "NOTES")
 
 
 class TypingFileResult(NamedTuple):
-    """One typed FILE and its scheme calls (scheme declaration order)."""
+    """One typed FILE: its scheme calls (scheme declaration order) and its
+    present gene names (sorted — the GENES column's source)."""
 
     file: str
+    genes: tuple[str, ...]
     phenotypes: dict[str, SchemeCall]
 
 
 class TypingFileDocument(BaseModel, frozen=True):
-    """One typed FILE: scheme name → its call (the additive phenotypes
+    """One typed FILE: its present gene names (sorted — the additive
+    ``genes`` list) and scheme name → its call (the additive phenotypes
     object, kept from the inline-engine shape)."""
 
     file: str
+    genes: list[str]
     phenotypes: dict[str, SchemeCall]
 
 
@@ -65,16 +72,18 @@ def _notes(call: SchemeCall) -> str:
     return "; ".join(notes)
 
 
-def typing_row(file: str, scheme: str, call: SchemeCall) -> tuple[str, ...]:
+def typing_row(result: TypingFileResult, scheme: str, call: SchemeCall) -> tuple[str, ...]:
     """One result row's cells: the phenotype (``-`` when ambiguous, fallback
     strings verbatim — md.py's value semantics), the runner-up (``-`` when
     none, and also on an ambiguous call whose candidate pair NOTES
-    carries), and the flattened notes."""
+    carries), the flattened notes, and the FILE's sorted ``;``-joined gene
+    list (the same list on every scheme row of the FILE)."""
     called = call.runner_up if call.phenotype is not None else None
     return (
-        file,
+        result.file,
         scheme,
         call.phenotype or "-",
+        ";".join(result.genes),
         call.confidence,
         f"{call.score:.4f}",
         "-" if called is None else _pair(called),
@@ -91,7 +100,7 @@ def typing_file_chunk(result: TypingFileResult) -> str:
     """One FILE's chunk: a row per scheme in declaration order — the
     streaming unit the use-case emits per typed file."""
     return "".join(
-        "\t".join(typing_row(result.file, scheme, call)) + "\n"
+        "\t".join(typing_row(result, scheme, call)) + "\n"
         for scheme, call in result.phenotypes.items()
     )
 
@@ -111,7 +120,10 @@ def render_typing_result_json(
         source=list(source),
         db=db,
         files=[
-            TypingFileDocument(file=result.file, phenotypes=result.phenotypes) for result in results
+            TypingFileDocument(
+                file=result.file, genes=list(result.genes), phenotypes=result.phenotypes
+            )
+            for result in results
         ],
     )
     return document.model_dump_json(indent=2, by_alias=True)
@@ -121,7 +133,7 @@ def render_typing_md(
     source: Sequence[str], db: str, results: Iterable[TypingFileResult], *, now: datetime
 ) -> str:
     """Render designation results as deterministic Markdown: YAML
-    frontmatter (tool, db, source tables) then one seven-column table."""
+    frontmatter (tool, db, source tables) then one eight-column table."""
     files = list(results)
     lines: list[str] = [
         "---",
@@ -141,6 +153,6 @@ def render_typing_md(
     ]
     for result in files:
         for scheme, call in result.phenotypes.items():
-            cells = typing_row(result.file, scheme, call)
+            cells = typing_row(result, scheme, call)
             lines.append("| " + " | ".join(md_cell(cell) for cell in cells) + " |")
     return "\n".join(lines) + "\n"

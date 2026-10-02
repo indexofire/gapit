@@ -43,12 +43,62 @@ def envelope(stderr: str) -> dict[str, str]:
 ANSI_STYLE = re.compile(r"\x1b\[[0-9;]*m")
 
 
-def test_reads_default_json(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Given --r1 with no --format, When run, Then gapit.reads/1 JSON on
-    stdout and Screening/Detected chatter on stderr."""
+def test_r1_default_is_streaming_tsv(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given --r1 with NO --format, When run, Then the streaming reads TSV
+    table on stdout (tsv is the human default on every surface) — byte-identical
+    to the explicit --format tsv run: header first, one row for the present
+    tetX call with the sample key leading."""
+    monkeypatch.chdir(READS)
+    default = runner.invoke(
+        app, ["screen", "--r1", "tetx_full.fq", "--db", "tinyreads", "--datadir", str(datadir)]
+    )
+    explicit = runner.invoke(
+        app,
+        [
+            "screen",
+            "--r1",
+            "tetx_full.fq",
+            "--db",
+            "tinyreads",
+            "--datadir",
+            str(datadir),
+            "--format",
+            "tsv",
+        ],
+    )
+    assert default.exit_code == 0
+    assert explicit.exit_code == 0
+    assert default.stdout == explicit.stdout
+    header, row = default.stdout.splitlines()
+    assert header == (
+        "#SAMPLE\tGENE\tBREADTH%\tDEPTH\tREADS\tPRESENT\tDATABASE\tACCESSION\tPRODUCT"
+    )
+    cells = row.split("\t")
+    assert cells[0] == "tetx_full.fq"
+    assert cells[1] == "tetX"
+    assert cells[5] == "yes"
+
+
+def test_r1_format_json_is_the_opt_in_document(
+    datadir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given --r1 with explicit --format json, When run, Then the
+    gapit.reads/1 JSON document on stdout and Screening/Detected chatter on
+    stderr (json is the agent opt-in; the default is the tsv table)."""
     monkeypatch.chdir(READS)
     result = runner.invoke(
-        app, ["screen", "--r1", "tetx_full.fq", "--db", "tinyreads", "--datadir", str(datadir)]
+        app,
+        [
+            "screen",
+            "--r1",
+            "tetx_full.fq",
+            "--db",
+            "tinyreads",
+            "--datadir",
+            str(datadir),
+            "--format",
+            "json",
+        ],
     )
     assert result.exit_code == 0
     document = reads_adapter.validate_json(result.stdout)
@@ -79,6 +129,8 @@ def test_reads_output_file_receives_document_stdout_empty(
             "tinyreads",
             "--datadir",
             str(datadir),
+            "--format",
+            "json",
             "--output",
             str(out_path),
         ],
@@ -113,25 +165,28 @@ def test_reads_and_positional_files_are_mutually_exclusive(
     assert envelope(result.stderr)["code"] == "USAGE_ERROR"
 
 
-def test_reads_mode_rejects_tsv_and_csv(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_r1_format_csv_is_the_comma_table(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given --r1 with --format csv, When run, Then the same table renders
+    comma-separated (csv is the comma spelling of the default tsv)."""
     monkeypatch.chdir(READS)
-    for fmt in ("tsv", "csv"):
-        result = runner.invoke(
-            app,
-            [
-                "screen",
-                "--r1",
-                "tetx_full.fq",
-                "--db",
-                "tinyreads",
-                "--datadir",
-                str(datadir),
-                "--format",
-                fmt,
-            ],
-        )
-        assert result.exit_code == 2
-        assert envelope(result.stderr)["code"] == "USAGE_ERROR"
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            "--r1",
+            "tetx_full.fq",
+            "--db",
+            "tinyreads",
+            "--datadir",
+            str(datadir),
+            "--format",
+            "csv",
+        ],
+    )
+    assert result.exit_code == 0
+    header, row = result.stdout.splitlines()
+    assert header.startswith("#SAMPLE,GENE,BREADTH%")
+    assert row.split(",")[1] == "tetX"
 
 
 def test_missing_reads_file_exits_5(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -228,6 +283,8 @@ def test_multi_lane_se_union(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> 
             "tinyreads",
             "--datadir",
             str(datadir),
+            "--format",
+            "json",
         ],
     )
     assert result.exit_code == 0
@@ -255,6 +312,8 @@ def test_multi_lane_pe_union(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> 
             "tinyreads",
             "--datadir",
             str(datadir),
+            "--format",
+            "json",
         ],
     )
     assert result.exit_code == 0
@@ -356,6 +415,8 @@ def test_fasta_assembly_screens_with_map_ont(datadir: Path, tmp_path: Path) -> N
             "tinyreads",
             "--datadir",
             str(datadir),
+            "--format",
+            "json",
             "--debug",
         ],
     )
@@ -405,6 +466,8 @@ def test_fasta_assembly_explicit_map_ont_is_silent(datadir: Path, tmp_path: Path
             "tinyreads",
             "--datadir",
             str(datadir),
+            "--format",
+            "json",
             "--read-type",
             "map-ont",
         ],
@@ -529,7 +592,18 @@ def test_fastq_default_preset_stays_sr(datadir: Path, monkeypatch: pytest.Monkey
     params.read_type stays sr."""
     monkeypatch.chdir(READS)
     result = runner.invoke(
-        app, ["screen", "--r1", "tetx_full.fq", "--db", "tinyreads", "--datadir", str(datadir)]
+        app,
+        [
+            "screen",
+            "--r1",
+            "tetx_full.fq",
+            "--db",
+            "tinyreads",
+            "--datadir",
+            str(datadir),
+            "--format",
+            "json",
+        ],
     )
     assert result.exit_code == 0
     document = reads_adapter.validate_json(result.stdout)

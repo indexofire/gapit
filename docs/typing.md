@@ -19,9 +19,9 @@ detects genes, `gapit typing` designates from the results.**
 ```console
 $ gapit screen contigs.fa --db ecoli_dec --output result.tsv --quiet
 $ gapit typing result.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
-contigs.fa	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	...
-contigs.fa	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	...
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
+contigs.fa	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	...	escV;stx2a;uidA
+contigs.fa	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	...	escV;stx2a;uidA
 ```
 
 Stage 1 is pure gene detection: a typed gene database screens byte-identically to an
@@ -46,10 +46,13 @@ piped table's JSON `source` renders as `["-"]`.
 Usage: `gapit typing RESULT.tsv [RESULT2.tsv ...] [-D datadir] [-f tsv|json|md] [-o FILE]
 [-q]`, or piped as above (`-` for explicit stdin). The default TSV carries one row per
 (FILE, scheme) with the columns `FILE`, `SCHEME`,
-`PHENOTYPE`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES` — ambiguous calls render `-` for
-the phenotype (and runner-up) and carry the candidate pair in NOTES; `json` emits
-`gapit.typing_result/1` (full score breakdowns; `gapit schema typing_result`); `md` renders
-the same seven columns under a frontmatter naming the db and source tables. Typed errors:
+`PHENOTYPE`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES`, `GENES` — ambiguous calls render
+`-` for the phenotype (and runner-up) and carry the candidate pair in NOTES; `GENES`
+closes every row with the FILE's present gene names (sorted, `;`-joined), the same list on
+each of the FILE's scheme rows — the hits that drove the call, in the open. `json` emits
+`gapit.typing_result/1` (full score breakdowns plus the same per-file `genes` list;
+`gapit schema typing_result`); `md` renders
+the same eight columns under a frontmatter naming the db and source tables. Typed errors:
 mixed `DATABASE` values are `DATABASE_MISMATCH`, a table with no data rows `TYPING_NO_DATA`
 (the database is only knowable from rows), a database without a `typing.json`
 `TYPING_NO_SCHEME`, and a cluster database `TYPING_CLUSTER_DB` — cluster typing never goes
@@ -85,7 +88,7 @@ Which engine evaluates the document depends on the database kind:
 
 | Database kind | Input | Engine | Where the calls appear |
 |---|---|---|---|
-| **gene** | marker FASTA | blastn gene path | `gapit typing` over the screen results: `gapit.typing_result/1` (JSON) and the seven-column TSV/MD table |
+| **gene** | marker FASTA | blastn gene path | `gapit typing` over the screen results: `gapit.typing_result/1` (JSON) and the eight-column TSV/MD table |
 | **cluster** | GBK/GFF loci | minimap2 locus path | integrated in `gapit screen`: `best.phenotype` + `best.phenotype_detail` of `gapit.cluster/1`, plus the typed-only `PHENOTYPE` TSV column |
 
 Two hard constraints by kind:
@@ -307,8 +310,8 @@ $ gapit db build doumith doumith.fa --typing doumith.json
 
 $ gapit screen lm_4b.fa --db doumith --output lm_4b.tsv --quiet
 $ gapit typing lm_4b.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
-lm_4b.fa	doumith	4b-4d-4e	high	1.0000	1/2a-3a (0.0000)	...
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
+lm_4b.fa	doumith	4b-4d-4e	high	1.0000	1/2a-3a (0.0000)	...	orf2110;orf2819;prs
 
 $ gapit screen vc_inaba.fa --db vc_subserotype --quiet
 FILE      BEST_LOCUS  TYPE  PHENOTYPE  COVERAGE  IDENTITY  PRESENT  PARTIAL  MISSING_IDS

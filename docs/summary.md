@@ -1,8 +1,8 @@
 # Summarizing reports
 
 `gapit summary` collapses one or more abricate-format report tables (including gapit screen
-output) into a gene presence/absence matrix: one row per file, one column per gene, cells
-carrying the hit metric. It replaces `abricate --summary`.
+output) into a gene presence/absence matrix: one row per file, one column per gene. It replaces
+`abricate --summary`.
 
 Input reports are TSV or CSV with the standard 15-column header (`#FILE  SEQUENCE  ...`),
 exactly what `gapit screen` writes. See [./screen.md](./screen.md) for producing them and
@@ -14,8 +14,9 @@ Transcribed from `gapit summary --help` (gapit 0.5.0):
 
 | Flag | Type | Default | Description |
 |---|---|---|---|
-| `FILE...` | path(s) | required | Abricate-format report file(s) to summarize. At least one. |
-| `--identity` | flag | off | Cells show %IDENTITY instead of %COVERAGE. |
+| `FILE...` | path(s) | stdin | Abricate-format report file(s) to summarize. At least one input: files, a piped table, or `-` for stdin. |
+| `--identity` / `-i` | flag | off | Cells show %IDENTITY values (default: `+`/`-`). |
+| `--coverage` / `-c` | flag | off | Cells show %COVERAGE values (default: `+`/`-`). |
 | `--nopath` | flag | off | Basename row keys (FILE values / input filenames). |
 | `--quiet` | flag | off | Silence stderr diagnostics. |
 | `--format` | tsv\|csv\|json\|md | `tsv` | Output format. |
@@ -50,17 +51,54 @@ tests/data/summary/sample_b.tsv	2	90.00	100.00
 Note the zero-hit file: it appears with `NUM_FOUND 0` and `.` in every gene column. Multiple
 hits on the same gene in one file join with `;` in report order (see `99.50;52.00`).
 
-## Cells and `--identity`
+## Piping screen output
 
-By default cells hold each hit's %COVERAGE. With `--identity` they hold %IDENTITY instead; gapit
-notes the switch on stderr:
+`gapit summary` reads its table from stdin whenever stdin is not a terminal (piped or
+redirected), so the screen stage can feed it directly — the canonical batch pipe. One
+screen call over many assemblies writes one batched table (every row carries the same
+`DATABASE`; the `FILE` column spans the whole batch), and a piped table counts as ONE
+input, so dutch mode applies — one row per FILE value, the gene×file presence matrix:
 
 ```console
-$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv --identity --nopath
-Using %IDENTITY for the summary table instead of %COVERAGE
+$ gapit screen -d ecoli_dec *.fna --nopath --quiet | gapit summary
+#FILE	NUM_FOUND	aggR	astA	escV	pic	stx2a	uidA
+dec_s2_pic_astA_uidA.fasta	3	.	100.00	.	100.00	.	100.00
+dec_s3_stx2a_escV_aggR_uidA.fasta	4	100.00	.	100.00	.	100.00	100.00
+```
+
+The same matrix `gapit summary combined.tsv` prints after
+`gapit screen -d ecoli_dec *.fna --output combined.tsv`. Rules:
+
+- **Bare `gapit summary` at a terminal keeps printing help** (exit 2); with a pipe or a
+  redirect attached it reads stdin instead.
+- **`gapit summary -`** is the explicit stdin marker — it reads stdin even with a terminal
+  attached, until EOF.
+- **Mixing `-` with file arguments is a usage error** (v1 takes either stdin or files,
+  never both).
+- **Non-UTF-8 stdin** exits 5 with a `SUMMARY_MALFORMED` envelope naming `-`; a malformed
+  piped row names `-` and its line number.
+
+## Cell modes
+
+By default cells carry the **presence call**: `+` when the file has at least one hit for the
+gene, `-` when absent.
+
+| Mode | Invocation | Cells |
+|---|---|---|
+| Presence (default) | `gapit summary a.tsv b.tsv` | `+` / `-` |
+| Identity | `--identity` / `-i` | each hit's %IDENTITY, `;`-joined (`.` = absent) |
+| Coverage | `--coverage` / `-c` | each hit's %COVERAGE, `;`-joined (`.` = absent) |
+| Both | `-ic` (combined) | each hit's `identity/coverage`, `;`-joined (`.` = absent) |
+
+The flags combine (`-ic`): each hit renders as `identity/coverage`. The chosen metric is
+noted on stderr. `--coverage` reproduces the classic abricate `--summary` cell shape byte-for-byte —
+the parity harness runs in this mode.
+
+```console
+$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-sample_a.tsv	2	98.75;91.00	95.10
-sample_b.tsv	2	97.00	99.99
+sample_a.tsv	2	+	+
+sample_b.tsv	2	+	+
 ```
 
 Cells keep the original report strings verbatim; no reformatting or averaging happens.

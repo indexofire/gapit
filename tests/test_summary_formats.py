@@ -23,9 +23,9 @@ MULTI = ["sample_a.tsv", "sample_b.tsv", "empty.tsv"]
 
 EXPECTED_MULTI_TSV = (
     "#FILE\tNUM_FOUND\tfeature_a\tfeature_b\n"
-    "empty.tsv\t0\t.\t.\n"
-    "sample_a.tsv\t2\t99.50;52.00\t76.00\n"
-    "sample_b.tsv\t2\t90.00\t100.00\n"
+    "empty.tsv\t0\t-\t-\n"
+    "sample_a.tsv\t2\t+\t+\n"
+    "sample_b.tsv\t2\t+\t+\n"
 )
 
 
@@ -101,8 +101,8 @@ def test_md_frontmatter_and_matrix(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "created_at: 2026-09-17T12:00:00Z" in output
     assert "metric: '%COVERAGE'" in output
     assert "| File | Num found | feature_a | feature_b |" in output
-    assert "| sample_a.tsv | 2 | 99.50;52.00 | 76.00 |" in output
-    assert "| empty.tsv | 0 | . | . |" in output
+    assert "| sample_a.tsv | 2 | + | + |" in output
+    assert "| empty.tsv | 0 | - | - |" in output
 
 
 def test_md_escapes_pipes_in_cells(tmp_path: Path) -> None:

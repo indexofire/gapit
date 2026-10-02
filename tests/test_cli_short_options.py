@@ -2,7 +2,9 @@
 
 Two layers over the same contract:
 - structural: the built command tree must give every option a short form;
-  shorts are single letters, unique within their command, never -h;
+  shorts are single letters, unique within their command, never -h — with
+  one documented exception: the word-style `-db` alias riding `--db`
+  (screen, db search);
 - behavioral: commands invoked with shorts behave exactly like the long
   spelling — TSV/CSV/receipts byte-compared, JSON compared after dropping
   the wall-clock tool.created_at metadata field.
@@ -99,12 +101,21 @@ def _walk(cmd: Command) -> Iterator[Command]:
 
 def test_every_option_has_a_unique_single_letter_short() -> None:
     """Given the built command tree, When every command's options are
-    inspected, Then each long form carries a one-letter short, unique within
-    its command and never -h (click's --help alias). The only exceptions are
-    the typer-managed completion flags, which stay long-only by directive."""
+    inspected, Then each long form carries exactly one one-letter short,
+    unique within its command and never -h (click's --help alias). The only
+    exceptions are the typer-managed completion flags, which stay long-only
+    by directive, plus the documented multi-letter `-db` word-style alias on
+    `--db` — pinned by comparing the collected extras against the documented
+    map, so no undocumented multi-letter short can sneak in."""
     typer_managed = {"--install-completion", "--show-completion"}
+    documented_multiletter = {
+        ("screen", "--db"): {"-db"},
+        ("search", "--db"): {"-db"},
+    }
     seen = 0
+    collected_multiletter: dict[tuple[str, str], set[str]] = {}
     for cmd in _walk(get_command(app)):
+        assert cmd.name is not None  # every command in a built tree is named
         taken: dict[str, str] = {}
         for param in cmd.params:
             longs = [o for o in param.opts if o.startswith("--")]
@@ -112,15 +123,20 @@ def test_every_option_has_a_unique_single_letter_short() -> None:
                 continue  # positional argument, or a typer-managed completion flag
             shorts = [o for o in param.opts if o.startswith("-") and not o.startswith("--")]
             assert shorts, f"{cmd.name}: {longs[0]} lacks a short form"
-            (short,) = shorts
-            assert len(short) == 2, f"{cmd.name}: {longs[0]} short is not a single letter"
-            assert short != "-h", f"{cmd.name}: {longs[0]} would collide with --help/-h"
-            assert short not in taken, (
-                f"{cmd.name}: {short} is claimed by both {taken[short]} and {longs[0]}"
-            )
-            taken[short] = longs[0]
+            single = [short for short in shorts if len(short) == 2]
+            assert len(single) == 1, f"{cmd.name}: {longs[0]} short is not a single letter"
+            assert single[0] != "-h", f"{cmd.name}: {longs[0]} would collide with --help/-h"
+            multiletter = {short for short in shorts if len(short) > 2}
+            if multiletter:
+                collected_multiletter[(cmd.name, longs[0])] = multiletter
+            for short in shorts:
+                assert short not in taken, (
+                    f"{cmd.name}: {short} is claimed by both {taken[short]} and {longs[0]}"
+                )
+                taken[short] = longs[0]
             seen += 1
     assert seen >= 40  # the walk really visited the whole command tree
+    assert collected_multiletter == documented_multiletter
 
 
 def test_screen_help_renders_paired_shorts() -> None:
@@ -131,7 +147,7 @@ def test_screen_help_renders_paired_shorts() -> None:
     assert result.exit_code == 0
     collapsed = _collapse(result)
     for pair in (
-        "--db -d",
+        "--db -d,-db",
         "--datadir -D",
         "--format -f",
         "--output -o",
@@ -155,6 +171,30 @@ def test_screen_short_flags_match_long_form(datadir: Path) -> None:
             app, ["screen", contig, "--db", "tinyamr", "--datadir", str(datadir), "--nopath"]
         ),
     )
+
+
+def test_screen_db_word_style_alias_matches_long_form(datadir: Path) -> None:
+    """Given the tar-style `-db NAME` spelling (space-separated; click binds
+    an attached `-dbVALUE` to `-d` + `bVALUE`, which the positional guard
+    catches), When compared to `--db NAME`, Then stdout is byte-identical."""
+    contig = str(CONTIGS / "sort.fa")
+    _assert_same_run(
+        runner.invoke(app, ["screen", contig, "-db", "tinyamr", "-D", str(datadir)]),
+        runner.invoke(app, ["screen", contig, "--db", "tinyamr", "--datadir", str(datadir)]),
+    )
+
+
+def test_screen_db_word_style_alias_bundled_ecoli_dec_end_to_end(tmp_path: Path) -> None:
+    """Given the rightsholder repro (`-db ecoli_dec` on a DEC fixture, fresh
+    datadir), When screened via the alias and via --db, Then both runs exit 0
+    with byte-identical hit tables — the alias also survives the
+    bundled-materialization first-use path."""
+    contig = str(DATA / "typing" / "dec_s1_aggR_pic_uidA.fasta")
+    short = runner.invoke(app, ["screen", contig, "-db", "ecoli_dec", "-D", str(tmp_path)])
+    long = runner.invoke(app, ["screen", contig, "--db", "ecoli_dec", "--datadir", str(tmp_path)])
+    assert short.exit_code == long.exit_code == 0, (short.stderr, long.stderr)
+    assert short.stdout == long.stdout
+    assert "aggR" in short.stdout
 
 
 def test_screen_short_format_json_matches_long_form(datadir: Path) -> None:
@@ -202,7 +242,8 @@ def test_screen_short_reads_r1_r2_match_long_form(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given reads mode spelled with -1/-2, When compared to --r1/--r2, Then
-    the gapit.reads documents match (clock field dropped)."""
+    the gapit.reads documents match (clock field dropped; explicit
+    --format json since the default is the tsv table)."""
     datadir = tmp_path / "datadir"
     shutil.copytree(DATA / "reads_db", datadir)
     monkeypatch.chdir(READS)
@@ -218,6 +259,8 @@ def test_screen_short_reads_r1_r2_match_long_form(
             "tinyreads",
             "-D",
             str(datadir),
+            "-f",
+            "json",
         ],
     )
     long = runner.invoke(
@@ -232,6 +275,8 @@ def test_screen_short_reads_r1_r2_match_long_form(
             "tinyreads",
             "--datadir",
             str(datadir),
+            "--format",
+            "json",
         ],
     )
     assert short.exit_code == long.exit_code == 0, (short.stderr, long.stderr)
@@ -250,6 +295,52 @@ def test_screen_short_quiet_matches_long_form(datadir: Path) -> None:
     assert short.stderr == ""
     plain = runner.invoke(app, ["screen", contig, "--db", "tinyamr", "--datadir", str(datadir)])
     assert "Processing:" in plain.stderr
+
+
+def test_screen_db_name_positional_is_targeted_usage_error(datadir: Path) -> None:
+    """Given the stripped repro shape (click eating `-db ecoli_dec` as
+    `-d b` + positional), When run, Then exit 2 carries a USAGE_ERROR naming
+    the database and the --db spelling — not INPUT_NOT_FOUND and a starved
+    downstream pipe."""
+    result = runner.invoke(
+        app,
+        ["screen", "-d", "b", "ecoli_dec", str(CONTIGS / "sort.fa"), "-D", str(datadir)],
+    )
+    assert result.exit_code == 2
+    envelope = json.loads(result.stderr)
+    assert envelope["code"] == "USAGE_ERROR"
+    assert "it is a database NAME" in envelope["message"]
+    assert "--db ecoli_dec" in envelope["message"]
+    assert envelope["context"]["database"] == "ecoli_dec"
+    assert result.stdout == ""
+
+
+def test_screen_db_name_positional_guard_covers_uninstalled_catalog_names(
+    tmp_path: Path,
+) -> None:
+    """Given a positional naming a database no local install carries (ncbi:
+    bundled + catalog, card: catalog only, fetch-on-demand), When the datadir
+    is an empty directory, Then the same targeted guard fires — catalog
+    membership alone identifies the confusion."""
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    for name in ("ncbi", "card"):
+        result = runner.invoke(app, ["screen", "--db", "ncbi", "--datadir", str(empty), name])
+        assert result.exit_code == 2, (name, result.stderr)
+        envelope = json.loads(result.stderr)
+        assert envelope["code"] == "USAGE_ERROR"
+        assert envelope["context"]["database"] == name
+
+
+def test_screen_missing_ordinary_file_still_input_not_found(datadir: Path) -> None:
+    """Given a missing positional that no database answers to, When run,
+    Then the generic INPUT_NOT_FOUND (exit 5) is unchanged — the guard only
+    rewrites the database-confusion class."""
+    result = runner.invoke(
+        app, ["screen", "-d", "tinyamr", "-D", str(datadir), str(datadir / "nope.fa")]
+    )
+    assert result.exit_code == 5
+    assert json.loads(result.stderr)["code"] == "INPUT_NOT_FOUND"
 
 
 def test_db_build_short_kind_typing_match_long_form(tmp_path: Path) -> None:
@@ -329,6 +420,17 @@ def test_db_search_short_flags_match_long_form(records_datadir: Path) -> None:
                 "--limit",
                 "5",
             ],
+        ),
+    )
+
+
+def test_db_search_db_word_style_alias_matches_long_form(records_datadir: Path) -> None:
+    """Given db search `-db myamr` vs `--db myamr`, When compared, Then
+    stdout is byte-identical (the word-style alias rides both --db options)."""
+    _assert_same_run(
+        runner.invoke(app, ["db", "search", "tetx", "-db", "myamr", "-D", str(records_datadir)]),
+        runner.invoke(
+            app, ["db", "search", "tetx", "--db", "myamr", "--datadir", str(records_datadir)]
         ),
     )
 

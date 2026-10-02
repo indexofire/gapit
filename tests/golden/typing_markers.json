@@ -12,6 +12,12 @@
   "files": [
     {
       "file": "exact.fa",
+      "genes": [
+        "marker_a",
+        "marker_b",
+        "marker_c",
+        "marker_d"
+      ],
       "phenotypes": {
         "pathotype": {
           "phenotype": "EHEC",
@@ -61,6 +67,10 @@
     },
     {
       "file": "partial.fa",
+      "genes": [
+        "marker_a",
+        "marker_b"
+      ],
       "phenotypes": {
         "pathotype": {
           "phenotype": "EPEC",
@@ -100,6 +110,12 @@
     },
     {
       "file": "mutated.fa",
+      "genes": [
+        "marker_a",
+        "marker_b",
+        "marker_c",
+        "marker_d"
+      ],
       "phenotypes": {
         "pathotype": {
           "phenotype": "EHEC",

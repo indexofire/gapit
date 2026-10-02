@@ -88,13 +88,13 @@ def main() -> int:
             (
                 "dutch",
                 ["--summary", "multi_sample.tsv"],
-                ["summary", "multi_sample.tsv"],
+                ["summary", "--coverage", "multi_sample.tsv"],
                 FIXTURES,
             ),
             (
                 "multi",
                 ["--summary", "sample_a.tsv", "sample_b.tsv", "empty.tsv"],
-                ["summary", "sample_a.tsv", "sample_b.tsv", "empty.tsv"],
+                ["summary", "--coverage", "sample_a.tsv", "sample_b.tsv", "empty.tsv"],
                 FIXTURES,
             ),
             (
@@ -106,13 +106,13 @@ def main() -> int:
             (
                 "duplicate",
                 ["--summary", "sample_a.tsv", "sample_a.tsv"],
-                ["summary", "--quiet", "sample_a.tsv", "sample_a.tsv"],
+                ["summary", "--coverage", "--quiet", "sample_a.tsv", "sample_a.tsv"],
                 FIXTURES,
             ),
             (
                 "csv",
                 ["--summary", "--csv", "sample_a.csv", "sample_b.csv"],
-                ["summary", "--format", "csv", "sample_a.csv", "sample_b.csv"],
+                ["summary", "--coverage", "--format", "csv", "sample_a.csv", "sample_b.csv"],
                 FIXTURES,
             ),
             (

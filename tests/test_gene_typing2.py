@@ -362,7 +362,7 @@ class TestGoldens:
         """Given the typed db and all five samples screened into one table
         (relative FILE keys via chdir), When typed as TSV, Then the output
         is byte-identical to the committed golden — compose, mixed, and the
-        control-gate fallback in one seven-column table."""
+        control-gate fallback in one eight-column table."""
         monkeypatch.chdir(DATA)
         table = tmp_path / "screen.tsv"
         screened = runner.invoke(

@@ -14,6 +14,7 @@ from gapit.bundled import resolve_screen_datadir
 from gapit.errors import ensure_input_file, usage_fail
 from gapit.formats.md import render_reads2_markdown, render_reads_markdown
 from gapit.formats.reads_json import render_reads2_json, render_reads_json
+from gapit.formats.reads_tsv import reads_tsv_chunk, reads_tsv_preamble
 from gapit.reads import (
     ReadFileKind,
     ReadsParams,
@@ -33,7 +34,7 @@ def _pair_read_lanes(r1: list[Path], r2: list[Path] | None) -> list[tuple[Path, 
     return list(zip(r1, r2, strict=True))
 
 
-def _resolve_read_preset(
+def resolve_read_preset(
     lanes: list[tuple[Path, Path | None]], read_type: ReadTypeEnum | None, quiet: bool
 ) -> ReadTypeEnum:
     """Detect every input's kind from content and resolve the minimap2 preset:
@@ -55,7 +56,7 @@ def _resolve_read_preset(
     return ReadTypeEnum.map_ont
 
 
-def _reject_blastn_thresholds(minid: float, mincov: float, mode: str) -> None:
+def reject_blastn_thresholds(minid: float, mincov: float, mode: str) -> None:
     """--minid/--mincov are blastn-only; every minimap2 entry point rejects
     them instead of silently ignoring them (reads thresholds have their own
     flags). ``mode`` names the invocation in the frozen message."""
@@ -65,17 +66,16 @@ def _reject_blastn_thresholds(minid: float, mincov: float, mode: str) -> None:
         )
 
 
-def _validate_reads_usage(
-    output_format: OutputFormat | None,
+def validate_reads_usage(
     min_breadth: float,
     min_identity: float,
     min_mapq: int,
     threads: int,
 ) -> None:
-    """Usage gates shared by both minimap2 entry points, in the frozen order
-    (format first, then thresholds), before any file is touched."""
-    if output_format is OutputFormat.tsv or output_format is OutputFormat.csv:
-        usage_fail("--format tsv|csv is not available in reads mode (use json or md)")
+    """Usage gates shared by the minimap2 entry points, in the frozen order
+    (thresholds), before any file is touched. Every output format is legal in
+    reads mode: tsv is the default (the streaming table), json/md the
+    explicit opt-ins."""
     if not 0.0 <= min_breadth <= 100.0:
         usage_fail(f"--min-breadth must be in [0, 100]: got {min_breadth}")
     if not 0.0 <= min_identity <= 100.0:
@@ -98,13 +98,15 @@ def _screen_lanes(
     output_format: OutputFormat | None,
     quiet: bool,
     debug: bool,
+    all_genes: bool = False,
 ) -> str:
     """Minimap2 engine core shared by both entry points: preset resolution,
-    screening, rendering; json is the default format (SPEC.md §10). Either
-    reads/2 threshold on selects the gapit.reads/2 document; both off keep
-    gapit.reads/1 byte-identical. Returns the rendered output for the caller
-    to echo."""
-    resolved = _resolve_read_preset(lanes, read_type, quiet)
+    screening, rendering; tsv is the default format (the streaming table —
+    tsv is the human default on every surface, json/md the agent opt-ins,
+    SPEC.md §10). Either reads/2 threshold on selects the gapit.reads/2
+    document; both off keep gapit.reads/1 byte-identical. Returns the
+    rendered output for the caller to echo."""
+    resolved = resolve_read_preset(lanes, read_type, quiet)
     database = find_database(resolve_screen_datadir(datadir, db_name), db_name, quiet=quiet)
     if database.kind == "cluster":
         usage_fail(
@@ -140,17 +142,26 @@ def _screen_lanes(
     )
     now = datetime.now(UTC)
     reads2 = min_identity > 0.0 or min_mapq > 0
-    if reads2:
+    fmt = output_format if output_format is not None else OutputFormat.tsv
+    if fmt is OutputFormat.tsv or fmt is OutputFormat.csv:
+        # The default table: single sample, so one chunk — preamble + chunk
+        # concatenate to format_reads_tsv exactly (the positional path's
+        # streaming unit; here the run is one lane-union entry).
+        csv = fmt is OutputFormat.csv
+        output = reads_tsv_preamble(reads2=reads2, csv=csv) + reads_tsv_chunk(
+            report, reads2=reads2, csv=csv, all_genes=all_genes
+        )
+    elif fmt is OutputFormat.md:
         output = (
             render_reads2_markdown([report], params, now=now)
-            if output_format is OutputFormat.md
-            else render_reads2_json([report], params, now=now)
+            if reads2
+            else (render_reads_markdown([report], params, now=now))
         )
     else:
         output = (
-            render_reads_markdown([report], params, now=now)
-            if output_format is OutputFormat.md
-            else render_reads_json([report], params, now=now)
+            render_reads2_json([report], params, now=now)
+            if reads2
+            else (render_reads_json([report], params, now=now))
         )
     return output
 
@@ -171,17 +182,19 @@ def run_screen_reads(
     aligner: AlignerEnum | None = None,
     minid: float = 80.0,
     mincov: float = 80.0,
+    all_genes: bool = False,
 ) -> str:
     """Screen FASTQ reads or assembly FASTA given as already-split per-lane
     --r1/--r2 file lists (the CLI owns the comma-splitting; MCP passes arrays
     natively, so commas in filenames survive). Per-lane minimap2, sample-level
-    union; json is the default format (SPEC.md §10). A nonzero
+    union; tsv is the default format (the streaming table; json/md the
+    explicit opt-ins, SPEC.md §10). A nonzero
     --min-identity/--min-mapq turns on gapit.reads/2 alignment filtering.
     Returns the rendered output."""
     if aligner is AlignerEnum.blastn:
         usage_fail("--aligner blastn is not available for --r1/--r2 reads input")
-    _validate_reads_usage(output_format, min_breadth, min_identity, min_mapq, threads)
-    _reject_blastn_thresholds(minid, mincov, "--r1/--r2")
+    validate_reads_usage(min_breadth, min_identity, min_mapq, threads)
+    reject_blastn_thresholds(minid, mincov, "--r1/--r2")
     lanes = _pair_read_lanes(r1, r2)
     for path in [r1_path for r1_path, _ in lanes] + [
         r2_path for _, r2_path in lanes if r2_path is not None
@@ -199,6 +212,7 @@ def run_screen_reads(
         output_format,
         quiet,
         debug,
+        all_genes=all_genes,
     )
 
 
@@ -220,6 +234,7 @@ def run_screen_assemblies(
     debug: bool = False,
     minid: float = 80.0,
     mincov: float = 80.0,
+    all_genes: bool = False,
 ) -> str:
     """Screen positional assembly FASTA file(s) with the minimap2 engine
     (--aligner minimap2): every input must be FASTA(.gz) content — FASTQ
@@ -228,8 +243,8 @@ def run_screen_assemblies(
     the blastn-engine-only flags --fofn/--jobs/--noheader/--nopath and the
     blastn thresholds --minid/--mincov are rejected here instead of silently
     ignored. A nonzero --min-identity/--min-mapq turns on gapit.reads/2
-    filtering. Returns the rendered output."""
-    _validate_reads_usage(output_format, min_breadth, min_identity, min_mapq, threads)
+    filtering.     Returns the rendered output."""
+    validate_reads_usage(min_breadth, min_identity, min_mapq, threads)
     if fofn is not None:
         usage_fail("--fofn is not available with --aligner minimap2")
     if jobs != 1:
@@ -238,7 +253,7 @@ def run_screen_assemblies(
         usage_fail("--noheader is not available with --aligner minimap2")
     if nopath:
         usage_fail("--nopath is not available with --aligner minimap2")
-    _reject_blastn_thresholds(minid, mincov, "--aligner minimap2")
+    reject_blastn_thresholds(minid, mincov, "--aligner minimap2")
     if not files:
         usage_fail("no input files given (positional FILEs)")
     for path in files:
@@ -257,4 +272,5 @@ def run_screen_assemblies(
         output_format,
         quiet,
         debug,
+        all_genes=all_genes,
     )

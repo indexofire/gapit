@@ -265,8 +265,12 @@ preset resolution added 2026-09-19):
   `reads_mapped` = distinct query names with ≥1 primary alignment on the gene.
 - **Presence call**: `present = breadth_pct >= min_breadth`, `--min-breadth` default **90.0**
   (srst2-style). `--minid`/`--mincov` do NOT apply to reads mode.
-- **Output**: `--format json` (default in reads mode) emits `gapit.reads/1`; `--format md` the
-  Markdown form; `--format tsv|csv` in reads mode is a usage error (exit 2). Genes with zero
+- **Output**: the default (no `--format`) is the streaming **tsv** table (tsv is the human
+  default on every gapit surface; json/md are the agent opt-ins — breaking vs the ≤0.5.0
+  reads default, changed in the unreleased cycle; §10 describes gapit's own reads extension,
+  so this wording is normative for gapit only, not for the abricate parity path).
+  `--format json` emits `gapit.reads/1`; `--format md` the Markdown form; `--format csv` is
+  the comma spelling of the tsv table. Genes with zero
   mapped reads are omitted; entries sorted by `breadth_pct` descending, then gene name.
   `gapit.report/1` (contig mode) is unchanged and frozen. `gapit schema reads` introspects the
   new document.

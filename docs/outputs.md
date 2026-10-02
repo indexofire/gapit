@@ -115,9 +115,9 @@ table and renders the calls (real output; `screen --output` wrote the table):
 ```console
 $ gapit screen dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --quiet
 $ gapit typing dec.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
-dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
-dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA	astA;pic;uidA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	astA;pic;uidA
 ```
 
 The pic+astA profile without aggR is the headline divergence — GB 4789.6 calls EAEC while
@@ -239,6 +239,7 @@ row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
   "files": [
     {
       "file": "dec_s2_pic_astA_uidA.fasta",
+      "genes": ["astA", "pic", "uidA"],
       "phenotypes": {
         "gb4789_6": {
           "phenotype": "EAEC",
@@ -283,16 +284,19 @@ row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
 | `source` | array | The result table path(s) as given |
 | `db` | string | The database every row screened against |
 | `files` | array | One entry per FILE that has data rows, first-appearance order |
+| `files[].genes` | array | That FILE's present gene names, sorted — the hits behind the calls |
 | `files[].phenotypes` | object | Scheme name → its call (the additive shape below) |
 
 Each call carries `phenotype` (null on an ambiguous call), `score`, `confidence`
 (`high`/`ambiguous`/`low`), `components[{name, score}]`, and the optional `runner_up`,
 `ambiguous[]` (the tied pair), and `notes[]` — the same bodies the evaluator produces on
-the cluster path. The TSV/Markdown projection flattens each call to the seven `FILE`,
-`SCHEME`, `PHENOTYPE`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES` columns: ambiguous
-calls render `-` for the phenotype and carry the candidate pair in `NOTES` (the runner-up
-cell also renders `-` there — the pair already speaks). Typed errors: mixed `DATABASE`
-values across rows are `DATABASE_MISMATCH`, a table with no data rows `TYPING_NO_DATA`,
+the cluster path. The TSV/Markdown projection flattens each call to the eight `FILE`,
+`SCHEME`, `PHENOTYPE`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES`, `GENES` columns:
+ambiguous calls render `-` for the phenotype and carry the candidate pair in `NOTES` (the
+runner-up cell also renders `-` there — the pair already speaks); `GENES` closes each row
+with the FILE's sorted `;`-joined gene list, repeated on every scheme row of that FILE.
+Typed errors: mixed `DATABASE` values across rows are `DATABASE_MISMATCH`, a table with no
+data rows `TYPING_NO_DATA`,
 a database without a `typing.json` `TYPING_NO_SCHEME`, and a cluster database
 `TYPING_CLUSTER_DB` (its typing is integrated into `gapit screen`). Its JSON Schema prints
 with `gapit schema typing_result`.

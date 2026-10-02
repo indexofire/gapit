@@ -3,7 +3,8 @@
 
 Lives outside cli.py to keep that module small; cli.py registers it via
 ``register_screen_command``. The reads-mode argument rules (comma-list
-splitting, flag rejects) live in cmd_screen_reads_args.py.
+splitting, positional-FASTQ classification, flag rejects) live in
+cmd_screen_reads_args.py.
 """
 
 from pathlib import Path
@@ -11,7 +12,13 @@ from typing import Annotated
 
 import typer
 
-from gapit.cmd_screen_reads_args import reject_reads_mode_flags, split_read_list
+from gapit.cmd_screen_positionals import reject_db_name_positionals
+from gapit.cmd_screen_reads_args import (
+    reads_positional,
+    reject_mixed_positionals,
+    reject_reads_mode_flags,
+    split_read_list,
+)
 from gapit.dispatch import Datadir, dispatch, output_target
 from gapit.errors import usage_fail
 from gapit.reads import ReadTypeEnum
@@ -22,12 +29,18 @@ from gapit.screening import (
 )
 from gapit.screening_cluster import reject_cluster_engine_flags
 from gapit.screening_reads import run_screen_assemblies, run_screen_reads
+from gapit.screening_reads_positional import run_screen_reads_positional
 
 
 def screen_command(
     files: Annotated[
         list[Path] | None,
-        typer.Argument(help="Input FASTA/GBK/EMBL contig file(s) to screen."),
+        typer.Argument(
+            help=(
+                "Input contig file(s) to screen; an all-FASTQ wildcard enters reads"
+                " mode with samples auto-paired from filenames."
+            ),
+        ),
     ] = None,
     r1: Annotated[
         str | None,
@@ -122,12 +135,22 @@ def screen_command(
             "--jobs",
             "-j",
             help=(
-                "Screen N input files concurrently (gapit extension; output order is"
-                " always input order). Each worker runs its own BLAST against the"
-                " shared db index, which BLAST mmaps — concurrent readers are fine."
+                "Screen N input files concurrently (contig files, or the wildcard"
+                " FASTQ path's samples; gapit extension; output order is always"
+                " input order). Each worker runs its own aligner against the"
+                " shared db — BLAST mmaps the index and minimap2 holds it in"
+                " memory, so concurrent readers are fine."
             ),
         ),
     ] = 1,
+    all_genes: Annotated[
+        bool,
+        typer.Option(
+            "--all-genes",
+            "-A",
+            help="Reads table: also list absent gene calls (default: present genes only).",
+        ),
+    ] = False,
     merge_fragments: Annotated[
         bool,
         typer.Option(
@@ -162,8 +185,10 @@ def screen_command(
             "--format",
             "-f",
             help=(
-                "Output format (reads mode defaults to json). tsv/csv/md stream per"
-                " completed file; json is written once at the end (single document)."
+                "Output format (tsv is the default everywhere: reads mode"
+                " streams the table per completed file or sample). json/md are"
+                " the explicit agent opt-ins; json is written once at the end"
+                " (single document)."
             ),
         ),
     ] = None,
@@ -181,23 +206,37 @@ def screen_command(
     *,
     db: Annotated[
         str,
-        typer.Option("--db", "-d", help="Database to screen against (required, no default)."),
+        typer.Option(
+            "--db",
+            "-d",
+            "-db",
+            help="Database to screen against (required, no default).",
+        ),
     ],
 ) -> None:
     """Screen contig files or FASTQ reads (R1 and R2 comma-lists, one lane
-    each) for known genes (reference or custom databases)."""
+    each, or an all-FASTQ positional wildcard auto-paired into samples) for
+    known genes (reference or custom databases)."""
 
     def run() -> None:
-        if (r1 is not None or r2 is not None) and files:
+        args = list(files or [])
+        if (r1 is not None or r2 is not None) and args:
             usage_fail("--r1/--r2 and positional contig FILEs are mutually exclusive")
         if r2 is not None and r1 is None:
             usage_fail("--r2 requires --r1")
+        # Auto reads mode only when the default engine would otherwise run:
+        # an explicit --aligner keeps its own routing (minimap2 assemblies,
+        # blastn contigs) and the frozen matrix of guards with it.
+        reads_flags = [reads_positional(path) for path in args] if args and aligner is None else []
+        all_reads = bool(reads_flags) and all(reads_flags)
         if (
             (min_identity > 0 or min_mapq > 0)
             and r1 is None
             and aligner is not AlignerEnum.minimap2
+            and not all_reads
         ):
             usage_fail("--min-identity/--min-mapq are reads-mode only (minimap2 engine)")
+        reject_db_name_positionals(files, datadir)
         with output_target(output) as deliver:
             if r1 is not None or r2 is not None:
                 reject_reads_mode_flags(fofn, noheader, nopath, jobs, merge_fragments)
@@ -219,7 +258,43 @@ def screen_command(
                         aligner=aligner,
                         minid=minid,
                         mincov=mincov,
+                        all_genes=all_genes,
                     )
+                )
+            elif any(reads_flags):
+                reject_mixed_positionals(args, reads_flags)
+                # --jobs is legal ONLY here in reads mode (the wildcard
+                # screens many samples); passing 1 to the shared guard keeps
+                # the other reads-mode rejects frozen, and the use-case owns
+                # the jobs >= 1 validation like run_screen.
+                reject_reads_mode_flags(fofn, noheader, nopath, 1, merge_fragments)
+                reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
+
+                def warn(message: str) -> None:
+                    if not quiet:
+                        typer.echo(f"WARNING: {message}", err=True)
+
+                # run_screen_reads_positional emits its output through
+                # `deliver` (tsv/md per completed sample, json once); echoing
+                # the return value here would duplicate every byte.
+                run_screen_reads_positional(
+                    args,
+                    db,
+                    datadir,
+                    read_type,
+                    min_breadth,
+                    min_identity,
+                    min_mapq,
+                    threads,
+                    output_format,
+                    quiet,
+                    warn,
+                    debug,
+                    minid=minid,
+                    mincov=mincov,
+                    jobs=jobs,
+                    emit=deliver,
+                    all_genes=all_genes,
                 )
             elif aligner is AlignerEnum.minimap2:
                 if merge_fragments:

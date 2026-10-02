@@ -13,12 +13,14 @@
 `--r1`/`--r2` 时生效，记录在 [./reads.md](./reads.md)。
 
 每个选项都接受 **短** 列给出的单横线短形式（例如 `--db` 的 `-d`）；长形式仍是规范写法，
-布尔否定形式（如 `--no-merge-fragments`）保持只有长形式。
+布尔否定形式（如 `--no-merge-fragments`）保持只有长形式。`--db` 还单独带一个词风格的
+短别名：`-db ncbi`（需空格分隔；连写 `-dbncbi` 仍会绑定到 `-d` 加值）。位置参数若是一个
+已知数据库名但在磁盘上不存在，将以指明 `--db` 的用法错误被拒绝。
 
 | 参数 | 短 | 类型 | 默认值 | 说明 |
 |---|---|---|---|---|
-| `FILE...` | — | 路径 | 必填* | 要筛查的 FASTA/GBK/EMBL contig 输入文件。 |
-| `--db` | `-d` | str | 必填 | 用于筛查的数据库（数据目录的子目录）。没有默认值：一次筛查绝不会悄悄物化内置数据库 —— 请显式选择（`gapit db list`）。 |
+| `FILE...` | — | 路径 | 必填* | 要筛查的 contig 输入文件。全 FASTQ 的通配符进入 reads 模式并按文件名自动配对样本（见 [./reads.md](./reads.md)）。 |
+| `--db` | `-d`, `-db` | str | 必填 | 用于筛查的数据库（数据目录的子目录）。没有默认值：一次筛查绝不会悄悄物化内置数据库 —— 请显式选择（`gapit db list`）。 |
 | `--datadir` | `-D` | path | `$GAPIT_DATADIR`，然后 `~/.local/share/gapit/db` | 数据库目录。 |
 | `--minid` | `-i` | float | `80.0` | 最小一致性百分比，`0 < x <= 100`。在 BLAST 内部通过 `-perc_identity` 强制执行。 |
 | `--mincov` | `-c` | float | `80.0` | 最小覆盖度百分比，`0 <= x <= 100`。对未取整的浮点值做后置过滤。 |
@@ -30,7 +32,7 @@
 | `--noheader` | `-n` | 开关 | 关闭 | 不输出 `#FILE ...` 表头行。 |
 | `--nopath` | `-p` | 开关 | 关闭 | FILE 列只保留文件名。 |
 | `--debug` | `-v` | 开关 | 关闭 | 详细的 stderr 诊断；回显每条外部命令行。 |
-| `--format` | `-f` | tsv\|csv\|json\|md | `tsv` | 输出格式（reads 模式默认 json）。tsv/csv/md 每完成一个文件就流出该文件的行/小节；json 在结束时一次性写出（单一文档）。 |
+| `--format` | `-f` | tsv\|csv\|json\|md | `tsv` | 输出格式（tsv 在所有路径上都是默认值：reads 模式每完成一个文件或样本就流出对应的表格行/分块）。json/md 是给 agent 的显式选项；json 在结束时一次性写出（单一文档）。 |
 | `--output` | `-o` | path | stdout | 把报告写入 PATH 而不是 stdout（截断已存在的文件）。流式格式逐文件刷新；此时 stdout 不输出任何数据。 |
 | `--aligner` | `-a` | blastn\|minimap2 | 按输入决定 | 比对引擎（默认：contig 文件用 blastn，`--r1`/`--r2` reads 用 minimap2）。`--aligner minimap2` 把位置参数给出的 FASTA 装配体送进 minimap2 引擎（要求 FASTA 内容；见 [./reads.md](./reads.md)）。 |
 | `--r1` | `-1` | str | 无 | *reads 模式。* reads 或 assembly FASTA 文件，逗号分隔，每条 lane 一个。 |
@@ -50,6 +52,12 @@
 FASTQ、GBK、EMBL 都可以。转换出的 FASTA 缓冲在内存里（基因组规模的装配体也只有几
 MB），经 stdin 喂给 blastn。如果归一化失败（不是序列文件），gapit 在 stderr 打印
 `gapit.error/1` 信封并以退出码 5 结束。
+
+归一化之前有一条例外：当**每个**位置参数文件都是 FASTQ（`.fastq`/`.fq` ± `.gz`，
+或扩展名含糊时按内容嗅探为 FASTQ）且未指定 `--aligner` 时，整条命令改走 reads 引
+擎 —— `gapit screen -d ecoli_dec *.gz` 把 glob 按自动配对的样本筛查，而不是当作
+contig。FASTA 与 FASTQ 位置参数混用是用法错误，错误信息点名 reads 文件。配对规则
+与按样本输出见 [./reads.md](./reads.md)。
 
 `--fofn` 文件每行列一个路径，完全取代位置参数。
 
@@ -190,11 +198,11 @@ tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00
 ```console
 $ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --nopath --quiet
 $ gapit typing dec.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
-dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
-dec_s3_stx2a_escV_aggR_uidA.fasta	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
-dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
-dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
+dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	aggR;escV;stx2a;uidA
+dec_s3_stx2a_escV_aggR_uidA.fasta	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	aggR;escV;stx2a;uidA
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA	astA;pic;uidA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	astA;pic;uidA
 ```
 
 管道形式完全省去中间文件——screen 的 stdout 就是 typing 的 stdin（两侧都保持
@@ -208,6 +216,14 @@ $ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db ecoli_dec --nopath --quiet
 标记（挂着终端也有效——读取直到 EOF）。完整的输入契约见
 [typing 页面](./typing.zh.md#两阶段判定工作流)。
 
+同一条管道也能喂给矩阵视图。一次筛查多个 assembly 会把所有行汇入一张表（每行
+携带同一个 `DATABASE`；`FILE` 列横跨整个批次），因此
+[`gapit summary`](./summary.zh.md) 可以直接从管道读取并折叠成基因×文件存在矩阵：
+
+```console
+$ gapit screen -d ecoli_dec *.fna --quiet | gapit summary
+```
+
 基因簇数据库是例外：其判定集成在筛查本身（typed 基因簇 TSV 的 `PHENOTYPE` 列，
 见[下文](#基因簇数据库-kind-cluster)）。
 
@@ -218,7 +234,10 @@ $ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db ecoli_dec --nopath --quiet
 - **tsv/csv/md 按文件流式输出。** 表头（或 Markdown frontmatter）在筛查开始时打印
   一次，每个文件的行/小节在该文件完成的那一刻打印 —— 顺序始终是输入顺序。
   `--jobs N > 1` 时采用队头阻塞式发射：第 *i* 个文件的输出要等文件 1..*i* 全部完成
-  才流出（线程池按输入顺序产出），因此 stdout 字节与串行运行完全一致。
+  才流出（线程池按输入顺序产出），因此 stdout 字节与串行运行完全一致。位置参数
+  FASTQ 通配符路径（`screen -d db *.fastq.gz`，见 [./reads.md](./reads.md)）按样本遵
+  循同一契约：`--jobs` 并行各样本，md 先流出静态 frontmatter、每完成一个样本即流
+  出其 `## <样本>` 小节，批量中途失败时 `--output` 保留已流出的前缀。
 - **md 流式输出；json 在结束时一次性写出。** Markdown frontmatter 是**静态**元数据
   （schema、tool、`created_at`、db、阈值 —— 不含运行总数），因此可以先行输出，每个
   文件的小节随文件完成即时流出，与 tsv 行完全一致。基因簇数据库的每个文件小节自带

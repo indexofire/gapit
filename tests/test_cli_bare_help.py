@@ -3,10 +3,13 @@
 Commands that need input print their full help when invoked with no
 arguments at all (typer ``no_args_is_help``) instead of erroring; commands
 that are VALID with no arguments (`mcp`, `setupdb`, `db list`,
-`db outdated`) must keep running bare. Flag-present-but-input-missing
-invocations keep their typed usage-error envelopes (locked per-command in
-their own suites); bare `db fetch` never reaches the use-case, so the
-former omitted-NAME default-set download cannot start by accident.
+`db outdated`) must keep running bare. Two stdin-aware commands keep their
+own tty-guarded bare-help instead: `typing` and `summary` read a piped
+table when stdin is not a terminal (their suites pin the probe).
+Flag-present-but-input-missing invocations keep their typed usage-error
+envelopes (locked per-command in their own suites); bare `db fetch` never
+reaches the use-case, so the former omitted-NAME default-set download
+cannot start by accident.
 """
 
 import re
@@ -44,7 +47,6 @@ def _normalized(result: Result) -> str:
 BARE_COMMANDS = [
     pytest.param([], id="root"),
     pytest.param(["screen"], id="screen"),
-    pytest.param(["summary"], id="summary"),
     pytest.param(["schema"], id="schema"),
     pytest.param(["db"], id="db"),
     pytest.param(["db", "fetch"], id="db-fetch"),

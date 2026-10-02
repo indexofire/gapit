@@ -14,12 +14,15 @@ you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 
 Every option also accepts the single-dash short form listed in the **Short** column (e.g.
 `-d` for `--db`); long forms remain the canonical spelling, and boolean negative halves like
-`--no-merge-fragments` stay long-only.
+`--no-merge-fragments` stay long-only. `--db` alone carries a second, word-style short alias:
+`-db ncbi` (space-separated; an attached `-dbncbi` still binds to `-d` plus a value). A
+positional argument that names a known database but is missing on disk is rejected with a
+targeted usage error pointing at `--db`.
 
 | Flag | Short | Type | Default | Description |
 |---|---|---|---|---|
-| `FILE...` | — | path(s) | required* | Input FASTA/GBK/EMBL contig file(s) to screen. |
-| `--db` | `-d` | str | required | Database to screen against (datadir subdir). No default: a screen never silently materializes a bundled database — pick one explicitly (`gapit db list`). |
+| `FILE...` | — | path(s) | required* | Input contig file(s) to screen. An all-FASTQ wildcard enters reads mode with samples auto-paired from filenames (see [./reads.md](./reads.md)). |
+| `--db` | `-d`, `-db` | str | required | Database to screen against (datadir subdir). No default: a screen never silently materializes a bundled database — pick one explicitly (`gapit db list`). |
 | `--datadir` | `-D` | path | `$GAPIT_DATADIR`, then `~/.local/share/gapit/db` | Database directory. |
 | `--minid` | `-i` | float | `80.0` | Minimum %identity, `0 < x <= 100`. Enforced inside BLAST via `-perc_identity`. |
 | `--mincov` | `-c` | float | `80.0` | Minimum %coverage, `0 <= x <= 100`. Post-filter on the unrounded float. |
@@ -31,7 +34,7 @@ Every option also accepts the single-dash short form listed in the **Short** col
 | `--noheader` | `-n` | flag | off | Suppress the `#FILE ...` header row. |
 | `--nopath` | `-p` | flag | off | Basename the FILE column. |
 | `--debug` | `-v` | flag | off | Verbose stderr diagnostics; echoes each external command line. |
-| `--format` | `-f` | tsv\|csv\|json\|md | `tsv` | Output format (reads mode defaults to json). tsv/csv/md stream per completed file; json is written once at the end (single document). |
+| `--format` | `-f` | tsv\|csv\|json\|md | `tsv` | Output format (tsv is the default everywhere: reads mode streams the table per completed file or sample). json/md are the explicit agent opt-ins; json is written once at the end (single document). |
 | `--output` | `-o` | path | stdout | Write the report to PATH instead of stdout (truncates any existing file). Streaming formats flush per file; stdout then carries no data. |
 | `--aligner` | `-a` | blastn\|minimap2 | input-based | Alignment engine (default: blastn for contig files, minimap2 for `--r1`/`--r2` reads). `--aligner minimap2` routes positional FASTA assemblies through the minimap2 engine (FASTA content required; see [./reads.md](./reads.md)). |
 | `--r1` | `-1` | str | none | *Reads mode.* Reads or assembly FASTA file(s), comma-separated, one per lane. |
@@ -45,12 +48,22 @@ Every option also accepts the single-dash short form listed in the **Short** col
 \* Positional FILEs or `--fofn`, or reads mode via `--r1`. Positional files and `--r1`/`--r2`
 are mutually exclusive.
 
+\* Positional FILEs or `--fofn`, or reads mode via `--r1`. Positional files and `--r1`/`--r2`
+are mutually exclusive.
+
 ## Input files
 
 Normalization is native (no external `any2fasta`): plain FASTA, gzipped and bzip2-compressed
 FASTA, FASTQ, GBK, and EMBL all work. The converted FASTA is buffered in memory (genome-scale
 assemblies are a few MB) and fed to blastn on stdin. If normalization fails (not a sequence
 file), gapit prints a `gapit.error/1` envelope on stderr and exits 5.
+
+One exception predates normalization: when **every** positional file is FASTQ (`.fastq`/`.fq`
+± `.gz`, or content-sniffed FASTQ under an ambiguous extension) and no `--aligner` is given,
+the whole invocation routes to the reads engine — `gapit screen -d ecoli_dec *.gz` screens
+the glob as auto-paired samples instead of contigs. Mixing FASTA and FASTQ positionals is a
+usage error naming the reads files. See [./reads.md](./reads.md) for the pairing
+conventions and the per-sample output.
 
 A `--fofn` file lists one path per line and replaces positional arguments entirely.
 
@@ -193,11 +206,11 @@ straight in, the canonical one-liner:
 ```console
 $ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --nopath --quiet
 $ gapit typing dec.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
-dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
-dec_s3_stx2a_escV_aggR_uidA.fasta	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
-dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
-dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
+dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	aggR;escV;stx2a;uidA
+dec_s3_stx2a_escV_aggR_uidA.fasta	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	aggR;escV;stx2a;uidA
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA	astA;pic;uidA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	astA;pic;uidA
 ```
 
 The piped form skips the intermediate file entirely — screen's stdout is typing's stdin
@@ -211,6 +224,15 @@ $ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db ecoli_dec --nopath --quiet
 stdin marker (valid with a terminal attached — it reads until EOF). The full input
 contract lives in the [typing page](./typing.md#the-two-stage-designation-workflow).
 
+The same pipe feeds the matrix view. Screening many assemblies in one call batched all
+their rows into one table (every row carries the same `DATABASE`; the `FILE` column spans
+the whole batch), so [`gapit summary`](./summary.md) summarizes it straight off the pipe
+into the gene×file presence matrix:
+
+```console
+$ gapit screen -d ecoli_dec *.fna --quiet | gapit summary
+```
+
 Cluster databases are the exception: their typing is integrated into the screen itself
 (the typed cluster TSV's `PHENOTYPE` column, [below](#cluster-databases-kind-cluster)).
 
@@ -222,7 +244,10 @@ Long batch runs give feedback as they go, and the report can go to a file:
   starts, and each file's rows/section print the moment that file finishes — in input order,
   always. Under `--jobs N > 1` emission is head-of-line: file *i*'s output waits until files
   1..*i* are all done (the pool yields in input order), so bytes on stdout are identical to
-  the sequential run.
+  the sequential run. The positional-FASTQ wildcard path (`screen -d db *.fastq.gz`,
+  [./reads.md](./reads.md)) has the same contract sample-wise: `--jobs` parallelizes
+  samples, md streams the static frontmatter plus one `## <sample>` section per completed
+  sample, and `--output` persists the streamed prefix on a mid-batch failure.
 - **md streams; json is written once, at the end.** The Markdown frontmatter is STATIC
   metadata (schema, tool, `created_at`, db, thresholds — no run totals), so it can lead the
   document and every file's section follows the moment the file completes, exactly like the

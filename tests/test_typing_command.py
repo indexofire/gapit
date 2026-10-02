@@ -317,7 +317,7 @@ class TestCommand:
         written = target.read_text(encoding="utf-8")
         assert (
             written.splitlines()[0]
-            == "FILE\tSCHEME\tPHENOTYPE\tCONFIDENCE\tSCORE\tRUNNER_UP\tNOTES"
+            == "FILE\tSCHEME\tPHENOTYPE\tGENES\tCONFIDENCE\tSCORE\tRUNNER_UP\tNOTES"
         )
 
     def test_quiet_silences_the_stderr_note(self, tmp_path: Path, typed_db: Path) -> None:
@@ -367,6 +367,8 @@ class TestCommand:
         assert document["source"] == [str(path)]
         assert document["db"] == DB
         assert [entry["file"] for entry in document["files"]] == ["s.fa", "t.fa"]
+        assert document["files"][0]["genes"] == ["marker_a"]
+        assert document["files"][1]["genes"] == ["marker_b"]
         assert set(document["files"][0]["phenotypes"]) == {"pathotype", "toxin"}
 
     def test_schema_registry_names_typing_result(self) -> None:
@@ -643,7 +645,11 @@ class TestGoldens:
         document = load_typing(database)
         assert document is not None
         results = [
-            TypingFileResult(file=entry.file, phenotypes=evaluate_gene_calls(entry.calls, document))
+            TypingFileResult(
+                file=entry.file,
+                genes=tuple(sorted(entry.calls)),
+                phenotypes=evaluate_gene_calls(entry.calls, document),
+            )
             for entry in read_typing_input([table_path]).files
         ]
         assert render_typing_result_json(["screen.tsv"], DB, results, now=PINNED_NOW) == (

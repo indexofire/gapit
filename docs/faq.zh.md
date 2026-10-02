@@ -72,16 +72,18 @@ minimap2 基因簇引擎，每文件报告一个最佳位点判定，附逐基�
 `--jobs` 是并行筛查的输入文件数（默认 1）。N 个单 contig 文件，`--jobs N` 能扩展；
 一个巨型文件，靠 `--threads`。
 
-## reads 模式为什么拒绝 `--format tsv`？
+## reads 模式输出什么格式？
 
-reads 结果没有逐命中的 TSV 语义（它们是逐基因的广度/深度行），所以 TSV/CSV 是用法
-错误。请用 `json`（默认）或 `md`：
+默认 TSV —— tsv 是 gapit 所有界面上的人类默认值，json/md 是给智能体的显式选项。
+reads 结果是逐基因的广度/深度行，流式表格把样本名放在第一列 `#SAMPLE`；
+`--format json`（或 `md`）则给出版本化的 `gapit.reads/1` 文档：
 
 ```console
-$ gapit screen --r1 reads.fq --read-type sr --db tinyamr --format tsv
-{"schema":"gapit.error/1","code":"USAGE_ERROR","message":"--format tsv|csv is not available in reads mode (use json or md)","context":{}}
-$ echo $?
-2
+$ gapit screen --r1 reads.fq --read-type sr --db tinyamr
+#SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT	RESISTANCE
+reads.fq	tetX	97.70	2.09	12	yes	tinyamr	SYN-001	extended resistance determinant tetX	TETRACYCLINE
+$ gapit screen --r1 reads.fq --read-type sr --db tinyamr --format json
+{"schema": "gapit.reads/1", ...}
 ```
 
 reads 模式：`./reads.md`。

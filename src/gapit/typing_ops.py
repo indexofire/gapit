@@ -77,7 +77,11 @@ def run_typing(
     if not quiet:
         typer.echo(f"Typing {len(table.files)} file(s) against {table.database}", err=True)
     results = [
-        TypingFileResult(file=entry.file, phenotypes=evaluate_gene_calls(entry.calls, document))
+        TypingFileResult(
+            file=entry.file,
+            genes=tuple(sorted(entry.calls)),
+            phenotypes=evaluate_gene_calls(entry.calls, document),
+        )
         for entry in table.files
     ]
     now = datetime.now(UTC)

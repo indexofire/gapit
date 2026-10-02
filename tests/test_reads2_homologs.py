@@ -54,6 +54,8 @@ def _screen(datadir: Path, fq: str, read_type: str, extra: list[str]) -> str:
             str(datadir),
             "--read-type",
             read_type,
+            "--format",
+            "json",
             "--quiet",
             *extra,
         ],

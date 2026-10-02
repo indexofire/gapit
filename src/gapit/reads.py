@@ -201,7 +201,10 @@ def screen_reads(
     """Screen one sample's lanes against one database into a sample-level
     ReadsReport (union of all lanes' primary alignments). With a nonzero
     min_identity/min_mapq (gapit.reads/2), alignments are filtered BEFORE
-    aggregation and the minimap2 run emits NM tags for the identity rule."""
+    aggregation and the identity rule needs the NM tags. ``nm_tags`` is
+    ALWAYS on: minimap2's no-CIGAR mode emits clipped coordinates for
+    diverged alignments (26ECO0071 astA: 57% breadth without --cs, 100%
+    with), silently under-reporting breadth — the reads/1 core metric."""
     reads2 = min_identity > 0.0 or min_mapq > 0
     rows = run_minimap2(
         lanes,
@@ -209,7 +212,7 @@ def screen_reads(
         read_type=read_type,
         threads=threads,
         debug=debug,
-        nm_tags=reads2,
+        nm_tags=True,
     )
     if reads2:
         rows = filter_alignments(rows, min_identity=min_identity, min_mapq=min_mapq)

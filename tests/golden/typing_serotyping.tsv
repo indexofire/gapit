@@ -1,21 +1,21 @@
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
-listeria_4b.fa	doumith	4b-4d-4e	high	1.0000	1/2a-3a (0.0000)	4b/4d/4e share one PCR pattern (Doumith et al. 2004)
-listeria_4b.fa	o_group	O?	low	0.0000	O2 (0.0000)	
-listeria_4b.fa	k_group	K?	low	0.0000	K64 (0.0000)	
-listeria_4b.fa	serotype	O?:K?	low	0.0000	-	
-listeria_1c.fa	doumith	1/2c-3c	high	1.0000	1/2a-3a (0.0000)	
-listeria_1c.fa	o_group	O?	low	0.0000	O2 (0.0000)	
-listeria_1c.fa	k_group	K?	low	0.0000	K64 (0.0000)	
-listeria_1c.fa	serotype	O?:K?	low	0.0000	-	
-listeria_nogate.fa	doumith	NT	low	0.0000	-	control gene absent
-listeria_nogate.fa	o_group	O?	low	0.0000	O2 (0.0000)	
-listeria_nogate.fa	k_group	K?	low	0.0000	K64 (0.0000)	
-listeria_nogate.fa	serotype	O?:K?	low	0.0000	-	
-vp_typed.fa	doumith	NT	low	0.0000	-	control gene absent
-vp_typed.fa	o_group	O1	high	1.0000	O2 (0.0000)	
-vp_typed.fa	k_group	K13	high	1.0000	K64 (0.0000)	
-vp_typed.fa	serotype	O1:K13	high	1.0000	-	
-vp_mixed.fa	doumith	NT	low	0.0000	-	control gene absent
-vp_mixed.fa	o_group	mixed	low	1.0000	-	mixed infection in unique group 'wzx'
-vp_mixed.fa	k_group	-	ambiguous	1.0000	-	ambiguous: K13 (1.0000), K64 (1.0000)
-vp_mixed.fa	serotype	-	ambiguous	1.0000	-	ingredient scheme 'k_group' is ambiguous; ambiguous: K13 (1.0000), K64 (1.0000)
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+listeria_4b.fa	doumith	4b-4d-4e	orf2110;orf2870;prs	high	1.0000	1/2a-3a (0.0000)	4b/4d/4e share one PCR pattern (Doumith et al. 2004)
+listeria_4b.fa	o_group	O?	orf2110;orf2870;prs	low	0.0000	O2 (0.0000)	
+listeria_4b.fa	k_group	K?	orf2110;orf2870;prs	low	0.0000	K64 (0.0000)	
+listeria_4b.fa	serotype	O?:K?	orf2110;orf2870;prs	low	0.0000	-	
+listeria_1c.fa	doumith	1/2c-3c	lmo0733;lmo1118;prs	high	1.0000	1/2a-3a (0.0000)	
+listeria_1c.fa	o_group	O?	lmo0733;lmo1118;prs	low	0.0000	O2 (0.0000)	
+listeria_1c.fa	k_group	K?	lmo0733;lmo1118;prs	low	0.0000	K64 (0.0000)	
+listeria_1c.fa	serotype	O?:K?	lmo0733;lmo1118;prs	low	0.0000	-	
+listeria_nogate.fa	doumith	NT	lmo0737	low	0.0000	-	control gene absent
+listeria_nogate.fa	o_group	O?	lmo0737	low	0.0000	O2 (0.0000)	
+listeria_nogate.fa	k_group	K?	lmo0737	low	0.0000	K64 (0.0000)	
+listeria_nogate.fa	serotype	O?:K?	lmo0737	low	0.0000	-	
+vp_typed.fa	doumith	NT	wzx_o1;wzy_k13	low	0.0000	-	control gene absent
+vp_typed.fa	o_group	O1	wzx_o1;wzy_k13	high	1.0000	O2 (0.0000)	
+vp_typed.fa	k_group	K13	wzx_o1;wzy_k13	high	1.0000	K64 (0.0000)	
+vp_typed.fa	serotype	O1:K13	wzx_o1;wzy_k13	high	1.0000	-	
+vp_mixed.fa	doumith	NT	wzx_o1;wzx_o2;wzy_k13;wzy_k64	low	0.0000	-	control gene absent
+vp_mixed.fa	o_group	mixed	wzx_o1;wzx_o2;wzy_k13;wzy_k64	low	1.0000	-	mixed infection in unique group 'wzx'
+vp_mixed.fa	k_group	-	wzx_o1;wzx_o2;wzy_k13;wzy_k64	ambiguous	1.0000	-	ambiguous: K13 (1.0000), K64 (1.0000)
+vp_mixed.fa	serotype	-	wzx_o1;wzx_o2;wzy_k13;wzy_k64	ambiguous	1.0000	-	ingredient scheme 'k_group' is ambiguous; ambiguous: K13 (1.0000), K64 (1.0000)

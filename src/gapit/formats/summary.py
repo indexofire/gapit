@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gapit import __version__
 from gapit.formats.json import ToolDocument, utc_timestamp
-from gapit.summary import ABSENT, FIELDSEP, SummaryMatrix
+from gapit.summary import ABSENT, FIELDSEP, SummaryMatrix, SummaryRow
 
 
 class SummaryParamsDocument(BaseModel, frozen=True):
@@ -38,15 +38,24 @@ class SummaryDocument(BaseModel, frozen=True):
     rows: list[SummaryRowDocument]
 
 
+def _display_cell(matrix: SummaryMatrix, row: SummaryRow, gene: str) -> str:
+    """One table cell: '+', presence / '-', absence by default; the
+    ';'-joined metric values ('.' absent) under -i/-c."""
+    if gene not in row.cells:
+        return "-" if matrix.params.presence_cells else ABSENT
+    if matrix.params.presence_cells:
+        return "+"
+    return FIELDSEP.join(row.cells[gene])
+
+
 def format_summary_tsv(matrix: SummaryMatrix, *, csv: bool) -> str:
     """Render the matrix in abricate --summary shape: '#FILE NUM_FOUND <genes>'
-    header, one row per input, ';' cells, '.' absent. Line = sep.join + '\\n'."""
+    header, one row per input ('+'/'-' presence cells by default; metric
+    values under -i/-c). Line = sep.join + '\\n'."""
     sep = "," if csv else "\t"
     lines = [sep.join(("#FILE", "NUM_FOUND", *matrix.genes))]
     for row in matrix.rows:
-        cells = [
-            FIELDSEP.join(row.cells[gene]) if gene in row.cells else ABSENT for gene in matrix.genes
-        ]
+        cells = [_display_cell(matrix, row, gene) for gene in matrix.genes]
         lines.append(sep.join((row.file, str(row.num_found), *cells)))
     return "".join(line + "\n" for line in lines)
 
@@ -95,9 +104,6 @@ def render_summary_md(matrix: SummaryMatrix, *, now: datetime) -> str:
         "|" + "---|" * len(columns),
     ]
     for row in matrix.rows:
-        cells = [
-            _md_cell(FIELDSEP.join(row.cells[gene])) if gene in row.cells else ABSENT
-            for gene in matrix.genes
-        ]
+        cells = [_md_cell(_display_cell(matrix, row, gene)) for gene in matrix.genes]
         lines.append("| " + " | ".join((_md_cell(row.file), str(row.num_found), *cells)) + " |")
     return "\n".join(lines) + "\n"

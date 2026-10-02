@@ -1,7 +1,7 @@
 # 汇总报告
 
 `gapit summary` 把一份或多份 abricate 格式报告表（包括 gapit screen 的输出）折叠成
-基因存在/缺失矩阵：每文件一行，每基因一列，单元格存放命中指标。它取代
+基因存在/缺失矩阵：每文件一行，每基因一列。它取代
 `abricate --summary`。
 
 输入报告是带标准 15 列表头（`#FILE  SEQUENCE  ...`）的 TSV 或 CSV，正是 `gapit
@@ -14,8 +14,9 @@ screen` 写出的格式。如何产生报告见 [./screen.md](./screen.md)；输
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
-| `FILE...` | 路径 | 必填 | 要汇总的 abricate 格式报告文件。至少一个。 |
-| `--identity` | 开关 | 关闭 | 单元格显示 %IDENTITY 而不是 %COVERAGE。 |
+| `FILE...` | 路径 | stdin | 要汇总的 abricate 格式报告文件。至少一个输入：文件、管道送入的表或 `-` 表示 stdin。 |
+| `--identity` / `-i` | 开关 | 关闭 | 单元格显示 %IDENTITY 数值（默认 `+`/`-`）。 |
+| `--coverage` / `-c` | 开关 | 关闭 | 单元格显示 %COVERAGE 数值（默认 `+`/`-`）。 |
 | `--nopath` | 开关 | 关闭 | 行键只保留文件名（FILE 值 / 输入文件名）。 |
 | `--quiet` | 开关 | 关闭 | 静默 stderr 诊断。 |
 | `--format` | tsv\|csv\|json\|md | `tsv` | 输出格式。 |
@@ -50,17 +51,49 @@ tests/data/summary/sample_b.tsv	2	90.00	100.00
 注意那个零命中文件：它以 `NUM_FOUND 0` 和全为 `.` 的基因列出现。同一文件里同一基因
 的多个命中按报告顺序用 `;` 串接（见 `99.50;52.00`）。
 
-## 单元格与 `--identity`
+## 经管道送入 screen 输出
 
-默认单元格存放每个命中的 %COVERAGE。加 `--identity` 后改存 %IDENTITY；gapit 会在
-stderr 说明切换：
+只要 stdin 不是终端（管道或重定向），`gapit summary` 就从 stdin 读取表，因此筛查
+阶段可以直接喂给它——规范的批量管道。一次 screen 调用筛查多个 assembly 会写出一张
+批量表（每行携带同一个 `DATABASE`；`FILE` 列横跨整个批次），而管道送入的表算作**一个
+输入**，于是 dutch 模式生效——每个 FILE 值一行，得到基因×文件存在矩阵：
 
 ```console
-$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv --identity --nopath
-Using %IDENTITY for the summary table instead of %COVERAGE
+$ gapit screen -d ecoli_dec *.fna --nopath --quiet | gapit summary
+#FILE	NUM_FOUND	aggR	astA	escV	pic	stx2a	uidA
+dec_s2_pic_astA_uidA.fasta	3	.	100.00	.	100.00	.	100.00
+dec_s3_stx2a_escV_aggR_uidA.fasta	4	100.00	.	100.00	.	100.00	100.00
+```
+
+这与先 `gapit screen -d ecoli_dec *.fna --output combined.tsv` 再
+`gapit summary combined.tsv` 打印的矩阵完全相同。规则：
+
+- **在终端里裸调用 `gapit summary` 仍打印帮助**（退出码 2）；挂着管道或重定向时改为
+  读取 stdin。
+- **`gapit summary -`** 是显式 stdin 标记——即使挂着终端也从 stdin 读取，直到 EOF。
+- **`-` 与文件参数混用是用法错误**（v1 只接受 stdin 或文件之一，绝不混用）。
+- **非 UTF-8 的 stdin** 以指明 `-` 的 `SUMMARY_MALFORMED` 信封退出码 5；畸形的管道行
+  会指明 `-` 及其行号。
+
+## 单元格模式
+
+默认单元格为**存在判定**：`+` 表示该文件至少有一条命中，`-` 表示缺失。
+
+| 模式 | 调用方式 | 单元格 |
+|---|---|---|
+| 存在（默认） | `gapit summary a.tsv b.tsv` | `+` / `-` |
+| 一致性 | `--identity` / `-i` | 各命中的 %IDENTITY，`;` 连接（`.` = 缺失） |
+| 覆盖度 | `--coverage` / `-c` | 各命中的 %COVERAGE，`;` 连接（`.` = 缺失） |
+| 两者 | `-ic`（组合） | 各命中 `identity/coverage`，`;` 连接（`.` = 缺失） |
+
+两旗标可组合（`-ic`）：每个命中渲染为 `identity/coverage`。所选指标在 stderr 提示。
+`--coverage` 逐字节复现 abricate `--summary` 的经典单元格形态——parity 对比在该模式下运行。
+
+```console
+$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-sample_a.tsv	2	98.75;91.00	95.10
-sample_b.tsv	2	97.00	99.99
+sample_a.tsv	2	+	+
+sample_b.tsv	2	+	+
 ```
 
 单元格原样保留原始报告字符串，不做任何重新格式化或平均。`NUM_FOUND` 统计不同基因

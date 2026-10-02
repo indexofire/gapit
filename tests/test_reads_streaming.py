@@ -167,8 +167,8 @@ def test_input_paths_are_absolute_and_stdin_is_devnull(
     ((argv, kwargs),) = calls
     assert argv[:5] == ["minimap2", "-x", "sr", "-t", "1"]
     assert kwargs["stdin"] == subprocess.DEVNULL
-    db_arg, r1_arg, r2_arg = argv[5:8]
+    db_arg, r1_arg, r2_arg = argv[8:11]
     assert Path(db_arg) == Path("sequences").absolute()
     assert Path(r1_arg) == reads.absolute()
     assert Path(r2_arg) == mate.absolute()
-    assert not any(argument.startswith("-") for argument in argv[5:])
+    assert not any(argument.startswith("-") for argument in argv[11:])

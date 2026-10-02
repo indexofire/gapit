@@ -82,16 +82,19 @@ per-gene verdicts and, on typed databases, a phenotype. Details:
 parallel (default 1). For N single-contig files, `--jobs N` scales; for one
 huge file, `--threads` does.
 
-## Why does reads mode reject `--format tsv`?
+## What format does reads mode output?
 
-Reads results have no per-hit TSV semantics (they are per-gene breadth/depth
-rows), so TSV/CSV is a usage error. Use `json` (default) or `md`:
+TSV by default — tsv is the human default on every gapit surface, and json/md are the
+agent opt-ins. Reads results are per-gene breadth/depth rows, so the streaming table
+puts the sample key in the first `#SAMPLE` column; `--format json` (or `md`) gives the
+versioned `gapit.reads/1` document instead:
 
 ```console
-$ gapit screen --r1 reads.fq --read-type sr --db tinyamr --format tsv
-{"schema":"gapit.error/1","code":"USAGE_ERROR","message":"--format tsv|csv is not available in reads mode (use json or md)","context":{}}
-$ echo $?
-2
+$ gapit screen --r1 reads.fq --read-type sr --db tinyamr
+#SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT	RESISTANCE
+reads.fq	tetX	97.70	2.09	12	yes	tinyamr	SYN-001	extended resistance determinant tetX	TETRACYCLINE
+$ gapit screen --r1 reads.fq --read-type sr --db tinyamr --format json
+{"schema": "gapit.reads/1", ...}
 ```
 
 Reads mode: `./reads.md`.

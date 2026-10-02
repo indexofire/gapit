@@ -4,7 +4,7 @@ path.
 Builds a tiny database from synthetic records via dbbuild (records.jsonl ->
 sequences + BLAST index + manifest, written last), then screens a
 synthetic contig (contig mode, --format json) and synthetic 100 bp reads
-(reads mode, default json — minimap2 indexes the sequences FASTA in memory;
+(reads mode, --format json — minimap2 indexes the sequences FASTA in memory;
 no .mmi is built or consulted). Uses the pixi env's real
 makeblastdb/blastn/minimap2, same pattern as test_screen_integration.py and
 test_dbbuild.py; everything is synthetic and local to tmp_path, no network.
@@ -126,7 +126,17 @@ def test_reads_screen_uses_sequences_fasta(datadir: Path, tmp_path: Path) -> Non
     assert not (datadir / DB / "sequences.mmi").exists()
     result = runner.invoke(
         app,
-        ["screen", "--r1", str(_tiled_reads(tmp_path)), "--db", DB, "--datadir", str(datadir)],
+        [
+            "screen",
+            "--r1",
+            str(_tiled_reads(tmp_path)),
+            "--db",
+            DB,
+            "--datadir",
+            str(datadir),
+            "--format",
+            "json",
+        ],
     )
     assert result.exit_code == 0
     document = reads_adapter.validate_json(result.stdout)

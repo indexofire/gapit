@@ -42,11 +42,22 @@ def envelope(stderr: str) -> dict[str, str]:
 
 
 def test_no_flags_emits_reads1(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Given --r1 with no new flags, When run, Then the document is
-    gapit.reads/1 (the frozen default)."""
+    """Given --r1 with no new flags (and explicit --format json), When run,
+    Then the document is gapit.reads/1 (the frozen default)."""
     monkeypatch.chdir(READS2)
     result = runner.invoke(
-        app, ["screen", "--r1", "sr_homologs.fq", "--db", "homologs", "--datadir", str(datadir)]
+        app,
+        [
+            "screen",
+            "--r1",
+            "sr_homologs.fq",
+            "--db",
+            "homologs",
+            "--datadir",
+            str(datadir),
+            "--format",
+            "json",
+        ],
     )
     assert result.exit_code == 0
     assert json.loads(result.stdout)["schema"] == "gapit.reads/1"
@@ -59,7 +70,17 @@ def test_explicit_off_flags_are_byte_identical_to_no_flags(
     --min-mapq 0, When compared, Then stdout is byte-identical (off means
     off; the default path gains nothing)."""
     monkeypatch.chdir(READS2)
-    args = ["screen", "--r1", "sr_homologs.fq", "--db", "homologs", "--datadir", str(datadir)]
+    args = [
+        "screen",
+        "--r1",
+        "sr_homologs.fq",
+        "--db",
+        "homologs",
+        "--datadir",
+        str(datadir),
+        "--format",
+        "json",
+    ]
     plain = runner.invoke(app, args)
     explicit_off = runner.invoke(app, [*args, "--min-identity", "0", "--min-mapq", "0"])
     assert plain.exit_code == 0
@@ -67,12 +88,13 @@ def test_explicit_off_flags_are_byte_identical_to_no_flags(
     assert explicit_off.stdout == plain.stdout
 
 
-def test_off_run_does_not_add_cs_to_minimap2_argv(
+def test_run_always_adds_cs_to_minimap2_argv(
     datadir: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given the default /1 run, When --debug echoes the minimap2 argv, Then
-    --cs is absent (the /1 invocation is unchanged; only /2 mode needs the
-    NM tag)."""
+    """Given any reads run (/1 default included), When --debug echoes the
+    minimap2 argv, Then --cs is present — minimap2's no-CIGAR mode clips
+    diverged alignments (26ECO0071 astA: 57% vs 100% breadth), so the tag
+    is unconditional for breadth accuracy."""
     monkeypatch.chdir(READS2)
     result = runner.invoke(
         app,
@@ -87,13 +109,10 @@ def test_off_run_does_not_add_cs_to_minimap2_argv(
             "--debug",
         ],
     )
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.stderr
     run_lines = [line for line in result.stderr.splitlines() if line.startswith("gapit: run:")]
     assert run_lines
-    assert "--cs" not in run_lines[0]
-
-
-# --- reads/2 opt-in ------------------------------------------------------------
+    assert "--cs" in run_lines[0]
 
 
 def test_min_identity_emits_reads2(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -110,6 +129,8 @@ def test_min_identity_emits_reads2(datadir: Path, monkeypatch: pytest.MonkeyPatc
             "homologs",
             "--datadir",
             str(datadir),
+            "--format",
+            "json",
             "--min-identity",
             "95",
         ],
@@ -138,6 +159,8 @@ def test_min_mapq_emits_reads2(datadir: Path, monkeypatch: pytest.MonkeyPatch) -
             "homologs",
             "--datadir",
             str(datadir),
+            "--format",
+            "json",
             "--min-mapq",
             "30",
         ],
@@ -192,6 +215,8 @@ def test_min_identity_assembly_route_emits_reads2(datadir: Path, tmp_path: Path)
             "homologs",
             "--datadir",
             str(datadir),
+            "--format",
+            "json",
             "--min-identity",
             "95",
         ],

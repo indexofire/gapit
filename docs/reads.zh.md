@@ -2,7 +2,8 @@
 
 `gapit screen --r1/--r2` 用 minimap2 把原始 FASTQ reads 或整条 assembly FASTA 比对到
 基因数据库，按比对广度判定基因存在。abricate 完全不能筛查 reads；这个模式是 gapit
-扩展，所以它的默认值与 contig 流水线不同。
+扩展 —— 存在阈值（`--min-breadth`）与 contig 流水线的一致性/覆盖度下限不同，但输出
+格式默认值（tsv）与全局的人类默认值一致。
 
 无需 BLAST 索引：minimap2 在内存中为数据库的 `sequences` FASTA 建索引。数据库：
 [./databases.md](./databases.md)。contig 模式：[./screen.md](./screen.md)。
@@ -17,18 +18,96 @@ gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map
 - 第 i 条 lane 把 `r1[i]` 与 `r2[i]` 配对，所以 `--r2` 的数量必须等于 `--r1`。
 - 所有 lane 聚合成一个样本：逐基因指标汇总每条 lane 的比对，一个基因可以靠低于阈值
   的各 lane 的并集越过广度阈值。
-- reads 模式与位置参数 contig 文件互斥；只有 `--r2` 没有 `--r1` 是用法错误（退出码
-  2）。支持 gzip 输入。
+- reads 模式与位置参数 contig 文件互斥 —— 唯一的例外是下文的全 FASTQ 通配符，它以
+  位置参数方式进入 reads 模式。只有 `--r2` 没有 `--r1` 是用法错误（退出码 2）。支持
+  gzip 输入。
 - **输入检测。** 每个 `--r1`/`--r2` 文件在验证时按内容检测：首个非空白字节是 `>` 即
   FASTA，`@` 即 FASTQ（gzip 包装的文件透过解压器窥探）。其他情况是输入错误，退出码
   5，代码 `INVALID_READS_FORMAT`。同一个 `--r1` 列表里混用 FASTA 和 FASTQ、FASTA 配
   `--r2`、给 FASTA 显式指定 `sr`/`map-hifi` 预设，都是用法错误（退出码 2）。
 
+## 用通配符筛查一批 FASTQ 文件（自动配对样本）
+
+`--r1`/`--r2` 需要你自己点名各条 lane。批量任务里更省事的做法是把 shell 的通配符
+展开直接交给 `screen`，由 gapit 推断样本：
+
+```console
+$ gapit screen -d ecoli_dec *.gz
+```
+
+当**每个**位置参数文件都是 FASTQ —— 扩展名是 `.fastq`/`.fq`（可带 `.gz`），或扩展名
+含糊时内容嗅探为 FASTQ —— 命令即无需 `--r1`/`--r2` 进入 reads 模式。文件按文件名
+（大小写不敏感地剥掉 reads 扩展名之后）分组为样本：
+
+| mate 标记（最长后缀优先） | 示例一对 | 样本键 |
+|---|---|---|
+| `_R1_001` / `_R2_001`（bcl2fastq） | `run_S1_L001_R1_001.fastq.gz` + `run_S1_L001_R2_001.fastq.gz` | `run_S1_L001` —— `_L00x` lane 标记保留在样本键里 |
+| `_R1` / `_R2` | `s2_R1.fq.gz` + `s2_R2.fq.gz` | `s2` |
+| `_1` / `_2` | `s1_1.fq.gz` + `s1_2.fq.gz` | `s1` |
+| `.1` / `.2` | `a.1.fastq` + `a.2.fastq` | `a` |
+
+标记匹配大小写不敏感。没有可识别标记的文件自成一个单端样本，样本键为其剥掉扩展名
+的词干。文档**每个样本一个 `files[]` 条目**（条目的 `reads` 字段是样本键；lane 文件
+列在 stderr），逐基因指标取该样本各 lane 的并集：
+
+```json
+"files": [
+  {"reads": ["s1"], "genes": [{"gene": "tetX", "...": "..."}]},
+  {"reads": ["s2"], "genes": [{"gene": "tetX", "...": "..."}]}
+]
+```
+
+- **配不上对的文件警告而不报错。** 标记了 mate 但 glob 里缺失另一半的文件以单端筛
+  查，stderr 提示一行 `WARNING: no mate found for X — screening single-end`（用
+  `--quiet` 静默）；无标记文件同样处理。
+- **完全同名的文件合并**为同一样本的额外 lane（分 lane 目录的多 lane 测序），按排序
+  顺序配对；多出来的文件退回单端并警告。
+- 样本按字典序排序，输出与 glob 顺序无关、完全确定。
+- reads 模式的用法守卫原样生效：拒绝 `--minid`/`--mincov`、`--fofn`、`--noheader`、
+  `--nopath`、`--merge-fragments`；而 `--min-identity`/`--min-mapq` 可用（在这里它们
+  就是 reads 模式参数，不再是错误）。`--jobs` 只在这条通配符路径上合法
+  （`--r1`/`--r2` 单样本调用拒绝它）——见下文
+  [并行与流式输出](#并行与流式输出通配符批量)。
+- `--read-type` 与 `--r1`/`--r2` 路径完全同规则解析：内容检测为 FASTQ 选 `sr`，除非
+  你显式指定预设。
+- FASTA 与 FASTQ 位置参数混用是用法错误（退出码 2），错误信息点名 reads 文件：
+  `mixed assembly and reads inputs; screen them separately: ...`。显式
+  `--aligner blastn` 或 `--aligner minimap2` 保持各自的既有路由（引擎的冻结守卫生
+  效）；通配符自动检测只发生在默认引擎下。
+- bzip2 压缩的 FASTQ 文件名不按扩展名分类（reads 引擎只读明文与 gzip）；这类文件
+  保持今天走的 contig 流水线。
+
+### 并行与流式输出（通配符批量）
+
+`--jobs N`/`-j N` 并发筛查 N 个样本，契约与 contig 路径完全一致：每个 worker 对
+共享数据库跑自己的 minimap2，`--jobs × --threads` 超过 cpu 数时 stderr 提示一行超
+订警告；某样本失败时按样本顺序在其位置抛出（退出码与错误封皮和串行运行完全相
+同）。结果始终按样本顺序输出 —— `-j 8` 与 `-j 1` 的 stdout 逐字节一致。
+
+输出按完成的样本流式写出，`--jobs` 下按样本顺序队头阻塞发射：
+
+- **tsv**（默认格式）流式输出：先发 `#SAMPLE` 表头行，随后每完成一个样本即落出它
+  的基因行（每基因一行，样本名在第一列；无基因的样本不产生行）。`--format csv` 是
+  同一张表的逗号拼写。tsv 是 gapit 所有界面上的人类默认值 —— 单样本
+  `--r1`/`--r2` 与 `--aligner minimap2` 路径同样默认它；要给 agent 单一文档时改传
+  `--format json`。
+- **md** 先发静态 frontmatter（schema、tool、`created_at`、db、阈值 —— 本路径没有
+  运行总计；总计在 JSON 文档里），随后每完成一个样本即发出它的 `## <样本>` 小节。
+- **json**（本路径的可选项）保持为单个文档、最后一次性写出 —— 与 contig 路径的
+  json 规则相同。
+- `--output PATH` 增量写入流式分块（每块即刻 flush；stdout 不再携带数据）。若第
+  *k* 个样本批量中途失败，已流式写出的样本 1..*k-1* 会保留在文件里 —— json 变体
+  什么都不写，因为它的单文档只在结尾才存在。
+
+单样本的 `--r1`/`--r2` 路径在两点上不同：不接受 `--jobs`，其 Markdown
+frontmatter 保留 `files:`/`genes_found:` 运行总计（它的 tsv 默认渲染同一张表，
+单个样本一个分块）。
+
 ## 选项
 
 reads 模式走同一条 `gapit screen` 命令；以下是适用的参数（转写自 `gapit screen
 --help`，gapit 0.5.0）。这里未列出的 contig 模式参数（`--minid`、`--mincov`、
-`--jobs`、`--fofn`、`--noheader`、`--nopath`）不适用。
+`--fofn`、`--noheader`、`--nopath`）不适用；`--jobs` 只适用于通配符路径（见上文）。
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
@@ -41,9 +120,10 @@ reads 模式走同一条 `gapit screen` 命令；以下是适用的参数（转�
 | `--db` | str | 必填 | 用于筛查的数据库（数据目录的子目录）。没有默认值 —— 请显式选择（`gapit db list`）。 |
 | `--datadir` | path | `$GAPIT_DATADIR`，然后 `~/.local/share/gapit/db` | 数据库目录。 |
 | `--threads` | int | `1` | minimap2 工作线程数。 |
+| `--jobs` | int | `1` | 仅通配符路径：并发筛查 N 个样本（`--r1`/`--r2` 拒绝它）。输出顺序始终是样本顺序。 |
 | `--quiet` | 开关 | 关闭 | 静默 stderr 诊断（包括 assembly-FASTA 提示）。 |
 | `--debug` | 开关 | 关闭 | 详细的 stderr 诊断；回显 minimap2 命令行。 |
-| `--format` | tsv\|csv\|json\|md | `json` | 输出格式。reads 模式拒绝 `tsv` 和 `csv`。 |
+| `--format` | tsv\|csv\|json\|md | `tsv` | 输出格式。所有路径的 reads 默认输出流式 tsv 表格（csv = 逗号拼写）；`--format json` 是给 agent 的单个 `gapit.reads/1`(+`/2`) 文档，`--format md` 是 Markdown 形式。 |
 
 `--minid` 和 `--mincov` 不适用于 reads 模式。存在与否只由广度决定。
 
@@ -81,16 +161,32 @@ assembly FASTA 要求 `map-ont`（退出码 2）。FASTQ 接受任何显式预�
 
 ## 输出
 
-默认是 JSON，schema `gapit.reads/1`：
+默认 reads 表只列出**present 基因**（`PRESENT` 列恒为 `yes`）；`--all-genes` / `-A`
+加入缺席判定（breadth 低于阈值）。表尾列为 `PRODUCT`（contig 表保留 abricate 的
+`RESISTANCE` 列；reads 表不携带该列）。
+
+
+默认是流式 **tsv** 表格（tsv 是 gapit 所有界面上的人类默认值；`--format csv` 是它的
+逗号拼写）：
+
+```console
+$ gapit screen --r1 tetx_full.fq --db tinyreads
+Screening reads: tetx_full.fq
+Detected 1 present genes in tetx_full.fq
+#SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
+tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determinant tetX	TETRACYCLINE
+```
+
+（`Screening reads:`/`Detected` 行走 stderr；stdout 是表格。）
+
+`--format json` 生成版本化的 agent 文档，schema `gapit.reads/1`：
 
 - `files[]` 与输入一一对应：每项列出它筛查的 reads 和检出的基因。
 - 基因条目按 `breadth_pct` 降序、再按基因名排序。
 - 用 `gapit schema reads` 自省 schema；细节见
   [./outputs.md](./outputs.md)。
 
-`--format md` 生成带 YAML frontmatter 的 Markdown 形式。`--format tsv` 和
-`--format csv` 被拒绝：reads 结果按样本嵌套，不是扁平行，没有 abricate 形状的表可
-以输出。拒绝方式是用法错误，退出码 2，附常规信封。
+`--format md` 生成带 YAML frontmatter 的 Markdown 形式。
 
 ## 按一致性和 MAPQ 过滤比对（gapit.reads/2）
 
@@ -135,7 +231,7 @@ $ mkdir -p /tmp/gapit-demo/readdb
 $ cp -r tests/data/reads2_db/homologs /tmp/gapit-demo/readdb/
 $ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
 $ cd tests/data/reads2
-$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --quiet
+$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -173,7 +269,7 @@ $ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --quiet
 89% 一致性的比对（该基因消失；零 read 基因不输出），保留真基因约 98% 的比对：
 
 ```console
-$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --quiet
+$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format json --quiet
 {
   "schema": "gapit.reads/2",
   ...
@@ -250,6 +346,15 @@ $ cd tests/data/reads
 $ gapit screen --r1 tetx_full.fq --db tinyreads
 Screening reads: tetx_full.fq
 Detected 1 present genes in tetx_full.fq
+#SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
+tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determinant tetX	TETRACYCLINE
+```
+
+（`Screening reads:` 和 `Detected N present genes` 行走 stderr；stdout 是表格。
+`--format json` 换成版本化文档：
+
+```console
+$ gapit screen --r1 tetx_full.fq --db tinyreads --format json
 {
   "schema": "gapit.reads/1",
   "tool": {
@@ -287,15 +392,13 @@ Detected 1 present genes in tetx_full.fq
 }
 ```
 
-`Screening reads:` 和 `Detected N present genes` 行走 stderr；stdout 是纯 JSON。
-
 ### 双端与多条 lane
 
 一条双端 lane：传入两条 mate。两条单端 lane 合成一个样本：用逗号串接。两者在这里
-聚合成相同的结果：
+聚合成的相同结果：
 
 ```console
-$ gapit screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --quiet
+$ gapit screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -318,7 +421,7 @@ $ gapit screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --quiet
     }
   ]
 }
-$ gapit screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --quiet
+$ gapit screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -376,7 +479,7 @@ genes_found: 1
 false` 报告；降低阈值即可翻转判定，指标不受影响：
 
 ```console
-$ gapit screen --r1 suly_partial.fq --db tinyreads --quiet
+$ gapit screen --r1 suly_partial.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -392,7 +495,7 @@ $ gapit screen --r1 suly_partial.fq --db tinyreads --quiet
     }
   ]
 }
-$ gapit screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --quiet
+$ gapit screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -410,13 +513,18 @@ $ gapit screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --quiet
 }
 ```
 
-### TSV 与 CSV 被拒绝
+### 默认表格
+
+默认运行就是这张表（tsv 是 gapit 所有界面上的人类默认值；`--format csv` 是逗号拼
+写）：
 
 ```console
-$ gapit screen --r1 tetx_full.fq --db tinyreads --format tsv; echo "exit=$?"
-{"schema":"gapit.error/1","code":"USAGE_ERROR","message":"--format tsv|csv is not available in reads mode (use json or md)","context":{}}
-exit=2
+$ gapit screen --r1 tetx_full.fq --db tinyreads
+#SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
+tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determinant tetX	TETRACYCLINE
 ```
+
+样本名在第一列；agent 需要版本化文档时传 `--format json`。
 
 ## 筛查 assembly（快速存在性普查）
 
@@ -427,8 +535,9 @@ exit=2
 的 522 nt contig 在 `sr` 下只能比对到基因的约 14%，短 read 软裁剪会毁掉长 query 的
 比对），gapit 会在 stderr 上说明。每条 contig 相当于一条长 read：`reads_mapped` 统
 计 contig 数，`mean_depth` 在被覆盖区间附近徘徊，`present` 仍表示
-`breadth_pct >= --min-breadth`。输出保持 `gapit.reads/1`；`params.read_type` 报告解
-析出的预设。
+`breadth_pct >= --min-breadth`。文档保持 `gapit.reads/1`；`params.read_type` 报告解
+析出的预设。默认输出是流式 tsv 表格（单样本一个分块）；`--format json` 给出下文展
+示的文档。
 
 用 tinyreads 夹具冒充 assembly（任何多 contig FASTA 行为相同）：
 
@@ -437,7 +546,7 @@ $ mkdir -p /tmp/gapit-demo/readdb
 $ cp -r tests/data/reads_db/tinyreads /tmp/gapit-demo/readdb/
 $ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
 $ cp tests/data/reads_db/tinyreads/sequences /tmp/gapit-demo/assembly.fa
-$ gapit screen --aligner minimap2 /tmp/gapit-demo/assembly.fa --db tinyreads
+$ gapit screen --aligner minimap2 /tmp/gapit-demo/assembly.fa --db tinyreads --format json
 assembly FASTA detected; using map-ont
 Screening reads: /tmp/gapit-demo/assembly.fa
 Detected 2 present genes in /tmp/gapit-demo/assembly.fa
@@ -507,7 +616,7 @@ minimap2 一段完全跳过 BLAST 索引，把 assembly 送进 minimap2 引擎�
 
 ```console
 $ # Stage 1: survey, ~0.9 s
-$ gapit screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 50 --quiet
+$ gapit screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 50 --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...

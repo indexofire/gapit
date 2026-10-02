@@ -24,8 +24,8 @@
           "product": "extended resistance determinant tetX",
           "resistance": "TETRACYCLINE",
           "tlen": 522,
-          "breadth_pct": 97.7,
-          "mean_depth": 2.09,
+          "breadth_pct": 100.0,
+          "mean_depth": 2.3,
           "reads_mapped": 12,
           "present": true
         }

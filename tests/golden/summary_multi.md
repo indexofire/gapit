@@ -12,6 +12,6 @@ genes: 2
 
 | File | Num found | feature_a | feature_b |
 |---|---|---|---|
-| empty.tsv | 0 | . | . |
-| sample_a.tsv | 2 | 99.50;52.00 | 76.00 |
-| sample_b.tsv | 2 | 90.00 | 100.00 |
+| empty.tsv | 0 | - | - |
+| sample_a.tsv | 2 | + | + |
+| sample_b.tsv | 2 | + | + |

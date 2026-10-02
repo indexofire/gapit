@@ -25,7 +25,12 @@ def db_search_command(
     datadir: Datadir = None,
     db: Annotated[
         str | None,
-        typer.Option("--db", "-d", help="Restrict the scan to one installed database."),
+        typer.Option(
+            "--db",
+            "-d",
+            "-db",
+            help="Restrict the scan to one installed database.",
+        ),
     ] = None,
     field: Annotated[
         SearchField,

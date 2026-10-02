@@ -1,15 +1,18 @@
 # AGENTS.md — gapit
 
-> Python reimplementation of [abricate](https://github.com/tseemann/abricate): mass screening of
-> contigs and reads for known genes. **Agent-first**: every output is
-> machine-readable (JSON / Markdown) by design, not as an afterthought.
+> Python tool for mass screening of contigs and reads for known genes, with gene-cluster
+> typing and phenotype designation. Originally a reimplementation of
+> [abricate](https://github.com/tseemann/abricate); **from v0.5.0 onward gapit pursues its
+> own contract** — abricate parity is no longer a design goal. **Agent-first**: every
+> output is machine-readable (JSON / Markdown) by design, not as an afterthought.
 
 ## 1. Mission
 
 `gapit` answers one question: **which known genes are present in this assembly, and how confident
-are we?** It replaces abricate (Perl) with a modern, typed, testable Python tool that:
+are we?** A modern, typed, testable Python tool that:
 
-1. Produces byte-compatible TSV with abricate (drop-in replacement for existing pipelines).
+1. Ships an abricate-compatible contig TSV as the historical baseline surface (frozen
+   behavior, kept for existing pipelines), while new development follows gapit's own design.
 2. Adds first-class **JSON** and **Markdown** outputs so LLM agents and humans can consume
    results without parsing tab-delimited text.
 3. Exposes stable, versioned output contracts (schemas, exit codes, error envelopes) that
@@ -52,7 +55,7 @@ Every change must leave `lint`, `typecheck`, and `test` green.
 gapit/
 ├── AGENTS.md            # this file
 ├── PLAN.md              # development roadmap (phase-gated)
-├── SPEC.md              # distilled abricate behavior spec (source of truth for parity)
+├── SPEC.md              # frozen contract for the baseline surface (distilled from abricate)
 ├── pixi.toml
 ├── recipe/
 │   └── meta.yaml        # conda recipe (submission deferred)
@@ -101,6 +104,7 @@ gapit/
 │   ├── reads.py          # FASTQ mode: minimap2 PAF parsing, coverage breadth/depth, presence
 │   ├── summary.py       # summary core: parse report tables into a gene matrix
 │   ├── cmd_screen.py    # `gapit screen` CLI (registered from cli.py)
+│   ├── cmd_screen_positionals.py # screen positional guard: db-name-as-file usage error
 │   ├── cmd_screen_reads_args.py # reads-mode CLI arg rules (comma split + flag rejects)
 │   ├── cmd_summary.py   # `gapit summary` CLI (registered from cli.py)
 │   ├── cmd_typing.py    # `gapit typing` CLI (registered from cli.py)
@@ -200,7 +204,9 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   committed files deliberately and review diffs like code.
 - **Parity harness**: `pixi run -e parity parity` (and `summary-parity`) runs real abricate
   (conda) and gapit over a small genome corpus and diffs the gene calls byte-for-byte (file,
-  gene, %identity, %coverage). Parity on the corpus is the release gate for v1.0.
+  gene, %identity, %coverage). **From v0.5.0 this is a regression reference for the frozen
+  baseline surface, not a release gate for new work** — new features need not check abricate
+  and may diverge deliberately.
 - Full suite + CI matrix 3.11/3.13/3.14; parity byte-diff is opt-in via the `parity` pixi env.
   Offline tests stay fast.
 
@@ -216,13 +222,15 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   query contigs against one db → 15-field
   tabular hits → filter by identity / coverage thresholds → **dedup hits sharing identical
   `(contig, qstart, qend)`** (first/best BLAST row wins) → one TSV row per surviving hit.
-  abricate   does **not** merge overlapping intervals — do not "improve" this on the default path (the
-  opt-in `--merge-fragments` cross-contig extension is the one sanctioned exception:
-  `fragments.py`).
+  The default path does **not** merge overlapping intervals (frozen baseline behavior;
+  the opt-in `--merge-fragments` cross-contic extension in `fragments.py` is the sanctioned
+  exception).
 - Key computed fields: `%COVERAGE = 100*(length-gaps)/slen` (filtered unrounded, displayed
   `%.2f`), `%IDENTITY` (BLAST pident, never post-filtered), `COVERAGE_MAP` (15-char minimap),
-  `GAPS`. Exact formulas, the dedup rule, and the minimap arithmetic live in `SPEC.md` — when
-  abricate and intuition disagree, **abricate wins** (parity is a feature).
+  `GAPS`. Exact formulas, the dedup rule, and the minimap arithmetic live in `SPEC.md` — they
+  are **gapit's frozen contract** for the baseline surface: do not change them silently. New
+  surfaces (reads, cluster, typing) follow their own documented contracts and may diverge from
+  abricate by design.
 
 ## 8. Git & workflow
 

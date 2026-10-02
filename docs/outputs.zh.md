@@ -106,9 +106,9 @@ minimap 用 15 个字符格勾画比对落在基因的什么位置：
 ```console
 $ gapit screen dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --quiet
 $ gapit typing dec.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES
-dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
-dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA	astA;pic;uidA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	astA;pic;uidA
 ```
 
 无 aggR 的 pic+astA 谱是头条分歧 —— GB 4789.6 判 EAEC，而风险监测 scheme 回退到
@@ -226,6 +226,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
   "files": [
     {
       "file": "dec_s2_pic_astA_uidA.fasta",
+      "genes": ["astA", "pic", "uidA"],
       "phenotypes": {
         "gb4789_6": {
           "phenotype": "EAEC",
@@ -270,17 +271,20 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 | `source` | array | 按输入原样的结果表路径 |
 | `db` | string | 所有行共同筛查的数据库 |
 | `files` | array | 每个有数据行的 FILE 一项，按首次出现顺序 |
+| `files[].genes` | array | 该 FILE 的 present 基因名，已排序 —— 驱动判定的命中 |
 | `files[].phenotypes` | object | scheme 名 → 其判定（下述累加结构） |
 
 每条判定携带 `phenotype`（歧义为 null）、`score`、`confidence`
 （`high`/`ambiguous`/`low`）、`components[{name, score}]`，以及可选的 `runner_up`、
 `ambiguous[]`（并列的一对）与 `notes[]` —— 与评估器在基因簇路径上产出的结构相同。
 TSV/Markdown 投影把每条判定压平为 `FILE`、`SCHEME`、`PHENOTYPE`、`CONFIDENCE`、
-`SCORE`、`RUNNER_UP`、`NOTES` 七列：歧义判定的表型渲染 `-`、候选对写入 NOTES
-（runner-up 单元格同样为 `-`——候选对已说明一切）。类型化错误：行间 `DATABASE`
-值混杂为 `DATABASE_MISMATCH`，无数据行的表为 `TYPING_NO_DATA`，无 `typing.json` 的
-数据库为 `TYPING_NO_SCHEME`，基因簇数据库为 `TYPING_CLUSTER_DB`（其判定集成在
-`gapit screen` 内）。其 JSON Schema 用 `gapit schema typing_result` 打印。
+`SCORE`、`RUNNER_UP`、`NOTES`、`GENES` 八列：歧义判定的表型渲染 `-`、候选对写入
+NOTES（runner-up 单元格同样为 `-`——候选对已说明一切）；`GENES` 以该 FILE 排序后
+`;` 串接的基因名收尾每行，并在该 FILE 的每个 scheme 行上重复。类型化错误：行间
+`DATABASE` 值混杂为 `DATABASE_MISMATCH`，无数据行的表为 `TYPING_NO_DATA`，无
+`typing.json` 的数据库为 `TYPING_NO_SCHEME`，基因簇数据库为 `TYPING_CLUSTER_DB`
+（其判定集成在 `gapit screen` 内）。其 JSON Schema 用 `gapit schema typing_result`
+打印。
 
 ### gapit.reads/1（reads 与 assembly 筛查）
 
