@@ -37,7 +37,7 @@ def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
         f"gapit: materializing bundled database {name} ({records} records) into {datadir}"
         for name, records in (
             ("ecoh", 597),
-            ("ecoli_dec", 17),
+            ("ecoli_dec", 16),
             ("lm_doumith", 5),
             ("ncbi", 8373),
             ("resfinder", 3206),
@@ -46,7 +46,7 @@ def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
     ]
     assert stderr_lines[6:] == [
         "Indexed ecoh (597 sequences, nucl)",
-        "Indexed ecoli_dec (17 sequences, nucl)",
+        "Indexed ecoli_dec (16 sequences, nucl)",
         "Indexed lm_doumith (5 sequences, nucl)",
         "Indexed ncbi (8373 sequences, nucl)",
         "Indexed resfinder (3206 sequences, nucl)",
@@ -78,7 +78,7 @@ def test_setupdb_on_empty_datadir_materializes_bundled(tmp_path: Path) -> None:
     setup = runner.invoke(app, ["setupdb", "--datadir", str(datadir)])
     assert setup.exit_code == 0
     assert "materializing bundled database ecoli_dec" in setup.stderr
-    assert "Indexed ecoli_dec (17 sequences, nucl)" in setup.stderr
+    assert "Indexed ecoli_dec (16 sequences, nucl)" in setup.stderr
     assert (datadir / "ecoli_dec" / "gapit-manifest.json").is_file()
     assert (datadir / "ecoli_dec" / "typing.json").is_file()
 

@@ -262,7 +262,7 @@ def _tool_db_build(arguments: dict[str, Any]) -> str:
         _flag(arguments, "force"),
         warn=lambda message: None,
     )
-    return receipt.model_dump_json()
+    return receipt.model_dump_json(exclude_none=True)
 
 
 def _tool_db_search(arguments: dict[str, Any]) -> str:

@@ -76,6 +76,7 @@ $ gapit db list --json
       "description": "ARG-ANNOT acquired resistance genes",
       "dbtype": "nucl",
       "installed": true,
+      "kind": "gene",
       "records": 2224
     },
     {
@@ -84,6 +85,7 @@ $ gapit db list --json
       "description": "BacMet2 experimentally confirmed biocide/resistance genes (protein)",
       "dbtype": "prot",
       "installed": true,
+      "kind": "gene",
       "records": 746
     },
     {
@@ -92,6 +94,7 @@ $ gapit db list --json
       "description": "CARD protein homolog resistance models",
       "dbtype": "nucl",
       "installed": true,
+      "kind": "gene",
       "records": 6059
     }
   ]
@@ -106,6 +109,7 @@ $ gapit db list --json
 | `providers[].vendor` | string | 上游维护机构（NCBI、DTU CGE、Kaptive (klebgenomics) 等） |
 | `providers[].description` | string | 内容简述 |
 | `providers[].dbtype` | string | `nucl`（用 blastn 筛查）或 `prot`（用 blastx 筛查） |
+| `providers[].kind` | string | `gene`（逐基因 BLAST 筛查）或 `cluster`（minimap2 位点筛查，见 [screen.md](./screen.md)） |
 | `providers[].installed` | boolean | 数据目录里存在 manifest 时为 true |
 | `providers[].records` | integer | 记录数，数据库未安装时省略 |
 | `providers[].license` | string | 上游内容许可证，仅提供商声明时出现（card、vfdb、ecoli_vf、kaptive） |
@@ -125,7 +129,7 @@ abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 | 名称 | 内容 | 快照日期 | 分型 |
 |---|---|---|---|
 | `ecoh` | 大肠杆菌 O/H 抗原基因（597 条记录，srst2 EcOH） | 2026-10-02 | — |
-| `ecoli_dec` | 致腹泻大肠杆菌标志基因面板（17 条记录，GB 4789.6 + 风险监测判定） | 2026-10-02 | `gapit.typing/2`（`gb4789_6`、`risk_monitoring` 双方案） |
+| `ecoli_dec` | 致腹泻大肠杆菌标志基因面板（16 条记录，GB 4789.6 + 风险监测判定） | 2026-10-02 | `gapit.typing/2`（`gb4789_6`、`risk_monitoring` 双方案） |
 | `lm_doumith` | 单核细胞增生李斯特菌血清群分型（5 条记录，Doumith 2004 标记） | 2026-10-03 | `gapit.typing/2`（方案 `doumith_serogroup`） |
 | `ncbi` | NCBI AMRFinderPlus 精选 AMR（8373 条记录） | 2026-10-02 | — |
 | `resfinder` | CGE ResFinder 获得性耐药基因（3206 条记录） | 2026-10-02 | — |
@@ -133,7 +137,9 @@ abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 
 **许可证来源声明。** `ecoli_dec` 的每条记录都取自公共领域的一级提交（NCBI
 RefSeq/GenBank/DDBJ 收录号，与权利方面板等位相同）；2026-10 审计中发现原面板里
-混入的两条 VFDB 来源记录已被移除并替换。`lm_doumith` 面板以同样方式取自公共领域
+混入的两条 VFDB 来源记录已被移除并替换；2026-10 重建时，构建管线的精确去重又丢弃了
+与 `estA3`（M18346.1）逐字节相同的 `estA4`（J03311.1）副本 —— 同一个 `sth` 基因、
+同一序列 —— 面板因此为 16 条记录。`lm_doumith` 面板以同样方式取自公共领域
 的 INSDC 记录（收录号见每条头部；反向互补标记已做链向校正，`lmo0737` 经与 EGD-e
 比对验证 100% 一致）。四个提供商快照（`ecoh`、`ncbi`、`resfinder`、
 `upec_expec_vf`）通过了 2026-10 对**全部**记录的内容级审计：
@@ -152,12 +158,14 @@ MIT —— 四者均允许随 MIT 许可的 wheel 再分发。回归测试锁定
 
 **物化机制。** 第一次 `gapit screen ... --db <内置库名>` 发现数据目录里没有该库
 时，会自动构建它 —— stderr 一行提示（`gapit: materializing bundled database
-ecoli_dec (17 records) into <datadir>`，`--quiet` 可静默），随后走标准基因库
+ecoli_dec (16 records) into <datadir>`，`--quiet` 可静默），随后走标准基因库
 构建管线：`records.jsonl`、gapit/v1 头部的 `sequences`、BLAST 索引、（库自带时）
-`typing.json` 副本，以及盖上 `source: "bundled"` 的 manifest。全程确定性、零
+`typing.json` 副本，以及盖上 `source: "bundled"` 的 manifest。该管线与
+`gapit db build` 共享，会在构建时丢弃精确重复的（基因, 序列）记录（保留首条；
+stderr 提示与回执中的 `duplicates_dropped` 计数）。全程确定性、零
 网络。仅这条路径会在数据目录缺失时自动创建它；`gapit setupdb` 在建索引的同时
 物化全部内置库；manifest 一旦存在，两者重跑都是无操作。`db list` 在物化前显示
-`bundled`、物化后显示 `installed (17)` —— 四个列表入口（TSV、rich 表格、
+`bundled`、物化后显示 `installed (16)` —— 四个列表入口（TSV、rich 表格、
 `--json`、MCP `db_list`）一致。
 
 ### 李斯特菌血清群分型（`lm_doumith`）
@@ -192,7 +200,7 @@ table.tsv`。
 ## 检查数据库新鲜度
 
 `gapit db outdated` 报告每个已安装数据库相对于过期阈值的年龄。对装满的数据
-目录（输出裁剪到十二行中的三行）：
+目录（输出裁剪到二十一行中的三行）：
 
 ```console
 $ gapit db outdated --days 30
@@ -466,7 +474,7 @@ manifest，来自 plasmidfinder 数据库：
   "upstream_version": "",
   "tool": {
     "name": "gapit",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "makeblastdb_version": "blastn: 2.17.0+",
   "minimap2_version": "2.31-r1302"

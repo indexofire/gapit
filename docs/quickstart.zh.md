@@ -1,7 +1,8 @@
 # 快速开始
 
-一次完整的首个会话，离线、可复现，使用测试套件自带的微型夹具数据库。你将筛查两个
-contig 文件，以 TSV 和 JSON 两种形式读结果，再把两份报告汇总成一个矩阵。
+一次完整的首个会话，离线、可复现，使用仓库和 wheel 自带的夹具数据库。你将筛查两个
+contig 文件，以 TSV 和 JSON 两种形式读结果，用内置 DEC 面板判定一个样本，再把报告
+汇总成一个矩阵。
 
 一切都在仓库根目录运行，并让 gapit 环境在 PATH 上
 （`export PATH="$PWD/.pixi/envs/default/bin:$PATH"`，或给每条命令加 `pixi run`
@@ -10,15 +11,26 @@ contig 文件，以 TSV 和 JSON 两种形式读结果，再把两份报告汇�
 ## 1. 准备一个用完即弃的数据目录
 
 夹具数据库 `tests/data/db/tinyamr` 里有三个短 AMR 基因：`tetA`、`blaTEM-1` 和
-`sul1`。把它复制进一个临时数据目录并构建 BLAST 索引，这正是测试套件为 MCP 夹具
-做的事：
+`sul1`。把它复制进一个临时数据目录，剩下的交给 `gapit setupdb` 引导：它会物化
+wheel 内置的六个数据库（零网络——包括第 4 节要用来分型的 `ecoli_dec`）并构建全部
+BLAST 索引，无需手跑 `makeblastdb`：
 
 ```bash
 mkdir -p /tmp/gapit-quickstart/db
 cp -r tests/data/db/tinyamr /tmp/gapit-quickstart/db/
-makeblastdb -in /tmp/gapit-quickstart/db/tinyamr/sequences \
-  -title tinyamr -dbtype nucl -logfile /dev/null
 export GAPIT_DATADIR=/tmp/gapit-quickstart/db
+gapit setupdb
+```
+
+全部进度走 stderr；一次运行的输出（有删节）：
+
+```console
+gapit: materializing bundled database ecoh (597 records) into /tmp/gapit-quickstart/db
+gapit: materializing bundled database ecoli_dec (17 records) into /tmp/gapit-quickstart/db
+gapit: materializing bundled database lm_doumith (5 records) into /tmp/gapit-quickstart/db
+...
+Indexed ecoli_dec (17 sequences, nucl)
+Indexed tinyamr (3 sequences, nucl)
 ```
 
 `gapit db list` 展示数据库目录和安装状态（下面有删节；`--json` 返回
@@ -29,10 +41,11 @@ export GAPIT_DATADIR=/tmp/gapit-quickstart/db
 $ gapit db list
 NAME	PROVIDER	STATUS	DBTYPE	DESCRIPTION
 argannot	IHU Méditerranée-Infection	available	nucl	ARG-ANNOT acquired resistance genes
-ncbi	NCBI	available	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
+ncbi	NCBI	installed (8373)	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
 ```
 
-（共十二个目录数据库，在这个临时数据目录里全部为 `available`。）
+（共二十一个目录数据库：六个内置库在这个数据目录里已显示 `installed`，十五个仅可
+抓取的注册表条目在 `gapit db fetch` 之前显示 `available`。）
 
 ## 2. 筛查一个 contig 文件
 
@@ -76,7 +89,7 @@ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "created_at": "2026-09-19T01:11:06Z",
   "params": {
@@ -114,7 +127,56 @@ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
 文档携带 `"schema": "gapit.report/1"`，消费方可以锁定契约；`gapit schema report`
 打印它的 JSON Schema。字段级细节见[输出](./outputs.md)。
 
-## 4. 把报告汇总成矩阵
+## 4. 给样本分型
+
+筛查只检测基因。判定（致病型、血清群）是第二条命令：`gapit screen` 写出基因表，
+`gapit typing` 读回该表并按数据库的分型方案打分。内置的 `ecoli_dec` 面板携带双方案
+的 DEC（致泻性大肠杆菌）判定。用一个测试夹具 assembly 代替你的样本：
+
+```bash
+cp tests/data/typing/dec_s3_stx2a_escV_aggR_uidA.fasta /tmp/gapit-quickstart/sample.fna
+gapit screen /tmp/gapit-quickstart/sample.fna -d ecoli_dec -o /tmp/gapit-quickstart/result.tsv -p -q
+gapit typing /tmp/gapit-quickstart/result.tsv -q
+```
+
+```console
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+sample.fna	gb4789_6	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
+sample.fna	risk_monitoring	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
+```
+
+每个 scheme 一行：这个分离株携带 `aggR`、`escV`、`stx2a` 和 `uidA`，所以两个方案
+都以满分判定为 **EHEC**（上方有删节的 `NOTES` 列写明了各方案的规则）。两个阶段也
+可以直接经管道衔接——screen 的 stdout 就是 typing 的 stdin：
+
+```bash
+gapit screen /tmp/gapit-quickstart/sample.fna -d ecoli_dec -p -q | gapit typing -q
+```
+
+reads 走通配符路径也一样：当所有位置参数文件都是 FASTQ 时，样本按文件名自动配对
+（`_R1`/`_R2`、`_1`/`_2`），`--jobs` 并行各样本：
+
+```bash
+mkdir -p /tmp/gapit-quickstart/reads
+cp tests/data/reads/s1_1.fq.gz tests/data/reads/s1_2.fq.gz \
+  tests/data/reads/s2_R1.fq.gz tests/data/reads/s2_R2.fq.gz /tmp/gapit-quickstart/reads/
+cd /tmp/gapit-quickstart/reads
+gapit screen -d ecoli_dec *.fq.gz -j 4
+```
+
+```console
+Screening sample s1 reads: s1_1.fq.gz, s1_2.fq.gz
+Screening sample s2 reads: s2_R1.fq.gz, s2_R2.fq.gz
+Detected 0 present genes in sample s2
+Detected 0 present genes in sample s1
+#SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
+```
+
+演示 reads 携带的是 tetX 而非 DEC 标记，所以表只有表头——零命中是正常输出，不是
+错误。完整的判定语义见[分型方案](./typing.md)；reads 界面见
+[reads（FASTQ）筛查](./reads.md)。
+
+## 5. 把报告汇总成矩阵
 
 保存两份报告，再折叠成一个"基因 × 文件"矩阵。第二个夹具文件 `gap.fa` 带有
 `sul1`，比对中有缺口：
@@ -127,15 +189,16 @@ gapit summary full.tsv gap.tsv
 
 ```console
 #FILE	NUM_FOUND	sul1	tetA
-full.tsv	1	.	100.00
-gap.tsv	1	100.00	.
+full.tsv	1	-	+
+gap.tsv	1	+	-
 ```
 
-每行对应一份报告文件；列是检出的基因并集。单元格存 %COVERAGE（缺失时为 `.`），
-`NUM_FOUND` 统计不同基因的个数。加 `--format json|md` 得到机器或人类可读的矩阵；
+每行对应一份报告文件；列是检出的基因并集。单元格存存在判定：报告里有该基因的命中
+为 `+`，缺失为 `.`（加 `--identity` 或 `--coverage` 可看数值）。`NUM_FOUND` 统计不同
+基因的个数。加 `--format json|md` 得到机器或人类可读的矩阵；
 细节见[汇总报告](./summary.md)。
 
-## 5. 试试基因簇引擎
+## 6. 试试基因簇引擎
 
 基因**簇**数据库是第二种数据库：记录不再是单个基因，而是整个位点（Kaptive 风格的
 抗原位点、荚膜基因簇），从 GenBank/GFF 输入构建。夹具
@@ -172,6 +235,7 @@ Kaptive 位点数据库。完整细节见[筛查](./screen.md)与[数据库](./d
 
 - [筛查](./screen.md)：contig 模式的全部参数、阈值、多输入、`--jobs`
 - [reads（FASTQ）筛查](./reads.md)：FASTQ 输入走 minimap2
+- [分型方案](./typing.md)：两阶段判定流水线与分型文档格式
 - [数据库](./databases.md)：安装真实数据库（`gapit db fetch`）、提供商、数据目录、基因簇数据库与 typing 规范
 - [输出](./outputs.md)：格式、schema、错误信封、退出码
 - [MCP 服务器](./mcp.md)与[面向 agent 的指南](./agents.md)：从 agent 驱动 gapit

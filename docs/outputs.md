@@ -115,9 +115,9 @@ table and renders the calls (real output; `screen --output` wrote the table):
 ```console
 $ gapit screen dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --quiet
 $ gapit typing dec.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
-dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA	astA;pic;uidA
-dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	astA;pic;uidA
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	astA;pic;uidA	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	astA;pic;uidA	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
 ```
 
 The pic+astA profile without aggR is the headline divergence — GB 4789.6 calls EAEC while
@@ -141,7 +141,7 @@ Real document, same run as the TSV above:
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -232,7 +232,7 @@ row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
 ```json
 {
   "schema": "gapit.typing_result/1",
-  "tool": {"name": "gapit", "version": "0.5.2"},
+  "tool": {"name": "gapit", "version": "0.5.3"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
   "db": "ecoli_dec",
@@ -291,10 +291,10 @@ Each call carries `phenotype` (null on an ambiguous call), `score`, `confidence`
 (`high`/`ambiguous`/`low`), `components[{name, score}]`, and the optional `runner_up`,
 `ambiguous[]` (the tied pair), and `notes[]` — the same bodies the evaluator produces on
 the cluster path. The TSV/Markdown projection flattens each call to the eight `FILE`,
-`SCHEME`, `PHENOTYPE`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES`, `GENES` columns:
+`SCHEME`, `PHENOTYPE`, `GENES`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES` columns:
 ambiguous calls render `-` for the phenotype and carry the candidate pair in `NOTES` (the
-runner-up cell also renders `-` there — the pair already speaks); `GENES` closes each row
-with the FILE's sorted `;`-joined gene list, repeated on every scheme row of that FILE.
+runner-up cell also renders `-` there — the pair already speaks); `GENES` follows the
+phenotype with the FILE's sorted `;`-joined gene list, repeated on every scheme row of that FILE.
 Typed errors: mixed `DATABASE` values across rows are `DATABASE_MISMATCH`, a table with no
 data rows `TYPING_NO_DATA`,
 a database without a `typing.json` `TYPING_NO_SCHEME`, and a cluster database
@@ -419,7 +419,7 @@ summarizing two report files, one with a `tetA` hit and one with none:
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -539,13 +539,14 @@ An agent can discover the whole contract from the binary alone.
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.5.2"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.3"}
 ```
 
-`gapit schema <name>` prints the JSON Schema for each document. The ten names: `report`,
+`gapit schema <name>` prints the JSON Schema for each document. The eleven names: `report`,
 `typing_result`, `reads`, `reads2`, `cluster`, `summary`, `error`, `version`, plus the
-database-side documents `features` (gapit.features/1, a cluster db's feature table) and
-`typing` (gapit.typing/1, a cluster db's declarative scoring spec). A trimmed fragment of
+database-side documents `features` (gapit.features/1, a cluster db's feature table),
+`typing` (gapit.typing/1, a cluster db's declarative scoring spec), and `floors`
+(gapit.floors/1, per-gene identity floors for reads-mode presence). A trimmed fragment of
 `gapit schema report`:
 
 ```json

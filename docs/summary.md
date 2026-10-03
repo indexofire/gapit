@@ -10,7 +10,7 @@ exactly what `gapit screen` writes. See [./screen.md](./screen.md) for producing
 
 ## Options
 
-Transcribed from `gapit summary --help` (gapit 0.5.2):
+Transcribed from `gapit summary --help` (gapit 0.5.3):
 
 | Flag | Type | Default | Description |
 |---|---|---|---|
@@ -33,9 +33,9 @@ Row keys depend on the input count, matching abricate's behavior:
 ```console
 $ gapit summary tests/data/summary/multi_sample.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-aa_assembly.fa	1	99.00	.
-mm_assembly.fa	1	.	50.00
-zz_assembly.fa	1	91.00	.
+aa_assembly.fa	1	+	-
+mm_assembly.fa	1	-	+
+zz_assembly.fa	1	+	-
 ```
 
 The same three assemblies summarized as separate reports instead would key by filename:
@@ -43,13 +43,14 @@ The same three assemblies summarized as separate reports instead would key by fi
 ```console
 $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv tests/data/summary/empty.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-tests/data/summary/empty.tsv	0	.	.
-tests/data/summary/sample_a.tsv	2	99.50;52.00	76.00
-tests/data/summary/sample_b.tsv	2	90.00	100.00
+tests/data/summary/empty.tsv	0	-	-
+tests/data/summary/sample_a.tsv	2	+	+
+tests/data/summary/sample_b.tsv	2	+	+
 ```
 
-Note the zero-hit file: it appears with `NUM_FOUND 0` and `.` in every gene column. Multiple
-hits on the same gene in one file join with `;` in report order (see `99.50;52.00`).
+Note the zero-hit file: it appears with `NUM_FOUND 0` and `.` in every gene column. In
+presence mode multiple hits on the same gene collapse to one `+`; with `--identity` or
+`--coverage` their per-hit values join with `;` in report order.
 
 ## Piping screen output
 
@@ -62,8 +63,9 @@ input, so dutch mode applies — one row per FILE value, the gene×file presence
 ```console
 $ gapit screen -d ecoli_dec *.fna --nopath --quiet | gapit summary
 #FILE	NUM_FOUND	aggR	astA	escV	pic	stx2a	uidA
-dec_s2_pic_astA_uidA.fasta	3	.	100.00	.	100.00	.	100.00
-dec_s3_stx2a_escV_aggR_uidA.fasta	4	100.00	.	100.00	.	100.00	100.00
+dec_s1_aggR_pic_uidA.fna	3	+	-	-	+	-	+
+dec_s2_pic_astA_uidA.fna	3	-	+	-	+	-	+
+dec_s3_stx2a_escV_aggR_uidA.fna	4	+	-	+	-	+	+
 ```
 
 The same matrix `gapit summary combined.tsv` prints after
@@ -113,8 +115,8 @@ all inputs, sorted lexicographically; a gene absent from a row shows `.`.
 ```console
 $ gapit summary tests/data/summary/sample_a.csv tests/data/summary/sample_b.csv --nopath
 #FILE	NUM_FOUND	feature_a	feature_b
-sample_a.csv	2	99.50;52.00	76.00
-sample_b.csv	2	90.00	100.00
+sample_a.csv	2	+	+
+sample_b.csv	2	+	+
 ```
 
 - **Duplicate inputs are skipped.** A path listed twice (compared as given, before any
@@ -124,7 +126,7 @@ sample_b.csv	2	90.00	100.00
 $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_a.tsv
 WARNING: Skipping duplicate file: tests/data/summary/sample_a.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-tests/data/summary/sample_a.tsv	2	99.50;52.00	76.00
+tests/data/summary/sample_a.tsv	2	+	+
 ```
 
 - **Malformed input is a typed error, not silence.** A missing file exits 5 with an
@@ -148,7 +150,7 @@ $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv 
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "created_at": "2026-09-19T01:12:48Z",
   "params": {
@@ -201,8 +203,8 @@ Introspect the schema with `gapit schema summary`; field contracts live in
 ```console
 $ gapit summary /tmp/gapit-demo/sortdemo/1dir/zeta.tsv /tmp/gapit-demo/sortdemo/2dir/mid.tsv --nopath
 #FILE	NUM_FOUND	feature_a	feature_b
-zeta.tsv	2	91.00;99.00	50.00
-mid.tsv	2	99.50;52.00	76.00
+zeta.tsv	1	+	-
+mid.tsv	1	-	+
 ```
 
   The order comes from `1dir/zeta.tsv` < `2dir/mid.tsv`, so `zeta.tsv` prints first even though
@@ -212,8 +214,8 @@ mid.tsv	2	99.50;52.00	76.00
 ```console
 $ gapit summary /tmp/gapit-demo/sortdemo/1dir/zeta.tsv /tmp/gapit-demo/sortdemo/2dir/mid.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-/tmp/gapit-demo/sortdemo/1dir/zeta.tsv	2	91.00;99.00	50.00
-/tmp/gapit-demo/sortdemo/2dir/mid.tsv	2	99.50;52.00	76.00
+/tmp/gapit-demo/sortdemo/1dir/zeta.tsv	1	+	-
+/tmp/gapit-demo/sortdemo/2dir/mid.tsv	1	-	+
 ```
 
 - **Dutch mode keys come from the report.** With one input, the row labels are the `FILE` values

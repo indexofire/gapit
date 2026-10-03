@@ -9,7 +9,7 @@
 
 ## 选项
 
-转写自 `gapit screen --help`（gapit 0.5.2）。标记为 *reads 模式* 的参数只在传入
+转写自 `gapit screen --help`（gapit 0.5.3）。标记为 *reads 模式* 的参数只在传入
 `--r1`/`--r2` 时生效，记录在 [./reads.md](./reads.md)。
 
 每个选项都接受 **短** 列给出的单横线短形式（例如 `--db` 的 `-d`）；长形式仍是规范写法，
@@ -39,6 +39,8 @@
 | `--r2` | `-2` | str | 无 | *reads 模式。* 逗号分隔的 mate FASTQ 文件；数量必须与 `--r1` 一致。 |
 | `--read-type` | `-x` | sr\|map-ont\|map-hifi | FASTQ 用 `sr`，FASTA 用 `map-ont` | *reads 模式。* minimap2 预设；省略时按检测到的输入解析。 |
 | `--min-breadth` | `-b` | float | `90.0` | *reads 模式。* 判定存在的最小广度百分比。 |
+| `--min-identity` | `-I` | float | `0.0` | *reads 模式。* 每条比对的最小一致性百分比，`0 <= x <= 100`；`0` = 关闭。任何非零值都会输出 `gapit.reads/2`（见 [./outputs.md](./outputs.md)）。 |
+| `--min-mapq` | `-M` | int | `0` | *reads 模式。* 每条比对的最小 MAPQ；`0` = 关闭。任何非零值都会输出 `gapit.reads/2`。 |
 | `--min-gene-cov` | `-g` | float | `90.0` | *仅基因簇数据库。* 基因判定为 `present` 的最小覆盖度百分比。 |
 | `--min-gene-id` | `-G` | float | `90.0` | *仅基因簇数据库。* 基因判定为 `present` 的最小一致性百分比。 |
 | `--min-cluster-cov` | `-C` | float | `96.0` | *仅基因簇数据库。* 最佳位点判定的最小位点覆盖度百分比。 |
@@ -102,7 +104,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {
@@ -198,11 +200,11 @@ tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00
 ```console
 $ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --nopath --quiet
 $ gapit typing dec.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
-dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	aggR;escV;stx2a;uidA
-dec_s3_stx2a_escV_aggR_uidA.fasta	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	aggR;escV;stx2a;uidA
-dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA	astA;pic;uidA
-dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	astA;pic;uidA
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+dec_s3_stx2a_escV_aggR_uidA.fasta	risk_monitoring	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	astA;pic;uidA	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	astA;pic;uidA	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
 ```
 
 管道形式完全省去中间文件——screen 的 stdout 就是 typing 的 stdin（两侧都保持

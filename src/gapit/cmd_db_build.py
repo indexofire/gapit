@@ -119,6 +119,6 @@ def db_build_command(
             typing=typing,
             floors=floors,
         )
-        typer.echo(receipt.model_dump_json())
+        typer.echo(receipt.model_dump_json(exclude_none=True))
 
     dispatch(run)

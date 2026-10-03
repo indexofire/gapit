@@ -7,9 +7,11 @@ JSON and Markdown.
 
 ## Why gapit
 
-- **Drop-in abricate replacement.** Same BLAST pipeline, same hit rules, abricate-format
-  TSV on stdout. Parity with abricate 1.4.0 is a release gate, checked by diffing gene
-  calls against real abricate (`pixi run -e parity parity`).
+- **Frozen abricate-compatible baseline.** Contig screening keeps the same BLAST
+  pipeline, hit rules, and abricate-format TSV as a frozen baseline surface for existing
+  pipelines. From v0.5.0 gapit pursues its own contract; abricate parity is no longer a
+  release gate — the parity harness (`pixi run -e parity parity`) remains a regression
+  reference for that frozen surface.
 - **Machine-readable by design.** Versioned output schemas (`gapit.report/1`,
   `gapit.reads/1`, `gapit.summary/1`), self-describing via `gapit schema`, typed JSON error
   envelopes on stderr, documented exit codes. An agent can discover the whole contract
@@ -79,12 +81,16 @@ presence defaults to 90% alignment breadth (`--min-breadth 90`).
 ## Databases
 
 A database is a directory under the datadir, resolved from `$GAPIT_DATADIR`, then
-`~/.local/share/gapit/db` (override per call with `--datadir`). Twelve databases are built
-into the catalog; all of them download from upstream and build on `gapit db fetch` — with
-six content-provenance-audited exceptions that ship inside the package (`ecoli_dec` and
+`~/.local/share/gapit/db` (override per call with `--datadir`). Twenty-one databases are
+built into the catalog — twelve gene providers, seven kaptive cluster providers, and the
+two typed bundles `ecoli_dec` and `lm_doumith`. All of them build on `gapit db fetch`,
+which downloads from upstream — and six content-provenance-audited ones also ship inside
+the package (`ecoli_dec` and
 `lm_doumith` plus the `ncbi`, `resfinder`, `ecoh`, `upec_expec_vf` snapshots: public
 domain / Apache-2.0 /
-BSD-3-Clause / MIT), materialized into the datadir on first use with zero network. Several
+BSD-3-Clause / MIT), materialized into the datadir on first use with zero network; the
+bundled `ecoli_dec` additionally carries per-gene identity floors (`floors.json`, `pic`
+at 90%) that reads mode applies before presence calls. Several
 upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0) forbid
 redistribution inside an MIT-licensed distribution, so everything else is fetch-on-demand
 — and `db fetch <name>` always refreshes a bundled name from the latest upstream.
@@ -98,8 +104,10 @@ redistribution inside an MIT-licensed distribution, so everything else is fetch-
 | `plasmidfinder` | CGE PlasmidFinder replicons | nucl |
 | `megares` | MEGARes antimicrobial resistance genes | nucl |
 | `ecoh` | E. coli O and H antigens (srst2 EcOH) | nucl |
+| `ecoli_dec` | Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation) | nucl |
 | `vfdb` | VFDB virulence factors (set A, nucleotide) | nucl |
 | `ecoli_vf` | E. coli virulence factors | nucl |
+| `lm_doumith` | Listeria monocytogenes serogrouping (Doumith 2004) | nucl |
 | `bacmet2` | BacMet2 biocide/resistance genes (protein) | prot |
 | `victors` | Victors virulence factors | nucl |
 | `upec_expec_vf` | UPEC/ExPEC virulence genes | nucl |

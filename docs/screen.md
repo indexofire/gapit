@@ -9,7 +9,7 @@ Database setup is covered in [./databases.md](./databases.md); a full walk-throu
 
 ## Options
 
-Transcribed from `gapit screen --help` (gapit 0.5.2). Flags marked *reads mode* apply only when
+Transcribed from `gapit screen --help` (gapit 0.5.3). Flags marked *reads mode* apply only when
 you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 
 Every option also accepts the single-dash short form listed in the **Short** column (e.g.
@@ -41,12 +41,11 @@ targeted usage error pointing at `--db`.
 | `--r2` | `-2` | str | none | *Reads mode.* Comma-separated mate FASTQ file(s); must match `--r1` count. |
 | `--read-type` | `-x` | sr\|map-ont\|map-hifi | `sr` for FASTQ, `map-ont` for FASTA | *Reads mode.* minimap2 preset; resolved from the detected input when omitted. |
 | `--min-breadth` | `-b` | float | `90.0` | *Reads mode.* Minimum %breadth for presence. |
+| `--min-identity` | `-I` | float | `0.0` | *Reads mode.* Minimum %identity per alignment, `0 <= x <= 100`; `0` = off. Any nonzero value emits `gapit.reads/2` ([./outputs.md](./outputs.md)). |
+| `--min-mapq` | `-M` | int | `0` | *Reads mode.* Minimum MAPQ per alignment; `0` = off. Any nonzero value emits `gapit.reads/2`. |
 | `--min-gene-cov` | `-g` | float | `90.0` | *Cluster databases only.* Minimum %coverage for a gene `present` verdict. |
 | `--min-gene-id` | `-G` | float | `90.0` | *Cluster databases only.* Minimum %identity for a gene `present` verdict. |
 | `--min-cluster-cov` | `-C` | float | `96.0` | *Cluster databases only.* Minimum locus %coverage for a best-locus call. |
-
-\* Positional FILEs or `--fofn`, or reads mode via `--r1`. Positional files and `--r1`/`--r2`
-are mutually exclusive.
 
 \* Positional FILEs or `--fofn`, or reads mode via `--r1`. Positional files and `--r1`/`--r2`
 are mutually exclusive.
@@ -108,7 +107,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {
@@ -206,11 +205,11 @@ straight in, the canonical one-liner:
 ```console
 $ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --nopath --quiet
 $ gapit typing dec.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
-dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	aggR;escV;stx2a;uidA
-dec_s3_stx2a_escV_aggR_uidA.fasta	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	aggR;escV;stx2a;uidA
-dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA	astA;pic;uidA
-dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	astA;pic;uidA
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+dec_s3_stx2a_escV_aggR_uidA.fasta	risk_monitoring	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	astA;pic;uidA	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	astA;pic;uidA	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
 ```
 
 The piped form skips the intermediate file entirely — screen's stdout is typing's stdin

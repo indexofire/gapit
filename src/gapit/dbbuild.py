@@ -94,6 +94,29 @@ def _check_record(record: Record) -> None:
         )
 
 
+def drop_exact_duplicates(records: Sequence[Record]) -> tuple[list[Record], int]:
+    """Drop records whose ``(gene, sequence)`` pair repeats an earlier one.
+
+    The FIRST occurrence survives (stable input order); a byte-identical
+    sequence under a DIFFERENT gene name is kept — that may be a legitimate
+    alias. Returns the kept records and the number dropped. Build hygiene
+    only: two records for one gene make reads mode (which aggregates per
+    record) report the gene twice, while the blastn path's culling keeps
+    one — dropping the duplicate at build time aligns both surfaces.
+    """
+    seen: set[tuple[str, str]] = set()
+    kept: list[Record] = []
+    dropped = 0
+    for record in records:
+        key = (record.gene, record.sequence)
+        if key in seen:
+            dropped += 1
+            continue
+        seen.add(key)
+        kept.append(record)
+    return kept, dropped
+
+
 def _self_check_failed(gene: str, reason: str) -> DatabaseError:
     """The uniform self-check failure: gene located, machine-stable reason."""
     return DatabaseError(

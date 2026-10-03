@@ -10,7 +10,7 @@ screen` 写出的格式。如何产生报告见 [./screen.md](./screen.md)；输
 
 ## 选项
 
-转写自 `gapit summary --help`（gapit 0.5.2）：
+转写自 `gapit summary --help`（gapit 0.5.3）：
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
@@ -33,9 +33,9 @@ screen` 写出的格式。如何产生报告见 [./screen.md](./screen.md)；输
 ```console
 $ gapit summary tests/data/summary/multi_sample.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-aa_assembly.fa	1	99.00	.
-mm_assembly.fa	1	.	50.00
-zz_assembly.fa	1	91.00	.
+aa_assembly.fa	1	+	-
+mm_assembly.fa	1	-	+
+zz_assembly.fa	1	+	-
 ```
 
 同样的三个 assembly 若拆成三份独立报告再汇总，则按文件名取键：
@@ -43,13 +43,14 @@ zz_assembly.fa	1	91.00	.
 ```console
 $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv tests/data/summary/empty.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-tests/data/summary/empty.tsv	0	.	.
-tests/data/summary/sample_a.tsv	2	99.50;52.00	76.00
-tests/data/summary/sample_b.tsv	2	90.00	100.00
+tests/data/summary/empty.tsv	0	-	-
+tests/data/summary/sample_a.tsv	2	+	+
+tests/data/summary/sample_b.tsv	2	+	+
 ```
 
-注意那个零命中文件：它以 `NUM_FOUND 0` 和全为 `.` 的基因列出现。同一文件里同一基因
-的多个命中按报告顺序用 `;` 串接（见 `99.50;52.00`）。
+注意那个零命中文件：它以 `NUM_FOUND 0` 和全为 `.` 的基因列出现。存在模式下，同一
+基因的多个命中折叠成一个 `+`；加 `--identity` 或 `--coverage` 时，各命中的数值按
+报告顺序用 `;` 串接。
 
 ## 经管道送入 screen 输出
 
@@ -61,8 +62,9 @@ tests/data/summary/sample_b.tsv	2	90.00	100.00
 ```console
 $ gapit screen -d ecoli_dec *.fna --nopath --quiet | gapit summary
 #FILE	NUM_FOUND	aggR	astA	escV	pic	stx2a	uidA
-dec_s2_pic_astA_uidA.fasta	3	.	100.00	.	100.00	.	100.00
-dec_s3_stx2a_escV_aggR_uidA.fasta	4	100.00	.	100.00	.	100.00	100.00
+dec_s1_aggR_pic_uidA.fna	3	+	-	-	+	-	+
+dec_s2_pic_astA_uidA.fna	3	-	+	-	+	-	+
+dec_s3_stx2a_escV_aggR_uidA.fna	4	+	-	+	-	+	+
 ```
 
 这与先 `gapit screen -d ecoli_dec *.fna --output combined.tsv` 再
@@ -108,8 +110,8 @@ sample_b.tsv	2	+	+
 ```console
 $ gapit summary tests/data/summary/sample_a.csv tests/data/summary/sample_b.csv --nopath
 #FILE	NUM_FOUND	feature_a	feature_b
-sample_a.csv	2	99.50;52.00	76.00
-sample_b.csv	2	90.00	100.00
+sample_a.csv	2	+	+
+sample_b.csv	2	+	+
 ```
 
 - **重复输入会被跳过。** 同一路径出现两次（按原样比较，在任何文件名化之前）会在
@@ -119,7 +121,7 @@ sample_b.csv	2	90.00	100.00
 $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_a.tsv
 WARNING: Skipping duplicate file: tests/data/summary/sample_a.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-tests/data/summary/sample_a.tsv	2	99.50;52.00	76.00
+tests/data/summary/sample_a.tsv	2	+	+
 ```
 
 - **畸形输入是类型化错误，不是沉默。** 文件缺失以 `INPUT_NOT_FOUND` 信封退出码 5；
@@ -141,7 +143,7 @@ $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv 
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "created_at": "2026-09-19T01:12:48Z",
   "params": {
@@ -193,8 +195,8 @@ $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv 
 ```console
 $ gapit summary /tmp/gapit-demo/sortdemo/1dir/zeta.tsv /tmp/gapit-demo/sortdemo/2dir/mid.tsv --nopath
 #FILE	NUM_FOUND	feature_a	feature_b
-zeta.tsv	2	91.00;99.00	50.00
-mid.tsv	2	99.50;52.00	76.00
+zeta.tsv	1	+	-
+mid.tsv	1	-	+
 ```
 
   顺序来自 `1dir/zeta.tsv` < `2dir/mid.tsv`，所以 `zeta.tsv` 先打印，尽管 `mid.tsv`
@@ -203,8 +205,8 @@ mid.tsv	2	99.50;52.00	76.00
 ```console
 $ gapit summary /tmp/gapit-demo/sortdemo/1dir/zeta.tsv /tmp/gapit-demo/sortdemo/2dir/mid.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-/tmp/gapit-demo/sortdemo/1dir/zeta.tsv	2	91.00;99.00	50.00
-/tmp/gapit-demo/sortdemo/2dir/mid.tsv	2	99.50;52.00	76.00
+/tmp/gapit-demo/sortdemo/1dir/zeta.tsv	1	+	-
+/tmp/gapit-demo/sortdemo/2dir/mid.tsv	1	-	+
 ```
 
 - **dutch 模式的键来自报告内部。** 只有一份输入时，行标签是报告内部找到的 `FILE`

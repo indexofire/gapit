@@ -12,11 +12,11 @@ gapit 生来就是被程序驱动的。每个输出都以机器可读为设计�
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.5.2"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.3"}
 ```
 
-输出 schema。十个文档可自省：`report`、`typing_result`、`reads`、`reads2`、`cluster`、
-`summary`、`error`、`version`，外加数据库侧文档 `features` 和 `typing`。每个都打印完整的
+输出 schema。十一个文档可自省：`report`、`typing_result`、`reads`、`reads2`、`cluster`、
+`summary`、`error`、`version`，外加数据库侧文档 `features`、`typing` 和 `floors`。每个都打印完整的
 JSON Schema：
 
 ```console
@@ -30,6 +30,7 @@ $ gapit schema error           # gapit.error/1
 $ gapit schema version         # gapit.version/1
 $ gapit schema features        # gapit.features/1 (cluster db feature table)
 $ gapit schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
+$ gapit schema floors          # gapit.floors/1 (per-gene identity floors, reads mode)
 ```
 
 例如 `gapit schema version`（真实输出）：
@@ -60,7 +61,7 @@ $ gapit schema typing          # gapit.typing/2 (db scoring spec; /1 still reads
 }
 ```
 
-数据库：数据库目录与安装状态（`gapit db list --json`；真实输出，十二个中的前两
+数据库：数据库目录与安装状态（`gapit db list --json`；真实输出，二十一个中的前两
 个，有删节）：
 
 ```console

@@ -20,6 +20,9 @@ gapit db build NAME FASTA [OPTIONS]
 | `FASTA` (argument) | path | Input FASTA: plain, abricate `~~~`, or `gapit\|` headers, detected per record (`.gz`/`.bz2` accepted). |
 | `--tsv` | path | Metadata TSV: header row with `gene`/`accession`/`function` columns. |
 | `--dbtype` | `nucl` or `prot` | Force the molecule type (default: auto-detect from the sequences). |
+| `--kind` / `-k` | `gene` or `cluster` | Force the database kind (default: auto-detect from the input suffix; a disagreement is a usage error). |
+| `--typing` / `-T` | path | `gapit.typing/1` or `/2` scoring spec: validated, copied into the db as `typing.json`, recorded in its manifest. |
+| `--floors` / `-F` | path | `gapit.floors/1` per-gene identity floors for reads-mode presence: validated, copied into the db as `floors.json` (gene builds only). |
 | `--datadir` | path | Database directory (default: `$GAPIT_DATADIR`, then `~/.local/share/gapit/db`). |
 | `--description` | text | Default product for records whose FASTA header has no description text. |
 | `--force` | flag | Overwrite the database if it already exists. |
@@ -293,8 +296,8 @@ $ cat sample2.tsv
 sample2.fa	SAM002	16	255	+	labcur2	1-240/240	===============	0/0	100.00	100.00	labmeta	LAB-0002	synthetic macrolide esterase	macrolide
 $ gapit summary sample1.tsv sample2.tsv
 #FILE	NUM_FOUND	labcur1	labcur2
-sample1.tsv	1	100.00	.
-sample2.tsv	1	.	100.00
+sample1.tsv	1	+	-
+sample2.tsv	1	-	+
 ```
 
 ## Rules and edge behavior

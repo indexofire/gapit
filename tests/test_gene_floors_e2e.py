@@ -20,6 +20,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from gapit.cli import app
+from gapit.dbcodec import decode_seqid
 from gapit.fasta import iter_fasta
 
 READS2_DB = Path(__file__).parent / "data" / "reads2_db"
@@ -108,11 +109,13 @@ def test_pic_homolog_is_absent_with_floors_present_without(tmp_path: Path) -> No
     datadir.mkdir()
 
     # Materialize the bundle by screening any panel-derived sample once.
+    # (Headers decode through the codec: the rebuilt bundle carries gapit/v1
+    # headers, the pre-rebuild one carried abricate-style ~~~ headers.)
     true_seqs: list[tuple[str, str]] = []
     pic_id: str | None = None
     pic_seq: str | None = None
     for record in iter_fasta(BUNDLE / "sequences"):
-        gene = record.id.split("~~~")[1]
+        gene = decode_seqid(record.id, default_db="ecoli_dec").gene
         if gene == "pic" and pic_seq is None:
             pic_id, pic_seq = record.id, record.sequence
         elif gene in ("uidA", "aggR"):

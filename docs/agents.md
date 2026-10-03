@@ -13,12 +13,12 @@ Version, as one JSON line:
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.5.2"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.3"}
 ```
 
-Output schemas. Ten documents are introspectable: `report`, `typing_result`, `reads`,
+Output schemas. Eleven documents are introspectable: `report`, `typing_result`, `reads`,
 `reads2`, `cluster`, `summary`, `error`, `version`, plus the database-side
-documents `features` and `typing`. Each prints its full JSON Schema:
+documents `features`, `typing`, and `floors`. Each prints its full JSON Schema:
 
 ```console
 $ gapit schema report          # gapit.report/1 (contig screening)
@@ -31,6 +31,7 @@ $ gapit schema error           # gapit.error/1
 $ gapit schema version         # gapit.version/1
 $ gapit schema features        # gapit.features/1 (cluster db feature table)
 $ gapit schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
+$ gapit schema floors          # gapit.floors/1 (per-gene identity floors, reads mode)
 ```
 
 For example, `gapit schema version` (real output):
@@ -62,7 +63,7 @@ For example, `gapit schema version` (real output):
 ```
 
 Databases: the database catalog and install state (`gapit db list --json`; real output,
-first two of twelve shown, trimmed):
+first two of twenty-one shown, trimmed):
 
 ```console
 $ gapit db list --json

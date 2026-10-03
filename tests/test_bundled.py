@@ -152,7 +152,7 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     tag, VFDB marker, or ARO accession appears anywhere — the DEC lesson
     from the license audit (2 VFDB records hid past header-spotting) is
     locked mechanically across all six bundles (record counts pinned)."""
-    typed_counts = {"ecoli_dec": 17, "lm_doumith": 5}
+    typed_counts = {"ecoli_dec": 16, "lm_doumith": 5}
     for bundled in bundled_databases():
         text = bundled.sequences_path.read_text(encoding="utf-8")
         headers = [line for line in text.splitlines() if line.startswith(">")]
@@ -175,12 +175,12 @@ def test_screen_auto_materializes_on_fresh_empty_datadir(tmp_path: Path) -> None
     result = screen(S1, datadir)
 
     assert result.exit_code == 0, result.stderr
-    assert f"gapit: materializing bundled database ecoli_dec (17 records) into {datadir}" in (
+    assert f"gapit: materializing bundled database ecoli_dec (16 records) into {datadir}" in (
         result.stderr
     )
     db_dir = datadir / "ecoli_dec"
     manifest = read_manifest(db_dir / "gapit-manifest.json")
-    assert manifest.n_records == 17
+    assert manifest.n_records == 16
     assert manifest.source == "bundled"
     assert manifest.typing_schema == "gapit.typing/2"
     assert (db_dir / "typing.json").is_file()
@@ -236,7 +236,7 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     """Given an empty datadir, When `db list`, Then ecoli_dec renders as a
     bundled row (vendor from bundled.json, STATUS bundled) between the
     registry rows and any local extras; after one screen the same row reads
-    installed (17) and the JSON entry flips installed/source stays bundled."""
+    installed (16) and the JSON entry flips installed/source stays bundled."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
 
@@ -261,7 +261,7 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     after = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert after.exit_code == 0
     assert (
-        "ecoli_dec\tgapit-curated (public-domain sources)\tinstalled (17)\tnucl\t"
+        "ecoli_dec\tgapit-curated (public-domain sources)\tinstalled (16)\tnucl\t"
         "Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
         in after.stdout
     )
@@ -272,7 +272,7 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     }["ecoli_dec"]
     assert entry["source"] == "bundled"
     assert entry["installed"] is True
-    assert entry["records"] == 17
+    assert entry["records"] == 16
 
 
 def test_dec_designation_matrix_against_the_bundled_database(tmp_path: Path) -> None:

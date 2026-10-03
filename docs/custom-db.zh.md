@@ -22,6 +22,9 @@ gapit db build NAME FASTA [OPTIONS]
 | `FASTA`（位置参数） | path | 输入 FASTA：plain、abricate `~~~` 或 `gapit\|` 表头，逐记录检测（接受 `.gz`/`.bz2`）。 |
 | `--tsv` | path | 元数据 TSV：带 `gene`/`accession`/`function` 列的表头行。 |
 | `--dbtype` | `nucl` 或 `prot` | 强制分子类型（默认：从序列自动检测）。 |
+| `--kind` / `-k` | `gene` 或 `cluster` | 强制数据库类型（默认：从输入后缀自动检测；与后缀不一致是用法错误）。 |
+| `--typing` / `-T` | path | `gapit.typing/1` 或 `/2` 评分规范：先校验，再复制进数据库成为 `typing.json`，并记入其 manifest。 |
+| `--floors` / `-F` | path | `gapit.floors/1` 逐基因一致性下限，用于 reads 模式的存在判定：先校验，再复制进数据库成为 `floors.json`（仅限基因库构建）。 |
 | `--datadir` | path | 数据库目录（默认：`$GAPIT_DATADIR`，然后 `~/.local/share/gapit/db`）。 |
 | `--description` | 文本 | FASTA 表头没有描述文本的记录的默认产物。 |
 | `--force` | 开关 | 数据库已存在时覆盖。 |
@@ -320,8 +323,8 @@ $ cat sample2.tsv
 sample2.fa	SAM002	16	255	+	labcur2	1-240/240	===============	0/0	100.00	100.00	labmeta	LAB-0002	synthetic macrolide esterase	macrolide
 $ gapit summary sample1.tsv sample2.tsv
 #FILE	NUM_FOUND	labcur1	labcur2
-sample1.tsv	1	100.00	.
-sample2.tsv	1	.	100.00
+sample1.tsv	1	+	-
+sample2.tsv	1	-	+
 ```
 
 ## 规则与边缘行为

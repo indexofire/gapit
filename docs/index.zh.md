@@ -34,7 +34,7 @@ gapit 筛查 contig 文件和 FASTQ reads 中的已知基因：AMR（抗微生�
 | `gapit db install` | 校验 SHA256 后安装本地文件 | [数据库](./databases.md) |
 | `gapit db build` | 从基因 FASTA 构建数据库，或从 GBK/GFF 位点构建基因簇数据库（可选配 `--typing` 表型评分规范） | [自定义数据库](./custom-db.md) |
 | `gapit setupdb` | 为数据目录下的所有数据库构建 BLAST 索引 | 本页 |
-| `gapit schema` | 打印 gapit 输出文档的 JSON Schema（`report`、`typing_result`、`reads`、`reads2`、`cluster`、`summary`、`error`、`version`、`features`、`typing`） | [输出](./outputs.md) |
+| `gapit schema` | 打印 gapit 输出文档的 JSON Schema（`report`、`typing_result`、`reads`、`reads2`、`cluster`、`summary`、`error`、`version`、`features`、`typing`、`floors`） | [输出](./outputs.md) |
 | `gapit mcp` | 运行 MCP stdio 服务器（同时安装为 `gapit-mcp` console script） | [MCP 服务器](./mcp.md) |
 
 ## 项目文档

@@ -270,6 +270,92 @@ def test_db_build_tsv_duplicate_gene_first_row_wins(tmp_path: Path) -> None:
     assert quiet.stderr == ""
 
 
+def test_db_build_drops_exact_duplicate_records(tmp_path: Path) -> None:
+    """Given a FASTA whose demov2 record repeats byte-identically around an
+    unrelated demov3 record, When `db build`, Then the receipt counts 2
+    records plus duplicates_dropped=1, records.jsonl keeps the FIRST copy
+    (its product), and a stderr note names the drop; a --quiet rebuild of
+    the same input stays silent."""
+    fasta = tmp_path / "dupes.fa"
+    fasta.write_text(
+        f">demov2 first copy\n{SEQ_A}\n>demov3 demo efflux pump\n{SEQ_B}\n"
+        f">demov2 second copy\n{SEQ_A}\n",
+        encoding="utf-8",
+    )
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    loud = build(DB, str(fasta), "--datadir", str(datadir))
+
+    assert loud.exit_code == 0, loud.stderr
+    assert json.loads(loud.stdout) == {
+        "db": DB,
+        "records": 2,
+        "dbtype": "nucl",
+        "destination": str(datadir / DB),
+        "duplicates_dropped": 1,
+    }
+    assert "dropped 1 exact duplicate record(s) (same gene+sequence; first kept)" in (loud.stderr)
+    parsed = records_of(datadir)
+    assert [record.gene for record in parsed] == ["demov2", "demov3"]
+    demov2 = next(record for record in parsed if record.gene == "demov2")
+    assert demov2.product == "first copy"
+
+    quiet = build(OTHER_DB, str(fasta), "--datadir", str(datadir), "--quiet")
+    assert quiet.exit_code == 0, quiet.stderr
+    assert quiet.stderr == ""
+    assert json.loads(quiet.stdout)["duplicates_dropped"] == 1
+
+
+def test_db_build_keeps_identical_sequence_under_different_genes(tmp_path: Path) -> None:
+    """Given a FASTA whose two records share a byte-identical sequence under
+    DIFFERENT gene names, When built, Then both records survive (a legitimate
+    alias) and the receipt carries no duplicates_dropped key — the
+    pre-field receipt shape, byte-identical."""
+    fasta = tmp_path / "alias.fa"
+    fasta.write_text(f">estA3 allele\n{SEQ_A}\n>estA4 alias\n{SEQ_A}\n", encoding="utf-8")
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    result = build(DB, str(fasta), "--datadir", str(datadir))
+
+    assert result.exit_code == 0, result.stderr
+    assert json.loads(result.stdout) == {
+        "db": DB,
+        "records": 2,
+        "dbtype": "nucl",
+        "destination": str(datadir / DB),
+    }
+    assert [record.gene for record in records_of(datadir)] == ["estA3", "estA4"]
+
+
+def test_db_build_duplicate_record_screens_single_row_in_both_modes(tmp_path: Path) -> None:
+    """Given a database built from a byte-identical duplicated record, When
+    the full gene sequence is screened as an assembly and as reads (--r1,
+    FASTA content-detected), Then each mode reports exactly ONE row for the
+    gene — build-time dedup aligns the reads surface (per-record
+    aggregation) with the blastn surface (culling keeps one)."""
+    fasta = tmp_path / "dupes.fa"
+    fasta.write_text(
+        f">demov2 first copy\n{SEQ_A}\n>demov2 second copy\n{SEQ_A}\n", encoding="utf-8"
+    )
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    assert build(DB, str(fasta), "--datadir", str(datadir)).exit_code == 0
+
+    query = tmp_path / "query.fa"
+    query.write_text(f">contig1\n{SEQ_A}\n", encoding="utf-8")
+    (row,) = screen_rows(datadir, query)
+    assert row[5] == "demov2"
+
+    reads = runner.invoke(
+        app, ["screen", "--r1", str(query), "--db", DB, "--datadir", str(datadir), "--quiet"]
+    )
+    assert reads.exit_code == 0, reads.stderr
+    genes = [line.split("\t")[1] for line in reads.stdout.splitlines() if not line.startswith("#")]
+    assert genes == ["demov2"]
+
+
 def test_db_build_tsv_gene_absent_from_fasta_warns_and_skips(tmp_path: Path) -> None:
     """Given a --tsv row naming a gene the FASTA does not carry, When built,
     Then the build succeeds, the row is skipped, and a warning names it."""

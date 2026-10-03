@@ -5,11 +5,14 @@ the source or a live run.
 
 ## Is gapit a drop-in abricate replacement?
 
-For contig screening, yes: same BLAST pipeline, same hit rules, abricate-format
-TSV on stdout, byte-parity checked against real abricate on a corpus. It reads
-abricate-format databases (legacy `~~~` headers) as-is. The reverse does not
-hold: gapit-native databases (`gapit/v1` tagged headers) cannot be read by
-abricate. Details: `./databases.md`.
+Contig screening keeps the abricate surface on purpose: same BLAST pipeline, same hit
+rules, abricate-format TSV on stdout, byte-checked against real abricate on a corpus.
+From v0.5.0 that baseline is frozen rather than a release gate — gapit pursues its own
+contract (native JSON/Markdown, reads and cluster engines, typing), and the parity
+harness (`pixi run -e parity parity`) serves as a regression reference for the frozen
+surface. gapit reads abricate-format databases (legacy `~~~` headers) as-is. The
+reverse does not hold: gapit-native databases (`gapit/v1` tagged headers) cannot be
+read by abricate. Details: `./databases.md`.
 
 ## Why does a hit showing 80.00% coverage get filtered?
 
@@ -75,6 +78,15 @@ minimap2 cluster engine and reports one best-locus call per file, with
 per-gene verdicts and, on typed databases, a phenotype. Details:
 `./screen.md` and `./databases.md`.
 
+## How do I designate a pathotype or serogroup?
+
+Designation is two-stage on gene databases: screen with a typed database, then read
+the table back. The bundled `ecoli_dec` panel carries the dual-scheme DEC designation:
+`gapit screen -d ecoli_dec sample.fna -o result.tsv`, then `gapit typing result.tsv`
+— or pipe one straight into the other. Cluster databases are the exception: their
+designation is integrated into the screen itself (the `PHENOTYPE` column). Details:
+`./typing.md`.
+
 ## What is the difference between `--threads` and `--jobs`?
 
 `--threads` is BLAST worker threads inside one screening run (passed to
@@ -90,14 +102,34 @@ puts the sample key in the first `#SAMPLE` column; `--format json` (or `md`) giv
 versioned `gapit.reads/1` document instead:
 
 ```console
-$ gapit screen --r1 reads.fq --read-type sr --db tinyamr
-#SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT	RESISTANCE
-reads.fq	tetX	97.70	2.09	12	yes	tinyamr	SYN-001	extended resistance determinant tetX	TETRACYCLINE
-$ gapit screen --r1 reads.fq --read-type sr --db tinyamr --format json
+$ gapit screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads
+#SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
+tests/data/reads/tetx_full.fq	tetX	100.00	2.30	12	yes	tinyreads	SYN-001	extended resistance determinant tetX
+$ gapit screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads --format json
 {"schema": "gapit.reads/1", ...}
 ```
 
 Reads mode: `./reads.md`.
+
+## Can I screen a wildcard of FASTQ files?
+
+Yes: when every positional file is FASTQ, `gapit screen` enters reads mode and
+auto-pairs samples from the filenames (`_R1`/`_R2`, `_1`/`_2` conventions), so
+`gapit screen -d ecoli_dec *.fq.gz -j 4` screens all samples concurrently with one
+command. Mixing FASTA and FASTQ positionals is a usage error; the pairing conventions
+and the per-sample output are documented in `./reads.md`.
+
+## What are per-gene identity floors?
+
+A database-side `floors.json` (`gapit.floors/1`) declares a minimum alignment identity
+per gene for reads-mode presence: alignments below the floor are dropped before
+breadth and depth are aggregated, so a close-but-not-exact homolog no longer over-calls
+the gene. The real case that motivated it: the SPATE-homolog `pic` in the bundled
+`ecoli_dec` panel read about 86.6% identity at 97.6% breadth and crossed the 90%
+presence threshold, while the blastn contig path correctly rejected it; the shipped
+floor (`pic` at 90) makes reads mode agree. Install one with `gapit db build --floors
+FILE` or by dropping the file into the db directory; a database without one screens
+byte-identically to before. Details: `./reads.md` and `./databases.md`.
 
 ## What is this "MISSING_DEPENDENCY" error?
 
@@ -113,16 +145,20 @@ PATH.
 
 ## What licenses apply to the databases?
 
-gapit itself is MIT-licensed. No database content ships inside the package: every
-provider downloads from upstream at fetch time, and the content keeps its original
-licenses (NCBI public domain, CARD's McMaster non-commercial terms, VFDB's CC BY-NC,
+gapit itself is MIT-licensed. Six audited, permissively licensed bundles ship inside
+the wheel (the public-domain `ecoli_dec` and `lm_doumith` panels plus the `ncbi`,
+`resfinder`, `ecoh`, `upec_expec_vf` snapshots: Apache-2.0 / BSD-3-Clause / MIT) and
+materialize into the datadir on first use; every other provider downloads from upstream
+at fetch time, and the content keeps its original
+licenses (CARD's McMaster non-commercial terms, VFDB's CC BY-NC,
 CGE, Kaptive's GPL-3.0, and so on); gapit does not relicense it. Providers that pin a
-license expose it in `gapit db list --json`. Details in SPEC.md §9.
+license expose it in `gapit db list --json`. Details in SPEC.md §9 and the
+[bundled section](./databases.md#bundled-databases-install-time-ready).
 
 ## How do I add a new database to the default set?
 
 Write a provider module and fetch it by name: every provider downloads from its
-upstream source at fetch time, transforms the records, and builds locally — nothing is
-ever bundled (upstream licenses such as CARD's or VFDB's forbid redistribution inside an
-MIT-licensed distribution). The header format, transforms, and build pipeline are
-specified in SPEC.md §11.
+upstream source at fetch time, transforms the records, and builds locally. Nothing
+beyond the six audited bundles ships in the wheel (upstream licenses such as CARD's or
+VFDB's forbid redistribution inside an MIT-licensed distribution). The header format,
+transforms, and build pipeline are specified in SPEC.md §11.

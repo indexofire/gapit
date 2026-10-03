@@ -19,9 +19,9 @@ detects genes, `gapit typing` designates from the results.**
 ```console
 $ gapit screen contigs.fa --db ecoli_dec --output result.tsv --quiet
 $ gapit typing result.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
-contigs.fa	gb4789_6	EHEC	high	1.0000	EAEC (1.0000)	...	escV;stx2a;uidA
-contigs.fa	risk_monitoring	EHEC	high	1.0000	EAEC (1.0000)	...	escV;stx2a;uidA
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+contigs.fa	gb4789_6	EHEC	escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
+contigs.fa	risk_monitoring	EHEC	escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
 ```
 
 Stage 1 is pure gene detection: a typed gene database screens byte-identically to an
@@ -46,10 +46,10 @@ piped table's JSON `source` renders as `["-"]`.
 Usage: `gapit typing RESULT.tsv [RESULT2.tsv ...] [-D datadir] [-f tsv|json|md] [-o FILE]
 [-q]`, or piped as above (`-` for explicit stdin). The default TSV carries one row per
 (FILE, scheme) with the columns `FILE`, `SCHEME`,
-`PHENOTYPE`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES`, `GENES` — ambiguous calls render
+`PHENOTYPE`, `GENES`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES` — ambiguous calls render
 `-` for the phenotype (and runner-up) and carry the candidate pair in NOTES; `GENES`
-closes every row with the FILE's present gene names (sorted, `;`-joined), the same list on
-each of the FILE's scheme rows — the hits that drove the call, in the open. `json` emits
+follows the phenotype with the FILE's present gene names (sorted, `;`-joined), the same
+list on each of the FILE's scheme rows — the hits that drove the call, in the open. `json` emits
 `gapit.typing_result/1` (full score breakdowns plus the same per-file `genes` list;
 `gapit schema typing_result`); `md` renders
 the same eight columns under a frontmatter naming the db and source tables. Typed errors:
@@ -347,8 +347,8 @@ $ gapit db build doumith doumith.fa --typing doumith.json
 
 $ gapit screen lm_4b.fa --db doumith --output lm_4b.tsv --quiet
 $ gapit typing lm_4b.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
-lm_4b.fa	doumith	4b-4d-4e	high	1.0000	1/2a-3a (0.0000)	...	orf2110;orf2819;prs
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+lm_4b.fa	doumith	4b-4d-4e	orf2110;orf2819;prs	high	1.0000	1/2a-3a (0.0000)	...
 
 $ gapit screen vc_inaba.fa --db vc_subserotype --quiet
 FILE      BEST_LOCUS  TYPE  PHENOTYPE  COVERAGE  IDENTITY  PRESENT  PARTIAL  MISSING_IDS

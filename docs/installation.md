@@ -9,9 +9,12 @@ Two install paths: the PyPI wheel (you provide the external binaries) or a git c
 pip install gapit
 ```
 
-The wheel bundles the Python package and the `gapit`/`gapit-mcp` console scripts — no
-database content (every provider downloads from upstream at fetch time; several upstream
-licenses forbid redistribution). It does **not** bundle BLAST+ or minimap2 either — install
+The wheel bundles the Python package and the `gapit`/`gapit-mcp` console scripts, plus
+six audited, permissively licensed database bundles that materialize into the datadir on
+first use (see
+[Bundled databases](./databases.md#bundled-databases-install-time-ready)); every other
+provider downloads from upstream at fetch time, because several upstream licenses forbid
+redistribution. It does **not** bundle BLAST+ or minimap2 either — install
 them first ([External binaries](#external-binaries), e.g. `conda create -n gapit-env -c
 bioconda blast minimap2`).
 
@@ -45,9 +48,9 @@ gapit --version
 
 ```console
 $ gapit --version
-gapit 0.5.2
+gapit 0.5.3
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.5.2"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.3"}
 ```
 
 ## External binaries
@@ -60,11 +63,14 @@ normalization (plain/gz/bz2 FASTA, FASTQ, GenBank, EMBL) is native — no `any2f
 ## Database bootstrap
 
 Screening needs at least one database in the datadir (`$GAPIT_DATADIR`, then
-`~/.local/share/gapit/db`; override per call with `--datadir`). Nothing is bundled:
-every provider downloads from upstream when fetched (network required), because several
+`~/.local/share/gapit/db`; override per call with `--datadir`). Six audited,
+permissively licensed databases ship inside the wheel and need no network: the first
+screen against a bundled name materializes it automatically, and `gapit setupdb`
+materializes all six at once. Every other provider downloads from upstream when fetched
+(network required), because several
 upstream licenses — CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0 — forbid
 redistribution inside an MIT-licensed package. See [Databases](./databases.md) for the
-full database table.
+full database table and the [bundled section](./databases.md#bundled-databases-install-time-ready).
 
 ```bash
 gapit db fetch all         # installs the default set (card, vfdb) into the default datadir

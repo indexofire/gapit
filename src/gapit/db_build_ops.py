@@ -4,8 +4,8 @@ Turns a user-supplied input into a fully built gapit-native database: FASTA
 inputs run the gene pipeline (records.jsonl -> sequences + BLAST index +
 manifest, written last), GBK/GFF inputs run the cluster pipeline (locus
 FASTA + features.json + manifest ``kind: cluster``, gapit.dbbuild). This
-module is orchestration plus kind dispatch + a metadata merge only — the
-building blocks live in records/dbbuild/fasta/dbcodec/db (SPEC.md §11). The
+module is orchestration plus kind dispatch only — the building blocks live in
+records/dbbuild/db_build_meta/fasta/dbcodec/db (SPEC.md §11). The
 typer command (:mod:`gapit.cmd_db_build`) and the MCP tool
 (:mod:`gapit.mcp_tools`) are thin callers.
 
@@ -17,10 +17,8 @@ token; record order is input order. Sequences are stored verbatim — no
 provider-style normalization, this is the user's curated truth.
 """
 
-import csv
 import shutil
 from collections.abc import Callable
-from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
@@ -30,11 +28,13 @@ from pydantic import BaseModel
 from gapit import config
 from gapit.clusterbuild import is_cluster_input, perform_cluster_build
 from gapit.db import mol_type
-from gapit.dbbuild import build_database
+from gapit.db_build_meta import merge_metadata, read_metadata, split_function
+from gapit.dbbuild import build_database, drop_exact_duplicates
 from gapit.dbcodec import decode_seqid
 from gapit.errors import DatabaseError, InputError, UsageError
 from gapit.fasta import FastaRecord, iter_fasta
 from gapit.gene_floors import FLOORS_FILENAME, read_floors, validate_floors
+from gapit.proctools import note
 from gapit.records import Record, write_records
 from gapit.typing_gene import validate_gene_typing
 from gapit.typing_models import read_typing_document, typing_schema_of
@@ -51,20 +51,10 @@ class BuildReceipt(BaseModel, frozen=True):
     records: int
     dbtype: Dbtype
     destination: str
-
-
-@dataclass(frozen=True, slots=True)
-class Metadata:
-    """Parsed --tsv: which merge columns the header carries, and the row
-    values per gene (accession, ';'-joined function; '' for absent columns)."""
-
-    columns: frozenset[str]
-    rows: dict[str, tuple[str, str]]
-
-
-def _split_function(joined: str) -> tuple[str, ...]:
-    """';'-joined classes -> tuple, empty pieces dropped."""
-    return tuple(part for part in joined.split(";") if part)
+    # Exact (gene, sequence) duplicates dropped at build time; None (omitted
+    # at serialization) when none were, so no-dup receipts stay
+    # byte-identical to the pre-field shape.
+    duplicates_dropped: int | None = None
 
 
 def _to_record(fasta: FastaRecord, name: str, default_product: str) -> Record:
@@ -81,76 +71,10 @@ def _to_record(fasta: FastaRecord, name: str, default_product: str) -> Record:
         gene=header.gene,
         sequence=fasta.sequence,
         accession=header.accession,
-        function=_split_function(header.function),
+        function=split_function(header.function),
         product=fasta.description or default_product or header.gene,
         source_id=fasta.id,
     )
-
-
-def _read_metadata(path: Path, warn: Callable[[str], None]) -> Metadata:
-    """Parse the metadata TSV: header row mandatory and must carry ``gene``
-    (InputError METADATA_MALFORMED otherwise); ``accession``/``function``
-    are optional per-file, extra columns are ignored. Duplicate genes keep
-    the FIRST row (warn); short rows read their missing cells as empty.
-    """
-    if not path.is_file():
-        raise InputError(
-            f"metadata file not found or unreadable: {path}",
-            code="INPUT_NOT_FOUND",
-            context={"file": str(path)},
-        )
-    with path.open(encoding="utf-8", newline="") as handle:
-        rows = csv.reader(handle, delimiter="\t")
-        header = next((row for row in rows if row), None)
-        if header is None or "gene" not in header:
-            raise InputError(
-                f"metadata TSV needs a header row with a 'gene' column: {path}",
-                code="METADATA_MALFORMED",
-                context={"file": str(path), "needed": "gene"},
-            )
-        columns = {column: index for index, column in enumerate(header)}
-
-        def cell(padded: list[str], column: str) -> str:
-            return padded[columns[column]]
-
-        metadata: dict[str, tuple[str, str]] = {}
-        for row in rows:
-            if not any(value.strip() for value in row):
-                continue
-            padded = row + [""] * (len(header) - len(row))
-            gene = cell(padded, "gene")
-            if not gene:
-                continue
-            if gene in metadata:
-                warn(f"duplicate gene {gene!r} in metadata TSV: keeping the first row")
-                continue
-            metadata[gene] = (
-                cell(padded, "accession") if "accession" in columns else "",
-                cell(padded, "function") if "function" in columns else "",
-            )
-    return Metadata(columns=frozenset(columns), rows=metadata)
-
-
-def _merge(records: list[Record], metadata: Metadata, warn: Callable[[str], None]) -> list[Record]:
-    """Overwrite accession/function on records whose gene has a metadata row
-    (only the columns the TSV actually carries); genes only present in the
-    TSV are warned about and skipped."""
-    merged: list[Record] = []
-    for record in records:
-        row = metadata.rows.get(record.gene)
-        if row is None:
-            merged.append(record)
-            continue
-        update: dict[str, object] = {}
-        if "accession" in metadata.columns:
-            update["accession"] = row[0]
-        if "function" in metadata.columns:
-            update["function"] = _split_function(row[1])
-        merged.append(record.model_copy(update=update))
-    fasta_genes = {record.gene for record in records}
-    for gene in sorted(set(metadata.rows) - fasta_genes):
-        warn(f"gene {gene!r} in metadata TSV not found in FASTA: skipped")
-    return merged
 
 
 def _resolve_dbtype(flag: Dbtype | None, records: list[Record]) -> Dbtype:
@@ -190,6 +114,10 @@ def perform_build(
     the same way and copied in as ``floors.json`` — the file's presence is
     the flag, no manifest field); the FASTA-only ``tsv``/``dbtype``/
     ``description``/``floors`` options are rejected on the cluster branch.
+
+    The gene branch drops exact ``(gene, sequence)`` duplicates after
+    parsing (first kept; see :func:`gapit.dbbuild.drop_exact_duplicates`)
+    — the count lands in the receipt and a note on stderr when not quiet.
     """
 
     # Security/frozen rule: `Path(datadir) / name` REPLACES the base when name
@@ -240,7 +168,14 @@ def perform_build(
         )
     records = [_to_record(fasta_record, name, description) for fasta_record in iter_fasta(fasta)]
     if tsv is not None:
-        records = _merge(records, _read_metadata(tsv, warn), warn)
+        records = merge_metadata(records, read_metadata(tsv, warn), warn)
+    records, duplicates_dropped = drop_exact_duplicates(records)
+    if duplicates_dropped:
+        note(
+            quiet,
+            f"dropped {duplicates_dropped} exact duplicate record(s) "
+            "(same gene+sequence; first kept)",
+        )
     typing_schema = ""
     if typing is not None:
         document = read_typing_document(typing)
@@ -271,4 +206,5 @@ def perform_build(
         records=manifest.n_records,
         dbtype=manifest.dbtype,
         destination=str(db_dir),
+        duplicates_dropped=duplicates_dropped or None,
     )

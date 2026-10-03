@@ -78,6 +78,7 @@ $ gapit db list --json
       "description": "ARG-ANNOT acquired resistance genes",
       "dbtype": "nucl",
       "installed": true,
+      "kind": "gene",
       "records": 2224
     },
     {
@@ -86,6 +87,7 @@ $ gapit db list --json
       "description": "BacMet2 experimentally confirmed biocide/resistance genes (protein)",
       "dbtype": "prot",
       "installed": true,
+      "kind": "gene",
       "records": 746
     },
     {
@@ -94,6 +96,7 @@ $ gapit db list --json
       "description": "CARD protein homolog resistance models",
       "dbtype": "nucl",
       "installed": true,
+      "kind": "gene",
       "records": 6059
     }
   ]
@@ -108,6 +111,7 @@ $ gapit db list --json
 | `providers[].vendor` | string | Upstream maintainer organisation (NCBI, DTU CGE, Kaptive (klebgenomics), ...) |
 | `providers[].description` | string | Short content summary |
 | `providers[].dbtype` | string | `nucl` (screened with blastn) or `prot` (screened with blastx) |
+| `providers[].kind` | string | `gene` (per-gene BLAST screening) or `cluster` (minimap2 locus screening, [screen.md](./screen.md#cluster-databases-kind-cluster)) |
 | `providers[].installed` | boolean | True when a manifest exists in the datadir |
 | `providers[].records` | integer | Record count, omitted when the database isn't installed |
 | `providers[].license` | string | Upstream content license, omitted unless the provider pins one (card, vfdb, ecoli_vf, kaptive) |
@@ -130,7 +134,7 @@ accept: a bundled database works out of the box.
 | Name | Content | Snapshot | Typed |
 |---|---|---|---|
 | `ecoh` | E. coli O and H antigens (597 records, srst2 EcOH) | 2026-10-02 | — |
-| `ecoli_dec` | Diarrheagenic E. coli marker panel (17 records, GB 4789.6 + risk-monitoring designation) | 2026-10-02 | `gapit.typing/2` (schemes `gb4789_6`, `risk_monitoring`) |
+| `ecoli_dec` | Diarrheagenic E. coli marker panel (16 records, GB 4789.6 + risk-monitoring designation) | 2026-10-02 | `gapit.typing/2` (schemes `gb4789_6`, `risk_monitoring`) |
 | `lm_doumith` | Listeria monocytogenes serogrouping (5 records, Doumith 2004 markers) | 2026-10-03 | `gapit.typing/2` (scheme `doumith_serogroup`) |
 | `ncbi` | NCBI AMRFinderPlus curated AMR (8373 records) | 2026-10-02 | — |
 | `resfinder` | CGE ResFinder acquired resistance genes (3206 records) | 2026-10-02 | — |
@@ -139,7 +143,9 @@ accept: a bundled database works out of the box.
 **License provenance.** Every `ecoli_dec` record was re-sourced from primary
 public-domain submissions (NCBI RefSeq/GenBank/DDBJ accessions, same alleles as the
 rightsholder panel); two VFDB-derived records found in the original panel were removed
-and replaced during the 2026-10 audit. The `lm_doumith` panel was extracted the same
+and replaced during the 2026-10 audit, and the byte-identical `estA4` (J03311.1) copy of
+`estA3` (M18346.1) — one `sth` gene, one sequence — was dropped by the build pipeline's
+exact-duplicate dedup in the 2026-10 rebuild, leaving 16 records. The `lm_doumith` panel was extracted the same
 way from public-domain INSDC records (accessions in each header; reverse-complement
 markers strand-corrected, `lmo0737` verified 100% against EGD-e). The four provider
 snapshots (`ecoh`, `ncbi`, `resfinder`, `upec_expec_vf`) passed the 2026-10
@@ -161,14 +167,16 @@ drift — comparing the wheel snapshots against latest upstream is future work.)
 
 **How materialization works.** The first `gapit screen ... --db <bundled-name>` against
 a datadir that does not hold the database builds it there automatically — one stderr note
-(`gapit: materializing bundled database ecoli_dec (17 records) into <datadir>`,
+(`gapit: materializing bundled database ecoli_dec (16 records) into <datadir>`,
 silenced by `--quiet`), then the standard gene-build pipeline: `records.jsonl`, the
 `sequences` FASTA with gapit/v1 headers, the BLAST index, the `typing.json` copy when the
-bundle ships one, and a manifest stamped `source: "bundled"`. Deterministic, zero
+bundle ships one, and a manifest stamped `source: "bundled"`. That pipeline — shared with
+`gapit db build` — drops exact `(gene, sequence)` duplicate records at build time (first
+kept; a stderr note and the receipt's `duplicates_dropped` count the drops). Deterministic, zero
 network. A missing datadir is created on this path only; `gapit setupdb` materializes
 every bundled database alongside indexing; re-running either is a no-op once the
 manifest exists. `db list` shows the database as `bundled` before that and
-`installed (17)` after — on all four listing surfaces (TSV, rich table, `--json`, MCP
+`installed (16)` after — on all four listing surfaces (TSV, rich table, `--json`, MCP
 `db_list`).
 
 ### Listeria serogrouping (`lm_doumith`)
@@ -204,7 +212,7 @@ honest answer for everything the five markers cannot resolve.
 ## Checking database freshness
 
 `gapit db outdated` reports every installed database's age against the staleness
-threshold. Against a fully installed datadir (output trimmed to three of twelve rows):
+threshold. Against a fully installed datadir (output trimmed to three of twenty-one rows):
 
 ```console
 $ gapit db outdated --days 30
@@ -488,7 +496,7 @@ versions. A real one, from the plasmidfinder database:
   "upstream_version": "",
   "tool": {
     "name": "gapit",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "makeblastdb_version": "blastn: 2.17.0+",
   "minimap2_version": "2.31-r1302"

@@ -9,8 +9,10 @@ git 克隆安装（二进制由它代管）。
 pip install gapit
 ```
 
-wheel 里打包了 Python 包和 `gapit`/`gapit-mcp` console script——不含任何数据库内容
-（每个提供商都在抓取时从上游下载；多家上游许可禁止再分发）。它也**不**打包
+wheel 里打包了 Python 包和 `gapit`/`gapit-mcp` console script，外加六个经过审计、
+许可宽松的数据库内置包，首次使用时物化进数据目录（见数据库指南的
+[内置数据库一节](./databases.zh.md)）；其余每个提供商都在抓取时从
+上游下载，因为多家上游许可禁止再分发。它也**不**打包
 BLAST+ 和 minimap2：请先装好它们（见下文 "外部二进制" 一节，例如
 `conda create -n gapit-env -c bioconda blast minimap2`）。
 
@@ -44,9 +46,9 @@ gapit --version
 
 ```console
 $ gapit --version
-gapit 0.5.2
+gapit 0.5.3
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.5.2"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.3"}
 ```
 
 ## 外部二进制
@@ -59,10 +61,11 @@ GenBank、EMBL）是原生的，不需要 `any2fasta`。
 ## 数据库引导
 
 筛查需要数据目录（`$GAPIT_DATADIR`，然后是 `~/.local/share/gapit/db`；可用
-`--datadir` 逐次覆盖）里至少有一个数据库。没有任何内容随包内置：每个提供商都在
-抓取时从上游下载（需要网络），因为多家上游许可——CARD 的 McMaster 条款、VFDB 的
-CC BY-NC、Kaptive 的 GPL-3.0——禁止随 MIT 许可的包再分发。完整的数据库表见
-[数据库](./databases.md)。
+`--datadir` 逐次覆盖）里至少有一个数据库。六个经过审计、许可宽松的数据库随 wheel
+发布且无需网络：对某个内置库名的第一次筛查会自动物化它，`gapit setupdb` 则一次性
+物化全部六个。其余每个提供商都在抓取时从上游下载（需要网络），因为多家上游许可
+——CARD 的 McMaster 条款、VFDB 的 CC BY-NC、Kaptive 的 GPL-3.0——禁止随 MIT 许可的
+包再分发。完整的数据库表与内置库说明见[数据库](./databases.zh.md)。
 
 ```bash
 gapit db fetch all         # installs the default set (card, vfdb) into the default datadir

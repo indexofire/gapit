@@ -9,7 +9,12 @@ from pathlib import Path
 import pytest
 
 from gapit import __version__, dbbuild
-from gapit.dbbuild import build_database, generate_sequences, verify_sequences
+from gapit.dbbuild import (
+    build_database,
+    drop_exact_duplicates,
+    generate_sequences,
+    verify_sequences,
+)
 from gapit.errors import DatabaseError
 from gapit.records import Record, read_manifest, write_records
 
@@ -124,6 +129,39 @@ def test_generate_sequences_keeps_duplicate_db_gene_pairs(tmp_path: Path) -> Non
     assert (db_dir / "sequences").read_text(encoding="utf-8") == (
         f"{HEADER_TAIL}\nACGT\n{HEADER_TAIL}\nACG\n"
     )
+
+
+def test_drop_exact_duplicates_keeps_first_of_same_gene_and_sequence() -> None:
+    """Given records where (gene, sequence) repeats after an unrelated
+    record between them, When deduplicated, Then only the FIRST duplicate
+    survives in stable input order and the drop count is 1."""
+    first = Record(db=DB, gene="sth", sequence="ACGT", accession="FIRST")
+    other = Record(db=DB, gene="stp", sequence="TTTT")
+    second = Record(db=DB, gene="sth", sequence="ACGT", accession="SECOND")
+    kept, dropped = drop_exact_duplicates([first, other, second])
+    assert kept == [first, other]
+    assert dropped == 1
+
+
+def test_drop_exact_duplicates_keeps_identical_sequence_under_different_gene() -> None:
+    """Given two records with byte-identical sequences but DIFFERENT gene
+    names, When deduplicated, Then both survive (a legitimate alias) and
+    nothing is dropped."""
+    original = Record(db=DB, gene="estA3", sequence="ACGT")
+    alias = Record(db=DB, gene="estA4", sequence="ACGT")
+    kept, dropped = drop_exact_duplicates([original, alias])
+    assert kept == [original, alias]
+    assert dropped == 0
+
+
+def test_drop_exact_duplicates_keeps_same_gene_different_sequence() -> None:
+    """Given two records sharing the gene but differing in sequence, When
+    deduplicated, Then both survive (genuine alleles, not duplicates)."""
+    allele_a = Record(db=DB, gene="sth", sequence="ACGT")
+    allele_b = Record(db=DB, gene="sth", sequence="ACG")
+    kept, dropped = drop_exact_duplicates([allele_a, allele_b])
+    assert kept == [allele_a, allele_b]
+    assert dropped == 0
 
 
 def test_verify_round_trip_accepts_generated_file(tmp_path: Path) -> None:

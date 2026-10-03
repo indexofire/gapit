@@ -106,9 +106,9 @@ minimap 用 15 个字符格勾画比对落在基因的什么位置：
 ```console
 $ gapit screen dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --quiet
 $ gapit typing dec.tsv --quiet
-FILE	SCHEME	PHENOTYPE	CONFIDENCE	SCORE	RUNNER_UP	NOTES	GENES
-dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA	astA;pic;uidA
-dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up	astA;pic;uidA
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	astA;pic;uidA	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
+dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	astA;pic;uidA	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
 ```
 
 无 aggR 的 pic+astA 谱是头条分歧 —— GB 4789.6 判 EAEC，而风险监测 scheme 回退到
@@ -130,7 +130,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -219,7 +219,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 ```json
 {
   "schema": "gapit.typing_result/1",
-  "tool": {"name": "gapit", "version": "0.5.2"},
+  "tool": {"name": "gapit", "version": "0.5.3"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
   "db": "ecoli_dec",
@@ -277,10 +277,10 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 每条判定携带 `phenotype`（歧义为 null）、`score`、`confidence`
 （`high`/`ambiguous`/`low`）、`components[{name, score}]`，以及可选的 `runner_up`、
 `ambiguous[]`（并列的一对）与 `notes[]` —— 与评估器在基因簇路径上产出的结构相同。
-TSV/Markdown 投影把每条判定压平为 `FILE`、`SCHEME`、`PHENOTYPE`、`CONFIDENCE`、
-`SCORE`、`RUNNER_UP`、`NOTES`、`GENES` 八列：歧义判定的表型渲染 `-`、候选对写入
-NOTES（runner-up 单元格同样为 `-`——候选对已说明一切）；`GENES` 以该 FILE 排序后
-`;` 串接的基因名收尾每行，并在该 FILE 的每个 scheme 行上重复。类型化错误：行间
+TSV/Markdown 投影把每条判定压平为 `FILE`、`SCHEME`、`PHENOTYPE`、`GENES`、
+`CONFIDENCE`、`SCORE`、`RUNNER_UP`、`NOTES` 八列：歧义判定的表型渲染 `-`、候选对写入
+NOTES（runner-up 单元格同样为 `-`——候选对已说明一切）；`GENES` 紧跟表型，给出该
+FILE 排序后 `;` 串接的基因名，并在该 FILE 的每个 scheme 行上重复。类型化错误：行间
 `DATABASE` 值混杂为 `DATABASE_MISMATCH`，无数据行的表为 `TYPING_NO_DATA`，无
 `typing.json` 的数据库为 `TYPING_NO_SCHEME`，基因簇数据库为 `TYPING_CLUSTER_DB`
 （其判定集成在 `gapit screen` 内）。其 JSON Schema 用 `gapit schema typing_result`
@@ -402,7 +402,7 @@ typing 的数据库是同一个表头去掉 `PHENOTYPE`。没有位点判定的�
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -521,14 +521,15 @@ agent 只凭二进制就能发现整个契约。
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.5.2"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.3"}
 ```
 
-`gapit schema <name>` 打印每个文档的 JSON Schema。十个名字：`report`、
+`gapit schema <name>` 打印每个文档的 JSON Schema。十一个名字：`report`、
 `typing_result`、`reads`、`reads2`、`cluster`、`summary`、`error`、`version`，外加
-数据库侧文档 `features`（gapit.features/1，基因簇数据库的特征表）和 `typing`
+数据库侧文档 `features`（gapit.features/1，基因簇数据库的特征表）、`typing`
 （gapit.typing/1，基因簇数据
-库的声明式评分规范）。`gapit schema report` 的裁剪片段：
+库的声明式评分规范）和 `floors`（gapit.floors/1，reads 模式存在判定的逐基因一致性
+下限）。`gapit schema report` 的裁剪片段：
 
 ```json
 {

@@ -79,6 +79,7 @@ gapit/
 │   ├── db_ops.py        # db use-cases: fetch + list (shared CLI + MCP; no typer)
 │   ├── db_query_ops.py  # db use-cases: search + outdated over installed DBs (shared CLI + MCP)
 │   ├── db_build_ops.py  # db use-case: custom FASTA+TSV → gene db, GBK/GFF → cluster db (shared CLI + MCP)
+│   ├── db_build_meta.py # `db build --tsv` metadata sidecar: parse + merge (shared by the build use-case)
 │   ├── gbfeatures.py    # GenBank FEATURES/ORIGIN parser → LocusFeatures/GeneFeature + gapit.features/1
 │   ├── gene_floors.py   # gapit.floors/1 per-gene identity floors: model, loader, build validation, reads gate
 │   ├── gffparse.py      # GFF3 parser (embedded ##FASTA or sidecar) → the same locus/gene models

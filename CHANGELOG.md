@@ -5,6 +5,47 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.3] - 2026-10-03
+
+### Added
+
+- **Build-time exact-duplicate dedup for gene databases.** `gapit db build` (CLI and MCP)
+  and bundled materialization now drop records whose `(gene, sequence)` pair repeats an
+  earlier one — the FIRST copy is kept, a stderr note counts the drops when not
+  `--quiet`, and the build receipt gains an additive `duplicates_dropped` field (omitted
+  when 0, so no-duplicate receipts stay byte-identical). Records with identical sequences
+  under DIFFERENT gene names are kept (possible aliases); the provider fetch pipeline is
+  untouched (it already deduplicates upstream).
+
+### Fixed
+
+- **Bundled `ecoli_dec` regenerated 17 → 16 records (the 26ECO0094 `sth` divergence).**
+  The panel carried `estA3` (M18346.1) and `estA4` (J03311.1) as byte-identical 219 bp
+  `sth` sequences, so reads mode — which aggregates per record — reported two `sth` rows
+  while the blastn contig path's `-culling_limit 1` kept one. Build-time dedup drops the
+  `estA4` copy; both surfaces now agree on the single `estA3` `sth` row (verified on
+  26ECO0094 reads and assembly; `astA`/`uidA` unchanged).
+
+### Docs
+
+- Audited docs refresh (no behavior change): README and FAQ now state the shipped
+  stance — the abricate-compatible contig surface is a frozen baseline and the parity
+  harness is a regression reference, not a release gate; the false "nothing is bundled"
+  claims in FAQ/installation are replaced with the six in-wheel audited bundles
+  (materialized on first use). The `gapit typing` TSV column order in every example is
+  corrected to `FILE SCHEME PHENOTYPE GENES CONFIDENCE SCORE RUNNER_UP NOTES`; summary
+  examples now paste the real default `+`/`-` cells; schema rosters add `floors`
+  (eleven documents) and the `gapit.dblist/1` field table gains `kind`; the database
+  catalog is described as its real 21-row self (12 gene + 7 kaptive cluster + the
+  `ecoli_dec`/`lm_doumith` bundles); the quickstart gains a "Type your samples"
+  tutorial (two-stage designation, the screen|typing pipe, wildcard-FASTQ auto-pairing)
+  and uses `gapit setupdb` as the bootstrap path; `gapit screen` docs list
+  `--min-identity`/`-I` and `--min-mapq`/`-M`; the `gapit db build` reference lists
+  `--kind`/`-k`, `--typing`/`-T`, and `--floors`/`-F`. New FAQ entries: two-stage
+  typing designation, per-gene identity floors (the `pic` case), wildcard-FASTQ
+  auto-pairing. All fixes applied to the English pages and their `.zh.md` mirrors; all
+  replacement examples re-run against the real CLI.
+
 ## [0.5.2] - 2026-10-03
 
 ### Added
