@@ -12,7 +12,7 @@ gapit 生来就是被程序驱动的。每个输出都以机器可读为设计�
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.5.1"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.2"}
 ```
 
 输出 schema。十个文档可自省：`report`、`typing_result`、`reads`、`reads2`、`cluster`、

@@ -9,7 +9,7 @@
 
 ## 选项
 
-转写自 `gapit screen --help`（gapit 0.5.1）。标记为 *reads 模式* 的参数只在传入
+转写自 `gapit screen --help`（gapit 0.5.2）。标记为 *reads 模式* 的参数只在传入
 `--r1`/`--r2` 时生效，记录在 [./reads.md](./reads.md)。
 
 每个选项都接受 **短** 列给出的单横线短形式（例如 `--db` 的 `-d`）；长形式仍是规范写法，
@@ -102,7 +102,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.1"
+    "version": "0.5.2"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {

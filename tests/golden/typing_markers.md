@@ -1,6 +1,6 @@
 ---
 schema: gapit.typing_result/1
-tool: gapit 0.5.1
+tool: gapit 0.5.2
 created_at: 2026-10-02T12:00:00Z
 db: markers
 source:
