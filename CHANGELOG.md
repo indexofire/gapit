@@ -5,7 +5,7 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.1] - 2026-10-03
 
 ### Added
 
@@ -89,8 +89,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `--format json` (the tsv/csv reads-mode usage rejection is gone with it). The MCP
   `screen`/`screen_reads` tools are unchanged: they pass `format` explicitly and still
   return json by default (the agents' surface).
-
-## [Unreleased]
 
 ### Added
 

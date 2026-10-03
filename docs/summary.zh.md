@@ -10,7 +10,7 @@ screen` 写出的格式。如何产生报告见 [./screen.md](./screen.md)；输
 
 ## 选项
 
-转写自 `gapit summary --help`（gapit 0.5.0）：
+转写自 `gapit summary --help`（gapit 0.5.1）：
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
@@ -141,7 +141,7 @@ $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv 
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.0"
+    "version": "0.5.1"
   },
   "created_at": "2026-09-19T01:12:48Z",
   "params": {

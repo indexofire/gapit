@@ -44,9 +44,9 @@ gapit --version
 
 ```console
 $ gapit --version
-gapit 0.5.0
+gapit 0.5.1
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.5.0"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.1"}
 ```
 
 ## 外部二进制
