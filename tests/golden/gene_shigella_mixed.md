@@ -1,6 +1,6 @@
 ---
 schema: gapit.report/1
-tool: gapit 0.5.3
+tool: gapit 0.5.4
 created_at: 2026-10-01T12:00:00Z
 db: shigella
 minid: 80.0

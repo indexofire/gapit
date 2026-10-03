@@ -32,6 +32,7 @@ from gapit.errors import ensure_input_file, usage_fail
 from gapit.formats.md import reads_md_chunk, reads_md_preamble
 from gapit.formats.reads_json import render_reads2_json, render_reads_json
 from gapit.formats.reads_tsv import reads_tsv_chunk, reads_tsv_preamble
+from gapit.progress import screen_progress
 from gapit.readpairs import SampleLanes, pair_samples
 from gapit.reads import ReadsParams, ReadsReport, ReadTypeEnum, screen_reads
 from gapit.screening import OutputFormat, find_database
@@ -90,7 +91,10 @@ def run_screen_reads_positional(
         typer.echo(f"--jobs {jobs} --threads {threads} oversubscribes {cpu_count} cpus", err=True)
 
     def screen_sample(sample: SampleLanes) -> ReadsReport:
-        if not quiet:
+        if task_id is not None:
+            # Bar active: its description carries the sample (notes suppressed).
+            bar.describe(sample.sample)
+        elif not quiet:
             read_list = ", ".join(
                 str(path) for lane in sample.lanes for path in lane if path is not None
             )
@@ -106,7 +110,7 @@ def run_screen_reads_positional(
             min_mapq=min_mapq,
         )
         present = sum(1 for gene in report.genes if gene.present)
-        if not quiet:
+        if task_id is None and not quiet:
             typer.echo(f"Detected {present} present genes in sample {sample.sample}", err=True)
         return report.model_copy(update={"reads": (sample.sample,)})
 
@@ -114,11 +118,16 @@ def run_screen_reads_positional(
         # Subprocess-bound work (GIL irrelevant); executor.map yields
         # positionally, so reports stay in sample order and a failing sample
         # raises at its position, like the sequential loop (run_screen twin).
+        def tracked(seq: Iterator[ReadsReport]) -> Iterator[ReadsReport]:
+            for report in seq:  # advance per completed sample, sample order
+                bar.advance()
+                yield report
+
         if jobs == 1:
-            yield from (screen_sample(sample) for sample in samples)
+            yield from tracked(screen_sample(sample) for sample in samples)
             return
         with ThreadPoolExecutor(max_workers=jobs) as executor:
-            yield from executor.map(screen_sample, samples)
+            yield from tracked(executor.map(screen_sample, samples))
 
     params = ReadsParams(
         db=db_name,
@@ -130,39 +139,40 @@ def run_screen_reads_positional(
     )
     now = datetime.now(UTC)
     reads2 = min_identity > 0.0 or min_mapq > 0
-    chunks: list[str] = []
-
-    def sink(chunk: str) -> None:
-        if chunk:
-            chunks.append(chunk)
-            if emit is not None:
-                emit(chunk)
-
     fmt = output_format if output_format is not None else OutputFormat.tsv
-    if fmt is OutputFormat.md:
-        # Static frontmatter leads (knowable before sample 1), then one
-        # section per sample the moment it completes — head-of-line in
-        # sample order under --jobs (the cluster_md precedent; run totals
-        # live in the JSON document only).
-        sink(reads_md_preamble(params, now=now, reads2=reads2))
-        for report in iter_reports():
-            sink(reads_md_chunk(report, reads2=reads2))
-    elif fmt is OutputFormat.tsv or fmt is OutputFormat.csv:
-        # The default table format: the header is emitted LAZILY with the
-        # first sample's chunk — per-sample stderr progress ("Screening
-        # sample …", "Detected … genes") then precedes the table on the
-        # terminal (rightsholder UX), instead of the header printing
-        # before any sample has started.
-        csv = fmt is OutputFormat.csv
-        header_pending = True
-        for report in iter_reports():
-            if header_pending:
+    with screen_progress(samples, quiet=quiet) as (bar, task_id):
+        chunks: list[str] = []
+
+        def sink(chunk: str) -> None:
+            if chunk:
+                chunks.append(chunk)
+                if emit is not None:
+                    emit(chunk)
+
+        if fmt is OutputFormat.md:
+            # Static frontmatter leads (knowable before sample 1), then one
+            # section per sample the moment it completes — head-of-line in
+            # sample order under --jobs (the cluster_md precedent; run totals
+            # live in the JSON document only).
+            sink(reads_md_preamble(params, now=now, reads2=reads2))
+            for report in iter_reports():
+                sink(reads_md_chunk(report, reads2=reads2))
+        elif fmt is OutputFormat.tsv or fmt is OutputFormat.csv:
+            # The default table format: the header is emitted LAZILY with the
+            # first sample's chunk — per-sample stderr progress ("Screening
+            # sample …", "Detected … genes") then precedes the table on the
+            # terminal (rightsholder UX), instead of the header printing
+            # before any sample has started.
+            csv = fmt is OutputFormat.csv
+            header_pending = True
+            for report in iter_reports():
+                if header_pending:
+                    sink(reads_tsv_preamble(reads2=reads2, csv=csv))
+                    header_pending = False
+                sink(reads_tsv_chunk(report, reads2=reads2, csv=csv, all_genes=all_genes))
+            if header_pending and not chunks:
                 sink(reads_tsv_preamble(reads2=reads2, csv=csv))
-                header_pending = False
-            sink(reads_tsv_chunk(report, reads2=reads2, csv=csv, all_genes=all_genes))
-        if header_pending and not chunks:
-            sink(reads_tsv_preamble(reads2=reads2, csv=csv))
-    else:
-        render = render_reads2_json if reads2 else render_reads_json
-        sink(render(list(iter_reports()), params, now=now))
+        else:
+            render = render_reads2_json if reads2 else render_reads_json
+            sink(render(list(iter_reports()), params, now=now))
     return "".join(chunks)

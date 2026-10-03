@@ -24,6 +24,7 @@ from gapit.errors import DatabaseError, InputError, ensure_input_file, usage_fai
 from gapit.formats.json import render_json
 from gapit.formats.md import md_report_chunk, md_report_preamble
 from gapit.formats.tsv import tsv_file_chunk, tsv_preamble
+from gapit.progress import screen_progress
 from gapit.report import Report, ScreeningParams
 from gapit.screening_cluster import (
     reject_cluster_engine_flags,
@@ -156,12 +157,15 @@ def run_screen(
         typer.echo(f"--jobs {jobs} --threads {threads} oversubscribes {cpu_count} cpus", err=True)
 
     def screen_one(path: Path) -> Report:
-        if not quiet:
+        if task_id is not None:
+            # Bar active: its description carries the current file (notes suppressed).
+            bar.describe(path.name)
+        elif not quiet:
             typer.echo(f"Processing: {path}", err=True)
         report = screen_file(
             path, database, params, dbtype=dbtype, debug=debug, merge_fragments=merge_fragments
         )
-        if not quiet:
+        if task_id is None and not quiet:
             typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
         return report
 
@@ -169,32 +173,38 @@ def run_screen(
         # Subprocess-bound work (GIL irrelevant); executor.map yields
         # positionally, so reports stay in input order (SPEC.md §4) and a
         # failing file raises at its position, like the sequential loop.
+        def tracked(seq: Iterator[Report]) -> Iterator[Report]:
+            for report in seq:  # advance per completed file, input order
+                bar.advance()
+                yield report
+
         if jobs == 1:
-            yield from (screen_one(path) for path in inputs)
+            yield from tracked(screen_one(path) for path in inputs)
             return
         with ThreadPoolExecutor(max_workers=jobs) as executor:
-            yield from executor.map(screen_one, inputs)
+            yield from tracked(executor.map(screen_one, inputs))
 
-    chunks: list[str] = []
+    with screen_progress(inputs, quiet=quiet) as (bar, task_id):
+        chunks: list[str] = []
 
-    def sink(chunk: str) -> None:
-        if chunk:
-            chunks.append(chunk)
-            if emit is not None:
-                emit(chunk)
+        def sink(chunk: str) -> None:
+            if chunk:
+                chunks.append(chunk)
+                if emit is not None:
+                    emit(chunk)
 
-    if output_format is OutputFormat.json:
-        sink(render_json(list(iter_reports()), params, now=datetime.now(UTC)))
-    elif output_format is OutputFormat.md:
-        # Static frontmatter leads (knowable before file 1), then one
-        # section per file the moment it completes — exactly like tsv
-        # chunks, head-of-line in input order under --jobs.
-        sink(md_report_preamble(params, now=datetime.now(UTC)))
-        for report in iter_reports():
-            sink(md_report_chunk(report))
-    else:
-        as_csv = output_format is OutputFormat.csv
-        sink(tsv_preamble(csv=as_csv, noheader=noheader))
-        for report in iter_reports():
-            sink(tsv_file_chunk(report, csv=as_csv, nopath=nopath))
+        if output_format is OutputFormat.json:
+            sink(render_json(list(iter_reports()), params, now=datetime.now(UTC)))
+        elif output_format is OutputFormat.md:
+            # Static frontmatter leads (knowable before file 1), then one
+            # section per file the moment it completes — exactly like tsv
+            # chunks, head-of-line in input order under --jobs.
+            sink(md_report_preamble(params, now=datetime.now(UTC)))
+            for report in iter_reports():
+                sink(md_report_chunk(report))
+        else:
+            as_csv = output_format is OutputFormat.csv
+            sink(tsv_preamble(csv=as_csv, noheader=noheader))
+            for report in iter_reports():
+                sink(tsv_file_chunk(report, csv=as_csv, nopath=nopath))
     return "".join(chunks)

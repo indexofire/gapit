@@ -141,7 +141,7 @@ Real document, same run as the TSV above:
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.3"
+    "version": "0.5.4"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -232,7 +232,7 @@ row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
 ```json
 {
   "schema": "gapit.typing_result/1",
-  "tool": {"name": "gapit", "version": "0.5.3"},
+  "tool": {"name": "gapit", "version": "0.5.4"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
   "db": "ecoli_dec",
@@ -419,7 +419,7 @@ summarizing two report files, one with a `tetA` hit and one with none:
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.3"
+    "version": "0.5.4"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -539,7 +539,7 @@ An agent can discover the whole contract from the binary alone.
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.5.3"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.5.4"}
 ```
 
 `gapit schema <name>` prints the JSON Schema for each document. The eleven names: `report`,

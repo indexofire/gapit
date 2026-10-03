@@ -9,7 +9,7 @@
 
 ## 选项
 
-转写自 `gapit screen --help`（gapit 0.5.3）。标记为 *reads 模式* 的参数只在传入
+转写自 `gapit screen --help`（gapit 0.5.4）。标记为 *reads 模式* 的参数只在传入
 `--r1`/`--r2` 时生效，记录在 [./reads.md](./reads.md)。
 
 每个选项都接受 **短** 列给出的单横线短形式（例如 `--db` 的 `-d`）；长形式仍是规范写法，
@@ -104,7 +104,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.3"
+    "version": "0.5.4"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {
@@ -188,6 +188,16 @@ tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00
 
 用 `--jobs 2` 时两个文件并发筛查，但 stdout 仍按输入顺序排列，输出与串行运行完全
 一致。
+
+### 长批量任务的进度条
+
+在交互式终端上（stderr 为 TTY 且未用 `--quiet`）多文件批量筛查会在 **stderr** 上显示
+rich 进度条 —— 转轮、当前文件基名、进度条、M/N 计数、百分比、已用时间 —— 并在其运行
+期间取代逐文件的 `Processing:`/`Found N genes` 提示（`--jobs × --threads` 超订用提示
+仍然打印）。stderr 被管道或重定向、以及 `--quiet` 时，保持与今天逐字节相同的纯文本
+提示 —— 日志里的进度条只是噪音。进度条完全生存在 stderr 一侧：开与关的 stdout 字节
+完全一致。位置参数 FASTQ 通配符批量（[./reads.zh.md](./reads.zh.md)）与
+`gapit db fetch all` 使用同一条进度条。
 
 ### typed 基因数据库：判定是第二条命令
 

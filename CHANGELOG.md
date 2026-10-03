@@ -5,6 +5,19 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2026-10-03
+
+### Added
+
+- **Rich progress bar on long batch runs** (stderr only; modeled on the gmlst UX).
+  Multi-file contig screening, the positional-FASTQ wildcard batch, and
+  `gapit db fetch all` now show a spinner + bar + M/N + percent + elapsed bar on an
+  interactive stderr, with the description tracking the current file/sample/database and
+  replacing the per-file stderr notes while it runs. Under `--quiet` or a non-TTY stderr
+  (pipes, CI) the bar is disabled and today's plain notes print byte-identically; stdout
+  data streams are untouched in every case (the bar never captures stdout — rich's Live
+  redirection is pinned off), so output bytes are identical with the bar on or off.
+
 ## [0.5.3] - 2026-10-03
 
 ### Added

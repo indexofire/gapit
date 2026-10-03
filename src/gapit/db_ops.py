@@ -21,6 +21,7 @@ from gapit.bundled import BundledDatabase, bundled_databases
 from gapit.db import Database, discover_databases, mol_type
 from gapit.errors import UsageError
 from gapit.fasta import iter_fasta
+from gapit.progress import screen_progress
 from gapit.providers import REGISTRY
 from gapit.providers.cluster_common import ClusterProvider, fetch_cluster_provider
 from gapit.providers.common import Dbtype, fetch_provider
@@ -97,7 +98,9 @@ def perform_fetch(
     """Fetch database(s) into <datadir>/NAME — the shared CLI + MCP
     path. NAME ``all`` installs every database in DEFAULT_DBS order; each
     receipt yields as its install completes (streaming, like the CLI's
-    per-db stdout lines).
+    per-db stdout lines). On an interactive stderr the batch rides the
+    shared progress bar; under --quiet / non-TTY stderr the no-op shim
+    keeps today's byte-identical behavior.
     """
 
     def fetch_one(provider_name: str) -> ProviderReceipt:
@@ -135,8 +138,14 @@ def perform_fetch(
             destination=str(db_dir),
         )
 
-    for provider_name in DEFAULT_DBS if name == FETCH_ALL else (name,):
-        yield fetch_one(provider_name)
+    names = DEFAULT_DBS if name == FETCH_ALL else (name,)
+    with screen_progress(names, quiet=quiet, description="Fetching") as (bar, task_id):
+        for provider_name in names:
+            if task_id is not None:
+                bar.describe(provider_name)
+            receipt = fetch_one(provider_name)
+            bar.advance()
+            yield receipt
 
 
 def _detected_dbtype(database: Database) -> str:

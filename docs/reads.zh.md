@@ -99,6 +99,13 @@ $ gapit screen -d ecoli_dec *.gz
   *k* 个样本批量中途失败，已流式写出的样本 1..*k-1* 会保留在文件里 —— json 变体
   什么都不写，因为它的单文档只在结尾才存在。
 
+在交互式终端上（stderr 为 TTY 且未用 `--quiet`）批量会在 **stderr** 上显示 rich 进度
+条 —— 转轮、当前样本名、进度条、M/N 计数、百分比、已用时间 —— 并在其运行期间取代
+逐样本的 `Screening sample …`/`Detected N present genes` 提示。stderr 被管道或重定向、
+以及 `--quiet` 时，保持与今天逐字节相同的纯文本提示。进度条绝不触碰 stdout：开与关的
+流式字节完全一致，惰性的 `#SAMPLE` 表头依然最先发出。contig 路径
+（[./screen.zh.md](./screen.zh.md)）与 `gapit db fetch all` 使用同一条进度条。
+
 单样本的 `--r1`/`--r2` 路径在两点上不同：不接受 `--jobs`，其 Markdown
 frontmatter 保留 `files:`/`genes_found:` 运行总计（它的 tsv 默认渲染同一张表，
 单个样本一个分块）。
@@ -106,7 +113,7 @@ frontmatter 保留 `files:`/`genes_found:` 运行总计（它的 tsv 默认渲�
 ## 选项
 
 reads 模式走同一条 `gapit screen` 命令；以下是适用的参数（转写自 `gapit screen
---help`，gapit 0.5.3）。这里未列出的 contig 模式参数（`--minid`、`--mincov`、
+--help`，gapit 0.5.4）。这里未列出的 contig 模式参数（`--minid`、`--mincov`、
 `--fofn`、`--noheader`、`--nopath`）不适用；`--jobs` 只适用于通配符路径（见上文）。
 
 | 参数 | 类型 | 默认值 | 说明 |
@@ -311,7 +318,7 @@ Markdown 形式：
 $ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format md --quiet
 ---
 schema: gapit.reads/2
-tool: gapit 0.5.3
+tool: gapit 0.5.4
 created_at: 2026-09-20T14:23:33Z
 db: homologs
 read_type: map-ont
@@ -403,7 +410,7 @@ $ gapit screen --r1 tetx_full.fq --db tinyreads --format json
   "schema": "gapit.reads/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.3"
+    "version": "0.5.4"
   },
   "created_at": "2026-09-19T01:12:25Z",
   "params": {
@@ -498,7 +505,7 @@ $ gapit screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --q
 $ gapit screen --r1 tetx_full.fq --db tinyreads --format md
 ---
 schema: gapit.reads/1
-tool: gapit 0.5.3
+tool: gapit 0.5.4
 created_at: 2026-09-19T01:12:25Z
 db: tinyreads
 read_type: sr
@@ -598,7 +605,7 @@ Detected 2 present genes in /tmp/gapit-demo/assembly.fa
   "schema": "gapit.reads/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.3"
+    "version": "0.5.4"
   },
   "created_at": "2026-09-19T14:23:00Z",
   "params": {
@@ -656,7 +663,7 @@ minimap2 一段完全跳过 BLAST 索引，把 assembly 送进 minimap2 引擎�
    性应用一致性与覆盖度下限。
 
 真实数字，一株 K. pneumoniae RefSeq assembly（GCF_000240185.1，5.3 Mb，`--db ncbi`，
-单线程，gapit 0.5.3）：
+单线程，gapit 0.5.4）：
 
 ```console
 $ # Stage 1: survey, ~0.9 s

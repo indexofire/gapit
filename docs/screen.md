@@ -9,7 +9,7 @@ Database setup is covered in [./databases.md](./databases.md); a full walk-throu
 
 ## Options
 
-Transcribed from `gapit screen --help` (gapit 0.5.3). Flags marked *reads mode* apply only when
+Transcribed from `gapit screen --help` (gapit 0.5.4). Flags marked *reads mode* apply only when
 you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 
 Every option also accepts the single-dash short form listed in the **Short** column (e.g.
@@ -107,7 +107,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.5.3"
+    "version": "0.5.4"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {
@@ -191,6 +191,16 @@ tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00
 
 With `--jobs 2` the two files are screened concurrently but stdout stays in input order, so the
 output is identical to the sequential run.
+
+### Progress bar on long batch runs
+
+On an interactive terminal (stderr is a TTY, no `--quiet`) a multi-file batch shows a rich
+progress bar on **stderr** — spinner, the current file's basename, bar, M/N count, percent,
+elapsed time — replacing the per-file `Processing:`/`Found N genes` notes while it runs (the
+`--jobs × --threads` oversubscription note still prints). Piped or redirected stderr and
+`--quiet` keep the plain notes byte-identically — progress bars in logs are noise. The bar
+lives entirely on stderr: stdout bytes are identical with it on or off. The positional-FASTQ
+wildcard batch ([./reads.md](./reads.md)) and `gapit db fetch all` carry the same bar.
 
 ### Typed gene databases: designation is a second command
 
