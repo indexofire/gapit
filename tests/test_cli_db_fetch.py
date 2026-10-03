@@ -290,6 +290,8 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
         "ecoh\tHolt lab (srst2)\tbundled\tnucl\tE. coli O and H antigens (srst2 EcOH)\n"
         "ecoli_dec\tgapit-curated (public-domain sources)\tbundled\tnucl\t"
         "Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)\n"
+        "lm_doumith\tgapit-curated (public-domain INSDC sources)\tbundled\tnucl\t"
+        "Listeria monocytogenes serogrouping (Doumith 2004)\n"
         "ncbi\tNCBI\tbundled\tnucl\tNCBI AMRFinderPlus (reference finder) curated AMR\n"
         "resfinder\tDTU CGE\tbundled\tnucl\tCGE ResFinder acquired resistance genes\n"
         "upec_expec_vf\tFordeGenomics\tbundled\tnucl\tUPEC/ExPEC virulence genes (FordeGenomics)\n"

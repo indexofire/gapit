@@ -80,6 +80,7 @@ gapit/
 │   ├── db_query_ops.py  # db use-cases: search + outdated over installed DBs (shared CLI + MCP)
 │   ├── db_build_ops.py  # db use-case: custom FASTA+TSV → gene db, GBK/GFF → cluster db (shared CLI + MCP)
 │   ├── gbfeatures.py    # GenBank FEATURES/ORIGIN parser → LocusFeatures/GeneFeature + gapit.features/1
+│   ├── gene_floors.py   # gapit.floors/1 per-gene identity floors: model, loader, build validation, reads gate
 │   ├── gffparse.py      # GFF3 parser (embedded ##FASTA or sidecar) → the same locus/gene models
 │   ├── typing_models.py # gapit.typing schema (rules + named schemes; /1 degrades to one default scheme)
 │   ├── typing_rules.py  # gapit.typing rule models (weighted_genes/exact_set/cluster_match/learned_linear) + reference checks
@@ -160,7 +161,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 - **Formats**: `--format tsv|csv|json|md` (default `tsv` for abricate compatibility).
 - **JSON**: top-level `"schema": "gapit.report/1"`; schema introspectable via
   `gapit schema report | reads | reads2 | summary | list | error | version` (plus
-  `cluster | features | typing | typing_result`). Keys are snake_case,
+  `cluster | features | typing | typing_result | floors`). Keys are snake_case,
   units explicit (`identity_pct`, `coverage_pct`). Semver the schema; never rename or
   retype a field in a minor bump.
 - **Markdown**: YAML frontmatter (tool version, db, params, ISO-8601 UTC timestamp) + tables a
@@ -177,12 +178,12 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   database fetch from the provider catalog (every provider downloads from upstream at fetch
   time — nothing catalog-side is bundled inside the wheel beyond the sanctioned exceptions,
   a license-compliance requirement: CARD/VFDB terms are non-commercial and Kaptive is GPL,
-  so none of those may ride an MIT distribution; the sanctioned exceptions are the five
+  so none of those may ride an MIT distribution; the sanctioned exceptions are the six
   content-provenance-audited bundles under `src/gapit/data/dbs/` — the public-domain
-  `ecoli_dec` panel plus four permissively licensed provider snapshots (`ncbi` public
-  domain, `resfinder` Apache-2.0, `ecoh` BSD-3-Clause, `upec_expec_vf` MIT; GPL/NC content
-  is never bundled) — materialized into the datadir on first use via `bundled.py`, with
-  `db fetch <name>` still the fresh-upstream refresh path),
+  `ecoli_dec` and `lm_doumith` panels plus four permissively licensed provider snapshots
+  (`ncbi` public domain, `resfinder` Apache-2.0, `ecoh` BSD-3-Clause, `upec_expec_vf`
+  MIT; GPL/NC content is never bundled) — materialized into the datadir on first use via
+  `bundled.py`, with `db fetch <name>` still the fresh-upstream refresh path),
   database listing,
   records.jsonl gene search, staleness
   report, custom FASTA→native-db build, GBK/GFF→cluster-db build (`--typing` installs a

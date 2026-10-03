@@ -1,14 +1,16 @@
 """Bundled databases: discovery, materialization, and the DEC matrix.
 
-The wheel ships five license-clean bundles — the typed ecoli_dec panel plus
-four provider snapshots (ecoh, ncbi, resfinder, upec_expec_vf; public
-domain / Apache-2.0 / BSD-3-Clause / MIT). These tests pin the
-install-time-ready contract — discovery from the package data dir,
-auto-materialization on first screen (idempotent, quiet-respecting,
-fresh-datadir bootstrapping), the db list bundled → installed transition,
-the per-snapshot screen smoke tests, the snapshot↔fetch differential
-(resfinder, over a file:// provider URL), and the fetch-refresh path.
-Real binaries through the CLI surface (test_cli_setupdb.py conventions).
+The wheel ships six license-clean bundles — the typed ecoli_dec and
+lm_doumith panels plus four provider snapshots (ecoh, ncbi, resfinder,
+upec_expec_vf; public domain / Apache-2.0 / BSD-3-Clause / MIT). These
+tests pin the install-time-ready contract — discovery from the package
+data dir, auto-materialization on first screen (idempotent,
+quiet-respecting, fresh-datadir bootstrapping), the db list bundled →
+installed transition, the per-snapshot screen smoke tests, the
+snapshot↔fetch differential (resfinder, over a file:// provider URL), and
+the fetch-refresh path. The lm_doumith serogrouping matrix lives in
+test_lm_doumith.py. Real binaries through the CLI surface
+(test_cli_setupdb.py conventions).
 """
 
 import json
@@ -103,18 +105,32 @@ def screen_db(sample: Path, datadir: Path, name: str, *extra: str) -> Result:
     )
 
 
-def test_bundled_discovery_finds_all_five() -> None:
+def test_bundled_discovery_finds_all_six() -> None:
     """Given the wheel's data dir, When bundled databases are discovered,
-    Then exactly the five license-clean bundles ship in name order, each
-    metadata parses (vendor/dbtype/snapshot date), ecoli_dec alone carries
-    the dual-scheme typing document, and the provider snapshots do not."""
-    assert bundled_names() == ["ecoh", "ecoli_dec", "ncbi", "resfinder", "upec_expec_vf"]
+    Then exactly the six license-clean bundles ship in name order, each
+    metadata parses (vendor/dbtype/snapshot date), ecoli_dec and lm_doumith
+    carry their typing documents, and the provider snapshots do not."""
+    assert bundled_names() == [
+        "ecoh",
+        "ecoli_dec",
+        "lm_doumith",
+        "ncbi",
+        "resfinder",
+        "upec_expec_vf",
+    ]
     by_name = {database.name: database for database in bundled_databases()}
     ecoli_dec = by_name["ecoli_dec"]
     assert ecoli_dec.metadata.vendor == "gapit-curated (public-domain sources)"
     assert ecoli_dec.metadata.dbtype == "nucl"
     assert ecoli_dec.metadata.snapshotted == "2026-10-02"
     assert ecoli_dec.typing_path is not None
+    assert ecoli_dec.floors_path is not None
+    lm_doumith = by_name["lm_doumith"]
+    assert lm_doumith.metadata.description == "Listeria monocytogenes serogrouping (Doumith 2004)"
+    assert lm_doumith.metadata.vendor == "gapit-curated (public-domain INSDC sources)"
+    assert lm_doumith.metadata.dbtype == "nucl"
+    assert lm_doumith.metadata.snapshotted == "2026-10-03"
+    assert lm_doumith.typing_path is not None
     vendors = {
         "ecoh": "Holt lab (srst2)",
         "ncbi": "NCBI",
@@ -125,6 +141,7 @@ def test_bundled_discovery_finds_all_five() -> None:
         assert by_name[name].metadata.vendor == vendor
         assert by_name[name].metadata.dbtype == "nucl"
         assert by_name[name].typing_path is None
+        assert by_name[name].floors_path is None
     assert find_bundled("ecoli_dec") is not None
     assert find_bundled("ncbi") is not None
     assert find_bundled("card") is None
@@ -134,12 +151,13 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     """Given every bundled panel, When every header is inspected, Then no VF
     tag, VFDB marker, or ARO accession appears anywhere — the DEC lesson
     from the license audit (2 VFDB records hid past header-spotting) is
-    locked mechanically across all five bundles."""
+    locked mechanically across all six bundles (record counts pinned)."""
+    typed_counts = {"ecoli_dec": 17, "lm_doumith": 5}
     for bundled in bundled_databases():
         text = bundled.sequences_path.read_text(encoding="utf-8")
         headers = [line for line in text.splitlines() if line.startswith(">")]
-        if bundled.name == "ecoli_dec":
-            assert len(headers) == 17
+        if bundled.name in typed_counts:
+            assert len(headers) == typed_counts[bundled.name]
         else:
             assert len(headers) == SNAPSHOTS[bundled.name]
         for header in headers:
@@ -167,6 +185,8 @@ def test_screen_auto_materializes_on_fresh_empty_datadir(tmp_path: Path) -> None
     assert manifest.typing_schema == "gapit.typing/2"
     assert (db_dir / "typing.json").is_file()
     assert (db_dir / "sequences.nin").is_file()
+    floors = json.loads((db_dir / "floors.json").read_text(encoding="utf-8"))
+    assert floors == {"schema": "gapit.floors/1", "default": None, "genes": {"pic": 90.0}}
     genes = {line.split("\t")[5] for line in result.stdout.splitlines()[1:]}
     assert genes == {"aggR", "pic", "uidA"}
 
@@ -228,11 +248,9 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
         "ecoli_dec\tgapit-curated (public-domain sources)\tbundled\tnucl\t"
         "Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
     ]
-    bundled_five = set(bundled_names())
+    bundled_all = set(bundled_names())
     first_bundled = next(
-        index
-        for index, line in enumerate(lines[1:], start=1)
-        if line.split("\t")[0] in bundled_five
+        index for index, line in enumerate(lines[1:], start=1) if line.split("\t")[0] in bundled_all
     )
     registry_rows = lines[1:first_bundled]
     assert registry_rows and all(
@@ -403,7 +421,7 @@ def test_snapshot_materializes_and_screens_zero_network(
 def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> None:
     """Given an empty datadir and the REAL registry, When `db list`, Then
     each snapshot name renders exactly ONCE — as a bundled row (STATUS
-    bundled, vendor from bundled.json) inside the five-row alphabetical
+    bundled, vendor from bundled.json) inside the six-row alphabetical
     bundled section, never as a duplicate registry available row — while a
     NON-bundled registry row keeps its exact registry bytes; after one
     upec_expec_vf screen that row flips to installed (77) and the JSON
@@ -414,10 +432,12 @@ def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> N
     before = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert before.exit_code == 0
     lines = before.stdout.splitlines()
-    assert lines[-5:] == [
+    assert lines[-6:] == [
         "ecoh\tHolt lab (srst2)\tbundled\tnucl\tE. coli O and H antigens (srst2 EcOH)",
         "ecoli_dec\tgapit-curated (public-domain sources)\tbundled\tnucl\t"
         "Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)",
+        "lm_doumith\tgapit-curated (public-domain INSDC sources)\tbundled\tnucl\t"
+        "Listeria monocytogenes serogrouping (Doumith 2004)",
         "ncbi\tNCBI\tbundled\tnucl\tNCBI AMRFinderPlus (reference finder) curated AMR",
         "resfinder\tDTU CGE\tbundled\tnucl\tCGE ResFinder acquired resistance genes",
         "upec_expec_vf\tFordeGenomics\tbundled\tnucl\tUPEC/ExPEC virulence genes (FordeGenomics)",
@@ -426,7 +446,7 @@ def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> N
         assert sum(line.startswith(f"{name}\t") for line in lines) == 1, name
     assert (
         "card\tMcMaster University\tavailable\tnucl\tCARD protein homolog resistance models"
-        in (lines[1:-5])
+        in (lines[1:-6])
     )
 
     sample = tmp_path / "sample.fa"

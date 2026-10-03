@@ -44,6 +44,7 @@ vfdb	USTC (VFDB)	available	nucl	VFDB virulence factors (set A, nucleotide)
 victors	University of Chicago	available	nucl	Victors virulence factors
 ecoh	Holt lab (srst2)	bundled	nucl	E. coli O and H antigens (srst2 EcOH)
 ecoli_dec	gapit-curated (public-domain sources)	bundled	nucl	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)
+lm_doumith	gapit-curated (public-domain INSDC sources)	bundled	nucl	Listeria monocytogenes serogrouping (Doumith 2004)
 ncbi	NCBI	bundled	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
 resfinder	DTU CGE	bundled	nucl	CGE ResFinder acquired resistance genes
 upec_expec_vf	FordeGenomics	bundled	nucl	UPEC/ExPEC virulence genes (FordeGenomics)
@@ -51,7 +52,7 @@ upec_expec_vf	FordeGenomics	bundled	nucl	UPEC/ExPEC virulence genes (FordeGenomi
 
 NAME is the database name you pass to `--db`; PROVIDER names the upstream maintainer
 organisation. STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`
-exists, with N the record count, otherwise `available`. The last five rows are the
+exists, with N the record count, otherwise `available`. The last six rows are the
 wheel-shipped [bundled](#bundled-databases-install-time-ready) databases, alphabetical:
 `bundled` before materialization, `installed (N)` after. Four of them (`ecoh`, `ncbi`,
 `resfinder`, `upec_expec_vf`) are also registry providers — such names render exactly
@@ -121,7 +122,7 @@ surface.) See [outputs.md](./outputs.md).
 
 Most databases download from upstream at `db fetch` time because their licenses forbid
 redistribution (see [Providers](#providers)). A small set of **bundled** databases ships
-inside the gapit wheel instead — five databases whose content provenance was audited
+inside the gapit wheel instead — six databases whose content provenance was audited
 record-by-record (public-domain sources, or Apache-2.0 / BSD-3-Clause / MIT panels;
 GPL and non-commercial content never rides the wheel). Nothing to download, nothing to
 accept: a bundled database works out of the box.
@@ -130,6 +131,7 @@ accept: a bundled database works out of the box.
 |---|---|---|---|
 | `ecoh` | E. coli O and H antigens (597 records, srst2 EcOH) | 2026-10-02 | — |
 | `ecoli_dec` | Diarrheagenic E. coli marker panel (17 records, GB 4789.6 + risk-monitoring designation) | 2026-10-02 | `gapit.typing/2` (schemes `gb4789_6`, `risk_monitoring`) |
+| `lm_doumith` | Listeria monocytogenes serogrouping (5 records, Doumith 2004 markers) | 2026-10-03 | `gapit.typing/2` (scheme `doumith_serogroup`) |
 | `ncbi` | NCBI AMRFinderPlus curated AMR (8373 records) | 2026-10-02 | — |
 | `resfinder` | CGE ResFinder acquired resistance genes (3206 records) | 2026-10-02 | — |
 | `upec_expec_vf` | UPEC/ExPEC virulence genes (77 records, FordeGenomics) | 2026-10-02 | — |
@@ -137,13 +139,15 @@ accept: a bundled database works out of the box.
 **License provenance.** Every `ecoli_dec` record was re-sourced from primary
 public-domain submissions (NCBI RefSeq/GenBank/DDBJ accessions, same alleles as the
 rightsholder panel); two VFDB-derived records found in the original panel were removed
-and replaced during the 2026-10 audit. The four provider snapshots (`ecoh`, `ncbi`,
-`resfinder`, `upec_expec_vf`) passed the 2026-10 content-level audit across **all**
-records: NCBI AMRFinderPlus content is public domain (US government work), the CGE
-ResFinder database is Apache-2.0, srst2's EcOH is BSD-3-Clause, and FordeGenomics'
-UPEC-ExPEC panel is MIT — all four permits redistribution inside the MIT-licensed wheel.
-A regression test pins that no `VF*` / `VFDB` / `ARO:` tags appear in any of the five
-bundles' headers.
+and replaced during the 2026-10 audit. The `lm_doumith` panel was extracted the same
+way from public-domain INSDC records (accessions in each header; reverse-complement
+markers strand-corrected, `lmo0737` verified 100% against EGD-e). The four provider
+snapshots (`ecoh`, `ncbi`, `resfinder`, `upec_expec_vf`) passed the 2026-10
+content-level audit across **all** records: NCBI AMRFinderPlus content is public
+domain (US government work), the CGE ResFinder database is Apache-2.0, srst2's EcOH
+is BSD-3-Clause, and FordeGenomics' UPEC-ExPEC panel is MIT — all four permits
+redistribution inside the MIT-licensed wheel. A regression test pins that no `VF*` /
+`VFDB` / `ARO:` tags appear in any of the six bundles' headers.
 
 **Snapshots are point-in-time.** Each snapshot's `sequences` file is byte-for-byte what
 `gapit db fetch <name>` produces from upstream on the snapshot date (a regression test
@@ -166,6 +170,36 @@ every bundled database alongside indexing; re-running either is a no-op once the
 manifest exists. `db list` shows the database as `bundled` before that and
 `installed (17)` after — on all four listing surfaces (TSV, rich table, `--json`, MCP
 `db_list`).
+
+### Listeria serogrouping (`lm_doumith`)
+
+The typed bundle behind Listeria monocytogenes serogroup prediction: five markers —
+`prs`, `lmo0737`, `lmo1118`, `ORF2819`, `ORF2110` — screened with 95/95 identity and
+coverage floors and folded by the `doumith_serogroup` scheme into Doumith's multiplex-PCR
+groups (Doumith et al. 2004, J Clin Microbiol 42:3819), extended with the Huang 2011
+4b variant: `prs` gates the scheme as a genus-level control gene, `IIa` (1/2a or 3a),
+`IIc` (1/2c or 3c), `IIb` (1/2b, 3b or 7), `IVb` (4b, 4d or 4e), and `IVb-v` (the
+lmo0737-carrying 4b variant) — the same in-silico semantics as tools like LisSero.
+Designation runs through the two-stage pipeline: `gapit screen -o table.tsv --db
+lm_doumith`, then `gapit typing table.tsv`.
+
+Known limitations, carried on the calls as notes where relevant:
+
+- **4b/4d/4e are unresolvable at gene level** — the three serovars share every published
+  molecular marker; resolve by cgMLST or antisera.
+- **IVb-v is an emergent concern** — lmo0737 in an otherwise-4b profile (Huang 2011
+  "unusual 4b"; ST382/ST554 clones) is declared before IVb so the variant wins.
+- **EGD-e types as IIc** — the 1/2a reference genome carries lmo1118 and lands in IIc;
+  documented in Doumith 2004, not a tool artifact.
+- **Horizontal gene transfer cuts both ways** — the lineage-II lmo0737 cassette moves
+  between lineages, and rare HGT of the ORF markers can produce false IIb-looking
+  profiles; treat single-marker IIb calls in epidemiologically unlikely contexts with
+  care.
+- **`prs` is genus-level, not Lm-specific** — other Listeria species carry it; a prs+
+  isolate with no serogroup markers falls back rather than being called non-Listeria.
+
+The fallback call — `untypeable (4a/4c, atypical profile, or non-Lm Listeria)` — is the
+honest answer for everything the five markers cannot resolve.
 
 ## Checking database freshness
 
@@ -263,7 +297,7 @@ unknown `--db NAME` is a usage error (exit 2) listing what is installed.
 ## Providers
 
 Nineteen providers ship with gapit. Every one of them — `card` and `vfdb` included —
-downloads from its upstream source at fetch time: with the exception of the five
+downloads from its upstream source at fetch time: with the exception of the six
 audited, permissively licensed bundles above, nothing is bundled inside the package,
 because several upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's
 GPL-3.0) forbid redistribution inside an MIT-licensed distribution. The seven kaptive
@@ -410,6 +444,8 @@ $ gapit db install card.json \
   sequences             generated FASTA projection (gapit/v1 tagged headers)
   sequences.n*|p*       BLAST index built from sequences
   gapit-manifest.json   provenance sidecar, written last
+  typing.json           optional gapit.typing/1 or /2 scoring spec (typed dbs)
+  floors.json           optional gapit.floors/1 per-gene identity floors (reads mode)
 ```
 
 ### records.jsonl
@@ -478,6 +514,31 @@ versions. A real one, from the plasmidfinder database:
 
 `records.jsonl` and the manifest are file contracts. They never appear on stdout and are
 not registered with `gapit schema`.
+
+### floors.json — per-gene identity floors
+
+An optional sidecar declaring a MINIMUM alignment identity (%) per gene for reads-mode
+presence (schema `gapit.floors/1`, introspect with `gapit schema floors`; see
+[reads.md](./reads.md#per-gene-identity-floors-gapitfloors1-database-side) for the
+screening semantics and the `pic` worked example):
+
+```json
+{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `schema` | string | Always `gapit.floors/1` |
+| `default` | number or null | Floor for genes not listed in `genes` (`null` = no floor) |
+| `genes` | object | `{gene: minimum identity %}`, values in [0, 100] |
+
+The file's presence IS the flag — no manifest field, no CLI switch. A database without
+the sidecar screens byte-identically to before (the floors are a db-driven opt-in, not a
+CLI contract change), and the blastn contig path never reads them. Built-in via
+`db build --floors` (next sections), or drop the file into an existing db directory; it
+is validated at screening time too (malformed content fails with `FLOORS_MALFORMED`,
+exit 4). The bundled `ecoli_dec` ships `{"genes": {"pic": 90.0}}` — the SPATE-homolog
+false-positive fix.
 
 ## Header formats and compatibility
 
@@ -579,6 +640,27 @@ The example TSV used above, in full:
 $ cat my_meta.tsv
 gene	accession	function
 syn_betalac	SYN-0001	ampicillin;cephalosporin
+```
+
+### Per-gene identity floors (`--floors`)
+
+`--floors FILE` installs a `gapit.floors/1` document as the database's `floors.json`
+sidecar — the per-gene minimum alignment identity for reads-mode presence (see
+[reads.md](./reads.md#per-gene-identity-floors-gapitfloors1-database-side)). The
+document is validated before any artifact is written: every gene in `genes` must exist
+in the FASTA (`FLOORS_UNKNOWN_GENE`, exit 4 — a floor for a missing gene is silently
+dead safety config), values must lie in [0, 100] and the structure parse
+(`FLOORS_MALFORMED`, exit 4). The file is then copied in byte-identical; the file's
+presence is the flag (no manifest field changes). Gene builds only — a GBK/GFF cluster
+input rejects `--floors` as a usage error.
+
+```console
+$ cat my_floors.json
+{"schema": "gapit.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
+$ gapit db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --floors my_floors.json
+{"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
+$ cat ./db/tinyamr/floors.json
+{"schema": "gapit.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
 ```
 
 ### Rebuilding

@@ -1,0 +1,7 @@
+{
+  "name": "lm_doumith",
+  "description": "Listeria monocytogenes serogrouping (Doumith 2004)",
+  "vendor": "gapit-curated (public-domain INSDC sources)",
+  "dbtype": "nucl",
+  "snapshotted": "2026-10-03"
+}

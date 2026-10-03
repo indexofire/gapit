@@ -1,0 +1,72 @@
+{
+  "schema": "gapit.typing/2",
+  "schemes": [
+    {
+      "name": "doumith_serogroup",
+      "rules": [
+        {
+          "model": "exact_set",
+          "phenotype": "IVb-v",
+          "requires": ["ORF2819", "ORF2110", "lmo0737"],
+          "excludes": ["lmo1118"],
+          "identity_floor": 95.0,
+          "coverage_floor": 95.0,
+          "notes": [
+            "lineage I 4b variant carrying lmo0737 (lineage-II HGT cassette)",
+            "Huang 2011 'unusual 4b'; FDA 4bV; ST382/ST554 emergent clones"
+          ]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "IVb",
+          "requires": ["ORF2819", "ORF2110"],
+          "excludes": ["lmo0737", "lmo1118"],
+          "identity_floor": 95.0,
+          "coverage_floor": 95.0,
+          "notes": [
+            "Doumith 2004 group 4; 4b/4d/4e share every published molecular marker — resolve by cgMLST/antisera"
+          ]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "IIb",
+          "requires": ["ORF2819"],
+          "excludes": ["lmo0737", "lmo1118", "ORF2110"],
+          "identity_floor": 95.0,
+          "coverage_floor": 95.0,
+          "notes": [
+            "Doumith 2004 group 2: 1/2b, 3b or 7 — serovar 7 lands here (shared ORF2819-only pattern)"
+          ]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "IIc",
+          "requires": ["lmo0737", "lmo1118"],
+          "excludes": ["ORF2819", "ORF2110"],
+          "identity_floor": 95.0,
+          "coverage_floor": 95.0,
+          "notes": [
+            "Doumith 2004 group 3: 1/2c or 3c",
+            "EGD-e (atypical 1/2a) lands here — documented in Doumith 2004"
+          ]
+        },
+        {
+          "model": "exact_set",
+          "phenotype": "IIa",
+          "requires": ["lmo0737"],
+          "excludes": ["lmo1118", "ORF2819", "ORF2110"],
+          "identity_floor": 95.0,
+          "coverage_floor": 95.0,
+          "notes": [
+            "Doumith 2004 group 1: 1/2a or 3a",
+            "1/2a vs 3a unresolved at gene level"
+          ]
+        }
+      ],
+      "cutoff": 1.0,
+      "ambiguity_margin": 0.0,
+      "fallback": "untypeable (4a/4c, atypical profile, or non-Lm Listeria)",
+      "control_gene": "prs"
+    }
+  ]
+}

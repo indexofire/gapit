@@ -448,3 +448,101 @@ def test_db_build_creates_missing_datadir(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.stderr
     assert json.loads(result.stdout)["destination"] == str(nested / DB)
     assert (nested / DB / "gapit-manifest.json").is_file()
+
+
+# ------------------------------------------------------- --floors sidecar --
+
+
+def floors_document(tmp_path: Path, body: str) -> Path:
+    path = tmp_path / "floors.json"
+    path.write_text(body, encoding="utf-8")
+    return path
+
+
+def test_db_build_floors_copies_validated_sidecar(tmp_path: Path) -> None:
+    """Given a valid gapit.floors/1 document whose genes exist in the FASTA,
+    When `db build --floors FILE`, Then exit 0 and the db dir carries
+    floors.json byte-identical to the input (the file's presence is the
+    flag — no manifest field changes)."""
+    fasta = tmp_path / "my_genes.fa"
+    fasta.write_text(PLAIN_FASTA, encoding="utf-8")
+    floors = floors_document(
+        tmp_path, '{"schema": "gapit.floors/1", "default": null, "genes": {"demov2": 90.0}}'
+    )
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    result = build(DB, str(fasta), "--datadir", str(datadir), "--floors", str(floors))
+
+    assert result.exit_code == 0, result.stderr
+    installed = datadir / DB / "floors.json"
+    assert installed.read_bytes() == floors.read_bytes()
+    manifest = read_manifest(datadir / DB / "gapit-manifest.json")
+    assert manifest.typing_schema is None  # untouched by floors
+
+
+def test_db_build_floors_unknown_gene_exits_4(tmp_path: Path) -> None:
+    """Given floors naming a gene the FASTA does not carry, When built,
+    Then exit 4 with FLOORS_UNKNOWN_GENE naming the ghost and no database
+    directory is written (validation precedes every artifact)."""
+    fasta = tmp_path / "my_genes.fa"
+    fasta.write_text(PLAIN_FASTA, encoding="utf-8")
+    floors = floors_document(tmp_path, '{"schema": "gapit.floors/1", "genes": {"ghost": 90.0}}')
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    result = build(DB, str(fasta), "--datadir", str(datadir), "--floors", str(floors))
+
+    assert result.exit_code == 4
+    envelope = last_envelope(result.stderr)
+    assert envelope.code == "FLOORS_UNKNOWN_GENE"
+    assert envelope.context["genes"] == "ghost"
+    assert not (datadir / DB).exists()
+
+
+def test_db_build_floors_malformed_exits_4(tmp_path: Path) -> None:
+    """Given floors content outside the gapit.floors/1 contract (range or
+    structure), When built, Then exit 4 with FLOORS_MALFORMED."""
+    fasta = tmp_path / "my_genes.fa"
+    fasta.write_text(PLAIN_FASTA, encoding="utf-8")
+    floors = floors_document(tmp_path, '{"schema": "gapit.floors/1", "genes": {"demov2": 101.0}}')
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    result = build(DB, str(fasta), "--datadir", str(datadir), "--floors", str(floors))
+
+    assert result.exit_code == 4
+    assert last_envelope(result.stderr).code == "FLOORS_MALFORMED"
+
+
+def test_db_build_floors_missing_file_exits_5(tmp_path: Path) -> None:
+    """Given a --floors path that does not exist, When built, Then exit 5
+    with INPUT_NOT_FOUND naming the file (the --tsv/--typing precedent)."""
+    fasta = tmp_path / "my_genes.fa"
+    fasta.write_text(PLAIN_FASTA, encoding="utf-8")
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    result = build(
+        DB, str(fasta), "--datadir", str(datadir), "--floors", str(tmp_path / "nope.json")
+    )
+
+    assert result.exit_code == 5
+    envelope = last_envelope(result.stderr)
+    assert envelope.code == "INPUT_NOT_FOUND"
+    assert envelope.context["file"] == str(tmp_path / "nope.json")
+
+
+def test_db_build_floors_rejected_on_cluster_input(tmp_path: Path) -> None:
+    """Given a GBK (cluster) input and --floors, When built, Then exit 2
+    usage error — floors are gene-database metadata."""
+    gbk = Path(__file__).parent / "data" / "cluster" / "bakta_style.gbk"
+    floors = floors_document(tmp_path, '{"schema": "gapit.floors/1", "genes": {}}')
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    result = build(DB, str(gbk), "--datadir", str(datadir), "--floors", str(floors))
+
+    assert result.exit_code == 2
+    assert last_envelope(result.stderr).code == "USAGE_ERROR"
+    assert not (datadir / DB).exists()

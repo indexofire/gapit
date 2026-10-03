@@ -61,6 +61,18 @@ def db_build_command(
             ),
         ),
     ] = None,
+    floors: Annotated[
+        Path | None,
+        typer.Option(
+            # -F (uppercase): -f is taken by --force.
+            "--floors",
+            "-F",
+            help=(
+                "gapit.floors/1 per-gene identity floors for reads-mode presence:"
+                " validated, copied into the db as floors.json (gene builds only)."
+            ),
+        ),
+    ] = None,
     datadir: Annotated[
         Path | None,
         typer.Option(
@@ -105,6 +117,7 @@ def db_build_command(
             quiet=quiet,
             kind=kind,
             typing=typing,
+            floors=floors,
         )
         typer.echo(receipt.model_dump_json())
 

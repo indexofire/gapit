@@ -1,0 +1,3 @@
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+lm_doumith_iia.fa	doumith_serogroup	IIa	lmo0737;prs	high	1.0000	IVb-v (0.0000)	Doumith 2004 group 1: 1/2a or 3a; 1/2a vs 3a unresolved at gene level
+lm_doumith_ivb.fa	doumith_serogroup	IVb	ORF2110;ORF2819;prs	high	1.0000	IVb-v (0.0000)	Doumith 2004 group 4; 4b/4d/4e share every published molecular marker — resolve by cgMLST/antisera

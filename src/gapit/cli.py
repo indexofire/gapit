@@ -91,7 +91,7 @@ def schema(
         typer.Argument(
             help=(
                 "Document to introspect: report, reads, reads2, summary, error, version,"
-                " features, typing, or typing_result."
+                " features, typing, typing_result, or floors."
             ),
         ),
     ],

@@ -61,7 +61,7 @@ gapit screen --r1 ont_reads.fastq.gz --db ncbi --read-type map-ont --format json
 # Summarize report tables into a gene presence/absence matrix
 gapit summary *.tsv
 
-# Databases: five ship in-wheel and work instantly; the rest download from upstream on fetch
+# Databases: six ship in-wheel and work instantly; the rest download from upstream on fetch
 gapit db fetch all         # default set (card, vfdb)
 gapit db fetch ncbi
 gapit db list
@@ -81,8 +81,9 @@ presence defaults to 90% alignment breadth (`--min-breadth 90`).
 A database is a directory under the datadir, resolved from `$GAPIT_DATADIR`, then
 `~/.local/share/gapit/db` (override per call with `--datadir`). Twelve databases are built
 into the catalog; all of them download from upstream and build on `gapit db fetch` — with
-five content-provenance-audited exceptions that ship inside the package (`ecoli_dec` plus
-the `ncbi`, `resfinder`, `ecoh`, `upec_expec_vf` snapshots: public domain / Apache-2.0 /
+six content-provenance-audited exceptions that ship inside the package (`ecoli_dec` and
+`lm_doumith` plus the `ncbi`, `resfinder`, `ecoh`, `upec_expec_vf` snapshots: public
+domain / Apache-2.0 /
 BSD-3-Clause / MIT), materialized into the datadir on first use with zero network. Several
 upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0) forbid
 redistribution inside an MIT-licensed distribution, so everything else is fetch-on-demand
@@ -174,6 +175,6 @@ guide, `CHANGELOG.md` the change history.
 
 gapit is MIT-licensed. It is a behavioral reimplementation of abricate (GPL-2.0) and
 copies no Perl code; abricate itself remains GPL-2.0. The only database content inside
-the package is the five audited, permissively licensed bundles under `src/gapit/data/dbs/`
+the package is the six audited, permissively licensed bundles under `src/gapit/data/dbs/`
 (public domain / Apache-2.0 / BSD-3-Clause / MIT); every other provider downloads from
 upstream at fetch time, under its own license (SPEC.md §9).

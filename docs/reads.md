@@ -350,6 +350,54 @@ genes_found: 1
 | geneA | 100.00 | 14.98 | 15 | yes | homologs | SYN-A | true allele carried by the sample | TETRACYCLINE | 98.04 |
 ```
 
+## Per-gene identity floors (gapit.floors/1, database-side)
+
+`--min-identity` is a per-run decision. Sometimes the right decision belongs to the
+database: a curated panel knows which of its genes sit inside a homologous family and
+what identity a true allele must carry. That knowledge ships as an optional
+`floors.json` sidecar beside the db `sequences` file — schema `gapit.floors/1`
+(introspect it with `gapit schema floors`):
+
+```json
+{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
+```
+
+- `genes` maps a gene name to its MINIMUM alignment identity (%); `default` applies to
+  genes not listed (`null` = no floor). No file means no floors at all.
+- In reads mode, alignments to a floored gene whose per-alignment identity (the same
+  `100 * (alen - nm) / alen` rule as `--min-identity`) is below the floor are dropped
+  BEFORE aggregation: breadth, depth, and `reads_mapped` are recomputed from the
+  surviving rows, so a homolog piling on at 86% identity with 97% breadth collapses
+  below the presence threshold instead of over-calling the gene.
+- Floors are a **database-driven opt-in**: nothing about the CLI changes, and a database
+  without the sidecar screens byte-identically to before — existing databases and the
+  published output schemas (`gapit.reads/1`, `gapit.reads/2`) are untouched. The blastn
+  contig pipeline never reads floors; its `--minid` already filters on identity.
+- Floors and `--min-identity` are conjunctive: when both apply, a row must clear the
+  per-gene floor AND the global filter (the stricter of the two wins per row).
+- Installing floors: `gapit db build NAME genes.fa --floors floors.json` — validated
+  (every listed gene must exist in the FASTA, values in [0, 100]) and copied into the db
+  directory as `floors.json`. Dropping a floors.json into an existing db directory works
+  too; it is read at screening time. Details in
+  [databases.md](./databases.md#floorsjson--per-gene-identity-floors).
+
+### Worked example: the `pic` SPATE false positive (bundled `ecoli_dec`)
+
+Isolate 26ECO0084 carries a SPATE-family homolog ~86.6% identical to the panel's `pic`
+gene. In reads mode the homolog's alignments still covered 97.59% of the gene length, so
+breadth-only presence called `pic` — while the blastn contig pipeline correctly dropped
+it at the default 80% identity floor. The bundled `ecoli_dec` therefore ships
+`floors.json` with a single floor:
+
+```json
+{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
+```
+
+True `pic` alleles are ≥95% identical, so the 90 floor removes only the SPATE homolog's
+sub-floor alignments — `pic` flips to absent on reads derived from the homolog while
+true-allele calls survive unchanged. `astA` is deliberately unfloored: its true alleles
+sit at 90.4–91% identity, leaving no margin below a 90 floor.
+
 ## Worked example
 
 The repo test fixtures include a tiny reads db (`tinyreads`, one 522 nt `tetX` gene plus a
@@ -685,7 +733,8 @@ confirmed genes appear in both lists. The differences are the point:
   `tmexD2`/`tmexD3` pair (56-60%) pass the relaxed 50% survey floor but are partial or
   divergent loci that the confirm stage's 80/80 identity/coverage thresholds reject. A
   relaxed survey floor trades precision for recall on purpose; the exact filter belongs to
-  stage 2.
+  stage 2 — except for genes whose database ships a [per-gene floor](#per-gene-identity-floors-gapitfloors1-database-side),
+  which the survey honors too.
 
 When you need exact alleles in one pass, use the contig pipeline directly; use the survey when
 you need gene-family answers from many assemblies quickly.

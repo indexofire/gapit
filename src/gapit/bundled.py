@@ -1,8 +1,9 @@
 """Bundled databases: license-clean content shipped inside the wheel.
 
 A bundled database is a directory ``gapit/data/dbs/<name>/`` holding
-``sequences`` (the FASTA panel), an optional ``typing.json``, and a
-``bundled.json`` metadata file. Materialization replays the standard
+``sequences`` (the FASTA panel), an optional ``typing.json``, an optional
+``floors.json`` (gapit.floors/1), and a ``bundled.json`` metadata file.
+Materialization replays the standard
 gene-build pipeline (:func:`gapit.db_build_ops.perform_build`) into the
 user's datadir — deterministic, zero network — so a bundled database is
 ready at install time with no ``db fetch``.
@@ -65,6 +66,12 @@ class BundledDatabase(BaseModel, frozen=True):
         """The bundled typing spec, when the database ships one."""
         typing = self.path / "typing.json"
         return typing if typing.is_file() else None
+
+    @property
+    def floors_path(self) -> Path | None:
+        """The bundled gapit.floors/1 sidecar, when the database ships one."""
+        floors = self.path / "floors.json"
+        return floors if floors.is_file() else None
 
 
 def bundled_databases() -> list[BundledDatabase]:
@@ -130,6 +137,7 @@ def materialize_bundled(name: str, datadir: Path, *, quiet: bool = True) -> None
         warn=lambda message: note(quiet, message),
         quiet=True,
         typing=bundled.typing_path,
+        floors=bundled.floors_path,
         source="bundled",
     )
 

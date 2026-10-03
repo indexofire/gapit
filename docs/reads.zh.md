@@ -332,6 +332,50 @@ genes_found: 1
 | geneA | 100.00 | 14.98 | 15 | yes | homologs | SYN-A | true allele carried by the sample | TETRACYCLINE | 98.04 |
 ```
 
+## 按基因设置一致性下限（gapit.floors/1，数据库侧）
+
+`--min-identity` 是每次运行时由调用方做的决定。有时这个决定应该属于数据库本身：
+一张精选面板知道自己的哪些基因身处同源家族之中、真等位基因必须达到多少一致性。
+这类知识以可选的 `floors.json` 边车文件随数据库发布（与 `sequences` 同目录），
+schema 为 `gapit.floors/1`（用 `gapit schema floors` 内省）：
+
+```json
+{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
+```
+
+- `genes` 把基因名映射到其最小比对一致性（%）；`default` 作用于未列出的基因
+  （`null` = 无下限）。没有该文件就完全没有下限。
+- 在 reads 模式下，落在带下限基因上、逐比对一致性（与 `--min-identity` 相同的
+  `100 * (alen - nm) / alen` 规则）低于下限的比对会在聚合**之前**被丢弃：广度、
+  深度与 `reads_mapped` 都从幸存行重新计算——以 86% 一致性堆上基因、广度 97% 的
+  同源序列因此塌缩到存在阈值之下，不再误报。
+- 下限是**数据库驱动的可选开启**：CLI 契约没有任何变化，不带边车的数据库输出与
+  之前逐字节一致——既有数据库和已发布的输出 schema（`gapit.reads/1`、
+  `gapit.reads/2`）都不受影响。blastn contig 管线从不读取 floors；它的
+  `--minid` 本就按一致性过滤。
+- floors 与 `--min-identity` 是合取关系：两者同时生效时，一条比对必须同时通过
+  基因下限和全局过滤（逐行取更严者）。
+- 安装方式：`gapit db build NAME genes.fa --floors floors.json`——先校验
+  （`genes` 中的每个基因必须存在于 FASTA、取值在 [0, 100] 内），再原样拷入数据库
+  目录成为 `floors.json`。把 floors.json 直接放进既有数据库目录同样有效；筛查时
+  读取。详见
+  [databases.zh.md](./databases.zh.md#floorsjson--按基因设置一致性下限)。
+
+### 实战示例：`pic` 的 SPATE 假阳性（内置 `ecoli_dec`）
+
+分离株 26ECO0084 携带一个与面板 `pic` 基因约 86.6% 一致的 SPATE 家族同源序列。
+reads 模式下，该同源序列的比对仍覆盖了基因长度的 97.59%，广度判存在因此报出了
+`pic`——而 blastn contig 管线在默认 80% 一致性下限处正确地把它过滤掉了。于是内置
+的 `ecoli_dec` 携带了仅一条下限的 `floors.json`：
+
+```json
+{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
+```
+
+真 `pic` 等位基因一致性 ≥95%，所以 90 的下限只移除 SPATE 同源序列的低一致性比对
+——源自同源序列的 reads 里 `pic` 翻转为不存在，而真等位基因的判定不变。`astA`
+刻意不设下限：其真等位基因一致性在 90.4–91% 之间，90 的下限之下毫无余量。
+
 ## 实战示例
 
 仓库测试夹具还包含一个微型 reads 数据库（`tinyreads`，一条 522 nt 的 `tetX` 基因加
@@ -662,7 +706,8 @@ kpneu_mgh78578.fna.gz	NC_016838.1	108291	108766	-	dfrA50	2-477/477	=============
 - **没有一致性下限。** reads 模式的存在判定只看广度。`sul1`（62.7% 广度）和
   `tmexD2`/`tmexD3` 对（56-60%）过了放宽的 50% 普查下限，但它们是部分或分歧位点，
   确认阶段的 80/80 一致性/覆盖度阈值会拒绝。放宽普查下限是刻意用精度换召回；精确
-  过滤属于第二阶段。
+  过滤属于第二阶段——唯一的例外是数据库带有
+  [按基因下限](#按基因设置一致性下限gapitfloors1数据库侧) 的基因，普查同样尊重它。
 
 需要一次拿到精确等位基因时，直接用 contig 流水线；需要快速从大量 assembly 得到基
 因家族层面的答案时，用普查。

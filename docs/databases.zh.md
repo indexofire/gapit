@@ -44,6 +44,7 @@ vfdb	USTC (VFDB)	available	nucl	VFDB virulence factors (set A, nucleotide)
 victors	University of Chicago	available	nucl	Victors virulence factors
 ecoh	Holt lab (srst2)	bundled	nucl	E. coli O and H antigens (srst2 EcOH)
 ecoli_dec	gapit-curated (public-domain sources)	bundled	nucl	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)
+lm_doumith	gapit-curated (public-domain INSDC sources)	bundled	nucl	Listeria monocytogenes serogrouping (Doumith 2004)
 ncbi	NCBI	bundled	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
 resfinder	DTU CGE	bundled	nucl	CGE ResFinder acquired resistance genes
 upec_expec_vf	FordeGenomics	bundled	nucl	UPEC/ExPEC virulence genes (FordeGenomics)
@@ -51,7 +52,7 @@ upec_expec_vf	FordeGenomics	bundled	nucl	UPEC/ExPEC virulence genes (FordeGenomi
 
 NAME 是传给 `--db` 的数据库名；PROVIDER 是上游维护机构。当
 `<datadir>/<name>/gapit-manifest.json` 存在时 STATUS 显示 `installed (N)`，N 是
-记录数，否则显示 `available`。最后五行是按名称排序的 wheel 内置数据库（见下文
+记录数，否则显示 `available`。最后六行是按名称排序的 wheel 内置数据库（见下文
 "内置数据库（即装即用）"一节）：物化前为 `bundled`，物化后为 `installed (N)`。
 其中四个（`ecoh`、`ncbi`、`resfinder`、`upec_expec_vf`）同时是注册表提供商 ——
 这类名字只渲染一次，位于内置区（绝不会重复出现一条注册表 `available` 行），
@@ -117,7 +118,7 @@ abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 ## 内置数据库（即装即用）
 
 大多数数据库在 `db fetch` 时才从上游下载，因为许可证禁止再分发（见"提供商"一节）。
-少数**内置**数据库随 gapit wheel 一起发布 —— 共五个，其内容经过逐条记录的来源
+少数**内置**数据库随 gapit wheel 一起发布 —— 共六个，其内容经过逐条记录的来源
 审计（公共领域来源，或 Apache-2.0 / BSD-3-Clause / MIT 宽松许可面板；GPL 与
 非商业许可内容绝不随 wheel 分发）。无需下载、无需确认：内置数据库开箱即用。
 
@@ -125,17 +126,20 @@ abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 |---|---|---|---|
 | `ecoh` | 大肠杆菌 O/H 抗原基因（597 条记录，srst2 EcOH） | 2026-10-02 | — |
 | `ecoli_dec` | 致腹泻大肠杆菌标志基因面板（17 条记录，GB 4789.6 + 风险监测判定） | 2026-10-02 | `gapit.typing/2`（`gb4789_6`、`risk_monitoring` 双方案） |
+| `lm_doumith` | 单核细胞增生李斯特菌血清群分型（5 条记录，Doumith 2004 标记） | 2026-10-03 | `gapit.typing/2`（方案 `doumith_serogroup`） |
 | `ncbi` | NCBI AMRFinderPlus 精选 AMR（8373 条记录） | 2026-10-02 | — |
 | `resfinder` | CGE ResFinder 获得性耐药基因（3206 条记录） | 2026-10-02 | — |
 | `upec_expec_vf` | UPEC/ExPEC 毒力基因（77 条记录，FordeGenomics） | 2026-10-02 | — |
 
 **许可证来源声明。** `ecoli_dec` 的每条记录都取自公共领域的一级提交（NCBI
 RefSeq/GenBank/DDBJ 收录号，与权利方面板等位相同）；2026-10 审计中发现原面板里
-混入的两条 VFDB 来源记录已被移除并替换。四个提供商快照（`ecoh`、`ncbi`、
-`resfinder`、`upec_expec_vf`）通过了 2026-10 对**全部**记录的内容级审计：
+混入的两条 VFDB 来源记录已被移除并替换。`lm_doumith` 面板以同样方式取自公共领域
+的 INSDC 记录（收录号见每条头部；反向互补标记已做链向校正，`lmo0737` 经与 EGD-e
+比对验证 100% 一致）。四个提供商快照（`ecoh`、`ncbi`、`resfinder`、
+`upec_expec_vf`）通过了 2026-10 对**全部**记录的内容级审计：
 NCBI AMRFinderPlus 内容属公共领域（美国政府作品），CGE ResFinder 数据库为
 Apache-2.0，srst2 的 EcOH 为 BSD-3-Clause，FordeGenomics 的 UPEC-ExPEC 面板为
-MIT —— 四者均允许随 MIT 许可的 wheel 再分发。回归测试锁定了五个内置库的头部
+MIT —— 四者均允许随 MIT 许可的 wheel 再分发。回归测试锁定了六个内置库的头部
 不出现任何 `VF*` / `VFDB` / `ARO:` 标签。
 
 **快照是一个时间点。** 每个快照的 `sequences` 文件与快照当日 `gapit db fetch
@@ -155,6 +159,35 @@ ecoli_dec (17 records) into <datadir>`，`--quiet` 可静默），随后走标�
 物化全部内置库；manifest 一旦存在，两者重跑都是无操作。`db list` 在物化前显示
 `bundled`、物化后显示 `installed (17)` —— 四个列表入口（TSV、rich 表格、
 `--json`、MCP `db_list`）一致。
+
+### 李斯特菌血清群分型（`lm_doumith`）
+
+用于单核细胞增生李斯特菌（Listeria monocytogenes）血清群预测的分型内置库：
+五个标记 —— `prs`、`lmo0737`、`lmo1118`、`ORF2819`、`ORF2110` —— 以 95/95
+的序列一致性与覆盖度阈值筛检，由 `doumith_serogroup` 方案折算为 Doumith 多重
+PCR 分群（Doumith 等 2004，J Clin Microbiol 42:3819），并扩展了 Huang 2011 的
+4b 变体：`prs` 作为属级控制基因把关整个方案，`IIa`（1/2a 或 3a）、`IIc`
+（1/2c 或 3c）、`IIb`（1/2b、3b 或 7）、`IVb`（4b、4d 或 4e）与 `IVb-v`（携带
+lmo0737 的 4b 变体）—— 与 LisSero 等工具的 in-silico 语义一致。判定走两阶段
+管线：`gapit screen -o table.tsv --db lm_doumith`，然后 `gapit typing
+table.tsv`。
+
+已知的局限（相关处以 notes 形式随判定输出）：
+
+- **4b/4d/4e 在基因层面无法区分** —— 三个血清型共享所有已发表的分子标记；
+  需用 cgMLST 或血清学进一步判定。
+- **IVb-v 是新出现的关注克隆** —— 4b 谱面中检出 lmo0737（Huang 2011
+  "unusual 4b"；ST382/ST554 克隆）时，该规则先于 IVb 声明，变体优先胜出。
+- **EGD-e 判为 IIc** —— 1/2a 参考基因组携带 lmo1118 而落入 IIc；这是 Doumith
+  2004 原文记载的现象，不是工具假象。
+- **水平基因转移是双向陷阱** —— 谱系 II 的 lmo0737 盒会在谱系间移动，罕见的
+  ORF 标记水平转移也可能造成貌似 IIb 的假谱面；在流行病学上不太可能的语境里，
+  单标记 IIb 判定需谨慎对待。
+- **`prs` 是属级基因，并非 Lm 特异** —— 其他李斯特菌物种也携带它；prs 阳性但
+  无任何血清群标记的分离株回退为 fallback，而不是被判为"非李斯特菌"。
+
+回退判定 —— `untypeable (4a/4c, atypical profile, or non-Lm Listeria)` ——
+是这五个标记无法给出答案时的诚实输出。
 
 ## 检查数据库新鲜度
 
@@ -251,7 +284,7 @@ $ gapit db search "tet(M)" --field gene --exact --json | head -1
 ## 提供商
 
 gapit 自带十九个提供商。每一个——包括 `card` 和 `vfdb`——都在抓取时从上游下载：
-除上文五个通过审计、宽松许可的内置库之外，包里不内置任何内容，因为多家上游许可
+除上文六个通过审计、宽松许可的内置库之外，包里不内置任何内容，因为多家上游许可
 （CARD 的 McMaster 条款、VFDB 的 CC BY-NC、
 Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发。七个 kaptive 提供商是**基因簇**
 数据库（抓取时经基因簇管线构建，见下文 Kaptive 提供商一节）。
@@ -390,6 +423,8 @@ $ gapit db install card.json \
   sequences             generated FASTA projection (gapit/v1 tagged headers)
   sequences.n*|p*       BLAST index built from sequences
   gapit-manifest.json   provenance sidecar, written last
+  typing.json           可选的 gapit.typing/1 或 /2 评分规范（带分型的数据库）
+  floors.json           可选的 gapit.floors/1 按基因一致性下限（reads 模式）
 ```
 
 ### records.jsonl
@@ -457,6 +492,28 @@ manifest，来自 plasmidfinder 数据库：
 
 `records.jsonl` 和 manifest 是文件契约。它们从不出现在 stdout，也未注册到
 `gapit schema`。
+
+### floors.json — 按基因设置一致性下限
+
+一个可选边车，为 reads 模式的存在判定声明逐基因的最小比对一致性（%）（schema 为
+`gapit.floors/1`，用 `gapit schema floors` 内省；筛查语义与 `pic` 实战示例见
+[reads.zh.md](./reads.zh.md#按基因设置一致性下限gapitfloors1数据库侧)）：
+
+```json
+{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
+```
+
+| 字段 | 类型 | 含义 |
+|---|---|---|
+| `schema` | string | 恒为 `gapit.floors/1` |
+| `default` | number 或 null | 未在 `genes` 中列出的基因的下限（`null` = 无下限） |
+| `genes` | object | `{基因: 最小一致性 %}`，取值在 [0, 100] 内 |
+
+文件的存在本身就是开关——没有 manifest 字段，也没有 CLI 开关。不带边车的数据库
+输出与之前逐字节一致（下限是数据库驱动的可选开启，不是 CLI 契约变更）；blastn
+contig 路径从不读取它们。通过 `db build --floors` 安装（见下节），或把文件直接放
+进既有数据库目录；筛查时同样会校验（内容损坏以 `FLOORS_MALFORMED` 失败，exit 4）。
+内置的 `ecoli_dec` 携带 `{"genes": {"pic": 90.0}}`——SPATE 同源假阳性的修复。
 
 ## 表头格式与兼容性
 
@@ -550,6 +607,26 @@ contig.fa	contig1	1	240	+	syn_betalac	1-240/240	===============	0/0	100.00	100.0
 $ cat my_meta.tsv
 gene	accession	function
 syn_betalac	SYN-0001	ampicillin;cephalosporin
+```
+
+### 按基因一致性下限（`--floors`）
+
+`--floors FILE` 把一份 `gapit.floors/1` 文档安装为数据库的 `floors.json` 边车——
+reads 模式存在判定的逐基因最小比对一致性（见
+[reads.zh.md](./reads.zh.md#按基因设置一致性下限gapitfloors1数据库侧)）。文档在
+任何产物落盘前先校验：`genes` 里的每个基因必须存在于 FASTA
+（`FLOORS_UNKNOWN_GENE`，exit 4——给缺失基因设下限是静默失效的安全配置），取值必
+须在 [0, 100] 内、结构必须可解析（`FLOORS_MALFORMED`，exit 4）。随后文件原样拷入；
+文件的存在本身就是开关（manifest 字段不变）。仅限基因数据库——GBK/GFF 簇输入对
+`--floors` 报用法错误。
+
+```console
+$ cat my_floors.json
+{"schema": "gapit.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
+$ gapit db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --floors my_floors.json
+{"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
+$ cat ./db/tinyamr/floors.json
+{"schema": "gapit.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
 ```
 
 ### 重建

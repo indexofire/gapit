@@ -5,6 +5,46 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Per-gene identity floors for reads-mode presence (`gapit.floors/1`) — the db-driven
+  fix for the 26ECO0084 `pic` SPATE false positive.** A gene database may carry an
+  optional `floors.json` sidecar declaring a minimum alignment identity (%) per gene:
+  in reads mode, alignments to a floored gene below its floor are dropped BEFORE
+  aggregation, so breadth is recomputed from the surviving rows (a ~86.6%-identity,
+  97.59%-breadth SPATE homolog collapses below the presence threshold instead of
+  over-calling `pic`, matching the blastn contig verdict). **Strictly opt-in via
+  DATABASE metadata, not a CLI change**: a database without the sidecar screens
+  byte-identically to before, existing databases need nothing, and the blastn contig
+  path never reads floors (`--minid` already gates it). Floors compose conjunctively
+  with `gapit.reads/2` `--min-identity` (a row must clear both); `gapit.reads/1`
+  output shape is untouched (presence/breadth changes only for floored genes). New
+  module `gapit.gene_floors` (model registered as `gapit schema floors`), `gapit db
+  build NAME.fa --floors FILE` (gene builds only; cluster inputs reject it) installs a
+  validated copy — every listed gene must exist in the FASTA (`FLOORS_UNKNOWN_GENE`),
+  values in [0, 100] and structure per the schema (`FLOORS_MALFORMED`); dropping the
+  file into an existing db directory works too. The bundled `ecoli_dec` now ships
+  `{"genes": {"pic": 90.0}}` (true `pic` ≥95%; `astA` deliberately unfloored — true
+  alleles at 90.4–91% leave no margin), materialized with the bundle; MCP `screen_reads`
+  inherits the gate through the shared use-case.
+
+- **Bundled `lm_doumith`: Listeria monocytogenes serogrouping (Doumith 2004) — the sixth
+  bundled database.** Five markers extracted from public-domain INSDC records (`prs`,
+  `lmo0737`, `lmo1118`, `ORF2819`, `ORF2110`; strand-corrected, `lmo0737` verified against
+  EGD-e) behind the `gapit.typing/2` scheme `doumith_serogroup` (95/95 floors, `prs`
+  control gene, cutoff 1.0 / margin 0.0). Rules follow Doumith's multiplex-PCR table
+  (IIa = 1/2a·3a, IIc = 1/2c·3c, IIb = 1/2b·3b·7, IVb = 4b·4d·4e) extended with Huang
+  2011's 4b variant (`IVb-v`, declared before `IVb` so an lmo0737-carrying 4b profile
+  resolves to the variant); fallback `untypeable (4a/4c, atypical profile, or non-Lm
+  Listeria)`. Materializes on first screen like every bundle (zero network);
+  `tests/test_lm_doumith.py` pins the synthetic marker-subset matrix, the control gate,
+  the two-stage golden, and the bundled integration — the bundled roster grows to six
+  (discovery, red-flag scan, `db list`, and `setupdb` pins updated). Uppercase gene ids
+  (`ORF2819`/`ORF2110`) now ride a shipped database, locking that build/screen/typing
+   carry them verbatim.
+
 ## [0.5.1] - 2026-10-03
 
 ### Added

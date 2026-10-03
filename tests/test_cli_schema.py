@@ -41,6 +41,17 @@ def test_schema_version() -> None:
     assert "version" in payload["properties"]
 
 
+def test_schema_floors() -> None:
+    """Given the floors selector, When introspected, Then the gapit.floors/1
+    contract surfaces: schema const, [0, 100]-bounded per-gene values."""
+    result = runner.invoke(app, ["schema", "floors"])
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["properties"]["schema"]["const"] == "gapit.floors/1"
+    assert payload["properties"]["genes"]["additionalProperties"]["maximum"] == 100.0
+    assert payload["properties"]["genes"]["additionalProperties"]["minimum"] == 0.0
+
+
 def test_schema_unknown_name_exits_2_with_usage_envelope() -> None:
     result = runner.invoke(app, ["schema", "nope"])
     assert result.exit_code == 2

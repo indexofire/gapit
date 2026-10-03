@@ -16,6 +16,7 @@ from gapit.formats.reads_json import Reads2Document, ReadsDocument
 from gapit.formats.summary import SummaryDocument
 from gapit.formats.typing_result import TypingResultDocument
 from gapit.gbfeatures import FeaturesDocument
+from gapit.gene_floors import GeneFloors
 from gapit.typing_models import TypingDocument
 
 SCHEMA_MODELS: dict[str, type[BaseModel]] = {
@@ -29,4 +30,5 @@ SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "features": FeaturesDocument,
     "typing": TypingDocument,
     "typing_result": TypingResultDocument,
+    "floors": GeneFloors,
 }

@@ -12,6 +12,7 @@ from gapit.db import Database
 from gapit.dbcodec import decode_seqid
 from gapit.errors import InputError
 from gapit.fasta import iter_fasta_headers
+from gapit.gene_floors import apply_gene_floors, gene_floors
 from gapit.minimap2_run import run_minimap2
 from gapit.paf import (
     PafRecord,
@@ -204,7 +205,12 @@ def screen_reads(
     aggregation and the identity rule needs the NM tags. ``nm_tags`` is
     ALWAYS on: minimap2's no-CIGAR mode emits clipped coordinates for
     diverged alignments (26ECO0071 astA: 57% breadth without --cs, 100%
-    with), silently under-reporting breadth — the reads/1 core metric."""
+    with), silently under-reporting breadth — the reads/1 core metric.
+
+    A database carrying a gapit.floors/1 sidecar additionally drops
+    sub-floor alignments per gene BEFORE aggregation
+    (:func:`gapit.gene_floors.apply_gene_floors`) — db-driven opt-in; a
+    floorless database is byte-identical to the pre-floors behavior."""
     reads2 = min_identity > 0.0 or min_mapq > 0
     rows = run_minimap2(
         lanes,
@@ -216,6 +222,9 @@ def screen_reads(
     )
     if reads2:
         rows = filter_alignments(rows, min_identity=min_identity, min_mapq=min_mapq)
+    floors = gene_floors(database)
+    if floors is not None:
+        rows = apply_gene_floors(rows, floors, default_db=database.name)
     products = dict(iter_fasta_headers(database.sequences_path))
     genes = aggregate_coverage(
         rows, default_db=database.name, min_breadth=min_breadth, products=products

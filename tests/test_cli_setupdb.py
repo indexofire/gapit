@@ -26,26 +26,28 @@ def make_datadir(tmp_path: Path) -> Path:
 
 def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
     """Given the fixture, When setupdb runs and then databases are listed,
-    Then exit 0, all five bundled databases materialize (one stderr note
+    Then exit 0, all six bundled databases materialize (one stderr note
     each, alphabetical) alongside tinyamr's Indexed line, and the listing
-    carries all six databases."""
+    carries all seven databases."""
     datadir = make_datadir(tmp_path)
     setup = runner.invoke(app, ["setupdb", "--datadir", str(datadir)])
     assert setup.exit_code == 0
     stderr_lines = setup.stderr.splitlines()
-    assert stderr_lines[:5] == [
+    assert stderr_lines[:6] == [
         f"gapit: materializing bundled database {name} ({records} records) into {datadir}"
         for name, records in (
             ("ecoh", 597),
             ("ecoli_dec", 17),
+            ("lm_doumith", 5),
             ("ncbi", 8373),
             ("resfinder", 3206),
             ("upec_expec_vf", 77),
         )
     ]
-    assert stderr_lines[5:] == [
+    assert stderr_lines[6:] == [
         "Indexed ecoh (597 sequences, nucl)",
         "Indexed ecoli_dec (17 sequences, nucl)",
+        "Indexed lm_doumith (5 sequences, nucl)",
         "Indexed ncbi (8373 sequences, nucl)",
         "Indexed resfinder (3206 sequences, nucl)",
         "Indexed tinyamr (3 sequences, nucl)",
@@ -56,12 +58,13 @@ def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
     assert [info.name for info in infos] == [
         "ecoh",
         "ecoli_dec",
+        "lm_doumith",
         "ncbi",
         "resfinder",
         "tinyamr",
         "upec_expec_vf",
     ]
-    tinyamr = infos[4]
+    tinyamr = infos[5]
     assert tinyamr.n_sequences == 3
     assert tinyamr.dbtype == "nucl"
     assert re.fullmatch(r"\d{4}-[A-Za-z]{3}-\d{2}", tinyamr.date)

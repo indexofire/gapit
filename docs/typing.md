@@ -144,6 +144,43 @@ one marker FASTA or GBK loci file each. Every document validates against the cur
 and `tests/test_typing_schemes.py` / `tests/test_typing_schemes_cluster.py` build each fixture
 database and assert the phenotype calls below. **All sequences are synthetic** — they encode
 the scheme logic, not curated content; real curation is future work per provider licensing.
+The one curated exception sits beside them: the bundled `lm_doumith` panel (real public-domain
+INSDC sequences, its own test module) described first below.
+
+### Listeria serogroups — the bundled lm_doumith panel (gene db)
+
+`lm_doumith` is the sixth bundled database: the Doumith markers extracted from public-domain
+INSDC records and the `doumith_serogroup` scheme (`gapit.typing/2`) — the same five-marker
+multiplex-PCR semantics as LisSero, with `prs` as the genus-level `control_gene` and 95/95
+floors on every rule (Doumith et al. 2004, J Clin Microbiol 42:3819):
+
+| Call | requires | excludes |
+|---|---|---|
+| `IVb-v` | `ORF2819`, `ORF2110`, `lmo0737` | `lmo1118` |
+| `IVb` (4b, 4d or 4e) | `ORF2819`, `ORF2110` | `lmo0737`, `lmo1118` |
+| `IIb` (1/2b, 3b or 7) | `ORF2819` | `lmo0737`, `lmo1118`, `ORF2110` |
+| `IIc` (1/2c or 3c) | `lmo0737`, `lmo1118` | `ORF2819`, `ORF2110` |
+| `IIa` (1/2a or 3a) | `lmo0737` | `lmo1118`, `ORF2819`, `ORF2110` |
+
+`IVb-v` — the 4b variant carrying the lineage-II `lmo0737` cassette (Huang 2011 "unusual
+4b"; FDA 4bV; ST382/ST554 emergent clones) — is declared **before** `IVb` so a shared
+ORF2819+ORF2110 profile carrying `lmo0737` resolves to the variant. Uppercase gene ids
+(`ORF2819`, `ORF2110`) travel verbatim through build, screen, and typing. Two-stage use,
+zero network (the bundle materializes on first screen):
+
+```console
+$ gapit screen isolates.fa --db lm_doumith --output lm.tsv --quiet
+$ gapit typing lm.tsv --quiet
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+lm_doumith_iia.fa	doumith_serogroup	IIa	lmo0737;prs	high	1.0000	IVb-v (0.0000)	...
+lm_doumith_ivb.fa	doumith_serogroup	IVb	ORF2110;ORF2819;prs	high	1.0000	IVb-v (0.0000)	...
+```
+
+Fallback `untypeable (4a/4c, atypical profile, or non-Lm Listeria)`; without `prs` the
+control gate fires (`control gene absent`). Known limits ride the calls as notes: 4b/4d/4e
+share every marker, EGD-e types as IIc (documented in Doumith 2004), and HGT of the ORF
+markers can fake a IIb profile — see the [lm_doumith section](databases.md) in the
+databases guide.
 
 ### Listeria serogroups — the Doumith table (gene db)
 

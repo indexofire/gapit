@@ -132,7 +132,43 @@ ambiguous。
 每份配一个标记 FASTA 或 GBK 位点文件。每份文档都通过当前 schema 校验，
 `tests/test_typing_schemes.py` / `tests/test_typing_schemes_cluster.py` 会构建每个夹具
 数据库并断言下文的表型判定。**所有序列均为合成序列**——它们编码的是方案逻辑而非
-策展内容；按各提供商的许可条款，真实策展是未来的工作。
+策展内容；按各提供商的许可条款，真实策展是未来的工作。唯一的策展例外就放在它们
+旁边：内置的 `lm_doumith` 面板（真实公共领域 INSDC 序列，独立测试模块），见下文
+第一节。
+
+### 李斯特菌血清群 —— 内置 lm_doumith 面板（基因库）
+
+`lm_doumith` 是第六个内置数据库：取自公共领域 INSDC 记录的 Doumith 标记，加上
+`doumith_serogroup` 方案（`gapit.typing/2`）——与 LisSero 相同的五标记多重 PCR
+语义，`prs` 为属级 `control_gene`，每条规则 95/95 阈值（Doumith 等 2004，J Clin
+Microbiol 42:3819）：
+
+| 判定 | requires | excludes |
+|---|---|---|
+| `IVb-v` | `ORF2819`、`ORF2110`、`lmo0737` | `lmo1118` |
+| `IVb`（4b、4d 或 4e） | `ORF2819`、`ORF2110` | `lmo0737`、`lmo1118` |
+| `IIb`（1/2b、3b 或 7） | `ORF2819` | `lmo0737`、`lmo1118`、`ORF2110` |
+| `IIc`（1/2c 或 3c） | `lmo0737`、`lmo1118` | `ORF2819`、`ORF2110` |
+| `IIa`（1/2a 或 3a） | `lmo0737` | `lmo1118`、`ORF2819`、`ORF2110` |
+
+`IVb-v`——携带谱系 II `lmo0737` 盒的 4b 变体（Huang 2011 "unusual 4b"；FDA 4bV；
+ST382/ST554 新发克隆）——声明在 `IVb` **之前**，使携带 `lmo0737` 的
+ORF2819+ORF2110 谱式判给变体。大写基因名（`ORF2819`、`ORF2110`）在构建、筛检与
+分型全程原样传递。两阶段使用，零网络（首次筛检时自动物化）：
+
+```console
+$ gapit screen isolates.fa --db lm_doumith --output lm.tsv --quiet
+$ gapit typing lm.tsv --quiet
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+lm_doumith_iia.fa	doumith_serogroup	IIa	lmo0737;prs	high	1.0000	IVb-v (0.0000)	...
+lm_doumith_ivb.fa	doumith_serogroup	IVb	ORF2110;ORF2819;prs	high	1.0000	IVb-v (0.0000)	...
+```
+
+fallback 为 `untypeable (4a/4c, atypical profile, or non-Lm Listeria)`；缺 `prs` 时
+控制基因门触发（`control gene absent`）。已知局限以 notes 随判定输出：4b/4d/4e
+共享所有标记、EGD-e 判为 IIc（Doumith 2004 原文记载）、ORF 标记的水平转移可能
+伪造 IIb 谱式——详见数据库指南中的
+[lm_doumith 一节](./databases.md)。
 
 ### 李斯特菌血清群 —— Doumith 表（基因库）
 

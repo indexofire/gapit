@@ -34,6 +34,7 @@ from gapit.dbbuild import build_database
 from gapit.dbcodec import decode_seqid
 from gapit.errors import DatabaseError, InputError, UsageError
 from gapit.fasta import FastaRecord, iter_fasta
+from gapit.gene_floors import FLOORS_FILENAME, read_floors, validate_floors
 from gapit.records import Record, write_records
 from gapit.typing_gene import validate_gene_typing
 from gapit.typing_models import read_typing_document, typing_schema_of
@@ -173,6 +174,7 @@ def perform_build(
     quiet: bool = True,
     kind: Kind | None = None,
     typing: Path | None = None,
+    floors: Path | None = None,
     source: Literal["bundled"] | None = None,
 ) -> BuildReceipt:
     """Run the custom-build pipeline and return the receipt — the shared CLI
@@ -183,8 +185,11 @@ def perform_build(
     an explicit ``kind`` must agree with the detection or the call fails as
     a usage error. Both branches take ``typing`` (a gapit.typing/1 or /2
     spec, validated — gene references against the FASTA records on the gene
-    branch — then copied into the database); the FASTA-only ``tsv``/
-    ``dbtype``/``description`` options are rejected on the cluster branch.
+    branch — then copied into the database); the gene branch also takes
+    ``floors`` (a gapit.floors/1 per-gene identity-floor document, validated
+    the same way and copied in as ``floors.json`` — the file's presence is
+    the flag, no manifest field); the FASTA-only ``tsv``/``dbtype``/
+    ``description``/``floors`` options are rejected on the cluster branch.
     """
 
     # Security/frozen rule: `Path(datadir) / name` REPLACES the base when name
@@ -213,6 +218,11 @@ def perform_build(
             "--tsv/--dbtype/--description apply to FASTA (gene) builds only",
             code="USAGE_ERROR",
         )
+    if detected == "cluster" and floors is not None:
+        raise UsageError(
+            "--floors apply to FASTA (gene) builds only",
+            code="USAGE_ERROR",
+        )
     db_dir = config.ensure_datadir(datadir) / name
     if (db_dir / "gapit-manifest.json").is_file() and not force:
         raise DatabaseError(
@@ -236,10 +246,16 @@ def perform_build(
         document = read_typing_document(typing)
         validate_gene_typing(document, frozenset(record.gene for record in records))
         typing_schema = typing_schema_of(typing)
+    if floors is not None:
+        validate_floors(
+            read_floors(floors), frozenset(record.gene for record in records), source=floors
+        )
     db_dir.mkdir(parents=True, exist_ok=True)
     write_records(records, db_dir / "records.jsonl")
     if typing is not None:
         shutil.copyfile(typing, db_dir / "typing.json")
+    if floors is not None:
+        shutil.copyfile(floors, db_dir / FLOORS_FILENAME)
     manifest = build_database(
         db_dir,
         name=name,
