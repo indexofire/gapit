@@ -5,6 +5,53 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.5] - 2026-10-13
+
+### Added
+
+- **`gapit.cluster/2` — multi-scheme cluster output.** A cluster database whose typing
+  document holds more than one scheme now renders `gapit.cluster/2`: same body as /1,
+  `best` drops its phenotype fields, and each file gains `phenotypes: {scheme: SchemeCall}`
+  in document order — compose schemes (e.g. `"{o_group}:{k_group}"`) render from sibling
+  calls, and schemes evaluate even without a best call. TSV/CSV swap PHENOTYPE for a packed
+  PHENOTYPES column (`o_group=O3;k_group=K6;serotype=O3:K6`); MD mirrors it plus per-scheme
+  lines. Untyped and single-scheme databases keep byte-identical `gapit.cluster/1`.
+  /2 builds guarantee globally-unique gene ids (collision-aware
+  /gene→locus_tag→`locus:id@start` resolution at build time). Registered as
+  `gapit schema cluster2`.
+
+- **Bundled `vp_ok`: V. parahaemolyticus O:K serotyping, one scan.** The wheel now ships a
+  typed cluster bundle (six bundles total; ~7.9 MiB committed artifacts) built from the
+  vpasero OAgc/CPSgc reference loci (195 loci, MIT): `pip install gapit` →
+  `gapit screen genome.fna --db vp_ok` auto-materializes with zero network and renders
+  `gapit.cluster/2` with `o_group`, `k_group`, and the composed `O:K` serotype
+  (RIMD 2210633 → O3:K6). Kind-aware cluster-bundle materialization replays the same
+  cluster build entry `db build` uses — bundle ≡ build, byte-identical `sequences` +
+  `features.json` (regression-locked). Coverage floors calibrated over a 14,801-genome
+  corpus against Kaptive-style references: 90% coverage / 95% identity (O agreement
+  89.08%, K 82.91%, true cross-calls 29/29,602 calls); the HARD-locus matrix is committed
+  (`scripts/vp_rules_matrix.tsv`) and `scripts/generate_vp_typing.py` regenerates the
+  typing asset reproducibly.
+
+- **Bundled-database policy (AGENTS.md §6) with a mechanical 30 MiB budget guard** —
+  license gate (PD/Apache/BSD/MIT only) + size gate enforced by `tests/test_bundled.py`;
+  growth tiers documented (split a `gapit-data` wheel past the budget rather than inflate).
+
+### Changed
+
+- **CLI migrated from typer to click 8.5.** Same flags, exit codes, envelopes, and stdout
+  bytes on every gapit-owned surface; a net dependency diet (typer/shellingham/annotated-doc
+  out, click in). Framework-rendered help is now plain click, and shell completion moved
+  from typer's `--install-completion`/`--show-completion` flags to the
+  `_GAPIT_COMPLETE=bash_source` env-var activation model (bash/zsh/fish; docs updated).
+
+- **`gapit db list`: DESCRIPTION now precedes PROVIDER** (TSV and the rich table), and the
+  rich table renders with uniformly thin rule lines (was a heavy header separator).
+
+- **`upec_expec_vf` no longer rides the wheel** — it returns to pure fetch-on-demand in
+  the provider catalog; the sanctioned bundled set is `ecoh`, `ecoli_dec`, `lm_doumith`,
+  `ncbi`, `resfinder`, `vp_ok`.
+
 ## [0.5.4] - 2026-10-03
 
 ### Added
