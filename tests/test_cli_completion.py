@@ -1,62 +1,79 @@
-"""CLI tests for shell completions (typer add_completion on the root app)."""
+"""CLI tests for shell completions (click env-var activation model).
+
+Plain click injects no completion options: activation rides the
+``_GAPIT_COMPLETE`` environment variable (``bash_source`` prints the
+script, ``bash_complete`` answers a COMP_WORDS/COMP_CWORD probe).
+"""
 
 import re
 
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit.cli import app
 
 runner = CliRunner()
 
-# On CI, GITHUB_ACTIONS makes typer force terminal styling on help output;
-# the styled runs split option tokens, so strip SGR escapes before asserting.
+# click's CliRunner renders help without SGR styling (color defaults off);
+# the strip is kept as a defensive normalization before asserting tokens.
 ANSI_STYLE = re.compile(r"\x1b\[[0-9;]*m")
 
 
-def test_root_help_lists_completion_options() -> None:
-    """Given --help on the root app, When inspected, Then both typer
-    completion options are offered."""
-    result = runner.invoke(app, ["--help"], env={"COLUMNS": "100"})
+def test_root_help_offers_no_completion_flags() -> None:
+    """Given --help on the root app, When inspected, Then no legacy
+    completion option is offered (plain click adds no flags)."""
+    result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
     help_text = ANSI_STYLE.sub("", result.stdout)
-    assert "--install-completion" in help_text
-    assert "--show-completion" in help_text
+    assert "--install-completion" not in help_text
+    assert "--show-completion" not in help_text
+
+
+def test_install_completion_flag_is_rejected() -> None:
+    """Given the legacy --install-completion flag, When invoked, Then
+    click rejects it as an unknown option (exit 2) and no data reaches
+    stdout."""
+    result = runner.invoke(app, ["--install-completion"])
+    assert result.exit_code == 2
+    assert "No such option '--install-completion'." in result.stderr
+    assert result.stdout == ""
 
 
 def test_short_help_alias_works_on_every_level() -> None:
     """Given -h instead of --help, When invoked on the root app, a
     subcommand, and a nested sub-app, Then each prints its help and exits 0."""
     for argv in (["-h"], ["screen", "-h"], ["db", "-h"], ["db", "fetch", "-h"]):
-        result = runner.invoke(app, argv, env={"COLUMNS": "100"})
+        result = runner.invoke(app, argv)
         assert result.exit_code == 0, argv
         assert "Usage:" in ANSI_STYLE.sub("", result.stdout), argv
 
 
-def test_show_completion_emits_shell_script() -> None:
-    """Given --show-completion under a pinned SHELL, When run, Then a bash
-    completion script referencing the gapit completion env var is printed
-    to stdout and nothing else leaks into other runs."""
-    result = runner.invoke(app, ["--show-completion"], env={"SHELL": "/bin/bash"})
+def test_bash_source_emits_completion_script() -> None:
+    """Given the _GAPIT_COMPLETE=bash_source activation, When run, Then a
+    bash completion script is printed to stdout: it defines the gapit
+    completion function, calls back through _GAPIT_COMPLETE=bash_complete,
+    and registers itself for the gapit program name."""
+    result = runner.invoke(app, [], env={"_GAPIT_COMPLETE": "bash_source"})
     assert result.exit_code == 0
-    assert "_GAPIT_COMPLETE" in result.stdout
-    assert "complete -o default -F _gapit_completion gapit" in result.stdout
+    assert "_gapit_completion() {" in result.stdout
+    assert "_GAPIT_COMPLETE=bash_complete" in result.stdout
+    assert "complete -o nosort -F _gapit_completion gapit" in result.stdout
 
 
 def test_bash_completion_lists_subcommands() -> None:
     """Given the bash completion protocol invocation (COMP_WORDS at the
     subcommand position), When run, Then the known subcommand names are
-    emitted on stdout."""
+    emitted on stdout as type-prefixed completion items."""
     result = runner.invoke(
         app,
         [],
         env={
-            "_GAPIT_COMPLETE": "complete_bash",
+            "_GAPIT_COMPLETE": "bash_complete",
             "COMP_WORDS": "gapit ",
             "COMP_CWORD": "1",
         },
     )
     assert result.exit_code == 0
-    completions = result.stdout.splitlines()
+    completions = [line.split(",", 1)[1] for line in result.stdout.splitlines()]
     assert "screen" in completions
     assert "setupdb" in completions
     assert "summary" in completions

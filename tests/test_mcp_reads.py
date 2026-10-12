@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit.cli import app
 from gapit.db import make_blast_db

@@ -17,7 +17,7 @@ import random
 import shutil
 from pathlib import Path
 
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit.cli import app
 from gapit.dbcodec import decode_seqid

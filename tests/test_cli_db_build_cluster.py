@@ -11,14 +11,14 @@ suite, untouched); these tests pin the NEW cluster artifacts: locus FASTA
 import json
 from pathlib import Path
 
+from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
-from typer.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.errors import ErrorEnvelope
 from gapit.gbfeatures import FeaturesDocument
 from gapit.records import read_manifest
-from gapit.typing_models import read_typing_document, single_scheme
+from gapit.typing_models import read_typing_document
 
 DATA = Path(__file__).parent / "data" / "cluster"
 DB = "myclusters"
@@ -175,7 +175,7 @@ def test_db_build_typing_validated_and_copied(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.stderr
     copied = datadir / DB / "typing.json"
     assert copied.read_bytes() == (DATA / "typing_valid.json").read_bytes()
-    assert single_scheme(read_typing_document(copied)).fallback == "unknown"
+    assert read_typing_document(copied).schemes[0].fallback == "unknown"
     assert read_manifest(datadir / DB / "gapit-manifest.json").typing_schema == "gapit.typing/1"
 
 

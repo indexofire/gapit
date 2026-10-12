@@ -61,7 +61,7 @@ $ gapit schema floors          # gapit.floors/1 (per-gene identity floors, reads
 }
 ```
 
-数据库：数据库目录与安装状态（`gapit db list --json`；真实输出，二十一个中的前两
+数据库：数据库目录与安装状态（`gapit db list --json`；真实输出，二十二个中的前两
 个，有删节）：
 
 ```console

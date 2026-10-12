@@ -31,7 +31,7 @@ are we?** A modern, typed, testable Python tool that:
   native (`seqconvert.py`); `any2fasta` is no longer a gapit dependency anywhere — the
   differential-validation oracle binary arrives transitively via abricate in the opt-in
   `parity` pixi env (prepend `.pixi/envs/parity/bin` to PATH for the differential test).
-- **Core libraries**: `typer` (CLI), `pydantic` v2 (data models / JSON schema), `rich` (terminal
+- **Core libraries**: `click` (CLI), `pydantic` v2 (data models / JSON schema), `rich` (terminal
   output). No biopython — FASTA I/O is a small streaming parser we own.
 - **Quality gates**: `ruff` (lint + format), `basedpyright` (strict mode), `pytest`.
 
@@ -89,7 +89,9 @@ gapit/
 │   ├── typing_results.py # typing evaluation-result models (PhenotypeDetail, SchemeCall)
 │   ├── typing_engine.py # typing evaluation, cluster path: rule scoring → phenotype call + breakdown
 │   ├── typing_gene.py   # typing evaluation, gene path (DEC markers): hits → per-scheme report phenotypes
-│   ├── bundled.py       # bundled databases: discovery + materialize-into-datadir (public-domain panels)
+│   ├── typing_cluster2.py # typing evaluation, multi-scheme cluster path: report → per-scheme phenotypes map
+│   ├── bundled.py       # bundled databases: discovery + kind-forked materialize-into-datadir
+│   ├── bundled_cluster.py # cluster-bundle materialization: committed artifacts → cluster build
 │   ├── blast.py         # blastn invocation + tabular output parsing
 │   ├── hits.py          # Hit model, identity/coverage computation, filtering, dedup
 │   ├── fragments.py     # opt-in --merge-fragments cross-contig gene-fragment merging
@@ -125,14 +127,16 @@ gapit/
 │   │   ├── reads_json.py # versioned JSON (gapit.reads/1, gapit.reads/2)
 │   │   ├── md.py        # Markdown (human + agent readable, YAML frontmatter)
 │   │   ├── cluster.py   # gapit.cluster/1 models + JSON/TSV renderers (typed variant)
-│   │   ├── cluster_md.py # gapit.cluster/1 Markdown renderer (Phenotype column when typed)
+│   │   ├── cluster2.py  # gapit.cluster/2 models + JSON/TSV renderers (multi-scheme phenotypes map)
+│   │   ├── cluster_md.py # gapit.cluster/1 + /2 Markdown renderers (Phenotype(s) column when typed)
 │   │   ├── typing_result.py # gapit.typing_result/1 models + TSV/JSON/MD renderers
 │   │   ├── schemas.py   # registered output models behind `gapit schema`
 │   │   └── summary.py   # summary matrix renderers (TSV/CSV/JSON/MD)
 │   ├── providers/       # 19 database provider modules (12 gene + 7 kaptive cluster) + cluster_common.py + common.py
 │   └── py.typed
 ├── scripts/
-│   └── cluster_calibration.py # developer calibration harness for typed cluster dbs
+│   ├── cluster_calibration.py # developer calibration harness for typed cluster dbs (single-scheme split dbs)
+│   └── generate_vp_typing.py # regenerates the committed vp_ok typing asset from the vpautils OAgc/CPSgc GBKs
 └── tests/
     ├── data/            # tiny synthetic db + contigs + reads (fast, offline)
     ├── golden/          # expected outputs incl. abricate reference TSVs
@@ -162,7 +166,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 - **Formats**: `--format tsv|csv|json|md` (default `tsv` for abricate compatibility).
 - **JSON**: top-level `"schema": "gapit.report/1"`; schema introspectable via
   `gapit schema report | reads | reads2 | summary | list | error | version` (plus
-  `cluster | features | typing | typing_result | floors`). Keys are snake_case,
+  `cluster | cluster2 | features | typing | typing_result | floors`). Keys are snake_case,
   units explicit (`identity_pct`, `coverage_pct`). Semver the schema; never rename or
   retype a field in a minor bump.
 - **Markdown**: YAML frontmatter (tool version, db, params, ISO-8601 UTC timestamp) + tables a
@@ -181,15 +185,24 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   a license-compliance requirement: CARD/VFDB terms are non-commercial and Kaptive is GPL,
   so none of those may ride an MIT distribution; the sanctioned exceptions are the six
   content-provenance-audited bundles under `src/gapit/data/dbs/` — the public-domain
-  `ecoli_dec` and `lm_doumith` panels plus four permissively licensed provider snapshots
-  (`ncbi` public domain, `resfinder` Apache-2.0, `ecoh` BSD-3-Clause, `upec_expec_vf`
-  MIT; GPL/NC content is never bundled) — materialized into the datadir on first use via
-  `bundled.py`, with `db fetch <name>` still the fresh-upstream refresh path),
+  `ecoli_dec` and `lm_doumith` panels, three permissively licensed provider snapshots
+  (`ncbi` public domain, `resfinder` Apache-2.0, `ecoh` BSD-3-Clause), and the MIT
+  `vp_ok` typed cluster snapshot — a pure built-in in the ecoli_dec/lm_doumith pattern: no
+  provider module, no `db fetch`; vpautils OAgc+CPSgc merged content, MIT
+  (GPL/NC content is never bundled) — materialized into the datadir on first use via
+  `bundled.py` (gene bundles replay the gene pipeline, the cluster bundle the cluster
+  pipeline), with `db fetch <name>` the fresh-upstream refresh path for the
+  provider-backed bundled names (ecoh, ncbi, resfinder); what may
+  ride the wheel is governed by the §6 policy),
   database listing,
   records.jsonl gene search, staleness
   report, custom FASTA→native-db build, GBK/GFF→cluster-db build (`--typing` installs a
-  validated `gapit.typing/1` or `/2` spec on either kind), the four download-on-fetch kaptive cluster providers
-  (GPL content, never bundled), and SHA256-verified local-file install.
+  validated `gapit.typing/1` or `/2` spec on either kind), the seven download-on-fetch
+  kaptive cluster providers (four upstream repos, GPL content, never bundled), the
+  MIT-licensed `vp_ok` typed cluster bundle (OAgc+CPSgc merged: the committed typing asset
+  installs a 3-scheme `gapit.typing/2` doc so one screen renders `gapit.cluster/2` with
+  the composed `O:K` serotype, zero network from first install), and SHA256-verified
+  local-file install.
 - **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing nine tools:
   read-only `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via
   minimap2), `summary`, `schema`, `db_list`, `db_search`, `db_outdated`, plus the datadir-mutating
@@ -199,7 +212,38 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 - **Self-description**: `gapit --version --json`, `gapit db list --json`, `gapit schema` — an agent
   must be able to discover everything without reading docs.
 
-## 6. Testing strategy
+## 6. Bundled-database policy (what may ride the wheel)
+
+`src/gapit/data/dbs/` is the sanctioned home for license-clean content shipped inside the
+wheel: a directory qualifies by carrying `sequences` + `bundled.json` (auto-discovered by
+`gapit.bundled`; `kind: cluster` in the metadata additionally requires `features.json`).
+Materialization is kind-aware: gene bundles replay the gene-build pipeline, cluster
+bundles the cluster-build pipeline (`bundled_cluster.py` rebuilds from the committed
+locus FASTA + resolved feature table — gene ids stay snapshot-resolved, the typing spec
+re-validates against them).
+Bundling stays the exception, not the pattern: the other providers fetch from upstream at
+`db fetch` time. Every new bundle passes two gates, in order:
+
+1. **License gate** (hard, independent of location): only public-domain or permissive
+   content (PD, Apache-2.0, BSD, MIT), provenance-audited. GPL (Kaptive) and
+   non-commercial terms (CARD, VFDB) never ride the MIT distribution — moving files
+   cannot fix this.
+2. **Size gate** (budget): the bundled-root total stays ≤ 30 MiB, mechanically enforced by
+   `tests/test_bundled.py` (every `pip install gapit` re-downloads all bundles; PyPI caps
+   one file at 100 MiB).
+
+Growth tiers past the budget — split rather than inflate the ceiling:
+
+- **≤ 30 MiB**: keep adding to `src/gapit/data/dbs/`. Atomic data-with-code versioning,
+  zero packaging machinery; the abricate precedent ships 16 MiB in-package.
+- **30–100 MiB**: split a separate `gapit-data` wheel with its own version (the
+  `spacy[lookups]` → `spacy-lookups-data` pattern), pulled via a `gapit[datasets]` extra;
+  `bundled_databases()` grows a second discovery root.
+- **> 100 MiB, or fast-moving upstreams**: fetch-on-demand only. `db fetch` is the
+  freshness path for every bundled name anyway — snapshots are point-in-time, and each
+  bundled upstream refresh would otherwise force a wheel release.
+
+## 7. Testing strategy
 
 - **Unit**: pure functions (coverage %, merge rules, header parsing) — no I/O beyond `tests/data`.
 - **Golden files**: fixed tiny db + fixed contigs → expected TSV/JSON/MD committed; update the
@@ -212,7 +256,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 - Full suite + CI matrix 3.11/3.13/3.14; parity byte-diff is opt-in via the `parity` pixi env.
   Offline tests stay fast.
 
-## 7. Domain knowledge (abridged; full detail in SPEC.md)
+## 8. Domain knowledge (abridged; full detail in SPEC.md)
 
 - A **database** is a directory `<datadir>/<dbname>/sequences`: a nucleotide FASTA whose headers
   encode `>~~~GENE~~~PRODUCT` (and accession / resistance metadata depending on the source db).
@@ -234,13 +278,13 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   surfaces (reads, cluster, typing) follow their own documented contracts and may diverge from
   abricate by design.
 
-## 8. Git & workflow
+## 9. Git & workflow
 
 - Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`).
 - Never commit unless the user explicitly asks. Never force-push.
 - `PLAN.md` tracks phases; update it when scope changes, not retroactively.
 
-## 9. For agents working in this repo
+## 10. For agents working in this repo
 
 1. Read `SPEC.md` before touching `blast.py`, `hits.py`, or `minimap.py`.
 2. Public contract changes (JSON schema, exit codes, CLI flags) require a schema version bump and

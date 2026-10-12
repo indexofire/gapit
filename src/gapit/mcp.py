@@ -19,7 +19,7 @@ import sys
 from collections.abc import Iterable
 from typing import Any, TextIO, TypeGuard
 
-import typer
+import click
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from gapit import __version__
@@ -148,7 +148,7 @@ def serve(stdin: Iterable[str], stdout: TextIO) -> None:
             stdout.flush()
 
 
-def register_mcp_command(app: typer.Typer) -> None:
+def register_mcp_command(app: click.Group) -> None:
     """Attach the `mcp` subcommand (cli.py stays import + registration only)."""
     app.command("mcp")(main)
 

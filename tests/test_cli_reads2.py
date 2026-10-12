@@ -9,8 +9,8 @@ import shutil
 from pathlib import Path
 
 import pytest
+from click.testing import CliRunner
 from pydantic import TypeAdapter
-from typer.testing import CliRunner
 
 from gapit.cli import app
 from gapit.formats.reads_json import Reads2Document
@@ -22,8 +22,8 @@ READS = Path(__file__).parent / "data" / "reads"
 runner = CliRunner()
 reads2_adapter = TypeAdapter(Reads2Document)
 
-# On CI, GITHUB_ACTIONS makes typer force terminal styling on help output;
-# the styled runs split option tokens, so strip SGR escapes before asserting.
+# click's CliRunner renders help without SGR styling (color defaults off);
+# the strip is kept as a defensive normalization before asserting tokens.
 ANSI_STYLE = re.compile(r"\x1b\[[0-9;]*m")
 
 

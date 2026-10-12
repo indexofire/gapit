@@ -1,0 +1,10 @@
+{
+  "name": "vp_ok",
+  "description": "V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)",
+  "vendor": "gapit-curated (vpasero)",
+  "dbtype": "nucl",
+  "kind": "cluster",
+  "snapshotted": "2026-10-12",
+  "license": "MIT (database content)",
+  "note": "vpautils OAgc.gbk + CPSgc.gbk (Bakta-annotated, MIT), concatenated in source_urls order and built through the cluster pipeline with the committed gapit.typing/2 asset; gene ids resolved at snapshot time (first-use materialization replays the build without re-resolving)"
+}

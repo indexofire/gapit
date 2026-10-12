@@ -1,22 +1,37 @@
 """Bundled databases: license-clean content shipped inside the wheel.
 
 A bundled database is a directory ``gapit/data/dbs/<name>/`` holding
-``sequences`` (the FASTA panel), an optional ``typing.json``, an optional
-``floors.json`` (gapit.floors/1), and a ``bundled.json`` metadata file.
-Materialization replays the standard
-gene-build pipeline (:func:`gapit.db_build_ops.perform_build`) into the
-user's datadir — deterministic, zero network — so a bundled database is
-ready at install time with no ``db fetch``.
+``sequences``, a ``bundled.json`` metadata file, and kind-dependent
+companions: gene bundles an optional ``typing.json`` and ``floors.json``
+(gapit.floors/1), cluster bundles a REQUIRED ``features.json``
+(gapit.features/1) plus their typing document. Materialization replays the
+standard build pipelines into the user's datadir — the gene path through
+:func:`gapit.db_build_ops.perform_build`, the cluster path through
+:func:`gapit.bundled_cluster.materialize_cluster_bundle` (which rebuilds
+from the committed locus FASTA + resolved feature table via
+:func:`gapit.clusterbuild.build_cluster_database`) — deterministic, zero
+network, so a bundled database is ready at install time with no
+``db fetch``.
 
 Only public-domain / permissive content may live here (the wheel is MIT):
 PD, Apache-2.0, BSD, MIT — never GPL or non-commercial terms; everything
-else stays download-on-fetch in the provider catalog. The four provider
-snapshots (ncbi, resfinder, ecoh, upec_expec_vf) are point-in-time copies
+else stays download-on-fetch in the provider catalog. The three provider
+snapshots (ncbi, resfinder, ecoh) are point-in-time copies
 of exactly what ``db fetch`` would install (gapit/v1 headers, produced by
-the provider pipeline itself); ``db fetch <name>`` remains the freshness
-path and overwrites the datadir copy with the latest upstream content.
-The build pipeline re-headers any bundled FASTA into gapit/v1 like a
-custom build, so both header styles round-trip.
+the provider pipeline itself); the typed cluster snapshot vp_ok is a pure
+built-in (no provider behind it) carrying the resolved gapit.features/1
+table a completed /2 build produced; ``db fetch <name>`` remains the
+freshness path for the provider-backed bundled names and overwrites the
+datadir copy with the latest upstream content. The gene
+build pipeline re-headers any bundled FASTA into gapit/v1 like a custom
+build, so both header styles round-trip.
+
+Bundling is the exception, not the pattern, and every new bundle clears
+two gates in order (the full policy lives in AGENTS.md §6): the license
+gate above, then the size gate — the whole bundled root stays within a
+30 MiB wheel budget, mechanically enforced by tests/test_bundled.py.
+Past the budget, split a separate data wheel or keep the database
+fetch-on-demand instead of inflating the ceiling.
 """
 
 from pathlib import Path
@@ -25,6 +40,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from gapit import config
+from gapit.bundled_cluster import materialize_cluster_bundle
 from gapit.db_build_ops import perform_build
 from gapit.errors import DatabaseError
 from gapit.fasta import iter_fasta
@@ -38,13 +54,21 @@ class BundledMetadata(BaseModel, frozen=True):
 
     ``snapshotted`` is the ISO date the wheel copy was produced from
     upstream (provenance for humans; ``db fetch`` refreshes past it).
+    ``kind`` routes materialization (gene vs cluster pipeline; cluster
+    bundles additionally require ``features.json``). ``license`` and
+    ``note`` carry content provenance into the materialized manifest
+    (cluster bundles); they default to empty so the gene bundles'
+    metadata stays minimal.
     """
 
     name: str
     description: str
     vendor: str
     dbtype: Literal["nucl", "prot"]
+    kind: Literal["gene", "cluster"] = "gene"
     snapshotted: str
+    license: str = ""
+    note: str = ""
 
 
 class BundledDatabase(BaseModel, frozen=True):
@@ -73,12 +97,21 @@ class BundledDatabase(BaseModel, frozen=True):
         floors = self.path / "floors.json"
         return floors if floors.is_file() else None
 
+    @property
+    def features_path(self) -> Path | None:
+        """The bundled gapit.features/1 table — required (and checked at
+        discovery) for cluster bundles, absent from gene bundles."""
+        features = self.path / "features.json"
+        return features if features.is_file() else None
+
 
 def bundled_databases() -> list[BundledDatabase]:
     """Every bundled database, sorted by name. A directory qualifies when it
-    carries both ``sequences`` and ``bundled.json``; malformed metadata
-    propagates (no silent degradation), and a wheel without the data dir
-    lists nothing."""
+    carries both ``sequences`` and ``bundled.json`` — plus ``features.json``
+    when the metadata declares ``kind: cluster`` (a cluster bundle without
+    its feature table cannot materialize; typed error, no silent
+    degradation). Malformed metadata propagates, and a wheel without the
+    data dir lists nothing."""
     if not BUNDLED_ROOT.is_dir():
         return []
     databases: list[BundledDatabase] = []
@@ -86,14 +119,14 @@ def bundled_databases() -> list[BundledDatabase]:
         metadata_path = child / "bundled.json"
         if not (child.is_dir() and (child / "sequences").is_file() and metadata_path.is_file()):
             continue
-        databases.append(
-            BundledDatabase(
-                metadata=BundledMetadata.model_validate_json(
-                    metadata_path.read_text(encoding="utf-8")
-                ),
-                path=child,
+        metadata = BundledMetadata.model_validate_json(metadata_path.read_text(encoding="utf-8"))
+        if metadata.kind == "cluster" and not (child / "features.json").is_file():
+            raise DatabaseError(
+                f"bundled cluster database {metadata.name} lacks features.json",
+                code="BUNDLED_MALFORMED",
+                context={"db": metadata.name},
             )
-        )
+        databases.append(BundledDatabase(metadata=metadata, path=child))
     return databases
 
 
@@ -108,13 +141,14 @@ def find_bundled(name: str) -> BundledDatabase | None:
 
 
 def materialize_bundled(name: str, datadir: Path, *, quiet: bool = True) -> None:
-    """Build a bundled database into ``<datadir>/name`` via the standard
-    gene-build pipeline (records.jsonl, sequences, BLAST index, typing
-    copy, manifest stamped ``source: "bundled"`` — written last, as
-    always). Zero network: every input travels inside the wheel.
+    """Build a bundled database into ``<datadir>/name`` via its kind's
+    standard pipeline (records.jsonl/sequences for gene bundles, locus
+    FASTA + features.json for cluster bundles; BLAST index, typing copy,
+    manifest stamped ``source: "bundled"`` — written last, as always).
+    Zero network: every input travels inside the wheel.
 
     An already-materialized database (manifest present) is left untouched —
-    callers short-circuit on the manifest, and perform_build's
+    callers short-circuit on the manifest, and each path's
     DB_ALREADY_EXISTS guard turns a racing double build into a typed error.
     """
     bundled = find_bundled(name)
@@ -124,6 +158,9 @@ def materialize_bundled(name: str, datadir: Path, *, quiet: bool = True) -> None
             code="BUNDLED_NOT_FOUND",
             context={"db": name},
         )
+    if bundled.metadata.kind == "cluster":
+        materialize_cluster_bundle(bundled, datadir, quiet=quiet)
+        return
     n_records = sum(1 for _ in iter_fasta(bundled.sequences_path))
     note(quiet, f"materializing bundled database {name} ({n_records} records) into {datadir}")
     perform_build(

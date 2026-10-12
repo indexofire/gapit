@@ -24,7 +24,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 
-import typer
+import click
 
 from gapit.bundled import resolve_screen_datadir
 from gapit.engines import Emit
@@ -88,7 +88,7 @@ def run_screen_reads_positional(
     resolved = resolve_read_preset(lanes, read_type, quiet)
     cpu_count = os.cpu_count()
     if not quiet and cpu_count is not None and jobs * threads > cpu_count:
-        typer.echo(f"--jobs {jobs} --threads {threads} oversubscribes {cpu_count} cpus", err=True)
+        click.echo(f"--jobs {jobs} --threads {threads} oversubscribes {cpu_count} cpus", err=True)
 
     def screen_sample(sample: SampleLanes) -> ReadsReport:
         if task_id is not None:
@@ -98,7 +98,7 @@ def run_screen_reads_positional(
             read_list = ", ".join(
                 str(path) for lane in sample.lanes for path in lane if path is not None
             )
-            typer.echo(f"Screening sample {sample.sample} reads: {read_list}", err=True)
+            click.echo(f"Screening sample {sample.sample} reads: {read_list}", err=True)
         report = screen_reads(
             list(sample.lanes),
             database,
@@ -111,7 +111,7 @@ def run_screen_reads_positional(
         )
         present = sum(1 for gene in report.genes if gene.present)
         if task_id is None and not quiet:
-            typer.echo(f"Detected {present} present genes in sample {sample.sample}", err=True)
+            click.echo(f"Detected {present} present genes in sample {sample.sample}", err=True)
         return report.model_copy(update={"reads": (sample.sample,)})
 
     def iter_reports() -> Iterator[ReadsReport]:

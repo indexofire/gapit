@@ -1,0 +1,1830 @@
+{
+  "schema": "gapit.typing/2",
+  "schemes": [
+    {
+      "name": "o_group",
+      "rules": [
+        {
+          "model": "cluster_match",
+          "phenotype": "O1",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL1_003",
+              "OL1_004"
+            ]
+          },
+          "notes": [
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O1",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL1V1_017",
+              "OL1V1_015",
+              "OL1V1_012",
+              "OL1V1_007"
+            ]
+          },
+          "notes": [
+            "variant locus OL1V1 folds into O1",
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors (no named antigen gene: longest CDS)"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O1",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL1V2_003",
+              "OL1V2_004"
+            ]
+          },
+          "notes": [
+            "variant locus OL1V2 folds into O1",
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O2",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL2_007",
+              "OL2_019",
+              "OL2_011",
+              "OL2_012"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O3",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL3_017",
+              "OL3_023",
+              "OL3_011",
+              "OL3_009"
+            ]
+          },
+          "notes": [
+            "vpautils reference defines 12 O groups (no O13 locus); plain O3"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O4",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL4_020",
+              "OL4_021",
+              "OL4_008",
+              "OL4_023"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O4",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL4V1_021",
+              "OL4V1_019",
+              "OL4V1_022",
+              "OL4V1_013"
+            ]
+          },
+          "notes": [
+            "variant locus OL4V1 folds into O4",
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors (no named antigen gene: longest CDS)"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O5",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL5_004",
+              "OL5_008",
+              "OL5_011",
+              "OL5_027"
+            ]
+          },
+          "notes": [
+            "calibration: keys retuned to backbone genes (rfaF/rfbA/rffA/rfaD) — divergent O5 lineages carry waaA/degT alleles below the 90% gene identity floor (GCA_000732985.1/GCA_000736325.1)"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O6",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL6_017",
+              "OL6_016",
+              "OL6_013",
+              "OL6_020"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O6",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL6V1_003",
+              "OL6V1_004",
+              "OL6V1_014",
+              "OL6V1_013"
+            ]
+          },
+          "notes": [
+            "variant locus OL6V1 folds into O6"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O7",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL7_003",
+              "OL7_012",
+              "OL7_008",
+              "OL7_005"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O7",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL7V1_012",
+              "OL7V1_008",
+              "OL7V1_026",
+              "OL7V1_013"
+            ]
+          },
+          "notes": [
+            "variant locus OL7V1 folds into O7"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O8",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL8_011",
+              "OL8_021",
+              "OL8_010",
+              "OL8_013"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O9",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL9_010",
+              "OL9_018",
+              "OL9_009",
+              "OL9_012"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O10",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL10_003",
+              "OL10_004"
+            ]
+          },
+          "notes": [
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O10",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL10V1_015",
+              "OL10V1_023",
+              "OL10V1_017",
+              "OL10V1_007"
+            ]
+          },
+          "notes": [
+            "variant locus OL10V1 folds into O10"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O10",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL10V2_025",
+              "OL10V2_031",
+              "OL10V2_017",
+              "OL10V2_014"
+            ]
+          },
+          "notes": [
+            "variant locus OL10V2 folds into O10"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O11",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL11_003"
+            ]
+          },
+          "notes": [
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O11",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL11V1_026",
+              "OL11V1_007",
+              "OL11V1_010",
+              "OL11V1_004"
+            ]
+          },
+          "notes": [
+            "variant locus OL11V1 folds into O11"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O12",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "OL12_003",
+              "OL12_012",
+              "OL12_002",
+              "OL12_013"
+            ]
+          }
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "OUT",
+      "control_gene": null,
+      "unique_group": {},
+      "mixed_phenotype": null,
+      "compose": null
+    },
+    {
+      "name": "k_group",
+      "rules": [
+        {
+          "model": "cluster_match",
+          "phenotype": "K1",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL1_007",
+              "KL1_027",
+              "KL1_021",
+              "KL1_029"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K3",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL3_031",
+              "KL3_040",
+              "KL3_037",
+              "KL3_002"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K4",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL4_007",
+              "KL4_002",
+              "KL4_028",
+              "KL4_018"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K5",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL5_008",
+              "KL5_002",
+              "KL5_028",
+              "KL5_012"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K6",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL6_007",
+              "KL6_003",
+              "KL6_022",
+              "KL6_025"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K7",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL7_007",
+              "KL7_002",
+              "KL7_026",
+              "KL7_010"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K8",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL8_007",
+              "KL8_002",
+              "KL8_026",
+              "KL8_011"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K9",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL9_007",
+              "KL9_002",
+              "KL9_027",
+              "KL9_011"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K10",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL10_002",
+              "KL10_010",
+              "KL10_022",
+              "KL10_023"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K11",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL11_007",
+              "KL11_002",
+              "KL11_021",
+              "KL11_022"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K12",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 85.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL12_002",
+              "KL12_031",
+              "KL12_027",
+              "KL12_025"
+            ]
+          },
+          "notes": [
+            "calibration: coverage floor 85 (partial-deletion carriers at ~88% breadth, GCA_015808295.2) and keys retuned to genes present in them"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K13",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL13_007",
+              "KL13_002",
+              "KL13_022",
+              "KL13_029"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K15",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 85.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL15_010",
+              "KL15_011",
+              "KL15_006",
+              "KL15_028"
+            ]
+          },
+          "notes": [
+            "calibration: coverage floor 85 (partial-deletion carrier at ~89% breadth, GCA_000707465.2) and keys retuned to genes present in it"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K17",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL17_007",
+              "KL17_002",
+              "KL17_041",
+              "KL17_018"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K18",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL18_002",
+              "KL18_010",
+              "KL18_016",
+              "KL18_026"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K19",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL19_007",
+              "KL19_002",
+              "KL19_026",
+              "KL19_016"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K20",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL20_007",
+              "KL20_002",
+              "KL20_014",
+              "KL20_021"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K20",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL20V1_007",
+              "KL20V1_020",
+              "KL20V1_013",
+              "KL20V1_009"
+            ]
+          },
+          "notes": [
+            "variant locus KL20V1 folds into K20"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K21",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL21_002",
+              "KL21_023",
+              "KL21_013",
+              "KL21_021"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K22",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL22_007",
+              "KL22_033",
+              "KL22_021",
+              "KL22_026"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K23",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL23_008",
+              "KL23_002",
+              "KL23_019",
+              "KL23_022"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K24",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL24_007",
+              "KL24_002",
+              "KL24_033",
+              "KL24_024"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K25",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL25_008",
+              "KL25_002",
+              "KL25_019",
+              "KL25_015"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K28",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL28_029",
+              "KL28_045",
+              "KL28_002",
+              "KL28_027"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K29",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL29_007",
+              "KL29_002",
+              "KL29_012",
+              "KL29_011"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K30",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL30_002",
+              "KL30_021",
+              "KL30_012",
+              "KL30_010"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K31",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL31_008",
+              "KL31_002",
+              "KL31_015",
+              "KL31_029"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K32",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL32_007",
+              "KL32_002",
+              "KL32_028",
+              "KL32_009"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K33",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL33_008",
+              "KL33_002",
+              "KL33_023",
+              "KL33_013"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K34",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL34_007",
+              "KL34_002",
+              "KL34_027",
+              "KL34_009"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K36",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL36_007",
+              "KL36_002",
+              "KL36_009",
+              "KL36_017"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K37",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL37_006",
+              "KL37_002",
+              "KL37_024",
+              "KL37_019"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K38",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL38_008",
+              "KL38_002",
+              "KL38_021",
+              "KL38_011"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K39",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL39_008",
+              "KL39_023",
+              "KL39_016",
+              "KL39_014"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K40",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL40_007",
+              "KL40_002",
+              "KL40_038",
+              "KL40_037"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K41",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL41_008",
+              "KL41_002",
+              "KL41_023",
+              "KL41_015"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K42",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL42_007",
+              "KL42_002",
+              "KL42_010",
+              "KL42_020"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K43",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL43_002",
+              "KL43_012",
+              "KL43_025",
+              "KL43_017"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K44",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL44_007",
+              "KL44_002",
+              "KL44_031",
+              "KL44_025"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K45",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL45_007",
+              "KL45_002",
+              "KL45_020",
+              "KL45_009"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K46",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL46_013",
+              "KL46_006",
+              "KL46_011",
+              "KL46_023"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K47",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL47_007",
+              "KL47_002",
+              "KL47_031",
+              "KL47_030"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K48",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL48_008",
+              "KL48_024",
+              "KL48_014",
+              "KL48_026"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K49",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL49_007",
+              "KL49_002",
+              "KL49_020",
+              "KL49_021"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K50",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL50_007",
+              "KL50_036",
+              "KL50_021",
+              "KL50_020"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K51",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL51_007",
+              "KL51_002",
+              "KL51_028",
+              "KL51_015"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K53",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL53_002",
+              "KL53_020",
+              "KL53_026",
+              "KL53_010"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K54",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL54_008",
+              "KL54_002",
+              "KL54_023",
+              "KL54_015"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K55",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL55_007",
+              "KL55_002",
+              "KL55_029",
+              "KL55_023"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K56",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL56_007",
+              "KL56_002",
+              "KL56_021",
+              "KL56_010"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K57",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL57_007",
+              "KL57_002",
+              "KL57_025",
+              "KL57_027"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K58",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL58_007",
+              "KL58_002",
+              "KL58_024",
+              "KL58_012"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K59",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL59_008",
+              "KL59_002",
+              "KL59_020",
+              "KL59_023"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K60",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL60_034",
+              "KL60_007",
+              "KL60_013",
+              "KL60_002"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K61",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL61_007",
+              "KL61_002",
+              "KL61_028",
+              "KL61_018"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K63",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL63_007",
+              "KL63_002",
+              "KL63_018",
+              "KL63_025"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K64",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL64_029",
+              "KL64_007",
+              "KL64_002",
+              "KL64_020"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K66",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL66_007",
+              "KL66_002",
+              "KL66_027",
+              "KL66_016"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K68",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL68_008",
+              "KL68_029",
+              "KL68_001",
+              "KL68_030"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K68",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL68V1_007",
+              "KL68V1_002",
+              "KL68V1_028",
+              "KL68V1_034"
+            ]
+          },
+          "notes": [
+            "variant locus KL68V1 folds into K68"
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K69",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL69_007",
+              "KL69_002",
+              "KL69_017",
+              "KL69_020"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K70",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL70_008",
+              "KL70_002",
+              "KL70_010",
+              "KL70_012"
+            ]
+          }
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "K71",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 95.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "KL71_008",
+              "KL71_002",
+              "KL71_021",
+              "KL71_010"
+            ]
+          },
+          "notes": [
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors (no named antigen gene: longest CDS)"
+          ]
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "KUT",
+      "control_gene": null,
+      "unique_group": {},
+      "mixed_phenotype": null,
+      "compose": null
+    },
+    {
+      "name": "serotype",
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "OUT:KUT",
+      "control_gene": null,
+      "unique_group": {},
+      "mixed_phenotype": null,
+      "compose": "{o_group}:{k_group}"
+    }
+  ]
+}

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Literal
 
 import pytest
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit import screening, screening_cluster
 from gapit.blast import BlastRow

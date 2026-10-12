@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit import cmd_typing
 from gapit.cli import app

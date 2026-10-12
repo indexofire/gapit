@@ -1,0 +1,47 @@
+{
+  "schema": "gapit.features/1",
+  "loci": [
+    {
+      "id": "KL106",
+      "label": "KL106",
+      "type": "K6",
+      "genes": [
+        {
+          "gene_id": "kptA",
+          "start": 1,
+          "end": 80,
+          "strand": "+",
+          "product": "sugar transferase"
+        },
+        {
+          "gene_id": "kptB",
+          "start": 81,
+          "end": 160,
+          "strand": "-",
+          "product": "polymerase"
+        }
+      ]
+    },
+    {
+      "id": "KL107",
+      "label": "KL107",
+      "type": "unknown",
+      "genes": [
+        {
+          "gene_id": "kptC",
+          "start": 1,
+          "end": 70,
+          "strand": "+",
+          "product": "flippase"
+        },
+        {
+          "gene_id": "kptD",
+          "start": 71,
+          "end": 140,
+          "strand": "-",
+          "product": "pyrophosphorylase"
+        }
+      ]
+    }
+  ]
+}

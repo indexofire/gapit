@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Protocol, runtime_checkable
 
 import pytest
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit.cli import app
 from gapit.fasta import iter_fasta

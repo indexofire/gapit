@@ -1,4 +1,4 @@
-"""The `gapit db outdated` command: typer shell over the use-case
+"""The `gapit db outdated` command: click shell over the use-case
 (:mod:`gapit.db_query_ops`) — installed-database staleness report.
 
 Reports every installed database's age against a staleness threshold.
@@ -6,9 +6,9 @@ Staleness is a REPORT, never an error state: exit 0 even when everything is
 stale. Read-only: no builds, no network, no datadir writes.
 """
 
-from typing import Annotated
+from pathlib import Path
 
-import typer
+import click
 
 from gapit.db_query_ops import (
     DEFAULT_STALE_DAYS,
@@ -16,25 +16,22 @@ from gapit.db_query_ops import (
     outdated_tsv_lines,
     perform_outdated,
 )
-from gapit.dispatch import Datadir, dispatch
+from gapit.dispatch import datadir_option, dispatch, quiet_option
 
 
-def db_outdated_command(
-    datadir: Datadir = None,
-    days: Annotated[
-        int,
-        typer.Option(
-            "--days", "-d", min=0, help="Staleness threshold in days (stale past this age)."
-        ),
-    ] = DEFAULT_STALE_DAYS,
-    as_json: Annotated[
-        bool,
-        typer.Option("--json", "-J", help="Print machine-readable JSON instead of a table."),
-    ] = False,
-    quiet: Annotated[
-        bool, typer.Option("--quiet", "-q", help="Silence stderr diagnostics.")
-    ] = False,
-) -> None:
+@datadir_option()
+@click.option(
+    "--days",
+    "-d",
+    type=click.IntRange(min=0),
+    default=DEFAULT_STALE_DAYS,
+    help="Staleness threshold in days (stale past this age).",
+)
+@click.option(
+    "--json", "-J", "as_json", is_flag=True, help="Print machine-readable JSON instead of a table."
+)
+@quiet_option()
+def db_outdated_command(datadir: Path | None, days: int, as_json: bool, quiet: bool) -> None:
     """Report installed database ages and available updates (exit 0 however
     stale things are — a report, not an error).
 
@@ -45,9 +42,9 @@ def db_outdated_command(
         entries = perform_outdated(datadir, days=days)
         if as_json:
             document = DbOutdatedDocument(databases=tuple(entries))
-            typer.echo(document.model_dump_json(indent=2, by_alias=True))
+            click.echo(document.model_dump_json(indent=2, by_alias=True))
             return
         for line in outdated_tsv_lines(entries):
-            typer.echo(line)
+            click.echo(line)
 
     dispatch(run)

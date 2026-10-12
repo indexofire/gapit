@@ -12,8 +12,8 @@ import json
 import random
 from pathlib import Path
 
+from click.testing import CliRunner, Result
 from rich.console import Console
-from typer.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.db_ops import db_list_entries, db_list_table
@@ -57,12 +57,12 @@ def test_db_list_includes_built_gene_and_cluster_databases(tmp_path: Path) -> No
 
     lines = list_rows(datadir)
 
-    assert lines[0] == "NAME\tPROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION"
+    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER"
     # Registry providers first (all available: nothing fetched), extras last
     # by name — deterministic ordering.
-    assert lines[-2] == "myamr\tlocal\tinstalled (2)\tnucl\t"
-    assert lines[-1] == "myloci\tlocal\tinstalled (2)\tnucl\t"
-    assert all(line.split("\t")[1] != "local" for line in lines[1:-2])
+    assert lines[-2] == "myamr\t\tinstalled (2)\tnucl\tlocal"
+    assert lines[-1] == "myloci\t\tinstalled (2)\tnucl\tlocal"
+    assert all(line.split("\t")[4] != "local" for line in lines[1:-2])
 
 
 def test_db_list_json_marks_extras_local_and_keeps_registry_entries_untouched(
@@ -119,7 +119,7 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
         ("lm_doumith", "bundled"),
         ("ncbi", "bundled"),
         ("resfinder", "bundled"),
-        ("upec_expec_vf", "bundled"),
+        ("vp_ok", "bundled"),
     ]
     for entry in with_source:
         assert entry["installed"] is False
@@ -166,5 +166,5 @@ def test_db_list_manifestless_dir_counts_fasta_and_detects_dbtype(tmp_path: Path
 
     lines = list_rows(datadir)
 
-    assert lines[-2] == "alegacy\tlocal\tinstalled (2)\tnucl\t"
-    assert lines[-1] == "zproto\tlocal\tinstalled (1)\tprot\t"
+    assert lines[-2] == "alegacy\t\tinstalled (2)\tnucl\tlocal"
+    assert lines[-1] == "zproto\t\tinstalled (1)\tprot\tlocal"

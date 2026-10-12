@@ -1,0 +1,54 @@
+{
+  "schema": "gapit.features/1",
+  "loci": [
+    {
+      "id": "locusA",
+      "label": "K antigen locus A",
+      "type": "KL101",
+      "genes": [
+        {
+          "gene_id": "wzx",
+          "start": 101,
+          "end": 500,
+          "strand": "-",
+          "product": "capsule polysaccharide export protein"
+        },
+        {
+          "gene_id": "gtrA",
+          "start": 501,
+          "end": 900,
+          "strand": "+",
+          "product": "glycosyltransferase A"
+        },
+        {
+          "gene_id": "manC",
+          "start": 901,
+          "end": 1200,
+          "strand": "-",
+          "product": "mannose-6-phosphate guanylyltransferase"
+        }
+      ]
+    },
+    {
+      "id": "locusB",
+      "label": "K antigen locus B",
+      "type": "KL102",
+      "genes": [
+        {
+          "gene_id": "gtrA",
+          "start": 101,
+          "end": 500,
+          "strand": "+",
+          "product": "glycosyltransferase A"
+        },
+        {
+          "gene_id": "orfX",
+          "start": 501,
+          "end": 900,
+          "strand": "-",
+          "product": "hypothetical protein"
+        }
+      ]
+    }
+  ]
+}

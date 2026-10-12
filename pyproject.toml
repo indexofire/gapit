@@ -12,7 +12,7 @@ requires-python = ">=3.11"
 license = "MIT"
 keywords = ["bioinformatics", "gene-screening", "blast", "genomics", "abricate", "AMR", "virulence"]
 dependencies = [
-  "typer>=0.12",
+  "click>=8.2",
   "pydantic>=2.7",
   "rich>=13",
 ]
@@ -47,9 +47,9 @@ packages = ["src/gapit"]
 # Hatchling's `packages` selection ships every non-gitignored file under the
 # package dir (no setuptools-style package_data needed). The only database
 # content riding the wheel is the audited public-domain panel under
-# src/gapit/data/dbs/ (gapit.bundled); every provider still downloads from
-# upstream at fetch time (license compliance — CARD/VFDB terms forbid
-# redistribution).
+# src/gapit/data/dbs/ (gapit.bundled; 30 MiB budget, AGENTS.md §6); every
+# provider still downloads from upstream at fetch time (license compliance —
+# CARD/VFDB terms forbid redistribution).
 
 [tool.ruff]
 src = ["src"]

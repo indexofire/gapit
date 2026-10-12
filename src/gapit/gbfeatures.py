@@ -36,13 +36,20 @@ from gapit.fasta import open_text
 
 
 class GeneFeature(BaseModel, frozen=True):
-    """One CDS: 1-based inclusive coordinates on the locus sequence."""
+    """One CDS: 1-based inclusive coordinates on the locus sequence.
+
+    ``locus_tag`` carries the raw ``/locus_tag`` qualifier even when the
+    gene id came from ``/gene`` (the cluster/2 build's collision resolver
+    wants it); it is parse-time state only — ``exclude`` keeps it out of
+    gapit.features/1 serialization, so feature-table bytes stay frozen and
+    an absent key parses back as None (tolerant reader)."""
 
     gene_id: str
     start: int = Field(ge=1)
     end: int = Field(ge=1)
     strand: Literal["+", "-"]
     product: str = ""
+    locus_tag: str | None = Field(default=None, exclude=True)
 
 
 class LocusFeatures(BaseModel, frozen=True):
@@ -239,6 +246,7 @@ class _Record:
             end=end,
             strand=strand,
             product=_first(quals.get("product", [])),
+            locus_tag=_first(quals.get("locus_tag", [])) or None,
         )
 
 

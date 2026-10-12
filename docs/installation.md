@@ -63,7 +63,7 @@ normalization (plain/gz/bz2 FASTA, FASTQ, GenBank, EMBL) is native — no `any2f
 ## Database bootstrap
 
 Screening needs at least one database in the datadir (`$GAPIT_DATADIR`, then
-`~/.local/share/gapit/db`; override per call with `--datadir`). Six audited,
+`~/.local/share/gapit/db`; override per call with `--datadir`). Seven audited,
 permissively licensed databases ship inside the wheel and need no network: the first
 screen against a bundled name materializes it automatically, and `gapit setupdb`
 materializes all six at once. Every other provider downloads from upstream when fetched
@@ -100,10 +100,32 @@ Confirm the database catalog and what's installed any time with `gapit db list` 
 
 ## Shell completions
 
+The CLI is built with click: completions activate through the `_GAPIT_COMPLETE`
+environment variable — there is no `--install-completion` flag. Pick your shell:
+
+Bash — in `~/.bashrc`:
+
 ```bash
-gapit --install-completion   # bash, zsh, or fish; installs for the current shell
-gapit --show-completion      # print the completion script to copy or customize
+eval "$(_GAPIT_COMPLETE=bash_source gapit)"
 ```
+
+Zsh — in `~/.zshrc` (after `compinit`), or drop the emitted `#compdef` script on your
+`fpath` as `~/.zfunc/_gapit`:
+
+```zsh
+eval "$(_GAPIT_COMPLETE=zsh_source gapit)"
+```
+
+Fish:
+
+```fish
+_GAPIT_COMPLETE=fish_source gapit > ~/.config/fish/completions/gapit.fish
+```
+
+The emitted script (on bash it ends with `complete -o nosort -F _gapit_completion gapit`)
+calls back into gapit at completion time — `_GAPIT_COMPLETE=bash_complete gapit` plus the
+words under the cursor — so completions always follow the installed version. click also
+ships a powershell emitter (`_GAPIT_COMPLETE=powershell_source gapit`).
 
 ## Upgrading
 

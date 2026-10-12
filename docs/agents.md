@@ -63,7 +63,7 @@ For example, `gapit schema version` (real output):
 ```
 
 Databases: the database catalog and install state (`gapit db list --json`; real output,
-first two of twenty-one shown, trimmed):
+first two of twenty-two shown, trimmed):
 
 ```console
 $ gapit db list --json

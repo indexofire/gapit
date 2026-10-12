@@ -113,7 +113,7 @@ def _gene_document(gene: GeneCall) -> ClusterGeneDocument:
     )
 
 
-def _locus_document(locus: LocusCall) -> ClusterLocusDocument:
+def locus_document(locus: LocusCall) -> ClusterLocusDocument:
     return ClusterLocusDocument(
         locus=locus.locus,
         label=locus.label,
@@ -157,7 +157,7 @@ def render_cluster_json(
             ClusterFileDocument(
                 file=report.file,
                 best=None if report.best is None else _best_document(report.best),
-                loci=[_locus_document(locus) for locus in report.loci],
+                loci=[locus_document(locus) for locus in report.loci],
             )
             for report in reports
         ],
@@ -171,7 +171,7 @@ def render_cluster_json(
     )
 
 
-def _missing_ids(report: ClusterReport, locus_id: str) -> str:
+def missing_ids(report: ClusterReport, locus_id: str) -> str:
     """The best locus's not-present gene ids, ``;``-joined (empty string
     when the call left nothing missing)."""
     return ";".join(
@@ -198,7 +198,7 @@ def _tsv_row(report: ClusterReport, sep: str, nopath: bool, typed: bool) -> str:
         f"{best.identity_pct:.2f}",
         str(best.genes_present),
         str(best.genes_partial),
-        _missing_ids(report, best.locus) or "-",
+        missing_ids(report, best.locus) or "-",
     ]
     if typed:
         cells.insert(3, best.phenotype or "-")

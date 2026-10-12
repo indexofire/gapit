@@ -103,7 +103,7 @@ def test_lf_endings_and_trailing_newline(reports: list[Report]) -> None:
 
 
 def test_cli_format_md(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    from typer.testing import CliRunner
+    from click.testing import CliRunner
 
     from gapit.cli import app
 

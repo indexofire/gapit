@@ -7,8 +7,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from click.testing import CliRunner
 from pydantic import TypeAdapter
-from typer.testing import CliRunner
 
 from gapit.cli import app
 from gapit.errors import ErrorEnvelope
@@ -38,8 +38,8 @@ def envelope(stderr: str) -> dict[str, str]:
     return json.loads([line for line in stderr.splitlines() if line.strip()][-1])
 
 
-# On CI, GITHUB_ACTIONS makes typer force terminal styling on help output;
-# the styled runs split option tokens, so strip SGR escapes before asserting.
+# click's CliRunner renders help without SGR styling (color defaults off);
+# the strip is kept as a defensive normalization before asserting tokens.
 ANSI_STYLE = re.compile(r"\x1b\[[0-9;]*m")
 
 

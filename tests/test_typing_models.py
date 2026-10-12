@@ -20,9 +20,9 @@ from gapit.typing_models import (
     TypingDocument,
     TypingDocumentV1,
     read_typing_document,
-    single_scheme,
     template_placeholders,
     typing_schema_of,
+    uses_cluster_v2,
     validate_references,
 )
 from gapit.typing_rules import ClusterMatchRule, LearnedLinearRule, WeightedGenesRule
@@ -110,7 +110,7 @@ class TestV1Degradation:
         )
         mirror = v1_direct.as_document()
         assert v1 == mirror
-        assert single_scheme(v1).rules == v1_direct.rules
+        assert v1.schemes[0].rules == v1_direct.rules
 
     def test_unknown_model_type_is_typed_database_error(self) -> None:
         """Given a rule whose model is not one of the three kinds, When read,
@@ -310,31 +310,49 @@ class TestSchemaTag:
         assert excinfo.value.code == "TYPING_MALFORMED"
 
 
-class TestSingleScheme:
-    def test_multi_scheme_document_is_rejected_for_cluster_use(self, tmp_path: Path) -> None:
-        """Given a two-scheme document and the cluster path's one-phenotype
-        slot, When single_scheme is called, Then TYPING_MALFORMED names both
-        scheme names."""
+class TestUsesClusterV2:
+    """The cluster contract discriminator: scheme count picks /1 vs /2."""
+
+    def test_v1_single_scheme_document_stays_v1(self) -> None:
+        """Given a legacy gapit.typing/1 document (one default scheme),
+        When discriminated, Then uses_cluster_v2 is False — the db renders
+        byte-frozen gapit.cluster/1."""
+        assert uses_cluster_v2(read_typing_document(DATA / "typing_valid.json")) is False
+
+    def test_two_plain_schemes_go_v2(self, tmp_path: Path) -> None:
+        """Given a document with two plain (non-compose) schemes, When
+        discriminated, Then uses_cluster_v2 is True (no compose needed to
+        reach gapit.cluster/2)."""
         path = write_document(
             tmp_path, v2_document([scheme_document("pathotype"), scheme_document("toxin")])
         )
-        document = read_typing_document(path)
 
-        with pytest.raises(DatabaseError) as excinfo:
-            single_scheme(document)
+        assert uses_cluster_v2(read_typing_document(path)) is True
 
-        assert excinfo.value.code == "TYPING_MALFORMED"
-        assert "pathotype" in str(excinfo.value) and "toxin" in str(excinfo.value)
-
-    def test_single_scheme_document_returns_its_scheme(self, tmp_path: Path) -> None:
-        """Given a one-scheme document (any version), When single_scheme is
-        called, Then that scheme comes back."""
+    def test_single_scheme_document_stays_v1(self, tmp_path: Path) -> None:
+        """Given a one-scheme v2 document, When discriminated, Then
+        uses_cluster_v2 is False — single-scheme v2 documents fill the /1
+        phenotype slot exactly like a degraded /1 document."""
         path = write_document(tmp_path, v2_document([scheme_document("serotype")]))
 
-        assert single_scheme(read_typing_document(path)).name == "serotype"
-        assert single_scheme(read_typing_document(DATA / "typing_valid.json")).name == (
-            V1_SCHEME_NAME
+        assert uses_cluster_v2(read_typing_document(path)) is False
+
+    def test_compose_only_single_scheme_is_unparseable(self, tmp_path: Path) -> None:
+        """Given a single compose-only scheme (no non-composing sibling),
+        When read, Then read_typing_document raises TYPING_MALFORMED — the
+        placeholder check demands a sibling, so scheme count is the exact
+        /1-vs-/2 discriminator with no compose-only gap."""
+        path = write_document(
+            tmp_path,
+            v2_document(
+                [{"name": "serotype", "compose": "{o_group}:{k_group}", "fallback": "OUT:KUT"}]
+            ),
         )
+
+        with pytest.raises(DatabaseError) as excinfo:
+            read_typing_document(path)
+
+        assert excinfo.value.code == "TYPING_MALFORMED"
 
 
 EXACT_SET_RULE = {

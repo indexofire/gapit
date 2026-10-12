@@ -15,9 +15,8 @@ import os
 import re
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Annotated
 
-import typer
+import click
 from pydantic import BaseModel
 
 from gapit.dispatch import dispatch
@@ -92,24 +91,25 @@ def install_verified(source: Path, target: Path, expected: str) -> FetchReceipt:
     return FetchReceipt(destination=str(target), sha256=expected)
 
 
-def db_install_command(
-    source: Annotated[
-        Path,
-        typer.Argument(
-            help="Local source file path (plain filesystem only; no URLs, no database names)."
-        ),
-    ],
-    sha256: Annotated[
-        str,
-        typer.Option("--sha256", "-s", help="Expected SHA256 digest of the source (64 hex chars)."),
-    ],
-    output: Annotated[
-        Path,
-        typer.Option(
-            "--output", "-o", help="Destination path; replaced atomically only after verification."
-        ),
-    ],
-) -> None:
+@click.argument(
+    "source",
+    type=click.Path(path_type=Path),
+    help="Local source file path (plain filesystem only; no URLs, no database names).",
+)
+@click.option(
+    "--sha256",
+    "-s",
+    required=True,
+    help="Expected SHA256 digest of the source (64 hex chars).",
+)
+@click.option(
+    "--output",
+    "-o",
+    required=True,
+    type=click.Path(path_type=Path),
+    help="Destination path; replaced atomically only after verification.",
+)
+def db_install_command(source: Path, sha256: str, output: Path) -> None:
     """Install a local file to --output after verifying its SHA256.
 
     VERIFIED LOCAL-FILE INSTALLATION ONLY: this never fetches over the
@@ -121,6 +121,6 @@ def db_install_command(
     def run() -> None:
         expected = _parse_sha256(sha256)
         receipt = install_verified(source, output, expected)
-        typer.echo(receipt.model_dump_json())
+        click.echo(receipt.model_dump_json())
 
     dispatch(run)

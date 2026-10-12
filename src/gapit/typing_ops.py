@@ -13,7 +13,7 @@ integrated into ``gapit screen`` (gapit.cluster/1 emits it directly).
 from datetime import UTC, datetime
 from pathlib import Path
 
-import typer
+import click
 
 from gapit.bundled import resolve_screen_datadir
 from gapit.cluster import load_typing
@@ -75,7 +75,7 @@ def run_typing(
     table = read_typing_input(paths, stdin_text)
     document = _resolve_document(table.database, datadir, quiet)
     if not quiet:
-        typer.echo(f"Typing {len(table.files)} file(s) against {table.database}", err=True)
+        click.echo(f"Typing {len(table.files)} file(s) against {table.database}", err=True)
     results = [
         TypingFileResult(
             file=entry.file,

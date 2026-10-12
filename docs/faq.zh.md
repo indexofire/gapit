@@ -129,8 +129,8 @@ build --floors FILE` 安装，或直接把文件放进数据库目录；没有�
 ## 数据库适用哪些许可证？
 
 gapit 本身以 MIT 许可。六个经过审计、许可宽松的内置库随 wheel 发布（公有领域的
-`ecoli_dec`、`lm_doumith` 面板，加上 `ncbi`、`resfinder`、`ecoh`、`upec_expec_vf`
-快照：Apache-2.0 / BSD-3-Clause / MIT），首次使用时物化进数据目录；其余每个提供商
+`ecoli_dec`、`lm_doumith` 面板，`ncbi`、`resfinder`、`ecoh`
+快照，以及 MIT 的 `vp_ok` typed-cluster 快照），首次使用时物化进数据目录；其余每个提供商
 都在抓取时从上游下载，内容保留其原始许可证（CARD 的 McMaster 非商业条款、VFDB 的
 CC BY-NC、CGE、Kaptive 的 GPL-3.0 等），gapit 不重新授权。声明了许可证的提供商会在
 `gapit db list --json` 中暴露它。细节见 SPEC.md §9 与数据库指南的

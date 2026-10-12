@@ -28,12 +28,11 @@ exact_set rules only — cluster_match and learned_linear need loci
 
 from gapit.cluster import GeneCall
 from gapit.errors import DatabaseError
-from gapit.typing_decide import decide_scheme
+from gapit.typing_decide import compose_call, decide_scheme
 from gapit.typing_engine import score_exact_set, score_weighted_genes
-from gapit.typing_models import TypingDocument, TypingScheme, scheme_genes, template_placeholders
+from gapit.typing_models import TypingDocument, TypingScheme, scheme_genes
 from gapit.typing_results import (
     SchemeCall,
-    ScoreComponent,
     ScoredRule,
 )
 from gapit.typing_rules import (
@@ -42,8 +41,6 @@ from gapit.typing_rules import (
     LearnedLinearRule,
     WeightedGenesRule,
 )
-
-_DETAIL_PLACES = 4
 
 
 def _unsupported_rule(rule: ClusterMatchRule | LearnedLinearRule) -> DatabaseError:
@@ -105,41 +102,6 @@ def score_gene_scheme(scheme: TypingScheme, calls: dict[str, GeneCall]) -> list[
                 raise _unsupported_rule(rule)
         scored.append(ScoredRule(rule.phenotype, score, components, tuple(rule.notes), exact))
     return scored
-
-
-def compose_call(template: str, calls: dict[str, SchemeCall]) -> SchemeCall:
-    """Render a compose scheme from its sibling schemes' calls (pure):
-    every ``{name}`` placeholder substitutes that scheme's called
-    phenotype — fallback strings flow through (a low-confidence ingredient
-    makes the composed call low too) — while the FIRST ambiguous
-    ingredient (template order) yields a null phenotype carrying that
-    ingredient's ambiguous variants and a note naming it. Score is the
-    minimum ingredient score; one component per ingredient."""
-    names = template_placeholders(template)
-    score = round(min(calls[name].score for name in names), _DETAIL_PLACES)
-    components = tuple(
-        ScoreComponent(name=name, score=round(calls[name].score, _DETAIL_PLACES)) for name in names
-    )
-    values: dict[str, str] = {}
-    for name in names:
-        ingredient = calls[name]
-        if ingredient.phenotype is None:
-            return SchemeCall(
-                phenotype=None,
-                score=score,
-                confidence="ambiguous",
-                components=components,
-                ambiguous=ingredient.ambiguous,
-                notes=(f"ingredient scheme {name!r} is ambiguous",),
-            )
-        values[name] = ingredient.phenotype
-    confidence = "low" if any(calls[name].confidence == "low" for name in names) else "high"
-    return SchemeCall(
-        phenotype=template.format_map(values),
-        score=score,
-        confidence=confidence,
-        components=components,
-    )
 
 
 def evaluate_gene_calls(

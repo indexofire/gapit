@@ -1,0 +1,55 @@
+LOCUS       COL1               300 bp    DNA     linear   12-OCT-2026
+DEFINITION  Synthetic COL1 locus (gene-id collision fixture).
+ACCESSION   COL1
+VERSION     COL1
+KEYWORDS    .
+SOURCE      Synthetic syntheticus
+  ORGANISM  Synthetic syntheticus
+            .
+FEATURES             Location/Qualifiers
+     source          1..300
+                     /mol_type="genomic DNA"
+                     /note="K locus: KLC1"
+     CDS             21..80
+                     /locus_tag="COL1_wzx"
+                     /gene="wzx"
+                     /product="O-antigen flippase"
+     CDS             101..160
+                     /gene="manC"
+                     /product="mannose-6-phosphate guanylyltransferase"
+ORIGIN
+         1 ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG
+        61 ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG
+       121 ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG
+       181 ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG
+       241 ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG ACGTTGCAAG
+//
+LOCUS       COL2               300 bp    DNA     linear   12-OCT-2026
+DEFINITION  Synthetic COL2 locus (gene-id collision fixture).
+ACCESSION   COL2
+VERSION     COL2
+KEYWORDS    .
+SOURCE      Synthetic syntheticus
+  ORGANISM  Synthetic syntheticus
+            .
+FEATURES             Location/Qualifiers
+     source          1..300
+                     /mol_type="genomic DNA"
+                     /note="K locus: KLC2"
+     CDS             complement(101..160)
+                     /locus_tag="COL1_wzx"
+                     /gene="wzx"
+                     /product="hypothetical protein"
+     CDS             21..80
+                     /gene="wzx"
+                     /product="hypothetical protein"
+     CDS             181..240
+                     /gene="gnd"
+                     /product="gluconate-6-phosphate dehydrogenase"
+ORIGIN
+         1 TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG
+        61 TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG
+       121 TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG
+       181 TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG
+       241 TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG TTGACGATCG
+//

@@ -7,7 +7,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit.cli import app
 from gapit.db import discover_databases

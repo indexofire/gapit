@@ -8,7 +8,7 @@ import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from typer.testing import CliRunner, Result
+from click.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.records import Manifest, Record, write_manifest, write_records

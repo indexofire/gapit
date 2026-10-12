@@ -52,8 +52,10 @@ $ gapit screen 1.fna --db ecoli_dec --quiet | gapit typing --quiet
 
 **基因簇例外。** 基因簇数据库的判定保持集成在 `gapit screen` 内：其判定单元是最佳
 *位点* call，只有 minimap2 基因簇引擎能算——不存在可供重读的筛查表。筛查 typed 基因
-簇数据库会直接注释 `gapit.cluster/1`（仅限 typed 的 TSV `PHENOTYPE` 列、JSON/MD 中的
-`best.phenotype` + `best.phenotype_detail`），与之前完全一致。
+簇数据库会直接注释簇文档——单 scheme 数据库注释 `gapit.cluster/1`（仅限 typed 的 TSV
+`PHENOTYPE` 列、JSON/MD 中的 `best.phenotype` + `best.phenotype_detail`），多 scheme
+数据库渲染 `gapit.cluster/2`（每个 scheme 一个 call 装进 `phenotypes` 映射，TSV 为
+打包的 `PHENOTYPES` 列）。
 
 ## 一份文档，两个引擎
 
@@ -80,16 +82,24 @@ $ gapit screen 1.fna --db ecoli_dec --quiet | gapit typing --quiet
 | 数据库类型 | 输入 | 引擎 | 判定出现的位置 |
 |---|---|---|---|
 | **gene（基因）** | 标记 FASTA | blastn 基因路径 | 对筛查结果运行 `gapit typing`：`gapit.typing_result/1`（JSON）与八列 TSV/MD 表 |
-| **cluster（基因簇）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gapit screen` 内：`gapit.cluster/1` 的 `best.phenotype` + `best.phenotype_detail`，以及仅限已分型数据库的 TSV `PHENOTYPE` 列 |
+| **cluster（基因簇，单 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gapit screen` 内：`gapit.cluster/1` 的 `best.phenotype` + `best.phenotype_detail`，以及仅限已分型数据库的 TSV `PHENOTYPE` 列 |
+| **cluster（基因簇，多 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gapit screen` 内：`gapit.cluster/2` 的 `files[].phenotypes`（每个 scheme 一个 call，compose 由兄弟 scheme 渲染），以及打包的 TSV `PHENOTYPES` 列 |
 
 按类型区分的两条硬约束：
 
 - **基因数据库**只评估 `weighted_genes` 与 `exact_set` 规则（不存在位点可供
   `cluster_match`/`learned_linear` 使用）。
-- **基因簇数据库**每个数据库只承载**一个** scheme——`gapit.cluster/1` 每个文件只有
-  一个表型槽位。多 scheme 文档会在构建时报 `TYPING_MALFORMED`；应把每个 scheme 安装为
-  独立数据库（见下文 O/K 模式）再在外部组合，或者在基因数据库上建模整个 panel，
-  `compose` 即可原生运行。
+- **基因簇数据库**按 scheme 数量在两份契约中二选一：恰含**一个** scheme 的文档
+  （含 `gapit.typing/1` 文档）渲染字节冻结的 `gapit.cluster/1`——每个文件一个
+  表型槽位，`best.phenotype`；含**多个** scheme 的文档渲染 `gapit.cluster/2`：
+  每个 scheme 都给出判定（即使没有最佳位点 call，scheme 也照常评估，fallback
+  始终渲染），每个文件携带按文档顺序以 scheme 名为键的 `phenotypes` 映射，
+  `best` 不再带表型字段，TSV/CSV 的 `PHENOTYPE` 列换成打包的 `PHENOTYPES` 单元格
+  （`o_group=O3;k_group=K6`；表型里含 `;` 会破坏该单元格——与 typing_result 的
+  GENES 列同一已接受的限制）。`/2` 构建保证基因 id 全局唯一：跨位点重复的
+  `/gene` 名在构建时解析为其 `/locus_tag`，没有空闲 locus_tag 时解析为
+  `locus:id@start`。单个 compose-only scheme 无法解析（其占位符必须引用一个
+  非组合兄弟 scheme），因此 scheme 数量本身就是契约判据。
 
 ## rule 与 scheme 原语
 
@@ -226,11 +236,14 @@ PCR panel（`sacB`/A、`synD`/B、`synE`/C、`xcbB`/X、`synF`/Y，按 meningoty
 - `k_group` —— K 位点上同构，fallback `KUT`（K 不可分型）。
 - `serotype` —— 记录 panel 输出形状的 `"{o_group}:{k_group}"` compose scheme。
 
-基因簇数据库只接受一个 scheme，因此可运行的安装是同一 GBK 构建的**两个数据库**
-（`vp_o`、`vp_k`）——恰是 Kaptive 分别发布 O 与 K 数据库的方式——各 scheme 文档从
-手册文件中抽取。测试套件同时断言拆分后的判定（`O3/O13`、`K6`）与整份文档构建触发
-单 scheme 守卫；O:K 组合本身在基因数据库上原生运行（由
-`typing_serotyping` golden 锁定）。
+vp_ok 手册文档安装为**一个合并数据库**，渲染 `gapit.cluster/2`：每个文件对每个
+scheme 给出判定（`o_group`、`k_group`，随后由原料渲染的 `serotype` compose——
+一次扫描得到 `O3/O13:K6`），TSV 行携带打包的 `PHENOTYPES` 单元格
+（`o_group=O3/O13;k_group=K6;serotype=O3/O13:K6`）。历史 `/1` 安装——用同一 GBK
+各装一个 scheme 的**两个数据库**（`vp_o`、`vp_k`），恰是 Kaptive 分别发布 O 与 K
+数据库的方式——依然完全有效：单 scheme 文档保持渲染字节冻结的 `gapit.cluster/1`，
+当 O 与 K 判定分属不同流水线时拆分仍是首选。测试套件同时断言合并后的 /2 golden
+（`cluster2_vp_o3k6`、`cluster2_vp_none`）与拆分后的 /1 判定（`O3/O13`、`K6`）。
 
 ### 霍乱弧菌 O1/O139 与 Ogawa/Inaba（基因簇库）
 
@@ -337,10 +350,16 @@ vc_inaba.fa  wbe      O1    inaba      100.00    99.44     3        0        -
 第二个代码块是基因簇例外：typed 基因簇数据库在 `gapit screen` 内直接判定（没有
 第二阶段——不存在可供重读的筛查表）。
 
-基因簇 O/K 模式按 scheme 拆分 panel：
+基因簇 O/K 模式：合并的 /2 安装（一次扫描、全部 scheme）与历史 /1 拆分
+（每个 scheme 一个数据库）：
 
 ```console
-$ gapit db build vp_o vp_ok.gbk --typing vp_o_group.json
+$ gapit db build vp_ok vp_ok.gbk --typing vp_ok.json   # 一个合并库 → gapit.cluster/2
+$ gapit screen sample.fa --db vp_ok --quiet
+FILE      BEST_LOCUS  TYPE  PHENOTYPES                                        ...
+sample.fa OL3_or_O13  O3/O13  o_group=O3/O13;k_group=K6;serotype=O3/O13:K6  ...
+
+$ gapit db build vp_o vp_ok.gbk --typing vp_o_group.json   # /1 拆分（各一个 scheme）
 $ gapit db build vp_k vp_ok.gbk --typing vp_k_group.json
 $ gapit screen sample.fa --db vp_o --quiet   # → O3/O13
 $ gapit screen sample.fa --db vp_k --quiet   # → K6

@@ -4,7 +4,7 @@ A typing document is a DATABASE-SIDE artifact (``typing.json`` inside a db
 directory, installed via ``gapit db build --typing``): it declares how hits
 against the database map to phenotype calls. This module owns the document
 container and its validation (readers, reference checks, the cluster
-single-scheme guard); the RULE models live in gapit.typing_rules, the
+contract discriminator); the RULE models live in gapit.typing_rules, the
 evaluation RESULT models in gapit.typing_results, the arithmetic in
 gapit.typing_engine (cluster path) and gapit.typing_gene (gene path).
 
@@ -217,19 +217,15 @@ def validate_references(document: TypingDocument, features: FeaturesDocument) ->
             check_rule_references(rule, gene_ids, locus_ids)
 
 
-def single_scheme(document: TypingDocument) -> TypingScheme:
-    """gapit.cluster/1 carries ONE phenotype slot per file: a cluster db's
-    typing document must hold exactly one scheme (a v1 document parses as
-    one default scheme; single-scheme v2 documents are fine)."""
-    if len(document.schemes) != 1:
-        names = ", ".join(scheme.name for scheme in document.schemes)
-        raise DatabaseError(
-            f"a cluster database supports exactly one typing scheme, got {len(document.schemes)}"
-            f" ({names}); merge the schemes or screen with a gene database",
-            code="TYPING_MALFORMED",
-            context={"schemes": names},
-        )
-    return document.schemes[0]
+def uses_cluster_v2(document: TypingDocument) -> bool:
+    """Whether a cluster database carrying this document renders
+    gapit.cluster/2 (every scheme called, one phenotypes map per file)
+    instead of gapit.cluster/1 (one phenotype slot). Scheme count is the
+    exact discriminator: a single compose-only scheme is already
+    unparseable — ``_compose_references_siblings`` demands a non-composing
+    sibling — so any document that parses with more than one scheme is
+    multi-scheme, and one that parses with exactly one fills the /1 slot."""
+    return len(document.schemes) > 1
 
 
 def _reason(exc: ValidationError) -> str:

@@ -226,6 +226,16 @@ consumes abricate-built datadirs.
   seven-column TSV/MD table. Cluster typing stays integrated in `gapit screen`
   (`TYPING_CLUSTER_DB` on the command). No typing MCP tool yet (future work). Parity
   15/15 + summary 6/6 unchanged; no version bump.
+> **`gapit.cluster/2` — multi-scheme cluster output (2026-10-12):** a cluster db whose
+> typing doc holds more than one scheme (compose allowed) renders `gapit.cluster/2`:
+> same body as /1, `best` drops its phenotype fields, each file gains
+> `phenotypes: {scheme: SchemeCall}` in doc order (compose schemes render from sibling
+> calls via the shared decision layer; schemes evaluate even without a best call).
+> TSV/CSV swap PHENOTYPE for a packed `PHENOTYPES` column (`o_group=O3;k_group=K6`);
+> MD mirrors it plus per-scheme lines. Untyped and single-scheme dbs keep byte-identical
+> `gapit.cluster/1`. /2 builds guarantee globally-unique gene ids (collision-aware
+> /gene→locus_tag→`locus:id@start` resolution at build time). Registered as
+> `gapit schema cluster2`. The vp_ok cookbook now installs as one merged db.
 
 ## Milestones
 

@@ -14,9 +14,9 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
+from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
 from rich.console import Console
-from typer.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.cmd_db import db_list_command
@@ -196,10 +196,11 @@ def test_db_list_text_shows_installed_state(
     result = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert result.exit_code == 0
     lines = result.stdout.splitlines()
-    assert lines[0] == "NAME\tPROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION"
-    assert f"{SYN}\tSynthetica\tinstalled (2)\tnucl\t{SYN_DESCRIPTION}" in lines
-    other_row = f"{OTHER}\tExample Org\tavailable\tnucl\tavailable but never fetched"
-    assert f"{other_row} in these tests" in lines
+    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER"
+    assert f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\tSynthetica" in lines
+    assert f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\tExample Org" in (
+        lines
+    )
 
 
 def test_db_list_json_emits_gapit_dblist_document(
@@ -282,19 +283,20 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
     assert fetch(SYN, "--datadir", str(datadir)).exit_code == 0
     fake = FakeStdout(tty=False)
     monkeypatch.setattr(sys, "stdout", fake)
-    db_list_command(datadir=datadir)
+    db_list_command(datadir=datadir, as_json=False)
     assert fake.getvalue() == (
-        "NAME\tPROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION\n"
-        f"{SYN}\tSynthetica\tinstalled (2)\tnucl\t{SYN_DESCRIPTION}\n"
-        f"{OTHER}\tExample Org\tavailable\tnucl\tavailable but never fetched in these tests\n"
-        "ecoh\tHolt lab (srst2)\tbundled\tnucl\tE. coli O and H antigens (srst2 EcOH)\n"
-        "ecoli_dec\tgapit-curated (public-domain sources)\tbundled\tnucl\t"
-        "Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)\n"
-        "lm_doumith\tgapit-curated (public-domain INSDC sources)\tbundled\tnucl\t"
-        "Listeria monocytogenes serogrouping (Doumith 2004)\n"
-        "ncbi\tNCBI\tbundled\tnucl\tNCBI AMRFinderPlus (reference finder) curated AMR\n"
-        "resfinder\tDTU CGE\tbundled\tnucl\tCGE ResFinder acquired resistance genes\n"
-        "upec_expec_vf\tFordeGenomics\tbundled\tnucl\tUPEC/ExPEC virulence genes (FordeGenomics)\n"
+        "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER\n"
+        f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\tSynthetica\n"
+        f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\tExample Org\n"
+        "ecoh\tE. coli O and H antigens (srst2 EcOH)\tbundled\tnucl\tHolt lab (srst2)\n"
+        "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
+        "\tbundled\tnucl\tgapit-curated (public-domain sources)\n"
+        "lm_doumith\tListeria monocytogenes serogrouping (Doumith 2004)\tbundled\tnucl\t"
+        "gapit-curated (public-domain INSDC sources)\n"
+        "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\tNCBI\n"
+        "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\tDTU CGE\n"
+        "vp_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
+        "nucl\tgapit-curated (vpasero)\n"
     )
 
 
@@ -308,12 +310,12 @@ def test_db_list_tty_renders_rich_table_not_tsv(
     assert fetch(SYN, "--datadir", str(datadir)).exit_code == 0
     fake = FakeStdout(tty=True)
     monkeypatch.setattr(sys, "stdout", fake)
-    db_list_command(datadir=datadir)
+    db_list_command(datadir=datadir, as_json=False)
     out = fake.getvalue()
     assert "Databases" in out
     assert "installed (2)" in out
     assert "available" in out
-    assert "NAME\tPROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION" not in out
+    assert "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER" not in out
 
 
 def test_db_fetch_all_installs_default_dbs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

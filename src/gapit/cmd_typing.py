@@ -12,11 +12,10 @@ terminal (until EOF).
 
 import sys
 from pathlib import Path
-from typing import Annotated
 
-import typer
+import click
 
-from gapit.dispatch import Datadir, dispatch, output_target
+from gapit.dispatch import EnumChoice, datadir_option, dispatch, output_target, quiet_option
 from gapit.engines import OutputFormat
 from gapit.errors import InputError, usage_fail
 from gapit.typing_input import STDIN_LABEL
@@ -54,30 +53,40 @@ def _stdin_text(files: list[Path]) -> str | None:
     return _read_stdin()
 
 
+@click.argument(
+    "files",
+    nargs=-1,
+    required=False,
+    type=click.Path(path_type=Path),
+    help="gapit/abricate screen result TSV/CSV file(s) to type ('-' = stdin).",
+)
+@datadir_option()
+@click.option(
+    "--format",
+    "-f",
+    "output_format",
+    type=EnumChoice(OutputFormat),
+    default=OutputFormat.tsv,
+    help="Output format.",
+)
+@quiet_option()
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(path_type=Path),
+    help=(
+        "Write the typing results to PATH instead of stdout (truncates; stdout"
+        " then carries no data)."
+    ),
+)
+@click.pass_context
 def typing_command(
-    ctx: typer.Context,
-    files: Annotated[
-        list[Path] | None,
-        typer.Argument(help="gapit/abricate screen result TSV/CSV file(s) to type ('-' = stdin)."),
-    ] = None,
-    datadir: Datadir = None,
-    output_format: Annotated[
-        OutputFormat, typer.Option("--format", "-f", help="Output format.")
-    ] = OutputFormat.tsv,
-    quiet: Annotated[
-        bool, typer.Option("--quiet", "-q", help="Silence stderr diagnostics.")
-    ] = False,
-    output: Annotated[
-        Path | None,
-        typer.Option(
-            "--output",
-            "-o",
-            help=(
-                "Write the typing results to PATH instead of stdout (truncates; stdout"
-                " then carries no data)."
-            ),
-        ),
-    ] = None,
+    ctx: click.Context,
+    files: tuple[Path, ...],
+    datadir: Path | None,
+    output_format: OutputFormat,
+    quiet: bool,
+    output: Path | None,
 ) -> None:
     """Designate phenotypes from screen result table(s) (typed gene databases)."""
     args = list(files or [])
@@ -85,8 +94,8 @@ def typing_command(
     # pipe attached the table arrives on stdin. Runs before dispatch so the
     # help path exits cleanly — never through the error-envelope handler.
     if not args and _stdin_is_tty():
-        typer.echo(ctx.get_help())
-        raise typer.Exit(code=2)
+        click.echo(ctx.get_help())
+        ctx.exit(2)
 
     def run() -> None:
         if output_format is OutputFormat.csv:
@@ -101,7 +110,7 @@ def typing_command(
     dispatch(run)
 
 
-def register_typing_command(app: typer.Typer) -> None:
+def register_typing_command(app: click.Group) -> None:
     """Attach the typing command to the CLI app (bare invocation at a
     terminal prints help; piped stdin types without arguments)."""
     app.command("typing")(typing_command)

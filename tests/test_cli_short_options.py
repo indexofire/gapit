@@ -17,11 +17,9 @@ import shutil
 from collections.abc import Iterator
 from pathlib import Path
 
+import click
 import pytest
-from typer._click import Command  # typer's vendored click: what CliRunner parses with
-from typer.core import TyperGroup
-from typer.main import get_command
-from typer.testing import CliRunner, Result
+from click.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.db import make_blast_db
@@ -35,6 +33,8 @@ SUMMARY = DATA / "summary"
 SEQ = "ACGTAG" * 10
 
 runner = CliRunner()
+# click's CliRunner renders help without SGR styling (color defaults off);
+# the strip is kept as a defensive normalization before asserting tokens.
 ANSI_STYLE = re.compile(r"\x1b\[[0-9;]*m")
 
 
@@ -71,10 +71,9 @@ def records_datadir(tmp_path: Path) -> Path:
 
 
 def _collapse(result: Result) -> str:
-    """ANSI-stripped, box-border-free, whitespace-collapsed help text."""
+    """Whitespace-collapsed help text: the runner pins the width at 80, so
+    descriptions wrap; joining the tokens reconstructs searchable rows."""
     text = ANSI_STYLE.sub("", result.stdout)
-    for box_char in "│├└┼╭╮╰╯─":
-        text = text.replace(box_char, " ")
     return " ".join(text.split())
 
 
@@ -92,9 +91,9 @@ def _assert_same_run(short: Result, long: Result) -> None:
     assert short.stdout == long.stdout
 
 
-def _walk(cmd: Command) -> Iterator[Command]:
+def _walk(cmd: click.Command) -> Iterator[click.Command]:
     yield cmd
-    if isinstance(cmd, TyperGroup):
+    if isinstance(cmd, click.Group):
         for sub in cmd.commands.values():
             yield from _walk(sub)
 
@@ -102,25 +101,24 @@ def _walk(cmd: Command) -> Iterator[Command]:
 def test_every_option_has_a_unique_single_letter_short() -> None:
     """Given the built command tree, When every command's options are
     inspected, Then each long form carries exactly one one-letter short,
-    unique within its command and never -h (click's --help alias). The only
-    exceptions are the typer-managed completion flags, which stay long-only
-    by directive, plus the documented multi-letter `-db` word-style alias on
-    `--db` — pinned by comparing the collected extras against the documented
-    map, so no undocumented multi-letter short can sneak in."""
-    typer_managed = {"--install-completion", "--show-completion"}
+    unique within its command and never -h (click's --help alias; click
+    injects no other flags). The only documented exception is the
+    multi-letter `-db` word-style alias on `--db` — pinned by comparing
+    the collected extras against the documented map, so no undocumented
+    multi-letter short can sneak in."""
     documented_multiletter = {
         ("screen", "--db"): {"-db"},
         ("search", "--db"): {"-db"},
     }
     seen = 0
     collected_multiletter: dict[tuple[str, str], set[str]] = {}
-    for cmd in _walk(get_command(app)):
+    for cmd in _walk(app):
         assert cmd.name is not None  # every command in a built tree is named
         taken: dict[str, str] = {}
         for param in cmd.params:
             longs = [o for o in param.opts if o.startswith("--")]
-            if not longs or longs[0] in typer_managed:
-                continue  # positional argument, or a typer-managed completion flag
+            if not longs:
+                continue  # positional argument (its opts carry the arg name)
             shorts = [o for o in param.opts if o.startswith("-") and not o.startswith("--")]
             assert shorts, f"{cmd.name}: {longs[0]} lacks a short form"
             single = [short for short in shorts if len(short) == 2]
@@ -143,19 +141,19 @@ def test_screen_help_renders_paired_shorts() -> None:
     """Given `gapit screen -h`, When rendered, Then long and short forms
     appear side by side and the negative --no-merge-fragments half stays
     long-only."""
-    result = runner.invoke(app, ["screen", "-h"], env={"COLUMNS": "200"})
+    result = runner.invoke(app, ["screen", "-h"])
     assert result.exit_code == 0
     collapsed = _collapse(result)
     for pair in (
-        "--db -d,-db",
-        "--datadir -D",
-        "--format -f",
-        "--output -o",
-        "--threads -t",
-        "--quiet -q",
-        "--r1 -1",
-        "--fofn -F",
-        "--merge-fragments -m",
+        "-d, -db, --db",
+        "-D, --datadir",
+        "-f, --format",
+        "-o, --output",
+        "-t, --threads",
+        "-q, --quiet",
+        "-1, --r1",
+        "-F, --fofn",
+        "-m, --merge-fragments",
     ):
         assert pair in collapsed, pair
     assert "--no-merge-fragments" in collapsed

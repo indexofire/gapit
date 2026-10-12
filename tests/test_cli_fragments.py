@@ -6,7 +6,7 @@ import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
-from typer.testing import CliRunner, Result
+from click.testing import CliRunner, Result
 
 from gapit.blast import screen_file
 from gapit.cli import app

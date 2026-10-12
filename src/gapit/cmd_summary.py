@@ -11,11 +11,10 @@ EOF). A bare invocation at a terminal keeps the help-on-bare policy.
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Annotated
 
-import typer
+import click
 
-from gapit.dispatch import dispatch
+from gapit.dispatch import EnumChoice, dispatch, quiet_option
 from gapit.errors import InputError, usage_fail
 from gapit.formats.summary import format_summary_tsv, render_summary_json, render_summary_md
 from gapit.screening import OutputFormat
@@ -54,34 +53,40 @@ def _stdin_text(files: list[Path]) -> str | None:
     return _read_stdin()
 
 
+@click.argument(
+    "files",
+    nargs=-1,
+    required=False,
+    type=click.Path(path_type=Path),
+    help="Abricate-format report file(s) to summarize ('-' = stdin).",
+)
+@click.option(
+    "--identity", "-i", is_flag=True, help="Cells show %IDENTITY values (default: +/- presence)."
+)
+@click.option(
+    "--coverage", "-c", is_flag=True, help="Cells show %COVERAGE values (default: +/- presence)."
+)
+@click.option(
+    "--nopath", "-p", is_flag=True, help="Basename row keys (FILE values / input filenames)."
+)
+@quiet_option()
+@click.option(
+    "--format",
+    "-f",
+    "output_format",
+    type=EnumChoice(OutputFormat),
+    default=OutputFormat.tsv,
+    help="Output format.",
+)
+@click.pass_context
 def summary_command(
-    ctx: typer.Context,
-    files: Annotated[
-        list[Path] | None,
-        typer.Argument(help="Abricate-format report file(s) to summarize ('-' = stdin)."),
-    ] = None,
-    identity: Annotated[
-        bool,
-        typer.Option(
-            "--identity", "-i", help="Cells show %IDENTITY values (default: +/- presence)."
-        ),
-    ] = False,
-    coverage: Annotated[
-        bool,
-        typer.Option(
-            "--coverage", "-c", help="Cells show %COVERAGE values (default: +/- presence)."
-        ),
-    ] = False,
-    nopath: Annotated[
-        bool,
-        typer.Option("--nopath", "-p", help="Basename row keys (FILE values / input filenames)."),
-    ] = False,
-    quiet: Annotated[
-        bool, typer.Option("--quiet", "-q", help="Silence stderr diagnostics.")
-    ] = False,
-    output_format: Annotated[
-        OutputFormat, typer.Option("--format", "-f", help="Output format.")
-    ] = OutputFormat.tsv,
+    ctx: click.Context,
+    files: tuple[Path, ...],
+    identity: bool,
+    coverage: bool,
+    nopath: bool,
+    quiet: bool,
+    output_format: OutputFormat,
 ) -> None:
     """Summarize report table(s) into a gene presence/absence matrix."""
     args = list(files or [])
@@ -89,37 +94,37 @@ def summary_command(
     # pipe attached the table arrives on stdin. Runs before dispatch so the
     # help path exits cleanly — never through the error-envelope handler.
     if not args and _stdin_is_tty():
-        typer.echo(ctx.get_help())
-        raise typer.Exit(code=2)
+        click.echo(ctx.get_help())
+        ctx.exit(2)
 
     def run() -> None:
         stdin_text = _stdin_text(args)
         paths = args if stdin_text is None else []
         if identity and coverage and not quiet:
-            typer.echo("Using %IDENTITY/%COVERAGE per hit for the summary table", err=True)
+            click.echo("Using %IDENTITY/%COVERAGE per hit for the summary table", err=True)
         elif identity and not quiet:
-            typer.echo("Using %IDENTITY for the summary table instead of +/- presence", err=True)
+            click.echo("Using %IDENTITY for the summary table instead of +/- presence", err=True)
         elif coverage and not quiet:
-            typer.echo("Using %COVERAGE for the summary table instead of +/- presence", err=True)
+            click.echo("Using %COVERAGE for the summary table instead of +/- presence", err=True)
         params = SummaryParams(identity=identity, coverage=coverage, nopath=nopath)
 
         def warn(message: str) -> None:
             if not quiet:
-                typer.echo(f"WARNING: {message}", err=True)
+                click.echo(f"WARNING: {message}", err=True)
 
         matrix = build_summary(paths, params, warn=warn, stdin_text=stdin_text)
         now = datetime.now(UTC)
         if output_format is OutputFormat.json:
-            typer.echo(render_summary_json(matrix, now=now), nl=False)
+            click.echo(render_summary_json(matrix, now=now), nl=False)
         elif output_format is OutputFormat.md:
-            typer.echo(render_summary_md(matrix, now=now), nl=False)
+            click.echo(render_summary_md(matrix, now=now), nl=False)
         else:
-            typer.echo(format_summary_tsv(matrix, csv=output_format is OutputFormat.csv), nl=False)
+            click.echo(format_summary_tsv(matrix, csv=output_format is OutputFormat.csv), nl=False)
 
     dispatch(run)
 
 
-def register_summary_command(app: typer.Typer) -> None:
+def register_summary_command(app: click.Group) -> None:
     """Attach the summary command to the CLI app (bare invocation at a
     terminal prints help; piped stdin summarizes without arguments)."""
     app.command("summary")(summary_command)

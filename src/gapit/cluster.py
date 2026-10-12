@@ -34,7 +34,7 @@ from gapit.gbfeatures import FeaturesDocument, LocusFeatures
 from gapit.minimap2_run import run_minimap2
 from gapit.paf import PafRecord
 from gapit.typing_models import TypingDocument, read_typing_document
-from gapit.typing_results import PhenotypeDetail
+from gapit.typing_results import PhenotypeDetail, SchemeCall
 
 
 class ClusterParams(BaseModel, frozen=True):
@@ -96,11 +96,14 @@ class BestCall(BaseModel, frozen=True):
 
 
 class ClusterReport(BaseModel, frozen=True):
-    """Result of cluster-screening one sample file."""
+    """Result of cluster-screening one sample file. ``phenotypes`` carries
+    the gapit.cluster/2 per-scheme calls (set only by the multi-scheme
+    path; the /1 path annotates ``best`` instead and never sets it)."""
 
     file: str
     best: BestCall | None
     loci: tuple[LocusCall, ...]
+    phenotypes: dict[str, SchemeCall] = Field(default_factory=dict)
 
 
 def load_features(database: Database) -> FeaturesDocument:

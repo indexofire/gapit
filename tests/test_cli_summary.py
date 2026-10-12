@@ -5,8 +5,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
-from typer.testing import CliRunner, Result
 
 from gapit import cmd_summary
 from gapit.cli import app

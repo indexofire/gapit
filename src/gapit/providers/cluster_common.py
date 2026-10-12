@@ -5,6 +5,14 @@ through the cluster pipeline (locus FASTA + features.json, ``kind:
 cluster``) — no transform, no records.jsonl. Split from providers/common.py
 at the 250-LOC ceiling; the gene-pipeline Provider and the shared download
 seam (``download_file``/``url_basename``) stay there.
+
+Providers may declare MULTIPLE source URLs (every downloaded file is
+parsed and the loci concatenated in ``source_urls`` order — the merge a
+multi-reference provider needs) and may carry a committed
+gapit.typing asset (``typing``), validated exactly like
+``gapit db build --typing`` — a multi-scheme document resolves gene ids
+first, then ``validate_references`` gates drift against the downloaded
+content BEFORE any artifact is written.
 """
 
 from dataclasses import dataclass
@@ -12,11 +20,18 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Literal
 
-from gapit.clusterbuild import build_cluster_database, parse_cluster_input
+from gapit.clusterbuild import build_cluster_database, parse_cluster_input, resolve_gene_ids
 from gapit.errors import DatabaseError
+from gapit.gbfeatures import FeaturesDocument, LocusSequence
 from gapit.proctools import note
 from gapit.providers.common import Dbtype, download_file, url_basename
 from gapit.records import Manifest
+from gapit.typing_models import (
+    read_typing_document,
+    typing_schema_of,
+    uses_cluster_v2,
+    validate_references,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,7 +42,9 @@ class ClusterProvider:
     land in the build manifest for provenance. Upstream licenses (e.g.
     Kaptive's GPL-3.0) must never ship inside the wheel — every cluster
     provider downloads on fetch. Cluster loci are always nucleotide, so
-    dbtype is fixed."""
+    dbtype is fixed. ``typing`` optionally points at a committed
+    gapit.typing asset riding the wheel (gapit-authored, MIT) that
+    installs with the database; None keeps the untyped kaptive behavior."""
 
     name: str
     description: str
@@ -37,6 +54,7 @@ class ClusterProvider:
     note: str
     dbtype: Dbtype = "nucl"
     kind: Literal["cluster"] = "cluster"
+    typing: Path | None = None
 
 
 def fetch_cluster_provider(
@@ -48,12 +66,15 @@ def fetch_cluster_provider(
     quiet: bool = True,
     debug: bool = False,
 ) -> Manifest:
-    """Download the provider's GBK/GFF sources and build a kind-cluster
-    database through the cluster pipeline (no typing model: phenotype calls
-    stay null; users get kaptive-style locus calls). Network-only by
-    contract — nothing is ever bundled. Same guards as fetch_provider
-    (DB_ALREADY_EXISTS, DOWNLOAD_FAILED) plus the cluster parser's typed
-    input errors."""
+    """Download the provider's GBK/GFF sources (every URL, loci concatenated
+    in declaration order) and build a kind-cluster database through the
+    cluster pipeline. A declared ``typing`` asset validates exactly like
+    ``gapit db build --typing`` (multi-scheme documents resolve gene ids
+    first) BEFORE any artifact is written, so a spec drifting from upstream
+    content fails TYPING_UNKNOWN_GENE with no half-built database. Otherwise
+    the kaptive behavior is untouched: no typing model, phenotype calls stay
+    null. Same guards as fetch_provider (DB_ALREADY_EXISTS, DOWNLOAD_FAILED)
+    plus the cluster parser's typed input errors."""
     if (db_dir / "gapit-manifest.json").is_file() and not force:
         raise DatabaseError(
             f"won't overwrite existing database {provider.name} (use --force)",
@@ -66,17 +87,35 @@ def fetch_cluster_provider(
         for url in provider.source_urls:
             download_file(url, workdir / url_basename(url))
         note(quiet, f"downloaded {len(provider.source_urls)} source file(s)")
-        loci = parse_cluster_input(workdir / url_basename(provider.source_urls[0]))
+        loci = _merged_loci(provider, workdir)
     note(quiet, f"parsed {len(loci)} loci from {provider.name}")
+    typing_schema = ""
+    if provider.typing is not None:
+        document = read_typing_document(provider.typing)
+        if uses_cluster_v2(document):
+            loci = resolve_gene_ids(loci)
+        validate_references(document, FeaturesDocument(loci=tuple(item.features for item in loci)))
+        typing_schema = typing_schema_of(provider.typing)
     return build_cluster_database(
         db_dir,
         name=provider.name,
         loci=loci,
-        typing=None,
+        typing=provider.typing,
         source_urls=provider.source_urls,
         fetched_at=fetched_at,
+        typing_schema=typing_schema,
         content_license=provider.license,
         content_note=provider.note,
         quiet=quiet,
         debug=debug,
     )
+
+
+def _merged_loci(provider: ClusterProvider, workdir: Path) -> list[LocusSequence]:
+    """Parse every downloaded source into one locus list (declaration
+    order); a single-URL provider parses its one file, byte-identical to the
+    pre-multi-URL pipeline."""
+    loci: list[LocusSequence] = []
+    for url in provider.source_urls:
+        loci.extend(parse_cluster_input(workdir / url_basename(url)))
+    return loci

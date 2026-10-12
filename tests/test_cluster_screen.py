@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from typer.testing import CliRunner, Result
+from click.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.cluster import ClusterParams, load_features, screen_cluster_file

@@ -61,8 +61,10 @@ through the command.
 **The cluster exception.** A cluster database's designation stays integrated in
 `gapit screen`: its unit of typing is the best *locus* call, which only the minimap2
 cluster engine can compute — there is no re-readable screen table for it. Screening a
-typed cluster database annotates `gapit.cluster/1` directly (the typed-only `PHENOTYPE`
-TSV column, `best.phenotype` + `best.phenotype_detail` in JSON/MD), exactly as before.
+typed cluster database annotates the cluster document directly — a single-scheme db
+annotates `gapit.cluster/1` (the typed-only `PHENOTYPE` TSV column, `best.phenotype` +
+`best.phenotype_detail` in JSON/MD), and a multi-scheme db renders `gapit.cluster/2`
+(one call per scheme in a `phenotypes` map, packed `PHENOTYPES` TSV column).
 
 ## One document, two engines
 
@@ -89,16 +91,26 @@ Which engine evaluates the document depends on the database kind:
 | Database kind | Input | Engine | Where the calls appear |
 |---|---|---|---|
 | **gene** | marker FASTA | blastn gene path | `gapit typing` over the screen results: `gapit.typing_result/1` (JSON) and the eight-column TSV/MD table |
-| **cluster** | GBK/GFF loci | minimap2 locus path | integrated in `gapit screen`: `best.phenotype` + `best.phenotype_detail` of `gapit.cluster/1`, plus the typed-only `PHENOTYPE` TSV column |
+| **cluster** (one scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gapit screen`: `best.phenotype` + `best.phenotype_detail` of `gapit.cluster/1`, plus the typed-only `PHENOTYPE` TSV column |
+| **cluster** (multi-scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gapit screen`: `files[].phenotypes` of `gapit.cluster/2` (one call per scheme, compose rendered from its ingredients), plus the packed `PHENOTYPES` TSV column |
 
 Two hard constraints by kind:
 
 - A **gene database** evaluates `weighted_genes` and `exact_set` rules only (no loci exist to
   feed `cluster_match`/`learned_linear`).
-- A **cluster database** carries exactly **one** scheme per database — `gapit.cluster/1` has a
-  single phenotype slot per file. A multi-scheme document fails the build with
-  `TYPING_MALFORMED`; install each scheme as its own database (the O/K pattern below) and
-  compose externally, or model the panel on a gene database where `compose` runs natively.
+- A **cluster database** renders one of two contracts, picked by scheme count: a document
+  with exactly **one** scheme (a `gapit.typing/1` document included) renders the
+  byte-frozen `gapit.cluster/1` — one phenotype slot per file, `best.phenotype` — while a
+  document with **more than one** scheme renders `gapit.cluster/2`: every scheme is called
+  (schemes evaluate even without a best-locus call, so fallbacks always render), each file
+  carries a `phenotypes` map keyed by scheme name in document order, `best` drops its
+  phenotype fields, and the TSV/CSV `PHENOTYPE` column becomes a packed `PHENOTYPES` cell
+  (`o_group=O3;k_group=K6`; a `;` inside a phenotype would degrade the cell — the same
+  accepted caveat as typing_result's GENES column). `/2` builds guarantee globally-unique
+  gene ids: a `/gene` name shared across loci is resolved at build time to its
+  `/locus_tag`, or to `locus:id@start` when no free locus_tag exists. A single
+  compose-only scheme is unparseable (its placeholders must reference a non-composing
+  sibling), so scheme count alone picks the contract.
 
 ## Rule and scheme primitives
 
@@ -239,12 +251,17 @@ Three schemes:
 - `k_group` — the same shape over the K loci, fallback `KUT` (K untypeable).
 - `serotype` — the `"{o_group}:{k_group}"` compose scheme documenting the panel output.
 
-A cluster database admits one scheme, so the runnable install is **two databases**
-(`vp_o`, `vp_k`) built from the same GBK — exactly how Kaptive ships separate O and K
-databases — with the per-scheme documents extracted from the cookbook file. The test suite
-asserts both the split calls (`O3/O13`, `K6`) and that the whole-document build fails the
-one-scheme guard; the O:K composition itself runs natively on gene databases (locked by the
-`typing_serotyping` golden).
+The vp_ok cookbook document installs as **one merged database** rendering
+`gapit.cluster/2`: every scheme is called per file (`o_group`, `k_group`, then the
+`serotype` compose rendered from its ingredients — `O3/O13:K6` in one scan), and its
+TSV row carries the packed `PHENOTYPES` cell
+(`o_group=O3/O13;k_group=K6;serotype=O3/O13:K6`). The historical `/1` install —
+**two databases** (`vp_o`, `vp_k`) built from the same GBK with one scheme each,
+exactly how Kaptive ships separate O and K databases — remains fully valid: a
+single-scheme document keeps rendering byte-frozen `gapit.cluster/1`, and the split
+is still what you want when the O and K calls belong to different pipelines. The
+test suite asserts the merged /2 goldens (`cluster2_vp_o3k6`, `cluster2_vp_none`)
+and the split /1 calls (`O3/O13`, `K6`) side by side.
 
 ### V. cholerae O1/O139 and Ogawa/Inaba (cluster db)
 
@@ -358,10 +375,16 @@ vc_inaba.fa  wbe      O1    inaba      100.00    99.44     3        0        -
 The second block is the cluster exception: a typed cluster database designates inside
 `gapit screen` (no second stage — there is no screen table to re-read).
 
-The cluster O/K pattern splits the panel per scheme:
+The cluster O/K pattern: the merged /2 install (one scan, every scheme) and the
+historical /1 split (one database per scheme):
 
 ```console
-$ gapit db build vp_o vp_ok.gbk --typing vp_o_group.json
+$ gapit db build vp_ok vp_ok.gbk --typing vp_ok.json   # ONE merged db → gapit.cluster/2
+$ gapit screen sample.fa --db vp_ok --quiet
+FILE      BEST_LOCUS  TYPE  PHENOTYPES                                        ...
+sample.fa OL3_or_O13  O3/O13  o_group=O3/O13;k_group=K6;serotype=O3/O13:K6  ...
+
+$ gapit db build vp_o vp_ok.gbk --typing vp_o_group.json   # /1 split (one scheme each)
 $ gapit db build vp_k vp_ok.gbk --typing vp_k_group.json
 $ gapit screen sample.fa --db vp_o --quiet   # → O3/O13
 $ gapit screen sample.fa --db vp_k --quiet   # → K6

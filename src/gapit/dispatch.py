@@ -1,28 +1,64 @@
-"""Shared CLI plumbing: error-envelope dispatch, the ``--datadir`` option,
-and the ``--output`` delivery target (stdout chunks vs a lazily opened
-file).
+"""Shared CLI plumbing: error-envelope dispatch, the ``--datadir`` and
+``--quiet`` option factories, the Enum-backed choice type, and the
+``--output`` delivery target (stdout chunks vs a lazily opened file).
 
 Imported by every command module (cli.py, cmd_*.py); imports nothing from
 gapit except :mod:`gapit.errors`, so it can never participate in a cycle.
 """
 
+import enum
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Annotated, TextIO
+from typing import IO, Any, TextIO, TypeVar
 
-import typer
+import click
 
 from gapit.errors import GapitError, render_error
 
-Datadir = Annotated[
-    Path | None,
-    typer.Option(
+# The option factories return click's pass-through option decorator; the
+# Any-bound TypeVar mirrors click.decorators' own FC typing (decorated
+# functions keep their concrete signatures).
+Decorated = TypeVar("Decorated", bound=Callable[..., Any])
+
+EnumT = TypeVar("EnumT", bound=enum.Enum)
+
+
+class EnumChoice(click.Choice[EnumT]):
+    """Choice over an Enum's VALUES that still returns the member.
+
+    click's plain Choice normalizes Enum choices by member NAME (``map_ont``),
+    which would reject hyphenated CLI tokens like ``--read-type map-ont``;
+    normalizing on ``value`` keeps the token set frozen and hands back the
+    member the function signatures are annotated with.
+    """
+
+    def __init__(self, choices: type[EnumT]) -> None:
+        super().__init__(list(choices))
+
+    def normalize_choice(self, choice: object, ctx: click.Context | None) -> str:
+        return str(getattr(choice, "value", choice))
+
+
+def datadir_option() -> Callable[[Decorated], Decorated]:
+    """The shared ``--datadir`` option (one help text across every command)."""
+    return click.option(
         "--datadir",
         "-D",
+        "datadir",
+        type=click.Path(path_type=Path),
         help="Database directory (default: $GAPIT_DATADIR, then ~/.local/share/gapit/db).",
-    ),
-]
+    )
+
+
+def quiet_option() -> Callable[[Decorated], Decorated]:
+    """The shared ``--quiet`` flag (byte-identical across commands)."""
+    return click.option(
+        "--quiet",
+        "-q",
+        is_flag=True,
+        help="Silence stderr diagnostics.",
+    )
 
 
 class OutputFileWriter:
@@ -53,7 +89,7 @@ def output_target(path: Path | None) -> Generator[Callable[[str], None]]:
     Single-document engines call the delivered callable once; streaming
     engines pass it as the use-case ``emit`` sink."""
     if path is None:
-        yield lambda chunk: typer.echo(chunk, nl=False)
+        yield lambda chunk: click.echo(chunk, nl=False)
         return
     writer = OutputFileWriter(path)
     try:
@@ -68,5 +104,5 @@ def dispatch(action: Callable[[], None]) -> None:
     try:
         action()
     except Exception as exc:
-        typer.echo(render_error(exc), err=True)
-        raise typer.Exit(code=exc.exit_code if isinstance(exc, GapitError) else 1) from exc
+        click.echo(render_error(exc), err=True)
+        raise SystemExit(exc.exit_code if isinstance(exc, GapitError) else 1) from exc

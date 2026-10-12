@@ -3,8 +3,9 @@
 Turns parsed loci into a cluster database directory: locus FASTA
 ``sequences`` (one bare-id record per locus), the ``gapit.features/1``
 feature table (``features.json``), an optional validated ``gapit.typing``
-spec (v1 or v2; cluster dbs evaluate one scheme) copied in as
-``typing.json``, the makeblastdb nucl index (the gene-view
+spec (v1 or v2; single-scheme docs render gapit.cluster/1, multi-scheme
+docs render gapit.cluster/2 after build-time gene-id resolution) copied in
+as ``typing.json``, the makeblastdb nucl index (the gene-view
 screening surface for stage 2), and the manifest — written LAST, certifying
 every artifact, with ``kind: cluster`` and plain locus-id headers.
 
@@ -17,10 +18,12 @@ artifact is written, so a malformed spec leaves no half-built database.
 
 import os
 import shutil
+from collections import Counter
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import Literal
 
 from gapit.db import make_blast_db
 from gapit.dbbuild import sha256_file, tool_version_line
@@ -37,8 +40,8 @@ from gapit.proctools import note
 from gapit.records import Manifest, write_manifest
 from gapit.typing_models import (
     read_typing_document,
-    single_scheme,
     typing_schema_of,
+    uses_cluster_v2,
     validate_references,
 )
 
@@ -134,6 +137,7 @@ def build_cluster_database(
     debug: bool = False,
     content_license: str = "",
     content_note: str = "",
+    source: Literal["bundled"] | None = None,
 ) -> Manifest:
     """Build every cluster-db artifact in ``db_dir`` (manifest written LAST):
     locus FASTA -> features.json -> self-check -> optional typing copy ->
@@ -141,7 +145,8 @@ def build_cluster_database(
     ``typing_schema`` records the installed spec's gapit.typing version in
     the manifest. ``content_license``/``content_note`` carry database-content
     provenance (kaptive-style providers); both default to empty and
-    serialize only when set."""
+    serialize only when set. ``source: "bundled"`` stamps a wheel-materialized
+    build (gapit.bundled); None serializes away (every other caller)."""
     sequences_path = db_dir / "sequences"
     _write_locus_fasta(loci, sequences_path)
     note(quiet, f"generated {sequences_path}")
@@ -167,24 +172,68 @@ def build_cluster_database(
         minimap2_version=tool_version_line(["minimap2", "--version"]),
         license=content_license or None,
         note=content_note or None,
+        source=source,
     )
     write_manifest(manifest, db_dir / "gapit-manifest.json")
     return manifest
+
+
+def resolve_gene_ids(loci: Sequence[LocusSequence]) -> list[LocusSequence]:
+    """Make every gene id globally unique for a gapit.cluster/2 build
+    (typing rules key on gene ids, so a shared ``/gene`` name across loci
+    would make sibling-locus rules collide). Deterministic two passes:
+
+    1. Count the primary ids (the parse-time /gene -> /locus_tag -> /note
+       -> ``<locus>_NN`` derivation, untouched); ids occurring exactly once
+       globally stay verbatim.
+    2. Walk the colliding genes in document order (loci in record order,
+       genes in coordinate order) and take the raw ``/locus_tag`` when one
+       exists and is unclaimed, else ``{locus_id}:{primary_id}@{start}`` —
+       the start coordinate makes the synthesized form unique with no error
+       path. Gene order within each locus is preserved verbatim.
+    """
+    counts = Counter(gene.gene_id for locus in loci for gene in locus.features.genes)
+    used = {gene_id for gene_id, total in counts.items() if total == 1}
+    resolved: list[LocusSequence] = []
+    for locus in loci:
+        order = sorted(
+            range(len(locus.features.genes)), key=lambda i: locus.features.genes[i].start
+        )
+        final_ids: dict[int, str] = {}
+        for index in order:
+            gene = locus.features.genes[index]
+            if counts[gene.gene_id] == 1:
+                final_id = gene.gene_id
+            elif gene.locus_tag is not None and gene.locus_tag not in used:
+                final_id = gene.locus_tag
+            else:
+                final_id = f"{locus.features.id}:{gene.gene_id}@{gene.start}"
+            used.add(final_id)
+            final_ids[index] = final_id
+        genes = tuple(
+            gene.model_copy(update={"gene_id": final_ids[index]})
+            for index, gene in enumerate(locus.features.genes)
+        )
+        features = locus.features.model_copy(update={"genes": genes})
+        resolved.append(locus.model_copy(update={"features": features}))
+    return resolved
 
 
 def perform_cluster_build(
     name: str, fasta: Path, typing: Path | None, db_dir: Path, *, quiet: bool = True
 ) -> Manifest:
     """The cluster branch of the build use-case: parse the GBK/GFF input,
-    validate the typing spec (schema, referenced ids, AND exactly one
-    scheme — gapit.cluster/1 has one phenotype slot — so a bad spec fails
-    before any artifact is written), then build (callers shape the
+    validate the typing spec (schema and referenced ids) — a multi-scheme
+    document additionally runs build-time gene-id resolution first, so its
+    rules reference the resolved ids (gapit.cluster/2) — so a bad spec
+    fails before any artifact is written, then build (callers shape the
     receipt)."""
     loci = parse_cluster_input(fasta)
     typing_schema = ""
     if typing is not None:
         document = read_typing_document(typing)
-        single_scheme(document)
+        if uses_cluster_v2(document):
+            loci = resolve_gene_ids(loci)
         validate_references(document, FeaturesDocument(loci=tuple(item.features for item in loci)))
         typing_schema = typing_schema_of(typing)
     db_dir.mkdir(parents=True, exist_ok=True)

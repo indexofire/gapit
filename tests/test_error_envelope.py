@@ -5,8 +5,8 @@ import shutil
 from pathlib import Path
 
 import pytest
+from click.testing import CliRunner
 from pydantic import TypeAdapter
-from typer.testing import CliRunner
 
 from gapit.cli import app
 from gapit.db import make_blast_db

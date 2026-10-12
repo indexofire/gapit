@@ -8,9 +8,8 @@ cmd_screen_reads_args.py.
 """
 
 from pathlib import Path
-from typing import Annotated
 
-import typer
+import click
 
 from gapit.cmd_screen_positionals import reject_db_name_positionals
 from gapit.cmd_screen_reads_args import (
@@ -19,7 +18,7 @@ from gapit.cmd_screen_reads_args import (
     reject_reads_mode_flags,
     split_read_list,
 )
-from gapit.dispatch import Datadir, dispatch, output_target
+from gapit.dispatch import EnumChoice, datadir_option, dispatch, output_target, quiet_option
 from gapit.errors import usage_fail
 from gapit.reads import ReadTypeEnum
 from gapit.screening import (
@@ -32,194 +31,181 @@ from gapit.screening_reads import run_screen_assemblies, run_screen_reads
 from gapit.screening_reads_positional import run_screen_reads_positional
 
 
+@click.argument(
+    "files",
+    nargs=-1,
+    required=False,
+    type=click.Path(path_type=Path),
+    help=(
+        "Input contig file(s) to screen; an all-FASTQ wildcard enters reads"
+        " mode with samples auto-paired from filenames."
+    ),
+)
+@click.option(
+    "--r1",
+    "-1",
+    help="Comma-separated FASTQ reads or assembly FASTA file(s), one per lane.",
+)
+@click.option("--r2", "-2", help="Comma-separated mate FASTQ file(s); must match --r1 count.")
+@click.option(
+    "--read-type",
+    "-x",
+    type=EnumChoice(ReadTypeEnum),
+    help=("minimap2 preset for reads mode (default: sr for FASTQ, map-ont for assembly FASTA)."),
+)
+@click.option(
+    "--min-breadth",
+    "-b",
+    default=90.0,
+    help="Reads mode: minimum %breadth for presence.",
+)
+@click.option(
+    "--min-identity",
+    "-I",
+    default=0.0,
+    help=(
+        "Reads mode: minimum %identity per alignment, 0 <= x <= 100 (0 = off;"
+        " any nonzero value emits gapit.reads/2)."
+    ),
+)
+@click.option(
+    "--min-mapq",
+    "-M",
+    default=0,
+    help=(
+        "Reads mode: minimum MAPQ per alignment (0 = off; any nonzero value emits gapit.reads/2)."
+    ),
+)
+@click.option(
+    "--aligner",
+    "-a",
+    type=EnumChoice(AlignerEnum),
+    help=("Alignment engine (default: blastn for contig files, minimap2 for --r1/--r2 reads)."),
+)
+@datadir_option()
+@click.option("--minid", "-i", default=80.0, help="Minimum %identity, 0 < x <= 100.")
+@click.option("--mincov", "-c", default=80.0, help="Minimum %coverage, 0 <= x <= 100.")
+@click.option(
+    "--min-gene-cov",
+    "-g",
+    default=90.0,
+    help="Cluster dbs: min %coverage for a present gene verdict.",
+)
+@click.option(
+    "--min-gene-id",
+    "-G",
+    default=90.0,
+    help="Cluster dbs: min %identity for a present gene verdict.",
+)
+@click.option(
+    "--min-cluster-cov",
+    "-C",
+    default=96.0,
+    help="Cluster dbs: min locus %coverage for a best call.",
+)
+@click.option("--threads", "-t", default=1, help="BLAST worker threads.")
+@click.option(
+    "--jobs",
+    "-j",
+    default=1,
+    help=(
+        "Screen N input files concurrently (contig files, or the wildcard"
+        " FASTQ path's samples; gapit extension; output order is always"
+        " input order). Each worker runs its own aligner against the"
+        " shared db — BLAST mmaps the index and minimap2 holds it in"
+        " memory, so concurrent readers are fine."
+    ),
+)
+@click.option(
+    "--all-genes",
+    "-A",
+    is_flag=True,
+    help="Reads table: also list absent gene calls (default: present genes only).",
+)
+@click.option(
+    "--merge-fragments/--no-merge-fragments",
+    "-m",
+    is_flag=True,
+    help=(
+        "Merge gene fragments split across contigs (gapit extension): report one"
+        " hit when fragments of a gene that each fail --mincov jointly cover >= mincov"
+        " of the subject. blastn contig mode only."
+    ),
+)
+@click.option(
+    "--fofn",
+    "-F",
+    type=click.Path(path_type=Path),
+    help="File of filenames; replaces the positional FILEs.",
+)
+@quiet_option()
+@click.option("--noheader", "-n", is_flag=True, help="Suppress the header row.")
+@click.option("--nopath", "-p", is_flag=True, help="Basename the FILE column.")
+@click.option("--debug", "-v", is_flag=True, help="Verbose stderr diagnostics.")
+@click.option(
+    "--format",
+    "-f",
+    "output_format",
+    type=EnumChoice(OutputFormat),
+    help=(
+        "Output format (tsv is the default everywhere: reads mode"
+        " streams the table per completed file or sample). json/md are"
+        " the explicit agent opt-ins; json is written once at the end"
+        " (single document)."
+    ),
+)
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(path_type=Path),
+    help=(
+        "Write the report to PATH instead of stdout (truncates; streamed chunks"
+        " are flushed per file; stdout then carries no data)."
+    ),
+)
+@click.option(
+    "--db",
+    "-d",
+    "-db",
+    required=True,
+    help="Database to screen against (required, no default).",
+)
 def screen_command(
-    files: Annotated[
-        list[Path] | None,
-        typer.Argument(
-            help=(
-                "Input contig file(s) to screen; an all-FASTQ wildcard enters reads"
-                " mode with samples auto-paired from filenames."
-            ),
-        ),
-    ] = None,
-    r1: Annotated[
-        str | None,
-        typer.Option(
-            "--r1",
-            "-1",
-            help="Comma-separated FASTQ reads or assembly FASTA file(s), one per lane.",
-        ),
-    ] = None,
-    r2: Annotated[
-        str | None,
-        typer.Option(
-            "--r2", "-2", help="Comma-separated mate FASTQ file(s); must match --r1 count."
-        ),
-    ] = None,
-    read_type: Annotated[
-        ReadTypeEnum | None,
-        typer.Option(
-            "--read-type",
-            "-x",
-            help=(
-                "minimap2 preset for reads mode (default: sr for FASTQ, map-ont"
-                " for assembly FASTA)."
-            ),
-        ),
-    ] = None,
-    min_breadth: Annotated[
-        float,
-        typer.Option("--min-breadth", "-b", help="Reads mode: minimum %breadth for presence."),
-    ] = 90.0,
-    min_identity: Annotated[
-        float,
-        typer.Option(
-            "--min-identity",
-            "-I",
-            help=(
-                "Reads mode: minimum %identity per alignment, 0 <= x <= 100 (0 = off;"
-                " any nonzero value emits gapit.reads/2)."
-            ),
-        ),
-    ] = 0.0,
-    min_mapq: Annotated[
-        int,
-        typer.Option(
-            "--min-mapq",
-            "-M",
-            help=(
-                "Reads mode: minimum MAPQ per alignment (0 = off; any nonzero value"
-                " emits gapit.reads/2)."
-            ),
-        ),
-    ] = 0,
-    aligner: Annotated[
-        AlignerEnum | None,
-        typer.Option(
-            "--aligner",
-            "-a",
-            help=(
-                "Alignment engine (default: blastn for contig files, minimap2 for --r1/--r2 reads)."
-            ),
-        ),
-    ] = None,
-    datadir: Datadir = None,
-    minid: Annotated[
-        float, typer.Option("--minid", "-i", help="Minimum %identity, 0 < x <= 100.")
-    ] = 80.0,
-    mincov: Annotated[
-        float, typer.Option("--mincov", "-c", help="Minimum %coverage, 0 <= x <= 100.")
-    ] = 80.0,
-    min_gene_cov: Annotated[
-        float,
-        typer.Option(
-            "--min-gene-cov", "-g", help="Cluster dbs: min %coverage for a present gene verdict."
-        ),
-    ] = 90.0,
-    min_gene_id: Annotated[
-        float,
-        typer.Option(
-            "--min-gene-id", "-G", help="Cluster dbs: min %identity for a present gene verdict."
-        ),
-    ] = 90.0,
-    min_cluster_cov: Annotated[
-        float,
-        typer.Option(
-            "--min-cluster-cov", "-C", help="Cluster dbs: min locus %coverage for a best call."
-        ),
-    ] = 96.0,
-    threads: Annotated[int, typer.Option("--threads", "-t", help="BLAST worker threads.")] = 1,
-    jobs: Annotated[
-        int,
-        typer.Option(
-            "--jobs",
-            "-j",
-            help=(
-                "Screen N input files concurrently (contig files, or the wildcard"
-                " FASTQ path's samples; gapit extension; output order is always"
-                " input order). Each worker runs its own aligner against the"
-                " shared db — BLAST mmaps the index and minimap2 holds it in"
-                " memory, so concurrent readers are fine."
-            ),
-        ),
-    ] = 1,
-    all_genes: Annotated[
-        bool,
-        typer.Option(
-            "--all-genes",
-            "-A",
-            help="Reads table: also list absent gene calls (default: present genes only).",
-        ),
-    ] = False,
-    merge_fragments: Annotated[
-        bool,
-        typer.Option(
-            "--merge-fragments/--no-merge-fragments",
-            "-m",
-            help=(
-                "Merge gene fragments split across contigs (gapit extension): report one"
-                " hit when fragments of a gene that each fail --mincov jointly cover >= mincov"
-                " of the subject. blastn contig mode only."
-            ),
-        ),
-    ] = False,
-    fofn: Annotated[
-        Path | None,
-        typer.Option("--fofn", "-F", help="File of filenames; replaces the positional FILEs."),
-    ] = None,
-    quiet: Annotated[
-        bool, typer.Option("--quiet", "-q", help="Silence stderr diagnostics.")
-    ] = False,
-    noheader: Annotated[
-        bool, typer.Option("--noheader", "-n", help="Suppress the header row.")
-    ] = False,
-    nopath: Annotated[
-        bool, typer.Option("--nopath", "-p", help="Basename the FILE column.")
-    ] = False,
-    debug: Annotated[
-        bool, typer.Option("--debug", "-v", help="Verbose stderr diagnostics.")
-    ] = False,
-    output_format: Annotated[
-        OutputFormat | None,
-        typer.Option(
-            "--format",
-            "-f",
-            help=(
-                "Output format (tsv is the default everywhere: reads mode"
-                " streams the table per completed file or sample). json/md are"
-                " the explicit agent opt-ins; json is written once at the end"
-                " (single document)."
-            ),
-        ),
-    ] = None,
-    output: Annotated[
-        Path | None,
-        typer.Option(
-            "--output",
-            "-o",
-            help=(
-                "Write the report to PATH instead of stdout (truncates; streamed chunks"
-                " are flushed per file; stdout then carries no data)."
-            ),
-        ),
-    ] = None,
+    files: tuple[Path, ...],
+    r1: str | None,
+    r2: str | None,
+    read_type: ReadTypeEnum | None,
+    min_breadth: float,
+    min_identity: float,
+    min_mapq: int,
+    aligner: AlignerEnum | None,
+    datadir: Path | None,
+    minid: float,
+    mincov: float,
+    min_gene_cov: float,
+    min_gene_id: float,
+    min_cluster_cov: float,
+    threads: int,
+    jobs: int,
+    all_genes: bool,
+    merge_fragments: bool,
+    fofn: Path | None,
+    quiet: bool,
+    noheader: bool,
+    nopath: bool,
+    debug: bool,
+    output_format: OutputFormat | None,
+    output: Path | None,
     *,
-    db: Annotated[
-        str,
-        typer.Option(
-            "--db",
-            "-d",
-            "-db",
-            help="Database to screen against (required, no default).",
-        ),
-    ],
+    db: str,
 ) -> None:
     """Screen contig files or FASTQ reads (R1 and R2 comma-lists, one lane
     each, or an all-FASTQ positional wildcard auto-paired into samples) for
     known genes (reference or custom databases)."""
+    file_args: list[Path] | None = list(files) if files else None
 
     def run() -> None:
-        args = list(files or [])
+        args = list(file_args or [])
         if (r1 is not None or r2 is not None) and args:
             usage_fail("--r1/--r2 and positional contig FILEs are mutually exclusive")
         if r2 is not None and r1 is None:
@@ -236,7 +222,7 @@ def screen_command(
             and not all_reads
         ):
             usage_fail("--min-identity/--min-mapq are reads-mode only (minimap2 engine)")
-        reject_db_name_positionals(files, datadir)
+        reject_db_name_positionals(file_args, datadir)
         with output_target(output) as deliver:
             if r1 is not None or r2 is not None:
                 reject_reads_mode_flags(fofn, noheader, nopath, jobs, merge_fragments)
@@ -272,7 +258,7 @@ def screen_command(
 
                 def warn(message: str) -> None:
                     if not quiet:
-                        typer.echo(f"WARNING: {message}", err=True)
+                        click.echo(f"WARNING: {message}", err=True)
 
                 # run_screen_reads_positional emits its output through
                 # `deliver` (tsv/md per completed sample, json once); echoing
@@ -302,7 +288,7 @@ def screen_command(
                 reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
                 deliver(
                     run_screen_assemblies(
-                        files,
+                        file_args,
                         fofn,
                         db,
                         datadir,
@@ -325,7 +311,7 @@ def screen_command(
                 # run_screen emits its output through `deliver`; echoing the
                 # return value here would duplicate every byte.
                 run_screen(
-                    files,
+                    file_args,
                     db,
                     datadir,
                     minid,
@@ -349,6 +335,6 @@ def screen_command(
     dispatch(run)
 
 
-def register_screen_command(app: typer.Typer) -> None:
+def register_screen_command(app: click.Group) -> None:
     """Attach the screen command to the CLI app (bare invocation prints help)."""
     app.command("screen", no_args_is_help=True)(screen_command)

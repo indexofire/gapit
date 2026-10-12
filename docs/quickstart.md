@@ -13,7 +13,7 @@ Run everything from the repo root with the gapit environment on PATH
 
 The fixture db at `tests/data/db/tinyamr` holds three short AMR genes: `tetA`,
 `blaTEM-1`, and `sul1`. Copy it into a temp datadir and let `gapit setupdb` bootstrap
-the rest: it materializes the six bundled databases that ship in the wheel (zero
+the rest: it materializes the seven bundled databases that ship in the wheel (zero
 network — including `ecoli_dec`, which you will type with in section 4) and indexes
 everything, no `makeblastdb` by hand:
 
@@ -42,13 +42,13 @@ is usable:
 
 ```console
 $ gapit db list
-NAME	PROVIDER	STATUS	DBTYPE	DESCRIPTION
-argannot	IHU Méditerranée-Infection	available	nucl	ARG-ANNOT acquired resistance genes
-ncbi	NCBI	installed (8373)	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
+NAME	DESCRIPTION	STATUS	DBTYPE	PROVIDER
+argannot	ARG-ANNOT acquired resistance genes	available	nucl	IHU Méditerranée-Infection
+ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	installed (8373)	nucl	NCBI
 ```
 
-(twenty-one catalog databases in total: the six bundled ones now read `installed` in
-this datadir, the fifteen fetch-only registry entries read `available` until you
+(twenty-two catalog databases in total: the six bundled ones now read `installed` in
+this datadir, the sixteen fetch-only registry entries read `available` until you
 `gapit db fetch` them)
 
 ## 2. Screen a contig file

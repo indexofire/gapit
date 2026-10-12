@@ -146,8 +146,9 @@ PATH.
 ## What licenses apply to the databases?
 
 gapit itself is MIT-licensed. Six audited, permissively licensed bundles ship inside
-the wheel (the public-domain `ecoli_dec` and `lm_doumith` panels plus the `ncbi`,
-`resfinder`, `ecoh`, `upec_expec_vf` snapshots: Apache-2.0 / BSD-3-Clause / MIT) and
+the wheel (the public-domain `ecoli_dec` and `lm_doumith` panels, the `ncbi`,
+`resfinder`, `ecoh` snapshots — Apache-2.0 / BSD-3-Clause / MIT — and
+the MIT typed-cluster snapshot `vp_ok`) and
 materialize into the datadir on first use; every other provider downloads from upstream
 at fetch time, and the content keeps its original
 licenses (CARD's McMaster non-commercial terms, VFDB's CC BY-NC,

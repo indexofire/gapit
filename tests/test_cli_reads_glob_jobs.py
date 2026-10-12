@@ -19,7 +19,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-from typer.testing import CliRunner, Result
+from click.testing import CliRunner, Result
 
 from gapit import screening_reads_positional
 from gapit.cli import app

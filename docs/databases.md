@@ -26,38 +26,39 @@ $ gapit db list --datadir /no/such/dir
 
 ```console
 $ gapit db list
-NAME	PROVIDER	STATUS	DBTYPE	DESCRIPTION
-ab_k	Kaptive (Kenyon lab)	available	nucl	A. baumannii K locus (Kaptive)
-ab_o	Kaptive (Kenyon lab)	available	nucl	A. baumannii OC locus — official keyword ab_o (Kaptive)
-argannot	IHU Méditerranée-Infection	available	nucl	ARG-ANNOT acquired resistance genes
-bacmet2	University of Gothenburg	available	prot	BacMet2 experimentally confirmed biocide/resistance genes (protein)
-card	McMaster University	available	nucl	CARD protein homolog resistance models
-ecoli_kps	Kaptive (Gladstone lab)	available	nucl	E. coli group 2+3 capsular polysaccharide loci (Kaptive)
-ecoli_vf	PHAC-NML	available	nucl	E. coli virulence factors (phac-nml)
-kosc_k	Kaptive (klebgenomics)	available	nucl	K. oxytoca species complex K locus (Kaptive)
-kosc_o	Kaptive (klebgenomics)	available	nucl	K. oxytoca species complex O locus (Kaptive)
-kpsc_k	Kaptive (klebgenomics)	available	nucl	K. pneumoniae species complex K locus (Kaptive)
-kpsc_o	Kaptive (klebgenomics)	available	nucl	K. pneumoniae species complex O locus (Kaptive)
-megares	MEG Lab	available	nucl	MEGARes antimicrobial resistance genes
-plasmidfinder	DTU CGE	available	nucl	CGE PlasmidFinder replicons
-vfdb	USTC (VFDB)	available	nucl	VFDB virulence factors (set A, nucleotide)
-victors	University of Chicago	available	nucl	Victors virulence factors
-ecoh	Holt lab (srst2)	bundled	nucl	E. coli O and H antigens (srst2 EcOH)
-ecoli_dec	gapit-curated (public-domain sources)	bundled	nucl	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)
-lm_doumith	gapit-curated (public-domain INSDC sources)	bundled	nucl	Listeria monocytogenes serogrouping (Doumith 2004)
-ncbi	NCBI	bundled	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
-resfinder	DTU CGE	bundled	nucl	CGE ResFinder acquired resistance genes
-upec_expec_vf	FordeGenomics	bundled	nucl	UPEC/ExPEC virulence genes (FordeGenomics)
+NAME	DESCRIPTION	STATUS	DBTYPE	PROVIDER
+ab_k	A. baumannii K locus (Kaptive)	available	nucl	Kaptive (Kenyon lab)
+ab_o	A. baumannii OC locus — official keyword ab_o (Kaptive)	available	nucl	Kaptive (Kenyon lab)
+argannot	ARG-ANNOT acquired resistance genes	available	nucl	IHU Méditerranée-Infection
+bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	available	prot	University of Gothenburg
+card	CARD protein homolog resistance models	available	nucl	McMaster University
+ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	Kaptive (Gladstone lab)
+ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	PHAC-NML
+kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
+kosc_o	K. oxytoca species complex O locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
+kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
+kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
+megares	MEGARes antimicrobial resistance genes	available	nucl	MEG Lab
+plasmidfinder	CGE PlasmidFinder replicons	available	nucl	DTU CGE
+vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	USTC (VFDB)
+victors	Victors virulence factors	available	nucl	University of Chicago
+ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	Holt lab (srst2)
+ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gapit-curated (public-domain sources)
+lm_doumith	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	gapit-curated (public-domain INSDC sources)
+ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	bundled	nucl	NCBI
+resfinder	CGE ResFinder acquired resistance genes	bundled	nucl	DTU CGE
+vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	gapit-curated (vpasero)
 ```
 
 NAME is the database name you pass to `--db`; PROVIDER names the upstream maintainer
 organisation. STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`
 exists, with N the record count, otherwise `available`. The last six rows are the
 wheel-shipped [bundled](#bundled-databases-install-time-ready) databases, alphabetical:
-`bundled` before materialization, `installed (N)` after. Four of them (`ecoh`, `ncbi`,
-`resfinder`, `upec_expec_vf`) are also registry providers — such names render exactly
-once, in the bundled section (never as a duplicate registry `available` row), and
-`gapit db fetch <name>` remains their fresh-upstream update path. Databases installed
+`bundled` before materialization, `installed (N)` after. Three of them (`ecoh`, `ncbi`,
+`resfinder`) are also registry providers — such names render
+exactly once, in the bundled section (never as a duplicate registry `available` row), and
+`gapit db fetch <name>` remains their fresh-upstream update path; `vp_ok` is bundled-only
+(no provider, no fetch). Databases installed
 into the datadir outside the catalog also appear, after the bundled section and sorted by
 name: `db build` products (gene and cluster kinds alike) and manifest-less directories
 (abricate-style or `db install` bytes) render with PROVIDER `local`, the record count
@@ -138,7 +139,7 @@ accept: a bundled database works out of the box.
 | `lm_doumith` | Listeria monocytogenes serogrouping (5 records, Doumith 2004 markers) | 2026-10-03 | `gapit.typing/2` (scheme `doumith_serogroup`) |
 | `ncbi` | NCBI AMRFinderPlus curated AMR (8373 records) | 2026-10-02 | — |
 | `resfinder` | CGE ResFinder acquired resistance genes (3206 records) | 2026-10-02 | — |
-| `upec_expec_vf` | UPEC/ExPEC virulence genes (77 records, FordeGenomics) | 2026-10-02 | — |
+| `vp_ok` | V. parahaemolyticus O and K antigen loci (195 loci, vpautils OAgc+CPSgc; cluster kind) | 2026-10-12 | `gapit.typing/2` (schemes `o_group`, `k_group`, `serotype`) |
 
 **License provenance.** Every `ecoli_dec` record was re-sourced from primary
 public-domain submissions (NCBI RefSeq/GenBank/DDBJ accessions, same alleles as the
@@ -147,20 +148,29 @@ and replaced during the 2026-10 audit, and the byte-identical `estA4` (J03311.1)
 `estA3` (M18346.1) — one `sth` gene, one sequence — was dropped by the build pipeline's
 exact-duplicate dedup in the 2026-10 rebuild, leaving 16 records. The `lm_doumith` panel was extracted the same
 way from public-domain INSDC records (accessions in each header; reverse-complement
-markers strand-corrected, `lmo0737` verified 100% against EGD-e). The four provider
-snapshots (`ecoh`, `ncbi`, `resfinder`, `upec_expec_vf`) passed the 2026-10
+markers strand-corrected, `lmo0737` verified 100% against EGD-e). The three provider
+snapshots (`ecoh`, `ncbi`, `resfinder`) passed the 2026-10
 content-level audit across **all** records: NCBI AMRFinderPlus content is public
-domain (US government work), the CGE ResFinder database is Apache-2.0, srst2's EcOH
-is BSD-3-Clause, and FordeGenomics' UPEC-ExPEC panel is MIT — all four permits
-redistribution inside the MIT-licensed wheel. A regression test pins that no `VF*` /
-`VFDB` / `ARO:` tags appear in any of the six bundles' headers.
+domain (US government work), the CGE ResFinder database is Apache-2.0, and srst2's EcOH
+is BSD-3-Clause — all three permit
+redistribution inside the MIT-licensed wheel. The `vp_ok` cluster snapshot is
+MIT-licensed vpautils content (lab-curated loci, Bakta-annotated, via
+[indexofire/vpautils](https://github.com/indexofire/vpautils)); it ships as the
+resolved `sequences` + `features.json` pair a completed gapit.typing/2 build
+produces. A regression test pins that no `VF*` / `VFDB` / `ARO:` tags appear in any
+of the six bundles' headers.
 
 **Snapshots are point-in-time.** Each snapshot's `sequences` file is byte-for-byte what
-`gapit db fetch <name>` produces from upstream on the snapshot date (a regression test
-proves the byte-identity for `resfinder` against a pinned copy of the upstream archive).
-The wheel copy therefore drifts as upstream curation moves on: `gapit db fetch <name>`
+the upstream content produces on the snapshot date (a regression test proves the
+byte-identity for `resfinder` against a pinned copy of the upstream archive, and for
+`vp_ok` against a `gapit db build` over the real vpautils GenBank files when local
+copies exist — `features.json` included, gene-id resolution included).
+The wheel copy therefore drifts as upstream curation moves on: for the provider-backed
+names (`ecoh`, `ncbi`, `resfinder`) `gapit db fetch <name>`
 (alone, or with `--force` to overwrite a materialized copy) re-downloads the **latest**
-upstream content and rebuilds the datadir database — the freshness path. `bundled.json`
+upstream content and rebuilds the datadir database — the freshness path. `vp_ok` has no
+provider: a refresh means a new resolved snapshot riding a wheel release.
+`bundled.json`
 records the snapshot date for reference. (`db outdated` stays manifest-based in v1:
 it reports the materialization/fetch time of what is installed, not bundled-vs-upstream
 drift — comparing the wheel snapshots against latest upstream is future work.)
@@ -172,7 +182,11 @@ silenced by `--quiet`), then the standard gene-build pipeline: `records.jsonl`, 
 `sequences` FASTA with gapit/v1 headers, the BLAST index, the `typing.json` copy when the
 bundle ships one, and a manifest stamped `source: "bundled"`. That pipeline — shared with
 `gapit db build` — drops exact `(gene, sequence)` duplicate records at build time (first
-kept; a stderr note and the receipt's `duplicates_dropped` count the drops). Deterministic, zero
+kept; a stderr note and the receipt's `duplicates_dropped` count the drops). Cluster
+bundles (`vp_ok`) run the cluster pipeline instead: materialization rebuilds the locus
+FASTA and `features.json` from the committed artifacts through the same cluster build
+entry a `db build` uses — gene ids stay snapshot-resolved, the typing spec re-validates
+against them, no re-resolution. Deterministic, zero
 network. A missing datadir is created on this path only; `gapit setupdb` materializes
 every bundled database alongside indexing; re-running either is a no-op once the
 manifest exists. `db list` shows the database as `bundled` before that and
@@ -209,10 +223,41 @@ Known limitations, carried on the calls as notes where relevant:
 The fallback call — `untypeable (4a/4c, atypical profile, or non-Lm Listeria)` — is the
 honest answer for everything the five markers cannot resolve.
 
+### vp_ok (V. parahaemolyticus O:K, MIT, typed on install)
+
+`vp_ok` wraps the two *Vibrio parahaemolyticus* serotype references of
+[indexofire/vpautils](https://github.com/indexofire/vpautils) — `OAgc.gbk` (32
+O-antigen gene cluster loci) and `CPSgc.gbk` (163 capsular polysaccharide loci) —
+into ONE merged `kind: cluster` database. It is a PURE built-in bundled database in
+the `ecoli_dec`/`lm_doumith` pattern: no provider, no source URLs, no
+`gapit db fetch vp_ok`. The committed three-scheme typing asset
+(`src/gapit/data/typing/vp_ok.json`, generated reproducibly by
+`scripts/generate_vp_typing.py`) installs with it, so screening renders
+`gapit.cluster/2` with per-file phenotypes `o_group`, `k_group`, and the composed
+`serotype` `"{o_group}:{k_group}"` (fallbacks `OUT`/`KUT`) — the O:K serotype from a
+single scan:
+
+```console
+$ gapit screen RIMD.fna --db vp_ok --format json
+{"schema": "gapit.cluster/2", ..., "phenotypes": {"o_group": {"phenotype": "O3"},
+ "k_group": {"phenotype": "K6"}, "serotype": {"phenotype": "O3:K6"}}}
+```
+
+The database content is **MIT** (Bakta-annotated, via vpautils), so unlike the
+kaptive providers it is license-clean for redistribution — a resolved snapshot ships
+inside the wheel as the sixth bundled database (8.3 MiB committed artifacts, within
+the 30 MiB budget), and first use materializes it with zero network. The
+typing rules recompute sequence-unique key genes per locus (variants fold: OL4V1 →
+O4, KL20V1 → K20; untyped OLU*/KLU* loci get no rule and fall back to OUT/KUT), and
+the asset validates against the loci at build and materialization time — a drifted
+upstream GBK fails `TYPING_UNKNOWN_GENE` instead of installing silently. Calibrated
+against real genomes with RIMD 2210633 locked to O3:K6 (see the rule notes for the
+documented per-locus tuning).
+
 ## Checking database freshness
 
 `gapit db outdated` reports every installed database's age against the staleness
-threshold. Against a fully installed datadir (output trimmed to three of twenty-one rows):
+threshold. Against a fully installed datadir (output trimmed to three of twenty-two rows):
 
 ```console
 $ gapit db outdated --days 30
@@ -309,8 +354,10 @@ downloads from its upstream source at fetch time: with the exception of the six
 audited, permissively licensed bundles above, nothing is bundled inside the package,
 because several upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's
 GPL-3.0) forbid redistribution inside an MIT-licensed distribution. The seven kaptive
-providers are **cluster** databases (built through the cluster pipeline at fetch time —
-see [Kaptive providers](#kaptive-providers-gpl-downloaded-on-fetch)).
+providers are **cluster** databases (built through the cluster pipeline at
+fetch time — see [Kaptive providers](#kaptive-providers-gpl-downloaded-on-fetch));
+the eighth cluster database, the typed `vp_ok`, is bundled-only
+([vp_ok](#vp_ok-v-parahaemolyticus-ok-mit-typed-on-install)).
 
 | Name | Maintainer | Content | dbtype |
 |---|---|---|---|

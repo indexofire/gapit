@@ -32,7 +32,7 @@ from gapit.cluster import ClusterParams, load_features, load_typing, screen_clus
 from gapit.screening import find_database
 from gapit.typing_decide import decide_typing
 from gapit.typing_engine import score_rules
-from gapit.typing_models import single_scheme
+from gapit.typing_models import uses_cluster_v2
 
 NO_CALL = "(no call)"
 AMBIGUOUS = "-"
@@ -61,7 +61,12 @@ def calibrate(
         raise SystemExit(
             f"error: database {db_name} carries no typing.json (calibration needs a typed db)"
         )
-    scheme = single_scheme(typing_document)
+    if uses_cluster_v2(typing_document):
+        raise SystemExit(
+            f"error: database {db_name} holds a multi-scheme typing document"
+            " (calibration needs a single-scheme db; gapit.cluster/2 dbs are out of scope)"
+        )
+    scheme = typing_document.schemes[0]
     params = ClusterParams(db=db_name, **thresholds)
     results: list[SampleResult] = []
     for sample, expected in labels:

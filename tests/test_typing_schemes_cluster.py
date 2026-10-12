@@ -5,11 +5,13 @@ Two researched cluster-database schemes as validated example documents
 (van der Graaf-van Bloois et al. 2023 Kaptive databases — o_group/k_group
 cluster_match rules plus the ``{o_group}:{k_group}`` compose scheme) and
 the V. cholerae O1/O139 serogroup + ogawa/inaba subserotype panel (wbeT
-single-SNP biology). A cluster database carries exactly ONE scheme
-(gapit.cluster/1 has a single phenotype slot), so the runnable fixtures
-install each scheme of the cookbook document as its own database — the
-Kaptive O/K pattern — and the whole-document build is asserted to fail
-with the typed guard. Samples are deterministic copies/mutations of the
+single-SNP biology). A cluster database renders gapit.cluster/2 when its
+typing document holds more than one scheme — so the vp_ok cookbook
+document installs as ONE merged database (every scheme called, the
+compose rendered from its ingredients) — while single-scheme documents
+(v1 or one-scheme v2) keep the byte-frozen gapit.cluster/1 surface: the
+cholerae fixture installs each scheme as its own database, the Kaptive
+per-scheme pattern. Samples are deterministic copies/mutations of the
 fixture loci (synthetic content only).
 """
 
@@ -19,18 +21,20 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit.cli import app
 from gapit.cluster import ClusterParams, load_features, load_typing, screen_cluster_file
 from gapit.db import discover_databases
 from gapit.fasta import iter_fasta
 from gapit.formats.cluster import format_cluster_tsv, render_cluster_json
-from gapit.formats.cluster_md import render_cluster_md
+from gapit.formats.cluster2 import format_cluster2_tsv, render_cluster2_json
+from gapit.formats.cluster_md import render_cluster2_md, render_cluster_md
+from gapit.typing_cluster2 import evaluate_cluster2
 from gapit.typing_engine import evaluate_typing
-from gapit.typing_models import single_scheme
 
 SCHEMES = Path(__file__).parent / "data" / "typing" / "schemes"
+DATA_TYPING = Path(__file__).parent / "data" / "typing"
 GOLDEN = Path(__file__).parent / "golden"
 PINNED_NOW = datetime(2026, 10, 1, 12, 0, 0, tzinfo=UTC)
 FLIP = {"A": "C", "C": "G", "G": "T", "T": "A"}
@@ -115,6 +119,16 @@ def vp_dbs(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 
 @pytest.fixture(scope="module")
+def vp_ok_db(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """The whole three-scheme vp_ok cookbook document as ONE merged
+    database — the gapit.cluster/2 install (its gene ids are already
+    unique, so build-time resolution is a no-op)."""
+    datadir = tmp_path_factory.mktemp("schemes_vp_ok")
+    build_cluster_db(datadir, "vp_ok", "vp_ok.gbk", SCHEMES / "vp_ok.json")
+    return datadir
+
+
+@pytest.fixture(scope="module")
 def vc_dbs(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """The cholerae panel as two databases (serogroup and subserotype
     schemes over the same wbe/wbm/wbc loci)."""
@@ -129,12 +143,12 @@ def vc_dbs(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return datadir
 
 
-class TestMultiSchemeClusterDocumentRejected:
-    def test_full_vp_ok_document_fails_the_cluster_build(self, tmp_path: Path) -> None:
+class TestMergedVpOkCluster2:
+    def test_full_vp_ok_document_builds_one_merged_db(self, tmp_path: Path) -> None:
         """Given the three-scheme vp_ok document on a cluster build, When
-        built, Then exit 4 with TYPING_MALFORMED naming the one-scheme
-        constraint (the compose pattern runs on gene databases; cluster
-        installs split the schemes)."""
+        built, Then exit 0 — the multi-scheme install renders
+        gapit.cluster/2 (the /1 one-scheme guard is gone; compose now runs
+        natively on the cluster path)."""
         datadir = tmp_path / "datadir"
         datadir.mkdir()
         result = runner.invoke(
@@ -150,11 +164,58 @@ class TestMultiSchemeClusterDocumentRejected:
                 str(SCHEMES / "vp_ok.json"),
             ],
         )
-        assert result.exit_code == 4
-        envelope = json.loads(result.stderr.splitlines()[-1])
-        assert envelope["code"] == "TYPING_MALFORMED"
-        assert "exactly one typing scheme" in envelope["message"]
-        assert envelope["context"]["schemes"] == "o_group, k_group, serotype"
+        assert result.exit_code == 0, result.stderr
+
+    def test_merged_db_screens_as_cluster2(self, vp_ok_db: Path, tmp_path: Path) -> None:
+        """Given the merged vp_ok database and the vp_typed sample, When
+        screened as JSON, Then the document is gapit.cluster/2 with the
+        phenotypes keys in document order (o_group, k_group, serotype),
+        serotype the composed {o}:{k} of its ingredients (the fallbacks
+        flow through — the sample shares no locus with this panel)."""
+        document = screen_json(vp_ok_db, "vp_ok", DATA_TYPING / "vp_typed.fa")
+        phenotypes = document["files"][0]["phenotypes"]
+
+        assert document["schema"] == "gapit.cluster/2"
+        assert list(phenotypes) == ["o_group", "k_group", "serotype"]
+        o, k = phenotypes["o_group"]["phenotype"], phenotypes["k_group"]["phenotype"]
+        assert phenotypes["serotype"]["phenotype"] == f"{o}:{k}"
+
+    def test_merged_db_best_block_carries_no_phenotype_keys(
+        self, vp_ok_db: Path, tmp_path: Path
+    ) -> None:
+        """Given the merged vp_ok database and a sample carrying the
+        OL3_or_O13 + KL6 loci, When screened as JSON, Then the best block
+        exists, calls the locus, and carries NO phenotype keys — /2 moves
+        every typing call into the phenotypes map."""
+        loci = loci_of(vp_ok_db, "vp_ok")
+        sample = write_sample(
+            tmp_path,
+            "vp_o3k6",
+            [("ctg_o", loci["OL3_or_O13"]), ("ctg_k", loci["KL6"])],
+        )
+        document = screen_json(vp_ok_db, "vp_ok", sample)
+        best = document["files"][0]["best"]
+
+        assert best is not None
+        assert best["locus"] == "OL3_or_O13"
+        assert "phenotype" not in best
+        assert "phenotype_detail" not in best
+
+    def test_mixed_sample_falls_back_through_compose(self, vp_ok_db: Path) -> None:
+        """Given the vp_mixed sample (gene-path wzx/wzy fragments sharing
+        no vp_ok locus), When screened against the merged db, Then there
+        is no best call — the cluster engine's no-call row, the /1 split
+        twin of the unrelated-sample test — while every scheme still
+        evaluates: both groups fall back low and serotype composes the
+        fallback pair OUT:KUT."""
+        document = screen_json(vp_ok_db, "vp_ok", DATA_TYPING / "vp_mixed.fa")
+        file_doc = document["files"][0]
+
+        assert file_doc["best"] is None
+        assert file_doc["phenotypes"]["o_group"]["phenotype"] == "OUT"
+        assert file_doc["phenotypes"]["k_group"]["phenotype"] == "KUT"
+        assert file_doc["phenotypes"]["serotype"]["phenotype"] == "OUT:KUT"
+        assert {call["confidence"] for call in file_doc["phenotypes"].values()} == {"low"}
 
 
 class TestVpOk:
@@ -307,7 +368,7 @@ class TestGoldens:
         params = ClusterParams(db="vc_subserotype")
         report = evaluate_typing(
             screen_cluster_file(Path("vc_inaba.fa"), database, load_features(database), params),
-            single_scheme(typing_document),
+            typing_document.schemes[0],
         )
         assert render_cluster_json([report], params, now=PINNED_NOW, typed=True) == (
             GOLDEN / "cluster_vc_inaba.json"
@@ -318,3 +379,43 @@ class TestGoldens:
         assert format_cluster_tsv(
             [report], csv=False, noheader=False, nopath=False, typed=True
         ) == (GOLDEN / "cluster_vc_inaba.tsv").read_text(encoding="utf-8")
+
+    @pytest.mark.parametrize("sample", ["vp_o3k6", "vp_none"])
+    def test_merged_vp_ok_goldens(
+        self, vp_ok_db: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, sample: str
+    ) -> None:
+        """Given the merged vp_ok database and the O3:K6 / no-coverage
+        samples, When rendered in all three formats at the pinned now,
+        Then each output is byte-identical to its committed cluster/2
+        golden (called phenotypes vs all-fallback through compose; the
+        null-best row keeps the /1 dashes with the packed PHENOTYPES
+        cell)."""
+        if sample == "vp_o3k6":
+            loci = loci_of(vp_ok_db, "vp_ok")
+            sample_path = write_sample(
+                tmp_path,
+                sample,
+                [("ctg_o", loci["OL3_or_O13"]), ("ctg_k", loci["KL6"])],
+            )
+        else:
+            sample_path = write_sample(tmp_path, sample, [("ctg", "ACGT" * 300)])
+        monkeypatch.chdir(sample_path.parent)
+        (database,) = [entry for entry in discover_databases(vp_ok_db) if entry.name == "vp_ok"]
+        typing_document = load_typing(database)
+        assert typing_document is not None
+        params = ClusterParams(db="vp_ok")
+        report = screen_cluster_file(
+            Path(f"{sample}.fa"), database, load_features(database), params
+        )
+        report = report.model_copy(
+            update={"phenotypes": evaluate_cluster2(report, typing_document)}
+        )
+        assert render_cluster2_json([report], params, now=PINNED_NOW) == (
+            GOLDEN / f"cluster2_{sample}.json"
+        ).read_text(encoding="utf-8")
+        assert render_cluster2_md([report], params, now=PINNED_NOW) == (
+            GOLDEN / f"cluster2_{sample}.md"
+        ).read_text(encoding="utf-8")
+        assert format_cluster2_tsv([report], csv=False, noheader=False, nopath=False) == (
+            GOLDEN / f"cluster2_{sample}.tsv"
+        ).read_text(encoding="utf-8")

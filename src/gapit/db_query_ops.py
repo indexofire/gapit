@@ -5,7 +5,7 @@
 - ``perform_outdated``: installed-database staleness report against a
   threshold (``days``). Staleness is a REPORT, never an error state.
 
-Both are read-only: no builds, no network, no datadir writes. The typer
+Both are read-only: no builds, no network, no datadir writes. The CLI
 commands (:mod:`gapit.cmd_db_search`, :mod:`gapit.cmd_db_outdated`) and the
 MCP tools (:mod:`gapit.mcp_tools`) are thin callers.
 """

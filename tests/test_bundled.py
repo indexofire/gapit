@@ -1,16 +1,19 @@
 """Bundled databases: discovery, materialization, and the DEC matrix.
 
 The wheel ships six license-clean bundles — the typed ecoli_dec and
-lm_doumith panels plus four provider snapshots (ecoh, ncbi, resfinder,
-upec_expec_vf; public domain / Apache-2.0 / BSD-3-Clause / MIT). These
-tests pin the install-time-ready contract — discovery from the package
-data dir, auto-materialization on first screen (idempotent,
-quiet-respecting, fresh-datadir bootstrapping), the db list bundled →
-installed transition, the per-snapshot screen smoke tests, the
-snapshot↔fetch differential (resfinder, over a file:// provider URL), and
-the fetch-refresh path. The lm_doumith serogrouping matrix lives in
-test_lm_doumith.py. Real binaries through the CLI surface
-(test_cli_setupdb.py conventions).
+lm_doumith panels, three provider snapshots (ecoh, ncbi, resfinder;
+public domain / Apache-2.0 / BSD-3-Clause), and the
+typed vp_ok cluster snapshot (MIT, a pure built-in — no provider behind
+it). These tests pin the install-time-ready
+contract — discovery from the package data dir, auto-materialization on
+first screen (idempotent, quiet-respecting, fresh-datadir bootstrapping,
+kind-aware: gene bundles replay the gene pipeline, the cluster bundle the
+cluster pipeline), the db list bundled → installed transition, the
+per-snapshot screen smoke tests, the resfinder snapshot↔fetch differential
+(file:// provider URL), and the fetch-refresh path (the vp_ok
+snapshot↔`db build` differential lives in test_vp_ok.py). The lm_doumith
+serogrouping matrix lives in test_lm_doumith.py. Real binaries through the
+CLI surface (test_cli_setupdb.py conventions).
 """
 
 import json
@@ -19,9 +22,9 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
-from typer.testing import CliRunner, Result
+from click.testing import CliRunner, Result
 
-from gapit.bundled import bundled_databases, bundled_names, find_bundled
+from gapit.bundled import BUNDLED_ROOT, bundled_databases, bundled_names, find_bundled
 from gapit.cli import app
 from gapit.dbcodec import decode_seqid
 from gapit.fasta import iter_fasta
@@ -35,9 +38,17 @@ S1 = TYPING / "dec_s1_aggR_pic_uidA.fasta"
 S2 = TYPING / "dec_s2_pic_astA_uidA.fasta"
 S3 = TYPING / "dec_s3_stx2a_escV_aggR_uidA.fasta"
 
-# The four provider snapshots: name -> committed record count (pins the
+# The three provider snapshots: name -> committed record count (pins the
 # wheel content against accidental regeneration).
-SNAPSHOTS = {"ecoh": 597, "ncbi": 8373, "resfinder": 3206, "upec_expec_vf": 77}
+SNAPSHOTS = {"ecoh": 597, "ncbi": 8373, "resfinder": 3206}
+
+# The typed cluster snapshot: committed LOCUS count (its records are loci).
+VP_OK_LOCI = 195
+
+# Wheel budget for the bundled root (AGENTS.md §6 size gate): every
+# `pip install gapit` re-downloads all bundles and PyPI caps one file at
+# 100 MiB — past the budget, split a gapit-data wheel, don't inflate this.
+BUDGET_BYTES = 30 * 1024 * 1024
 
 # MUST-NOT guard: VFDB/CARD tags never ride the wheel (license audit
 # 2026-10) — no VFG/VF id, no VFDB mention, no ARO accession, anywhere in
@@ -99,6 +110,19 @@ def sample_from_bundle(name: str, destination: Path, count: int = 3) -> set[str]
     return genes
 
 
+def loci_fasta_from_bundle(name: str, destination: Path, *loci: str) -> None:
+    """Write the named loci of a bundled CLUSTER database's sequences as one
+    FASTA per locus (bare-id records) — the synthetic-carrier sample built
+    from the wheel's own content, zero network."""
+    bundled = find_bundled(name)
+    assert bundled is not None
+    wanted = set(loci)
+    with destination.open("w", encoding="utf-8") as handle:
+        for record in iter_fasta(bundled.sequences_path):
+            if record.id in wanted:
+                handle.write(f">{record.id} sampled\n{record.sequence}\n")
+
+
 def screen_db(sample: Path, datadir: Path, name: str, *extra: str) -> Result:
     return runner.invoke(
         app, ["screen", str(sample), "--db", name, "--datadir", str(datadir), *extra]
@@ -107,21 +131,24 @@ def screen_db(sample: Path, datadir: Path, name: str, *extra: str) -> Result:
 
 def test_bundled_discovery_finds_all_six() -> None:
     """Given the wheel's data dir, When bundled databases are discovered,
-    Then exactly the six license-clean bundles ship in name order, each
-    metadata parses (vendor/dbtype/snapshot date), ecoli_dec and lm_doumith
-    carry their typing documents, and the provider snapshots do not."""
+    Then exactly the six license-clean bundles ship in name order — five
+    gene-kind plus the vp_ok cluster-kind — each metadata parses
+    (vendor/dbtype/kind/snapshot date), ecoli_dec and lm_doumith carry
+    their typing documents, and vp_ok carries typing, features table, and
+    content license while the provider snapshots carry none of them."""
     assert bundled_names() == [
         "ecoh",
         "ecoli_dec",
         "lm_doumith",
         "ncbi",
         "resfinder",
-        "upec_expec_vf",
+        "vp_ok",
     ]
     by_name = {database.name: database for database in bundled_databases()}
     ecoli_dec = by_name["ecoli_dec"]
     assert ecoli_dec.metadata.vendor == "gapit-curated (public-domain sources)"
     assert ecoli_dec.metadata.dbtype == "nucl"
+    assert ecoli_dec.metadata.kind == "gene"
     assert ecoli_dec.metadata.snapshotted == "2026-10-02"
     assert ecoli_dec.typing_path is not None
     assert ecoli_dec.floors_path is not None
@@ -135,15 +162,24 @@ def test_bundled_discovery_finds_all_six() -> None:
         "ecoh": "Holt lab (srst2)",
         "ncbi": "NCBI",
         "resfinder": "DTU CGE",
-        "upec_expec_vf": "FordeGenomics",
     }
     for name, vendor in vendors.items():
         assert by_name[name].metadata.vendor == vendor
         assert by_name[name].metadata.dbtype == "nucl"
+        assert by_name[name].metadata.kind == "gene"
         assert by_name[name].typing_path is None
         assert by_name[name].floors_path is None
+    vp_ok = by_name["vp_ok"]
+    assert vp_ok.metadata.kind == "cluster"
+    assert vp_ok.metadata.vendor == "gapit-curated (vpasero)"
+    assert vp_ok.metadata.snapshotted == "2026-10-12"
+    assert vp_ok.metadata.license == "MIT (database content)"
+    assert vp_ok.typing_path is not None
+    assert vp_ok.features_path is not None
+    assert by_name["ecoli_dec"].features_path is None
     assert find_bundled("ecoli_dec") is not None
     assert find_bundled("ncbi") is not None
+    assert find_bundled("vp_ok") is not None
     assert find_bundled("card") is None
 
 
@@ -151,8 +187,9 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     """Given every bundled panel, When every header is inspected, Then no VF
     tag, VFDB marker, or ARO accession appears anywhere — the DEC lesson
     from the license audit (2 VFDB records hid past header-spotting) is
-    locked mechanically across all six bundles (record counts pinned)."""
-    typed_counts = {"ecoli_dec": 16, "lm_doumith": 5}
+    locked mechanically across all six bundles (record counts pinned;
+    the vp_ok cluster snapshot's bare locus ids are trivially clean)."""
+    typed_counts = {"ecoli_dec": 16, "lm_doumith": 5, "vp_ok": VP_OK_LOCI}
     for bundled in bundled_databases():
         text = bundled.sequences_path.read_text(encoding="utf-8")
         headers = [line for line in text.splitlines() if line.startswith(">")]
@@ -162,6 +199,19 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
             assert len(headers) == SNAPSHOTS[bundled.name]
         for header in headers:
             assert _RED_FLAG.search(header) is None, header
+
+
+def test_bundled_root_stays_within_the_wheel_budget() -> None:
+    """Given every file under the bundled root, When the bytes are summed,
+    Then the total stays within the 30 MiB wheel budget (AGENTS.md §6 size
+    gate) — over it, the fix is a gapit-data split or fetch-on-demand,
+    never a ceiling bump."""
+    total = sum(path.stat().st_size for path in BUNDLED_ROOT.rglob("*") if path.is_file())
+    assert total <= BUDGET_BYTES, (
+        f"bundled databases total {total / 1024 / 1024:.1f} MiB, over the "
+        f"{BUDGET_BYTES // 1024 // 1024} MiB wheel budget (AGENTS.md §6): "
+        "split a gapit-data wheel or keep the new content fetch-on-demand"
+    )
 
 
 def test_screen_auto_materializes_on_fresh_empty_datadir(tmp_path: Path) -> None:
@@ -245,8 +295,8 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     lines = before.stdout.splitlines()
     bundled_rows = [line for line in lines if line.startswith("ecoli_dec\t")]
     assert bundled_rows == [
-        "ecoli_dec\tgapit-curated (public-domain sources)\tbundled\tnucl\t"
-        "Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
+        "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
+        "\tbundled\tnucl\tgapit-curated (public-domain sources)"
     ]
     bundled_all = set(bundled_names())
     first_bundled = next(
@@ -261,8 +311,8 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     after = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert after.exit_code == 0
     assert (
-        "ecoli_dec\tgapit-curated (public-domain sources)\tinstalled (16)\tnucl\t"
-        "Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
+        "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
+        "\tinstalled (16)\tnucl\tgapit-curated (public-domain sources)"
         in after.stdout
     )
 
@@ -420,11 +470,13 @@ def test_snapshot_materializes_and_screens_zero_network(
 
 def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> None:
     """Given an empty datadir and the REAL registry, When `db list`, Then
-    each snapshot name renders exactly ONCE — as a bundled row (STATUS
-    bundled, vendor from bundled.json) inside the six-row alphabetical
-    bundled section, never as a duplicate registry available row — while a
-    NON-bundled registry row keeps its exact registry bytes; after one
-    upec_expec_vf screen that row flips to installed (77) and the JSON
+    each bundled provider name renders exactly ONCE — as a bundled row
+    (STATUS bundled, vendor from bundled.json) inside the six-row
+    alphabetical bundled section, never as a duplicate registry available
+    row — while a NON-bundled registry row keeps its exact registry bytes
+    (ecoh/ncbi/resfinder: the bundled row replaces their registry rows;
+    vp_ok is bundled-only, with no registry row to replace); after one
+    ecoh screen that row flips to installed (597) and the JSON
     entry carries source=bundled."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
@@ -433,41 +485,42 @@ def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> N
     assert before.exit_code == 0
     lines = before.stdout.splitlines()
     assert lines[-6:] == [
-        "ecoh\tHolt lab (srst2)\tbundled\tnucl\tE. coli O and H antigens (srst2 EcOH)",
-        "ecoli_dec\tgapit-curated (public-domain sources)\tbundled\tnucl\t"
-        "Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)",
-        "lm_doumith\tgapit-curated (public-domain INSDC sources)\tbundled\tnucl\t"
-        "Listeria monocytogenes serogrouping (Doumith 2004)",
-        "ncbi\tNCBI\tbundled\tnucl\tNCBI AMRFinderPlus (reference finder) curated AMR",
-        "resfinder\tDTU CGE\tbundled\tnucl\tCGE ResFinder acquired resistance genes",
-        "upec_expec_vf\tFordeGenomics\tbundled\tnucl\tUPEC/ExPEC virulence genes (FordeGenomics)",
+        "ecoh\tE. coli O and H antigens (srst2 EcOH)\tbundled\tnucl\tHolt lab (srst2)",
+        "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
+        "\tbundled\tnucl\tgapit-curated (public-domain sources)",
+        "lm_doumith\tListeria monocytogenes serogrouping (Doumith 2004)\tbundled\tnucl\t"
+        "gapit-curated (public-domain INSDC sources)",
+        "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\tNCBI",
+        "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\tDTU CGE",
+        "vp_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
+        "nucl\tgapit-curated (vpasero)",
     ]
-    for name in SNAPSHOTS:
+    for name in (*SNAPSHOTS, "vp_ok"):
         assert sum(line.startswith(f"{name}\t") for line in lines) == 1, name
     assert (
-        "card\tMcMaster University\tavailable\tnucl\tCARD protein homolog resistance models"
+        "card\tCARD protein homolog resistance models\tavailable\tnucl\tMcMaster University"
         in (lines[1:-6])
     )
 
     sample = tmp_path / "sample.fa"
-    sample_from_bundle("upec_expec_vf", sample)
-    assert screen_db(sample, datadir, "upec_expec_vf", "--quiet").exit_code == 0
+    sample_from_bundle("ecoh", sample)
+    assert screen_db(sample, datadir, "ecoh", "--quiet").exit_code == 0
 
     after = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert after.exit_code == 0
     assert (
-        "upec_expec_vf\tFordeGenomics\tinstalled (77)\tnucl\t"
-        "UPEC/ExPEC virulence genes (FordeGenomics)" in after.stdout
+        "ecoh\tE. coli O and H antigens (srst2 EcOH)\tinstalled (597)\tnucl\t"
+        "Holt lab (srst2)" in after.stdout
     )
 
     as_json = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
     providers = json.loads(as_json.stdout)["providers"]
     by_name = [entry["name"] for entry in providers]
-    assert by_name.count("upec_expec_vf") == 1
-    entry = {entry["name"]: entry for entry in providers}["upec_expec_vf"]
+    assert by_name.count("ecoh") == 1
+    entry = {entry["name"]: entry for entry in providers}["ecoh"]
     assert entry["source"] == "bundled"
     assert entry["installed"] is True
-    assert entry["records"] == 77
+    assert entry["records"] == 597
 
 
 def test_resfinder_snapshot_is_byte_identical_to_a_fetch_build(
@@ -535,3 +588,82 @@ def test_db_fetch_remains_the_refresh_path_for_a_bundled_name(
     assert entry["source"] == "bundled"
     assert entry["installed"] is True
     assert entry["records"] == SNAPSHOTS["resfinder"]
+
+
+# ------------------------------------------------------- typed cluster bundle --
+
+
+def test_screen_auto_materializes_bundled_cluster_database(tmp_path: Path) -> None:
+    """Given a datadir that does not exist at all (fresh machine) and a
+    synthetic carrier built from the BUNDLE's own locus FASTA (OL3 + KL6 —
+    zero network, no real GBKs), When screening --db vp_ok as JSON, Then
+    the datadir bootstraps, the cluster bundle materializes through the
+    cluster pipeline (loci note, kind-cluster manifest stamped
+    source=bundled with typing_schema gapit.typing/2 and the MIT content
+    license, typing.json a byte-copy of the committed asset), and the
+    screen renders gapit.cluster/2 calling O3:K6 — the install-and-use
+    headline."""
+    sample = tmp_path / "carrier.fna"
+    loci_fasta_from_bundle("vp_ok", sample, "OL3", "KL6")
+    missing = tmp_path / "does" / "not" / "exist"
+
+    result = screen_db(sample, missing, "vp_ok", "--format", "json")
+
+    assert result.exit_code == 0, result.stderr
+    assert f"materializing bundled database vp_ok ({VP_OK_LOCI} loci) into {missing}" in (
+        result.stderr
+    )
+    db_dir = missing / "vp_ok"
+    manifest = read_manifest(db_dir / "gapit-manifest.json")
+    assert manifest.kind == "cluster"
+    assert manifest.source == "bundled"
+    assert manifest.n_records == VP_OK_LOCI
+    assert manifest.typing_schema == "gapit.typing/2"
+    assert manifest.license == "MIT (database content)"
+    bundled = find_bundled("vp_ok")
+    assert bundled is not None and bundled.typing_path is not None
+    assert (db_dir / "typing.json").read_bytes() == bundled.typing_path.read_bytes()
+    assert (db_dir / "features.json").is_file()
+    assert (db_dir / "sequences.nin").is_file()
+    report = json.loads(result.stdout)
+    assert report["schema"] == "gapit.cluster/2"
+    phenotypes = report["files"][0]["phenotypes"]
+    assert phenotypes["o_group"]["phenotype"] == "O3"
+    assert phenotypes["k_group"]["phenotype"] == "K6"
+    assert phenotypes["serotype"]["phenotype"] == "O3:K6"
+
+
+def test_cluster_bundle_materialization_is_idempotent_and_quiet(
+    tmp_path: Path,
+) -> None:
+    """Given a materialized vp_ok cluster bundle, When screening again,
+    Then no rebuild happens (no materializing note, manifest bytes
+    unchanged, db list row flips bundled → installed (195) with kind
+    cluster); with --quiet even the first materialization is silent."""
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    sample = tmp_path / "carrier.fna"
+    loci_fasta_from_bundle("vp_ok", sample, "OL3", "KL6")
+    first = screen_db(sample, datadir, "vp_ok")
+    assert first.exit_code == 0, first.stderr
+    manifest_path = datadir / "vp_ok" / "gapit-manifest.json"
+    before = manifest_path.read_bytes()
+
+    second = screen_db(sample, datadir, "vp_ok")
+
+    assert second.exit_code == 0, second.stderr
+    assert "materializing" not in second.stderr
+    assert manifest_path.read_bytes() == before
+
+    listing = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
+    entry = {e["name"]: e for e in json.loads(listing.stdout)["providers"]}["vp_ok"]
+    assert entry["source"] == "bundled"
+    assert entry["installed"] is True
+    assert entry["records"] == VP_OK_LOCI
+    assert entry["kind"] == "cluster"
+
+    other = tmp_path / "quiet-dd"
+    silent = screen_db(sample, other, "vp_ok", "--quiet")
+    assert silent.exit_code == 0, silent.stderr
+    assert silent.stderr == ""
+    assert (other / "vp_ok" / "gapit-manifest.json").is_file()

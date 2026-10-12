@@ -3,5 +3,6 @@
   "description": "E. coli O and H antigens (srst2 EcOH)",
   "vendor": "Holt lab (srst2)",
   "dbtype": "nucl",
+  "kind": "gene",
   "snapshotted": "2026-10-02"
 }

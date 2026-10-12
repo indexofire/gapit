@@ -1,7 +1,7 @@
 """Reads-mode CLI argument rules for `gapit screen`.
 
 Split from cmd_screen.py at the 250 pure-LOC ceiling (the engines.py
-precedent): the typer surface stays there; this module owns the
+precedent): the CLI surface stays there; this module owns the
 `--r1`/`--r2` comma-list decoding, the positional-FASTQ classification that
 routes an all-FASTQ wildcard into reads mode, and the reads-mode flag
 rejects whose exact messages are frozen by tests. The engine use-cases live

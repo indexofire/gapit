@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 
 import pytest
-from typer.testing import CliRunner, Result
+from click.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.db import make_blast_db

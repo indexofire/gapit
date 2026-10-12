@@ -1,6 +1,6 @@
 """Bundled lm_doumith: the Listeria Doumith-2004 serogrouping panel.
 
-The sixth bundled database — five public-domain INSDC-extracted markers
+A bundled database — five public-domain INSDC-extracted markers
 (prs, lmo0737, lmo1118, ORF2819, ORF2110) behind the gapit.typing/2 scheme
 ``doumith_serogroup``: Doumith's multiplex-PCR table (Doumith et al. 2004,
 J Clin Microbiol 42:3819) extended with the Huang 2011 4b variant (IVb-v,
@@ -17,7 +17,7 @@ them verbatim.
 import json
 from pathlib import Path
 
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit.bundled import find_bundled
 from gapit.cli import app
@@ -282,8 +282,8 @@ def test_bundled_lm_doumith_auto_materializes_and_lists(tmp_path: Path) -> None:
     listing = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert listing.exit_code == 0
     assert (
-        "lm_doumith\tgapit-curated (public-domain INSDC sources)\tinstalled (5)\tnucl\t"
-        "Listeria monocytogenes serogrouping (Doumith 2004)" in listing.stdout
+        "lm_doumith\tListeria monocytogenes serogrouping (Doumith 2004)\tinstalled (5)\tnucl\t"
+        "gapit-curated (public-domain INSDC sources)" in listing.stdout
     )
 
     table = tmp_path / "bundled.tsv"

@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 
-import typer
+import click
 
 from gapit import db
 from gapit.blast import ensure_blast, screen_file
@@ -154,19 +154,19 @@ def run_screen(
     dbtype = db.blast_db_info(database.sequences_path).dbtype
     cpu_count = os.cpu_count()
     if not quiet and cpu_count is not None and jobs * threads > cpu_count:
-        typer.echo(f"--jobs {jobs} --threads {threads} oversubscribes {cpu_count} cpus", err=True)
+        click.echo(f"--jobs {jobs} --threads {threads} oversubscribes {cpu_count} cpus", err=True)
 
     def screen_one(path: Path) -> Report:
         if task_id is not None:
             # Bar active: its description carries the current file (notes suppressed).
             bar.describe(path.name)
         elif not quiet:
-            typer.echo(f"Processing: {path}", err=True)
+            click.echo(f"Processing: {path}", err=True)
         report = screen_file(
             path, database, params, dbtype=dbtype, debug=debug, merge_fragments=merge_fragments
         )
         if task_id is None and not quiet:
-            typer.echo(f"Found {len(report.hits)} genes in {path}", err=True)
+            click.echo(f"Found {len(report.hits)} genes in {path}", err=True)
         return report
 
     def iter_reports() -> Iterator[Report]:

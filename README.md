@@ -81,19 +81,22 @@ presence defaults to 90% alignment breadth (`--min-breadth 90`).
 ## Databases
 
 A database is a directory under the datadir, resolved from `$GAPIT_DATADIR`, then
-`~/.local/share/gapit/db` (override per call with `--datadir`). Twenty-one databases are
-built into the catalog — twelve gene providers, seven kaptive cluster providers, and the
-two typed bundles `ecoli_dec` and `lm_doumith`. All of them build on `gapit db fetch`,
+`~/.local/share/gapit/db` (override per call with `--datadir`). Twenty-two databases are
+built into the catalog — twelve gene providers, seven kaptive cluster providers, and
+three typed bundles (`ecoli_dec`, `lm_doumith`, and the cluster-kind `vp_ok`). Every
+provider builds on `gapit db fetch`,
 which downloads from upstream — and six content-provenance-audited ones also ship inside
 the package (`ecoli_dec` and
-`lm_doumith` plus the `ncbi`, `resfinder`, `ecoh`, `upec_expec_vf` snapshots: public
+`lm_doumith` plus the `ncbi`, `resfinder`, `ecoh` snapshots — public
 domain / Apache-2.0 /
-BSD-3-Clause / MIT), materialized into the datadir on first use with zero network; the
+BSD-3-Clause / MIT — and the MIT typed-cluster snapshot `vp_ok`), materialized into the
+datadir on first use with zero network; the
 bundled `ecoli_dec` additionally carries per-gene identity floors (`floors.json`, `pic`
 at 90%) that reads mode applies before presence calls. Several
 upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0) forbid
 redistribution inside an MIT-licensed distribution, so everything else is fetch-on-demand
-— and `db fetch <name>` always refreshes a bundled name from the latest upstream.
+— and `db fetch <name>` refreshes the provider-backed bundled names (`ecoh`, `ncbi`,
+`resfinder`) from the latest upstream.
 
 | Name | Content | dbtype |
 |---|---|---|
@@ -111,6 +114,7 @@ redistribution inside an MIT-licensed distribution, so everything else is fetch-
 | `bacmet2` | BacMet2 biocide/resistance genes (protein) | prot |
 | `victors` | Victors virulence factors | nucl |
 | `upec_expec_vf` | UPEC/ExPEC virulence genes | nucl |
+| `vp_ok` | V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero; cluster, MIT, one-scan O:K serotype) | nucl |
 
 gapit also reads datadirs built by abricate itself (legacy `~~~` headers). The reverse
 does not hold: gapit-native databases use the `gapit/v1` header format (see SPEC.md §11),
@@ -120,7 +124,14 @@ Gene **cluster** databases are a second kind: `gapit db build NAME loci.gbk|gff3
 `kind: cluster` db (locus calls via minimap2, optional `--typing FILE` phenotype scoring),
 and the seven Kaptive cluster databases (kpsc_k, kpsc_o, kosc_k, kosc_o, ab_k, ab_o,
 ecoli_kps) fetch the Kaptive antigen-locus references at install time (GPL-3.0 content, so
-nothing is bundled — cite Kaptive/Wyres et al. 2020 for results). `gapit db list --json`
+nothing is bundled — cite Kaptive/Wyres et al. 2020 for results). The typed cluster
+bundle `vp_ok`
+merges the vpasero OAgc + CPSgc references (MIT) into one bundled db — a pure built-in in
+the ecoli_dec/lm_doumith pattern, no `db fetch` — where a single
+`gapit screen --db vp_ok` renders gapit.cluster/2 with `o_group`, `k_group`, and the
+composed `serotype` O:K call (RIMD 2210633 → O3:K6), working straight after
+`pip install gapit` with zero network.
+`gapit db list --json`
 surfaces each provider's content license where one is pinned.
 
 ## Output contract

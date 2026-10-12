@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from gapit.errors import ErrorEnvelope
 from gapit.formats.cluster import ClusterDocument
+from gapit.formats.cluster2 import Cluster2Document
 from gapit.formats.json import ReportDocument, VersionDocument
 from gapit.formats.reads_json import Reads2Document, ReadsDocument
 from gapit.formats.summary import SummaryDocument
@@ -24,6 +25,7 @@ SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "reads": ReadsDocument,
     "reads2": Reads2Document,
     "cluster": ClusterDocument,
+    "cluster2": Cluster2Document,
     "summary": SummaryDocument,
     "error": ErrorEnvelope,
     "version": VersionDocument,

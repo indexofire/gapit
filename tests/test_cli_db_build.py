@@ -12,8 +12,8 @@ import json
 import random
 from pathlib import Path
 
+from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
-from typer.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.errors import ErrorEnvelope

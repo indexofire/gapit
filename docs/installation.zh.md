@@ -94,10 +94,32 @@ gapit: BLAST index built (nucl)
 
 ## Shell 补全
 
+CLI 用 click 构建：补全经 `_GAPIT_COMPLETE` 环境变量激活 —— 没有
+`--install-completion` 参数。按 shell 选择：
+
+Bash —— 加入 `~/.bashrc`：
+
 ```bash
-gapit --install-completion   # bash, zsh, or fish; installs for the current shell
-gapit --show-completion      # print the completion script to copy or customize
+eval "$(_GAPIT_COMPLETE=bash_source gapit)"
 ```
+
+Zsh —— 加入 `~/.zshrc`（在 `compinit` 之后），或把生成的 `#compdef` 脚本放到 fpath
+上的 `~/.zfunc/_gapit`：
+
+```zsh
+eval "$(_GAPIT_COMPLETE=zsh_source gapit)"
+```
+
+Fish：
+
+```fish
+_GAPIT_COMPLETE=fish_source gapit > ~/.config/fish/completions/gapit.fish
+```
+
+生成的脚本（bash 上结尾是 `complete -o nosort -F _gapit_completion gapit`）在补全时
+带着光标下的单词回调 gapit（`_GAPIT_COMPLETE=bash_complete gapit`），因此补全始终跟随
+已安装的版本。click 还附带 powershell 发射器（`_GAPIT_COMPLETE=powershell_source
+gapit`）。
 
 ## 升级
 

@@ -137,7 +137,7 @@ def test_cli_format_json(
 ) -> None:
     """Given --format json on the CLI, When run, Then stdout parses as
     gapit.report/1 (created_at unpinned, just structurally checked)."""
-    from typer.testing import CliRunner
+    from click.testing import CliRunner
 
     from gapit.cli import app
 

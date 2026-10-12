@@ -8,7 +8,7 @@ ceiling; screening.py keeps the blastn contig pipeline and shared helpers.
 from datetime import UTC, datetime
 from pathlib import Path
 
-import typer
+import click
 
 from gapit.bundled import resolve_screen_datadir
 from gapit.errors import ensure_input_file, usage_fail
@@ -52,7 +52,7 @@ def resolve_read_preset(
     if read_type is not None and read_type is not ReadTypeEnum.map_ont:
         usage_fail("assembly FASTA requires map-ont")
     if read_type is None and not quiet:
-        typer.echo("assembly FASTA detected; using map-ont", err=True)
+        click.echo("assembly FASTA detected; using map-ont", err=True)
     return ReadTypeEnum.map_ont
 
 
@@ -118,7 +118,7 @@ def _screen_lanes(
     ]
     read_list = ", ".join(str(path) for path in read_files)
     if not quiet:
-        typer.echo(f"Screening reads: {read_list}", err=True)
+        click.echo(f"Screening reads: {read_list}", err=True)
     report = screen_reads(
         lanes,
         database,
@@ -131,7 +131,7 @@ def _screen_lanes(
     )
     present = sum(1 for gene in report.genes if gene.present)
     if not quiet:
-        typer.echo(f"Detected {present} present genes in {read_list}", err=True)
+        click.echo(f"Detected {present} present genes in {read_list}", err=True)
     params = ReadsParams(
         db=db_name,
         read_type=resolved.value,

@@ -5,14 +5,16 @@ ceiling: this module owns the cluster branch — the shared CLI+MCP kind
 guards, the gated ClusterParams constructor, and the orchestration that
 screens each file and renders once. Stage 3 adds the typing wiring: a
 cluster db with a ``typing.json`` is reference-validated up front
-(TYPING_UNKNOWN_GENE) and every report is annotated with the phenotype call
-before rendering; untyped databases render the stage-2 output unchanged.
+(TYPING_UNKNOWN_GENE) and every report is annotated before rendering — a
+single-scheme document annotates the /1 best call (the byte-frozen stage-3
+output), a multi-scheme document calls every scheme into the /2 phenotypes
+map; untyped databases render the stage-2 output unchanged.
 """
 
 from datetime import UTC, datetime
 from pathlib import Path
 
-import typer
+import click
 
 from gapit import db
 from gapit.cluster import (
@@ -26,10 +28,21 @@ from gapit.db import Database
 from gapit.engines import AlignerEnum, Emit, OutputFormat
 from gapit.errors import usage_fail
 from gapit.formats.cluster import cluster_tsv_file_chunk, cluster_tsv_preamble, render_cluster_json
-from gapit.formats.cluster_md import cluster_md_file_chunk, cluster_md_head
+from gapit.formats.cluster2 import (
+    cluster2_tsv_file_chunk,
+    cluster2_tsv_preamble,
+    render_cluster2_json,
+)
+from gapit.formats.cluster_md import (
+    cluster2_md_file_chunk,
+    cluster2_md_head,
+    cluster_md_file_chunk,
+    cluster_md_head,
+)
 from gapit.gbfeatures import FeaturesDocument
+from gapit.typing_cluster2 import evaluate_cluster2
 from gapit.typing_engine import evaluate_typing
-from gapit.typing_models import TypingScheme, single_scheme, validate_references
+from gapit.typing_models import TypingDocument, uses_cluster_v2, validate_references
 
 _CLUSTER_DEFAULTS = (90.0, 90.0, 96.0)
 
@@ -91,22 +104,27 @@ def _screen_one(
     path: Path,
     database: Database,
     features: FeaturesDocument,
-    scheme: TypingScheme | None,
+    document: TypingDocument | None,
     params: ClusterParams,
     *,
     quiet: bool,
     debug: bool,
 ) -> ClusterReport:
-    """Screen one file and annotate it with the phenotype call when the db
-    carries a typing.json (per-file stderr chatter: Processing / Best locus)."""
+    """Screen one file and annotate it when the db carries a typing.json —
+    one scheme annotates the best call (/1), several schemes populate the
+    phenotypes map (/2) — (per-file stderr chatter: Processing / Best
+    locus)."""
     if not quiet:
-        typer.echo(f"Processing: {path}", err=True)
+        click.echo(f"Processing: {path}", err=True)
     report = screen_cluster_file(path, database, features, params, debug=debug)
-    if scheme is not None:
-        report = evaluate_typing(report, scheme)
+    if document is not None:
+        if uses_cluster_v2(document):
+            report = report.model_copy(update={"phenotypes": evaluate_cluster2(report, document)})
+        else:
+            report = evaluate_typing(report, document.schemes[0])
     if not quiet:
         called = report.best.locus if report.best is not None else "none"
-        typer.echo(f"Best locus in {path}: {called}", err=True)
+        click.echo(f"Best locus in {path}: {called}", err=True)
     return report
 
 
@@ -124,7 +142,9 @@ def run_cluster_screen(
 ) -> str:
     """Cluster-engine orchestration beside the gene path: screen each input
     file in order and render (json/md/tsv via formats.cluster*). The db's
-    typing.json is reference-validated once up front (TYPING_UNKNOWN_GENE).
+    typing.json is reference-validated once up front (TYPING_UNKNOWN_GENE)
+    and picks the renderer variant: untyped and single-scheme dbs render
+    gapit.cluster/1 (byte-frozen), multi-scheme dbs render gapit.cluster/2.
     With ``emit``, chunks stream in document order — tsv/csv/md per
     completed file (md leads with its static frontmatter; each file's
     section carries its own summary row); json is a single document emitted
@@ -132,14 +152,15 @@ def run_cluster_screen(
     return value."""
     features = load_features(database)
     typing_document = load_typing(database)
-    scheme: TypingScheme | None = None
+    v2 = typing_document is not None and uses_cluster_v2(typing_document)
     if typing_document is not None:
-        scheme = single_scheme(typing_document)
         validate_references(typing_document, features)
     typed = typing_document is not None
 
     def screen_one(path: Path) -> ClusterReport:
-        return _screen_one(path, database, features, scheme, params, quiet=quiet, debug=debug)
+        return _screen_one(
+            path, database, features, typing_document, params, quiet=quiet, debug=debug
+        )
 
     chunks: list[str] = []
 
@@ -151,16 +172,30 @@ def run_cluster_screen(
 
     if output_format is OutputFormat.json:
         reports = [screen_one(path) for path in files]
-        sink(render_cluster_json(reports, params, now=datetime.now(UTC), typed=typed))
+        if v2:
+            sink(render_cluster2_json(reports, params, now=datetime.now(UTC)))
+        else:
+            sink(render_cluster_json(reports, params, now=datetime.now(UTC), typed=typed))
     elif output_format is OutputFormat.md:
-        # Static frontmatter leads; each file's section (its own summary
-        # row + gene table) streams the moment the file completes.
-        sink(cluster_md_head(params, now=datetime.now(UTC)))
+        if v2:
+            sink(cluster2_md_head(params, now=datetime.now(UTC)))
+        else:
+            # Static frontmatter leads; each file's section (its own summary
+            # row + gene table) streams the moment the file completes.
+            sink(cluster_md_head(params, now=datetime.now(UTC)))
         for path in files:
-            sink(cluster_md_file_chunk(screen_one(path), typed=typed))
+            if v2:
+                sink(cluster2_md_file_chunk(screen_one(path)))
+            else:
+                sink(cluster_md_file_chunk(screen_one(path), typed=typed))
     else:
         csv = output_format is OutputFormat.csv
-        sink(cluster_tsv_preamble(csv=csv, noheader=noheader, typed=typed))
-        for path in files:
-            sink(cluster_tsv_file_chunk(screen_one(path), csv=csv, nopath=nopath, typed=typed))
+        if v2:
+            sink(cluster2_tsv_preamble(csv=csv, noheader=noheader))
+            for path in files:
+                sink(cluster2_tsv_file_chunk(screen_one(path), csv=csv, nopath=nopath))
+        else:
+            sink(cluster_tsv_preamble(csv=csv, noheader=noheader, typed=typed))
+            for path in files:
+                sink(cluster_tsv_file_chunk(screen_one(path), csv=csv, nopath=nopath, typed=typed))
     return "".join(chunks)

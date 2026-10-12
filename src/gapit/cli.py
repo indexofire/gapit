@@ -1,10 +1,9 @@
-"""gapit command-line interface (typer entrypoint)."""
+"""gapit command-line interface (click entrypoint)."""
 
 import json
 from pathlib import Path
-from typing import Annotated
 
-import typer
+import click
 
 from gapit import __version__, config, db
 from gapit.bundled import bundled_names, materialize_bundled
@@ -12,44 +11,51 @@ from gapit.cmd_db import register_db_command
 from gapit.cmd_screen import register_screen_command
 from gapit.cmd_summary import register_summary_command
 from gapit.cmd_typing import register_typing_command
-from gapit.dispatch import Datadir, dispatch
+from gapit.dispatch import datadir_option, dispatch
 from gapit.errors import usage_fail
 from gapit.formats.json import VersionDocument
 from gapit.formats.schemas import SCHEMA_MODELS
 from gapit.mcp import register_mcp_command
 
-app = typer.Typer(
+
+@click.group(
     name="gapit",
     help="Mass screening of contigs and reads for known genes across reference databases.",
     no_args_is_help=True,
-    add_completion=True,
+    invoke_without_command=True,
     # -h alias for --help; click Context propagates this to all subcommands/sub-apps.
     context_settings={"help_option_names": ["-h", "--help"]},
 )
-
-
-@app.callback(invoke_without_command=True)
-def main(
-    ctx: typer.Context,
-    show_version: Annotated[
-        bool | None,
-        typer.Option("--version", "-V", help="Show version and exit."),
-    ] = None,
-    as_json: Annotated[
-        bool,
-        typer.Option("--json", "-J", help="With --version: emit gapit.version/1 JSON."),
-    ] = False,
-) -> None:
+@click.option(
+    "--version",
+    "-V",
+    "show_version",
+    is_flag=True,
+    default=None,
+    help="Show version and exit.",
+)
+@click.option(
+    "--json",
+    "-J",
+    "as_json",
+    is_flag=True,
+    help="With --version: emit gapit.version/1 JSON.",
+)
+@click.pass_context
+def main(ctx: click.Context, show_version: bool | None, as_json: bool) -> None:
     """Mass screening of contigs and reads for known genes across reference databases."""
     if show_version:
         if as_json:
-            typer.echo(VersionDocument(version=__version__).model_dump_json(by_alias=True))
+            click.echo(VersionDocument(version=__version__).model_dump_json(by_alias=True))
         else:
-            typer.echo(f"gapit {__version__}")
-        raise typer.Exit()
+            click.echo(f"gapit {__version__}")
+        ctx.exit(0)
     if ctx.invoked_subcommand is None:
-        typer.echo(ctx.get_help())
-        raise typer.Exit()
+        click.echo(ctx.get_help())
+        ctx.exit(0)
+
+
+app = main
 
 
 def _setupdb(datadir: Path | None, debug: bool) -> None:
@@ -59,20 +65,16 @@ def _setupdb(datadir: Path | None, debug: bool) -> None:
             materialize_bundled(bundled_name, root, quiet=False)
     infos = db.list_databases(root, setupdb=True, debug=debug)
     for info in infos:
-        typer.echo(
+        click.echo(
             f"Indexed {info.name} ({info.n_sequences} sequences, {info.dbtype})",
             err=True,
         )
 
 
 @app.command("setupdb")
-def setupdb(
-    datadir: Datadir = None,
-    debug: Annotated[
-        bool,
-        typer.Option("--debug", "-v", help="Echo external command lines to stderr."),
-    ] = False,
-) -> None:
+@datadir_option()
+@click.option("--debug", "-v", is_flag=True, help="Echo external command lines to stderr.")
+def setupdb(datadir: Path | None, debug: bool) -> None:
     """Materialize bundled databases, then build BLAST indices for everything under the datadir."""
     dispatch(lambda: _setupdb(datadir, debug))
 
@@ -85,23 +87,20 @@ register_mcp_command(app)
 
 
 @app.command("schema", no_args_is_help=True)
-def schema(
-    name: Annotated[
-        str,
-        typer.Argument(
-            help=(
-                "Document to introspect: report, reads, reads2, summary, error, version,"
-                " features, typing, typing_result, or floors."
-            ),
-        ),
-    ],
-) -> None:
+@click.argument(
+    "name",
+    help=(
+        "Document to introspect: report, reads, reads2, cluster, cluster2,"
+        " summary, error, version, features, typing, typing_result, or floors."
+    ),
+)
+def schema(name: str) -> None:
     """Print the JSON Schema of a gapit output document."""
 
     def run() -> None:
         model = SCHEMA_MODELS.get(name)
         if model is None:
             usage_fail(f"unknown schema name: {name} (choose from: {', '.join(SCHEMA_MODELS)})")
-        typer.echo(json.dumps(model.model_json_schema(by_alias=True), indent=2))
+        click.echo(json.dumps(model.model_json_schema(by_alias=True), indent=2))
 
     dispatch(run)

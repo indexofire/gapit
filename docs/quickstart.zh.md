@@ -12,7 +12,7 @@ contig 文件，以 TSV 和 JSON 两种形式读结果，用内置 DEC 面板判
 
 夹具数据库 `tests/data/db/tinyamr` 里有三个短 AMR 基因：`tetA`、`blaTEM-1` 和
 `sul1`。把它复制进一个临时数据目录，剩下的交给 `gapit setupdb` 引导：它会物化
-wheel 内置的六个数据库（零网络——包括第 4 节要用来分型的 `ecoli_dec`）并构建全部
+wheel 内置的七个数据库（零网络——包括第 4 节要用来分型的 `ecoli_dec`）并构建全部
 BLAST 索引，无需手跑 `makeblastdb`：
 
 ```bash
@@ -39,12 +39,12 @@ Indexed tinyamr (3 sequences, nucl)
 
 ```console
 $ gapit db list
-NAME	PROVIDER	STATUS	DBTYPE	DESCRIPTION
-argannot	IHU Méditerranée-Infection	available	nucl	ARG-ANNOT acquired resistance genes
-ncbi	NCBI	installed (8373)	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
+NAME	DESCRIPTION	STATUS	DBTYPE	PROVIDER
+argannot	ARG-ANNOT acquired resistance genes	available	nucl	IHU Méditerranée-Infection
+ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	installed (8373)	nucl	NCBI
 ```
 
-（共二十一个目录数据库：六个内置库在这个数据目录里已显示 `installed`，十五个仅可
+（共二十二个目录数据库：六个内置库在这个数据目录里已显示 `installed`，十六个仅可
 抓取的注册表条目在 `gapit db fetch` 之前显示 `available`。）
 
 ## 2. 筛查一个 contig 文件

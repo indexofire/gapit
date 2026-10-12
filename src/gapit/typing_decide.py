@@ -1,11 +1,13 @@
 """The typing decision layer — what a scheme CALLS.
 
 Split from typing_engine at the 250-LOC ceiling (typing/2 stage 2): this
-module owns the decision (ranking, cutoff/ambiguity-margin, and the stage-2
-scheme gates), while typing_engine owns how each rule scores. Both
-evaluation paths funnel through :func:`decide_scheme`: the cluster path
-(:func:`gapit.typing_engine.evaluate_typing`) and the gene path
-(:func:`gapit.typing_gene.evaluate_gene_calls`).
+module owns the decision (ranking, cutoff/ambiguity-margin, the stage-2
+scheme gates, and compose-scheme rendering), while typing_engine owns how
+each rule scores. Both evaluation paths funnel through
+:func:`decide_scheme`: the cluster path
+(:func:`gapit.typing_engine.evaluate_typing`), the gene path
+(:func:`gapit.typing_gene.evaluate_gene_calls`), and the multi-scheme
+cluster path (:func:`gapit.typing_cluster2.evaluate_cluster2`).
 
 Decision pipeline, in order:
 
@@ -23,8 +25,14 @@ Decision pipeline, in order:
 """
 
 from gapit.cluster import GeneCall
-from gapit.typing_models import TypingScheme
-from gapit.typing_results import PhenotypeDetail, PhenotypeScore, ScoreComponent, ScoredRule
+from gapit.typing_models import TypingScheme, template_placeholders
+from gapit.typing_results import (
+    PhenotypeDetail,
+    PhenotypeScore,
+    SchemeCall,
+    ScoreComponent,
+    ScoredRule,
+)
 
 _DETAIL_PLACES = 4
 
@@ -80,6 +88,41 @@ def decide_typing(
             else ()
         ),
         notes=top.notes,
+    )
+
+
+def compose_call(template: str, calls: dict[str, SchemeCall]) -> SchemeCall:
+    """Render a compose scheme from its sibling schemes' calls (pure):
+    every ``{name}`` placeholder substitutes that scheme's called
+    phenotype — fallback strings flow through (a low-confidence ingredient
+    makes the composed call low too) — while the FIRST ambiguous
+    ingredient (template order) yields a null phenotype carrying that
+    ingredient's ambiguous variants and a note naming it. Score is the
+    minimum ingredient score; one component per ingredient."""
+    names = template_placeholders(template)
+    score = round(min(calls[name].score for name in names), _DETAIL_PLACES)
+    components = tuple(
+        ScoreComponent(name=name, score=round(calls[name].score, _DETAIL_PLACES)) for name in names
+    )
+    values: dict[str, str] = {}
+    for name in names:
+        ingredient = calls[name]
+        if ingredient.phenotype is None:
+            return SchemeCall(
+                phenotype=None,
+                score=score,
+                confidence="ambiguous",
+                components=components,
+                ambiguous=ingredient.ambiguous,
+                notes=(f"ingredient scheme {name!r} is ambiguous",),
+            )
+        values[name] = ingredient.phenotype
+    confidence = "low" if any(calls[name].confidence == "low" for name in names) else "high"
+    return SchemeCall(
+        phenotype=template.format_map(values),
+        score=score,
+        confidence=confidence,
+        components=components,
     )
 
 

@@ -8,7 +8,7 @@ import re
 import shutil
 from pathlib import Path
 
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit.cli import app
 from gapit.db import list_databases
@@ -27,13 +27,13 @@ def make_datadir(tmp_path: Path) -> Path:
 def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
     """Given the fixture, When setupdb runs and then databases are listed,
     Then exit 0, all six bundled databases materialize (one stderr note
-    each, alphabetical) alongside tinyamr's Indexed line, and the listing
-    carries all seven databases."""
+    each, alphabetical — vp_ok's counting loci) alongside tinyamr's Indexed
+    line, and the listing carries all seven databases."""
     datadir = make_datadir(tmp_path)
     setup = runner.invoke(app, ["setupdb", "--datadir", str(datadir)])
     assert setup.exit_code == 0
     stderr_lines = setup.stderr.splitlines()
-    assert stderr_lines[:6] == [
+    assert stderr_lines[:5] == [
         f"gapit: materializing bundled database {name} ({records} records) into {datadir}"
         for name, records in (
             ("ecoh", 597),
@@ -41,17 +41,19 @@ def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
             ("lm_doumith", 5),
             ("ncbi", 8373),
             ("resfinder", 3206),
-            ("upec_expec_vf", 77),
         )
     ]
-    assert stderr_lines[6:] == [
+    assert stderr_lines[5:7] == [
+        f"gapit: materializing bundled database vp_ok (195 loci) into {datadir}",
         "Indexed ecoh (597 sequences, nucl)",
+    ]
+    assert stderr_lines[7:] == [
         "Indexed ecoli_dec (16 sequences, nucl)",
         "Indexed lm_doumith (5 sequences, nucl)",
         "Indexed ncbi (8373 sequences, nucl)",
         "Indexed resfinder (3206 sequences, nucl)",
         "Indexed tinyamr (3 sequences, nucl)",
-        "Indexed upec_expec_vf (77 sequences, nucl)",
+        "Indexed vp_ok (195 sequences, nucl)",
     ]
 
     infos = list_databases(datadir, setupdb=False)
@@ -62,7 +64,7 @@ def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
         "ncbi",
         "resfinder",
         "tinyamr",
-        "upec_expec_vf",
+        "vp_ok",
     ]
     tinyamr = infos[5]
     assert tinyamr.n_sequences == 3

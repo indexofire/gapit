@@ -2,7 +2,7 @@
 
 ``perform_fetch`` installs database(s) under the datadir (every provider
 downloads from upstream at fetch time); the ``db_list_*`` callables build
-the gapit.dblist/1 database listing. The typer commands
+the gapit.dblist/1 database listing. The CLI commands
 (:mod:`gapit.cmd_db`) and the MCP tools (:mod:`gapit.mcp_tools`) are thin
 callers — this module owns the behavior and imports no CLI plumbing.
 """
@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+from rich import box
 from rich.table import Table
 from rich.text import Text
 
@@ -212,7 +213,7 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
                 dbtype=manifest.dbtype if manifest else database.metadata.dbtype,
                 installed=manifest is not None,
                 records=manifest.n_records if manifest else None,
-                kind=manifest.kind if manifest else "gene",
+                kind=manifest.kind if manifest else database.metadata.kind,
                 source="bundled",
             )
         )
@@ -265,24 +266,26 @@ def db_list_status(entry: DbListEntry) -> str:
 def db_list_table(entries: Sequence[DbListEntry]) -> Table:
     """Rich rendering of the database listing for interactive terminals.
 
-    Same rows and STATUS texts as the TSV (NAME, PROVIDER, STATUS, DBTYPE,
-    DESCRIPTION); the command prints it only when stdout is a TTY, so pipes
-    and redirects keep the byte-stable TSV. Description cells are literal
-    ``Text`` so upstream prose can never parse as rich markup.
+    Same rows and STATUS texts as the TSV (NAME, DESCRIPTION, STATUS,
+    DBTYPE, PROVIDER); the command prints it only when stdout is a TTY, so
+    pipes and redirects keep the byte-stable TSV. Description cells are
+    literal ``Text`` so upstream prose can never parse as rich markup. The
+    box is SQUARE: every horizontal rule the same thin ``─`` weight (the
+    rich default draws the top and head rules heavy).
     """
-    table = Table(title="Databases")
+    table = Table(title="Databases", box=box.SQUARE)
     table.add_column("Name", style="cyan")
-    table.add_column("Provider")
+    table.add_column("Description")
     table.add_column("Status")
     table.add_column("DBTYPE", style="yellow")
-    table.add_column("Description")
+    table.add_column("Provider")
     for entry in entries:
         table.add_row(
             entry.name,
-            entry.vendor,
+            Text(entry.description),
             Text(db_list_status(entry), style="green" if entry.installed else "dim"),
             entry.dbtype,
-            Text(entry.description),
+            entry.vendor,
         )
     return table
 

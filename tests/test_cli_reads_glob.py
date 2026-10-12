@@ -12,8 +12,8 @@ import shutil
 from pathlib import Path
 
 import pytest
+from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
-from typer.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.cmd_screen_reads_args import reads_positional

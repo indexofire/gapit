@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit.cli import app
 from gapit.cluster import ClusterParams, load_features, load_typing, screen_cluster_file
@@ -25,7 +25,6 @@ from gapit.fasta import iter_fasta
 from gapit.formats.cluster import format_cluster_tsv, render_cluster_json
 from gapit.formats.cluster_md import render_cluster_md
 from gapit.typing_engine import evaluate_typing
-from gapit.typing_models import single_scheme
 
 DATA = Path(__file__).parent / "data" / "cluster"
 GOLDEN = Path(__file__).parent / "golden"
@@ -267,7 +266,7 @@ class TestGoldens:
         typing_document = load_typing(database)
         assert typing_document is not None
         report = screen_cluster_file(sample, database, features, PARAMS)
-        return evaluate_typing(report, single_scheme(typing_document))
+        return evaluate_typing(report, typing_document.schemes[0])
 
     def _check(self, name: str, rendered: str) -> None:
         golden = GOLDEN / f"cluster_{name}"

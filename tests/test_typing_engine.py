@@ -28,7 +28,6 @@ from gapit.typing_models import (
     TypingDocument,
     TypingDocumentV1,
     TypingScheme,
-    single_scheme,
     validate_references,
 )
 from gapit.typing_results import ScoreComponent, ScoredRule
@@ -664,7 +663,7 @@ class TestLoadTyping:
         )
         loaded = load_typing(database)
         assert loaded is not None
-        assert single_scheme(loaded).cutoff == 0.9
+        assert loaded.schemes[0].cutoff == 0.9
 
 
 # ScoredRule must remain a plain value type (sorting + field access in the

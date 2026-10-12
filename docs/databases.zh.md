@@ -26,37 +26,38 @@ $ gapit db list --datadir /no/such/dir
 
 ```console
 $ gapit db list
-NAME	PROVIDER	STATUS	DBTYPE	DESCRIPTION
-ab_k	Kaptive (Kenyon lab)	available	nucl	A. baumannii K locus (Kaptive)
-ab_o	Kaptive (Kenyon lab)	available	nucl	A. baumannii OC locus — official keyword ab_o (Kaptive)
-argannot	IHU Méditerranée-Infection	available	nucl	ARG-ANNOT acquired resistance genes
-bacmet2	University of Gothenburg	available	prot	BacMet2 experimentally confirmed biocide/resistance genes (protein)
-card	McMaster University	available	nucl	CARD protein homolog resistance models
-ecoli_kps	Kaptive (Gladstone lab)	available	nucl	E. coli group 2+3 capsular polysaccharide loci (Kaptive)
-ecoli_vf	PHAC-NML	available	nucl	E. coli virulence factors (phac-nml)
-kosc_k	Kaptive (klebgenomics)	available	nucl	K. oxytoca species complex K locus (Kaptive)
-kosc_o	Kaptive (klebgenomics)	available	nucl	K. oxytoca species complex O locus (Kaptive)
-kpsc_k	Kaptive (klebgenomics)	available	nucl	K. pneumoniae species complex K locus (Kaptive)
-kpsc_o	Kaptive (klebgenomics)	available	nucl	K. pneumoniae species complex O locus (Kaptive)
-megares	MEG Lab	available	nucl	MEGARes antimicrobial resistance genes
-plasmidfinder	DTU CGE	available	nucl	CGE PlasmidFinder replicons
-vfdb	USTC (VFDB)	available	nucl	VFDB virulence factors (set A, nucleotide)
-victors	University of Chicago	available	nucl	Victors virulence factors
-ecoh	Holt lab (srst2)	bundled	nucl	E. coli O and H antigens (srst2 EcOH)
-ecoli_dec	gapit-curated (public-domain sources)	bundled	nucl	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)
-lm_doumith	gapit-curated (public-domain INSDC sources)	bundled	nucl	Listeria monocytogenes serogrouping (Doumith 2004)
-ncbi	NCBI	bundled	nucl	NCBI AMRFinderPlus (reference finder) curated AMR
-resfinder	DTU CGE	bundled	nucl	CGE ResFinder acquired resistance genes
-upec_expec_vf	FordeGenomics	bundled	nucl	UPEC/ExPEC virulence genes (FordeGenomics)
+NAME	DESCRIPTION	STATUS	DBTYPE	PROVIDER
+ab_k	A. baumannii K locus (Kaptive)	available	nucl	Kaptive (Kenyon lab)
+ab_o	A. baumannii OC locus — official keyword ab_o (Kaptive)	available	nucl	Kaptive (Kenyon lab)
+argannot	ARG-ANNOT acquired resistance genes	available	nucl	IHU Méditerranée-Infection
+bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	available	prot	University of Gothenburg
+card	CARD protein homolog resistance models	available	nucl	McMaster University
+ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	Kaptive (Gladstone lab)
+ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	PHAC-NML
+kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
+kosc_o	K. oxytoca species complex O locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
+kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
+kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
+megares	MEGARes antimicrobial resistance genes	available	nucl	MEG Lab
+plasmidfinder	CGE PlasmidFinder replicons	available	nucl	DTU CGE
+vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	USTC (VFDB)
+victors	Victors virulence factors	available	nucl	University of Chicago
+ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	Holt lab (srst2)
+ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gapit-curated (public-domain sources)
+lm_doumith	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	gapit-curated (public-domain INSDC sources)
+ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	bundled	nucl	NCBI
+resfinder	CGE ResFinder acquired resistance genes	bundled	nucl	DTU CGE
+vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	gapit-curated (vpasero)
 ```
 
 NAME 是传给 `--db` 的数据库名；PROVIDER 是上游维护机构。当
 `<datadir>/<name>/gapit-manifest.json` 存在时 STATUS 显示 `installed (N)`，N 是
 记录数，否则显示 `available`。最后六行是按名称排序的 wheel 内置数据库（见下文
 "内置数据库（即装即用）"一节）：物化前为 `bundled`，物化后为 `installed (N)`。
-其中四个（`ecoh`、`ncbi`、`resfinder`、`upec_expec_vf`）同时是注册表提供商 ——
-这类名字只渲染一次，位于内置区（绝不会重复出现一条注册表 `available` 行），
-`gapit db fetch <name>` 仍是它们的上游刷新路径。目录之外装进数据目录的数据库
+其中三个（`ecoh`、`ncbi`、`resfinder`）同时是注册表
+提供商 —— 这类名字只渲染一次，位于内置区（绝不会重复出现一条注册表 `available`
+行），`gapit db fetch <name>` 仍是它们的上游刷新路径；`vp_ok` 仅有内置库
+（无提供商、无 fetch）。目录之外装进数据目录的数据库
 同样会列出：排在内置区之后、按名称排序 —— `db build` 产物（基因与 cluster
 两类都是）以及无 manifest 的目录（abricate 风格或 `db install` 落盘的字节）以
 PROVIDER `local` 渲染，记录数取自 manifest（无 manifest 时从 FASTA 计数），
@@ -133,7 +134,7 @@ abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 | `lm_doumith` | 单核细胞增生李斯特菌血清群分型（5 条记录，Doumith 2004 标记） | 2026-10-03 | `gapit.typing/2`（方案 `doumith_serogroup`） |
 | `ncbi` | NCBI AMRFinderPlus 精选 AMR（8373 条记录） | 2026-10-02 | — |
 | `resfinder` | CGE ResFinder 获得性耐药基因（3206 条记录） | 2026-10-02 | — |
-| `upec_expec_vf` | UPEC/ExPEC 毒力基因（77 条记录，FordeGenomics） | 2026-10-02 | — |
+| `vp_ok` | 副溶血性弧菌 O/K 抗原位点（195 个位点，vpautils OAgc+CPSgc；cluster 类） | 2026-10-12 | `gapit.typing/2`（`o_group`、`k_group`、`serotype` 三方案） |
 
 **许可证来源声明。** `ecoli_dec` 的每条记录都取自公共领域的一级提交（NCBI
 RefSeq/GenBank/DDBJ 收录号，与权利方面板等位相同）；2026-10 审计中发现原面板里
@@ -141,18 +142,24 @@ RefSeq/GenBank/DDBJ 收录号，与权利方面板等位相同）；2026-10 审�
 与 `estA3`（M18346.1）逐字节相同的 `estA4`（J03311.1）副本 —— 同一个 `sth` 基因、
 同一序列 —— 面板因此为 16 条记录。`lm_doumith` 面板以同样方式取自公共领域
 的 INSDC 记录（收录号见每条头部；反向互补标记已做链向校正，`lmo0737` 经与 EGD-e
-比对验证 100% 一致）。四个提供商快照（`ecoh`、`ncbi`、`resfinder`、
-`upec_expec_vf`）通过了 2026-10 对**全部**记录的内容级审计：
+比对验证 100% 一致）。三个提供商快照（`ecoh`、`ncbi`、`resfinder`）
+通过了 2026-10 对**全部**记录的内容级审计：
 NCBI AMRFinderPlus 内容属公共领域（美国政府作品），CGE ResFinder 数据库为
-Apache-2.0，srst2 的 EcOH 为 BSD-3-Clause，FordeGenomics 的 UPEC-ExPEC 面板为
-MIT —— 四者均允许随 MIT 许可的 wheel 再分发。回归测试锁定了六个内置库的头部
-不出现任何 `VF*` / `VFDB` / `ARO:` 标签。
+Apache-2.0，srst2 的 EcOH 为 BSD-3-Clause —— 三者均允许随 MIT 许可的 wheel 再分发。`vp_ok` 基因簇快照是 MIT 许可的
+vpautils 内容（实验室逐位点精选、Bakta 注释，经
+[indexofire/vpautils](https://github.com/indexofire/vpautils)）；以一次完整
+gapit.typing/2 构建产出的已解析 `sequences` + `features.json` 形式入轮。回归测试
+锁定了六个内置库的头部不出现任何 `VF*` / `VFDB` / `ARO:` 标签。
 
-**快照是一个时间点。** 每个快照的 `sequences` 文件与快照当日 `gapit db fetch
-<name>` 从上游产出的结果逐字节一致（resfinder 由回归测试对着一份固定的上游
-归档副本逐字节验证）。随着上游持续更新，wheel 副本会逐渐滞后：`gapit db fetch
-<name>`（单独使用，或加 `--force` 覆盖已物化副本）会重新下载**最新**上游内容
-并重建数据目录里的库 —— 这是刷新路径。`bundled.json` 记录快照日期备查。
+**快照是一个时间点。** 每个快照的 `sequences` 文件与快照当日上游内容产出的结果
+逐字节一致（resfinder 由回归测试对着一份固定的上游
+归档副本逐字节验证；vp_ok 在本地存在真实 vpautils GenBank 文件时，对着
+`gapit db build` 重建的结果逐字节验证
+—— 含 `features.json`、含基因 id 解析）。随着上游持续更新，wheel 副本会逐渐滞后：
+提供商背景的内置名（`ecoh`、`ncbi`、`resfinder`）用 `gapit db fetch
+<name>`（单独使用，或加 `--force` 覆盖已物化副本）重新下载**最新**上游内容
+并重建数据目录里的库 —— 这是刷新路径；`vp_ok` 没有提供商，刷新意味着新的
+已解析快照随 wheel 版本发布。`bundled.json` 记录快照日期备查。
 （v1 的 `db outdated` 仍以 manifest 为准：报告的是已装内容的物化/抓取时间，
 不做内置-vs-上游比较 —— 将 wheel 快照与最新上游对比属未来工作。）
 
@@ -162,7 +169,11 @@ ecoli_dec (16 records) into <datadir>`，`--quiet` 可静默），随后走标�
 构建管线：`records.jsonl`、gapit/v1 头部的 `sequences`、BLAST 索引、（库自带时）
 `typing.json` 副本，以及盖上 `source: "bundled"` 的 manifest。该管线与
 `gapit db build` 共享，会在构建时丢弃精确重复的（基因, 序列）记录（保留首条；
-stderr 提示与回执中的 `duplicates_dropped` 计数）。全程确定性、零
+stderr 提示与回执中的 `duplicates_dropped` 计数）。基因簇内置库（`vp_ok`）改走
+基因簇管线：物化时用与 `gapit db build` 相同的基因簇构建入口，从入轮产物重建位点
+FASTA 与
+`features.json` —— 基因 id 保持快照时的已解析状态，typing 规格对其重新校验、
+不做重解析。全程确定性、零
 网络。仅这条路径会在数据目录缺失时自动创建它；`gapit setupdb` 在建索引的同时
 物化全部内置库；manifest 一旦存在，两者重跑都是无操作。`db list` 在物化前显示
 `bundled`、物化后显示 `installed (16)` —— 四个列表入口（TSV、rich 表格、
@@ -197,11 +208,35 @@ table.tsv`。
 回退判定 —— `untypeable (4a/4c, atypical profile, or non-Lm Listeria)` ——
 是这五个标记无法给出答案时的诚实输出。
 
+### vp_ok（副溶血性弧菌 O:K，MIT，安装即带 typing）
+
+`vp_ok` 把 [indexofire/vpautils](https://github.com/indexofire/vpautils) 的两份副溶血
+性弧菌血清型参考——`OAgc.gbk`（32 个 O 抗原基因簇位点）和 `CPSgc.gbk`（163 个荚膜多
+糖位点）——合并为一个 `kind: cluster` 数据库。它是 `ecoli_dec`/`lm_doumith` 模式的
+纯内置数据库：没有提供商、没有 source URL、没有 `gapit db fetch vp_ok`。自带的
+三 scheme typing 资产（`src/gapit/data/typing/vp_ok.json`，由
+`scripts/generate_vp_typing.py` 可复现生成）随之一并安装，筛查随之渲染
+`gapit.cluster/2`，按文件给出 `o_group`、`k_group` 与组合出的
+`serotype` `"{o_group}:{k_group}"`（回退 OUT/KUT）——一次扫描即得 O:K 血清型：
+
+```console
+$ gapit screen RIMD.fna --db vp_ok --format json
+{"schema": "gapit.cluster/2", ..., "phenotypes": {"o_group": {"phenotype": "O3"},
+ "k_group": {"phenotype": "K6"}, "serotype": {"phenotype": "O3:K6"}}}
+```
+
+数据库内容为 **MIT**（经 vpautils，Bakta 注释），与 kaptive 提供商不同，许可上可再
+分发——已解析快照作为第六个内置库随 wheel 发布（入轮产物 8.3 MiB，在 30 MiB 预算
+内），首次使用即零网络物化。入轮 typing 规格按位点重新计算序列唯一关键基因
+（变异体折叠：OL4V1 → O4、KL20V1 → K20；未定型的 OLU*/KLU* 位点不设规则，回退
+OUT/KUT），并且该资产在构建与物化时对位点做校验——上游 GBK 漂移会以
+`TYPING_UNKNOWN_GENE` 失败，而不是静默安装。已用真实基因组校准，RIMD 2210633 锁定
+O3:K6（逐位点调参见规则 notes）。
+
 ## 检查数据库新鲜度
 
 `gapit db outdated` 报告每个已安装数据库相对于过期阈值的年龄。对装满的数据
-目录（输出裁剪到二十一行中的三行）：
-
+目录（输出裁剪到二十二行中的三行）：
 ```console
 $ gapit db outdated --days 30
 NAME	FETCHED_AT	AGE_DAYS	STATUS
@@ -294,8 +329,9 @@ $ gapit db search "tet(M)" --field gene --exact --json | head -1
 gapit 自带十九个提供商。每一个——包括 `card` 和 `vfdb`——都在抓取时从上游下载：
 除上文六个通过审计、宽松许可的内置库之外，包里不内置任何内容，因为多家上游许可
 （CARD 的 McMaster 条款、VFDB 的 CC BY-NC、
-Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发。七个 kaptive 提供商是**基因簇**
-数据库（抓取时经基因簇管线构建，见下文 Kaptive 提供商一节）。
+Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发。七个 kaptive 提供商是
+**基因簇**数据库（抓取时经基因簇管线构建，见下文 Kaptive 提供商一节）；第八个
+基因簇数据库——带 typing 的 `vp_ok`——仅有内置库（见上文 vp_ok 一节）。
 
 | 名称 | 维护方 | 内容 | dbtype |
 |---|---|---|---|

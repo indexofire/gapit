@@ -1,7 +1,7 @@
 """CLI integration tests: uniform help-on-bare for input-requiring commands.
 
 Commands that need input print their full help when invoked with no
-arguments at all (typer ``no_args_is_help``) instead of erroring; commands
+arguments at all (click ``no_args_is_help``) instead of erroring; commands
 that are VALID with no arguments (`mcp`, `setupdb`, `db list`,
 `db outdated`) must keep running bare. Two stdin-aware commands keep their
 own tty-guarded bare-help instead: `typing` and `summary` read a piped
@@ -16,31 +16,29 @@ import re
 from pathlib import Path
 
 import pytest
-from typer.testing import CliRunner, Result
+from click.testing import CliRunner, Result
 
 from gapit.cli import app
 
 runner = CliRunner()
 
-# typer's vendored click signals no-args-is-help via NoArgsIsHelpError (a
-# UsageError subclass), so help-on-bare exits 2 — the same code the bare
-# root app has always used. Recorded reality, not an aspiration.
+# click signals no-args-is-help via NoArgsIsHelpError (a UsageError
+# subclass), so help-on-bare exits 2 with the help text on stderr — the
+# same code the bare root app has always used. Recorded reality, not an
+# aspiration.
 BARE_HELP_EXIT = 2
 
 # Every full help render carries this row; click's missing-argument error
 # (which also prints a "Usage:" line) does not. Whitespace is normalized
-# before matching because rich wraps help rows at the terminal width.
+# before matching because help rows wrap at the runner's pinned width.
 HELP_SENTINEL = "Show this message and exit."
 
 
 def _normalized(result: Result) -> str:
-    # GITHUB_ACTIONS=true makes typer force terminal styling on help output,
-    # splitting tokens with SGR runs — strip them before matching (the
-    # test_cli_completion.py precedent) and pin COLUMNS at invocation.
+    # Whitespace-collapse both streams: the runner pins the width at 80, so
+    # help rows wrap; joining the tokens reconstructs searchable rows.
     text = result.stdout + result.stderr
     text = re.compile(r"\x1b\[[0-9;]*m").sub("", text)
-    for box_char in "│├└┼╭╮╰╯─":
-        text = text.replace(box_char, " ")
     return " ".join(text.split())
 
 
@@ -63,7 +61,7 @@ def test_bare_invocation_prints_help(argv: list[str], monkeypatch: pytest.Monkey
     gapit.error envelope (REGISTRY emptied so a bare `db fetch` that leaked
     past help could never start a real download)."""
     monkeypatch.setattr("gapit.db_ops.REGISTRY", {})
-    result = runner.invoke(app, argv, env={"COLUMNS": "100"})
+    result = runner.invoke(app, argv)
     combined = _normalized(result)
     assert result.exit_code == BARE_HELP_EXIT
     assert "Usage:" in combined
@@ -105,7 +103,7 @@ def test_valid_no_arg_commands_do_not_print_help(tmp_path: Path) -> None:
 
     listed = runner.invoke(app, ["db", "list", "--datadir", str(empty)])
     assert listed.exit_code == 0
-    assert listed.stdout.startswith("NAME\tPROVIDER\tSTATUS\tDBTYPE\tDESCRIPTION")
+    assert listed.stdout.startswith("NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER")
     assert HELP_SENTINEL not in listed.stdout
 
     # Empty datadir: the documented DATADIR_EMPTY envelope (exit 4), not help.

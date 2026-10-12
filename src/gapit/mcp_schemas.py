@@ -35,7 +35,9 @@ TOOLS: list[dict[str, object]] = [
         " A cluster-kind database dispatches to the cluster engine"
         " (minimap2 asm20; json = gapit.cluster/1 with a best-locus call,"
         " per-locus gene verdicts, the phenotype call + score breakdown"
-        " when the db carries a typing.json, and the"
+        " when the db carries a single-scheme typing.json, or"
+        " gapit.cluster/2 with a phenotypes map of every scheme's call"
+        " when the typing.json holds more than one scheme, and the"
         " minGeneCov/minGeneId/minClusterCov thresholds).",
         dict(
             files=_FILES,

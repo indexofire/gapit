@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit.blast import ensure_blast, screen_file
 from gapit.cli import app

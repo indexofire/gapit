@@ -3,5 +3,6 @@
   "description": "NCBI AMRFinderPlus (reference finder) curated AMR",
   "vendor": "NCBI",
   "dbtype": "nucl",
+  "kind": "gene",
   "snapshotted": "2026-10-02"
 }

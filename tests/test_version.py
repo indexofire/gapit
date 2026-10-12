@@ -2,7 +2,7 @@
 
 import json
 
-from typer.testing import CliRunner
+from click.testing import CliRunner
 
 from gapit import __version__
 from gapit.cli import app

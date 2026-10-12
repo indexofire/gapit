@@ -1,0 +1,7 @@
+✨ Pixi task (gapit in default): gapit screen tests/data/typing/vp_typed.fa --db vp_ok --datadir /tmp/opencode/vp_bundle/smoke-dd --format json
+gapit: materializing bundled database vp_ok (195 loci) into /tmp/opencode/vp_bundle/smoke-dd
+gapit: generated /tmp/opencode/vp_bundle/smoke-dd/vp_ok/sequences
+gapit: self-check passed for vp_ok
+gapit: BLAST index built (nucl)
+Processing: tests/data/typing/vp_typed.fa
+Best locus in tests/data/typing/vp_typed.fa: none
