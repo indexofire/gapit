@@ -9,7 +9,7 @@
           "phenotype": "O1",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -23,7 +23,7 @@
             ]
           },
           "notes": [
-            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors"
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 90% coverage / 95% identity floors"
           ]
         },
         {
@@ -31,7 +31,7 @@
           "phenotype": "O1",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -48,7 +48,7 @@
           },
           "notes": [
             "variant locus OL1V1 folds into O1",
-            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors (no named antigen gene: longest CDS)"
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 90% coverage / 95% identity floors (no named antigen gene: longest CDS)"
           ]
         },
         {
@@ -56,7 +56,7 @@
           "phenotype": "O1",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -71,7 +71,7 @@
           },
           "notes": [
             "variant locus OL1V2 folds into O1",
-            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors"
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 90% coverage / 95% identity floors"
           ]
         },
         {
@@ -79,7 +79,7 @@
           "phenotype": "O2",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -100,7 +100,7 @@
           "phenotype": "O3",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -124,7 +124,7 @@
           "phenotype": "O4",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -145,7 +145,7 @@
           "phenotype": "O4",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -162,7 +162,7 @@
           },
           "notes": [
             "variant locus OL4V1 folds into O4",
-            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors (no named antigen gene: longest CDS)"
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 90% coverage / 95% identity floors (no named antigen gene: longest CDS)"
           ]
         },
         {
@@ -170,7 +170,7 @@
           "phenotype": "O5",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -194,7 +194,7 @@
           "phenotype": "O6",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -215,7 +215,7 @@
           "phenotype": "O6",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -239,7 +239,7 @@
           "phenotype": "O7",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -260,7 +260,7 @@
           "phenotype": "O7",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -284,7 +284,7 @@
           "phenotype": "O8",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -305,7 +305,7 @@
           "phenotype": "O9",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -326,7 +326,7 @@
           "phenotype": "O10",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -340,7 +340,7 @@
             ]
           },
           "notes": [
-            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors"
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 90% coverage / 95% identity floors"
           ]
         },
         {
@@ -348,7 +348,7 @@
           "phenotype": "O10",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -372,7 +372,7 @@
           "phenotype": "O10",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -396,7 +396,7 @@
           "phenotype": "O11",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -409,7 +409,7 @@
             ]
           },
           "notes": [
-            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors"
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 90% coverage / 95% identity floors"
           ]
         },
         {
@@ -417,7 +417,7 @@
           "phenotype": "O11",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -441,7 +441,7 @@
           "phenotype": "O12",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -474,7 +474,7 @@
           "phenotype": "K1",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -495,7 +495,7 @@
           "phenotype": "K3",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -516,7 +516,7 @@
           "phenotype": "K4",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -537,7 +537,7 @@
           "phenotype": "K5",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -558,7 +558,7 @@
           "phenotype": "K6",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -579,7 +579,7 @@
           "phenotype": "K7",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -600,7 +600,7 @@
           "phenotype": "K8",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -621,7 +621,7 @@
           "phenotype": "K9",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -642,7 +642,7 @@
           "phenotype": "K10",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -663,7 +663,7 @@
           "phenotype": "K11",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -708,7 +708,7 @@
           "phenotype": "K13",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -753,7 +753,7 @@
           "phenotype": "K17",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -774,7 +774,7 @@
           "phenotype": "K18",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -795,7 +795,7 @@
           "phenotype": "K19",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -816,7 +816,7 @@
           "phenotype": "K20",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -837,7 +837,7 @@
           "phenotype": "K20",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -861,7 +861,7 @@
           "phenotype": "K21",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -882,7 +882,7 @@
           "phenotype": "K22",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -903,7 +903,7 @@
           "phenotype": "K23",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -924,7 +924,7 @@
           "phenotype": "K24",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -945,7 +945,7 @@
           "phenotype": "K25",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -966,7 +966,7 @@
           "phenotype": "K28",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -987,7 +987,7 @@
           "phenotype": "K29",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1008,7 +1008,7 @@
           "phenotype": "K30",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1029,7 +1029,7 @@
           "phenotype": "K31",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1050,7 +1050,7 @@
           "phenotype": "K32",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1071,7 +1071,7 @@
           "phenotype": "K33",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1092,7 +1092,7 @@
           "phenotype": "K34",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1113,7 +1113,7 @@
           "phenotype": "K36",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1134,7 +1134,7 @@
           "phenotype": "K37",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1155,7 +1155,7 @@
           "phenotype": "K38",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1176,7 +1176,7 @@
           "phenotype": "K39",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1197,7 +1197,7 @@
           "phenotype": "K40",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1218,7 +1218,7 @@
           "phenotype": "K41",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1239,7 +1239,7 @@
           "phenotype": "K42",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1260,7 +1260,7 @@
           "phenotype": "K43",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1281,7 +1281,7 @@
           "phenotype": "K44",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1302,7 +1302,7 @@
           "phenotype": "K45",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1323,7 +1323,7 @@
           "phenotype": "K46",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1344,7 +1344,7 @@
           "phenotype": "K47",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1365,7 +1365,7 @@
           "phenotype": "K48",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1386,7 +1386,7 @@
           "phenotype": "K49",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1407,7 +1407,7 @@
           "phenotype": "K50",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1428,7 +1428,7 @@
           "phenotype": "K51",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1449,7 +1449,7 @@
           "phenotype": "K53",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1470,7 +1470,7 @@
           "phenotype": "K54",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1491,7 +1491,7 @@
           "phenotype": "K55",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1512,7 +1512,7 @@
           "phenotype": "K56",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1533,7 +1533,7 @@
           "phenotype": "K57",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1554,7 +1554,7 @@
           "phenotype": "K58",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1575,7 +1575,7 @@
           "phenotype": "K59",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1596,7 +1596,7 @@
           "phenotype": "K60",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1617,7 +1617,7 @@
           "phenotype": "K61",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1638,7 +1638,7 @@
           "phenotype": "K63",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1659,7 +1659,7 @@
           "phenotype": "K64",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1680,7 +1680,7 @@
           "phenotype": "K66",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1701,7 +1701,7 @@
           "phenotype": "K68",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1722,7 +1722,7 @@
           "phenotype": "K68",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1746,7 +1746,7 @@
           "phenotype": "K69",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1767,7 +1767,7 @@
           "phenotype": "K70",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1788,7 +1788,7 @@
           "phenotype": "K71",
           "coverage": {
             "weight": 0.55,
-            "floor": 95.0
+            "floor": 90.0
           },
           "identity": {
             "weight": 0.25,
@@ -1804,7 +1804,7 @@
             ]
           },
           "notes": [
-            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 95% coverage/identity floors (no named antigen gene: longest CDS)"
+            "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the locus's antigen-processing genes, present when the locus is truly carried — homologous siblings rely on the 90% coverage / 95% identity floors (no named antigen gene: longest CDS)"
           ]
         }
       ],

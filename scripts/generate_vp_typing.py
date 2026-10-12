@@ -20,8 +20,8 @@ fallbacks own them):
   at 4;
 - HARD loci (no sequence-unique gene; the development matrix flags
   OL1/OL1V1/OL1V2/OL4V1/OL10/OL11/KL71, trusted over the recomputation via
-  --matrix) key on the locus's antigen genes and rely on the 95%
-  coverage/identity floors against homologous siblings; THIN loci (one
+  --matrix) key on the locus's antigen genes and rely on the 90%
+  coverage / 95% identity floors against homologous siblings; THIN loci (one
   unique gene) key on that gene. Every caveat lands in the rule notes.
 
 Variants fold into their base antigen (OL4V1 -> O4, KL20V1 -> K20); the
@@ -30,7 +30,12 @@ vpautils reference defines 12 O groups (no OL13), so O3 stays plain O3.
 Usage:
     python scripts/generate_vp_typing.py OAgc.gbk CPSgc.gbk \
         --output src/gapit/data/typing/vp_ok.json \
-        [--matrix vp_rules_matrix.tsv] [--calibration-dir DIR]
+        --matrix scripts/vp_rules_matrix.tsv \
+        [--calibration-dir DIR]
+
+The committed scripts/vp_rules_matrix.tsv carries the development-matrix
+HARD flags (loci whose every CDS has a close cross-locus homolog) — the
+only matrix signal the generator consumes.
 """
 
 import argparse
@@ -68,7 +73,7 @@ MAX_KEY_GENES = 4
 HARD_NOTE = (
     "HARD: no sequence-unique CDS (sibling loci are close homologs); key genes are the"
     " locus's antigen-processing genes, present when the locus is truly carried —"
-    " homologous siblings rely on the 95% coverage/identity floors"
+    " homologous siblings rely on the 90% coverage / 95% identity floors"
 )
 THIN_NOTE = "THIN: single sequence-unique CDS; key genes are that gene alone"
 
@@ -185,7 +190,7 @@ def key_genes(locus_genes: list[Gene], shared: set[str]) -> tuple[list[str], str
 
 
 def cluster_rule(
-    locus: str, keys: list[str], note: str, coverage_floor: float = 95.0
+    locus: str, keys: list[str], note: str, coverage_floor: float = 90.0
 ) -> ClusterMatchRule:
     phenotype = LOCUS_ID.fullmatch(locus)
     notes: list[str] = []
@@ -230,7 +235,7 @@ def build_document(
         else:
             keys, note = key_genes(by_locus[locus], locus_shared)
         rules[match.group(1)].append(
-            cluster_rule(locus, keys, note, float(override.get("coverage_floor", 95.0)))
+            cluster_rule(locus, keys, note, float(override.get("coverage_floor", 90.0)))
         )
     schemes = [
         TypingScheme(

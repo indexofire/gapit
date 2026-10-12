@@ -1,0 +1,8 @@
+family	locus_id	notes
+O	OL1	HARD:no_seq_unique_gene
+O	OL1V1	HARD:no_seq_unique_gene;variant_of=O1
+O	OL1V2	HARD:no_seq_unique_gene;variant_of=O1
+O	OL4V1	HARD:no_seq_unique_gene;variant_of=O4
+O	OL10	HARD:no_seq_unique_gene
+O	OL11	HARD:no_seq_unique_gene
+K	KL71	HARD:no_seq_unique_gene
