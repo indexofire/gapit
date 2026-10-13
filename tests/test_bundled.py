@@ -312,8 +312,7 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     assert after.exit_code == 0
     assert (
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
-        "\tinstalled (16)\tnucl\tgapit-curated (public-domain sources)"
-        in after.stdout
+        "\tinstalled (16)\tnucl\tgapit-curated (public-domain sources)" in after.stdout
     )
 
     as_json = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
