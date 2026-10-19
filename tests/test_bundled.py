@@ -129,9 +129,9 @@ def screen_db(sample: Path, datadir: Path, name: str, *extra: str) -> Result:
     )
 
 
-def test_bundled_discovery_finds_all_six() -> None:
+def test_bundled_discovery_finds_all_bundled() -> None:
     """Given the wheel's data dir, When bundled databases are discovered,
-    Then exactly the six license-clean bundles ship in name order — five
+    Then exactly the seven license-clean bundles ship in name order — six
     gene-kind plus the vp_ok cluster-kind — each metadata parses
     (vendor/dbtype/kind/snapshot date), ecoli_dec and lm_doumith carry
     their typing documents, and vp_ok carries typing, features table, and
@@ -142,6 +142,7 @@ def test_bundled_discovery_finds_all_six() -> None:
         "lm_doumith",
         "ncbi",
         "resfinder",
+        "vc_serogroup",
         "vp_ok",
     ]
     by_name = {database.name: database for database in bundled_databases()}
@@ -189,7 +190,7 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     from the license audit (2 VFDB records hid past header-spotting) is
     locked mechanically across all six bundles (record counts pinned;
     the vp_ok cluster snapshot's bare locus ids are trivially clean)."""
-    typed_counts = {"ecoli_dec": 16, "lm_doumith": 5, "vp_ok": VP_OK_LOCI}
+    typed_counts = {"ecoli_dec": 16, "lm_doumith": 5, "vc_serogroup": 2, "vp_ok": VP_OK_LOCI}
     for bundled in bundled_databases():
         text = bundled.sequences_path.read_text(encoding="utf-8")
         headers = [line for line in text.splitlines() if line.startswith(">")]
@@ -483,7 +484,7 @@ def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> N
     before = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert before.exit_code == 0
     lines = before.stdout.splitlines()
-    assert lines[-6:] == [
+    assert lines[-7:] == [
         "ecoh\tE. coli O and H antigens (srst2 EcOH)\tbundled\tnucl\tHolt lab (srst2)",
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
         "\tbundled\tnucl\tgapit-curated (public-domain sources)",
@@ -491,6 +492,7 @@ def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> N
         "gapit-curated (public-domain INSDC sources)",
         "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\tNCBI",
         "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\tDTU CGE",
+        "vc_serogroup\tVibrio cholerae O1/O139 serogroup markers (wbeN/wbfR); handed over from gside\tbundled\tnucl\tgapit-curated (NCBI X59554.1 slice / KY660230.1)",
         "vp_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
         "nucl\tgapit-curated (vpasero)",
     ]
@@ -498,7 +500,7 @@ def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> N
         assert sum(line.startswith(f"{name}\t") for line in lines) == 1, name
     assert (
         "card\tCARD protein homolog resistance models\tavailable\tnucl\tMcMaster University"
-        in (lines[1:-6])
+        in (lines[1:-7])
     )
 
     sample = tmp_path / "sample.fa"

@@ -1,0 +1,8 @@
+{
+  "name": "vc_serogroup",
+  "description": "Vibrio cholerae O1/O139 serogroup markers (wbeN/wbfR); handed over from gside",
+  "vendor": "gapit-curated (NCBI X59554.1 slice / KY660230.1)",
+  "dbtype": "nucl",
+  "kind": "gene",
+  "snapshotted": "2026-10-19"
+}

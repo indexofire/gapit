@@ -119,6 +119,7 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
         ("lm_doumith", "bundled"),
         ("ncbi", "bundled"),
         ("resfinder", "bundled"),
+        ("vc_serogroup", "bundled"),
         ("vp_ok", "bundled"),
     ]
     for entry in with_source:
