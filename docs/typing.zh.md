@@ -55,7 +55,7 @@ $ gapit screen 1.fna --db ecoli_dec --quiet | gapit typing --quiet
 簇数据库会直接注释簇文档——单 scheme 数据库注释 `gapit.cluster/1`（仅限 typed 的 TSV
 `PHENOTYPE` 列、JSON/MD 中的 `best.phenotype` + `best.phenotype_detail`），多 scheme
 数据库渲染 `gapit.cluster/2`（每个 scheme 一个 call 装进 `phenotypes` 映射，TSV 为
-打包的 `PHENOTYPES` 列）。
+每方案的胜出位点证据列）。
 
 ## 一份文档，两个引擎
 
@@ -83,7 +83,7 @@ $ gapit screen 1.fna --db ecoli_dec --quiet | gapit typing --quiet
 |---|---|---|---|
 | **gene（基因）** | 标记 FASTA | blastn 基因路径 | 对筛查结果运行 `gapit typing`：`gapit.typing_result/1`（JSON）与八列 TSV/MD 表 |
 | **cluster（基因簇，单 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gapit screen` 内：`gapit.cluster/1` 的 `best.phenotype` + `best.phenotype_detail`，以及仅限已分型数据库的 TSV `PHENOTYPE` 列 |
-| **cluster（基因簇，多 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gapit screen` 内：`gapit.cluster/2` 的 `files[].phenotypes`（每个 scheme 一个 call，compose 由兄弟 scheme 渲染），以及打包的 TSV `PHENOTYPES` 列 |
+| **cluster（基因簇，多 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gapit screen` 内：`gapit.cluster/2` 的 `files[].phenotypes`（每个 scheme 一个 call，compose 由兄弟 scheme 渲染），以及每方案的胜出位点证据 TSV 列 |
 
 按类型区分的两条硬约束：
 
@@ -94,9 +94,10 @@ $ gapit screen 1.fna --db ecoli_dec --quiet | gapit typing --quiet
   表型槽位，`best.phenotype`；含**多个** scheme 的文档渲染 `gapit.cluster/2`：
   每个 scheme 都给出判定（即使没有最佳位点 call，scheme 也照常评估，fallback
   始终渲染），每个文件携带按文档顺序以 scheme 名为键的 `phenotypes` 映射，
-  `best` 不再带表型字段，TSV/CSV 的 `PHENOTYPE` 列换成打包的 `PHENOTYPES` 单元格
-  （`o_group=O3;k_group=K6`；表型里含 `;` 会破坏该单元格——与 typing_result 的
-  GENES 列同一已接受的限制）。`/2` 构建保证基因 id 全局唯一：跨位点重复的
+  `best` 不再带表型字段，TSV/CSV 的列由方案文档派生：compose 方案的取值列在前
+  （`SEROTYPE`），随后每个非 compose 方案携带其判定列与胜出位点的证据列
+  （`<SCHEME>_LOCUS/_COVERAGE/_IDENTITY/_PRESENT/_PARTIAL/_MISSING`，`o_group` 的
+  证据前缀缩短为 `O`），无胜出位点的判定渲染为 `-``/2` 构建保证基因 id 全局唯一：跨位点重复的
   `/gene` 名在构建时解析为其 `/locus_tag`，没有空闲 locus_tag 时解析为
   `locus:id@start`。单个 compose-only scheme 无法解析（其占位符必须引用一个
   非组合兄弟 scheme），因此 scheme 数量本身就是契约判据。
@@ -238,8 +239,9 @@ PCR panel（`sacB`/A、`synD`/B、`synE`/C、`xcbB`/X、`synF`/Y，按 meningoty
 
 vp_ok 手册文档安装为**一个合并数据库**，渲染 `gapit.cluster/2`：每个文件对每个
 scheme 给出判定（`o_group`、`k_group`，随后由原料渲染的 `serotype` compose——
-一次扫描得到 `O3/O13:K6`），TSV 行携带打包的 `PHENOTYPES` 单元格
-（`o_group=O3/O13;k_group=K6;serotype=O3/O13:K6`）。历史 `/1` 安装——用同一 GBK
+一次扫描得到 `O3/O13:K6`），TSV 行把组合血清型放在最前，随后每个方案给出判定
+与胜出位点的证据（`FILE SEROTYPE O_GROUP O_LOCUS O_COVERAGE ... K_GROUP K_LOCUS
+K_COVERAGE ...`）。历史 `/1` 安装——用同一 GBK
 各装一个 scheme 的**两个数据库**（`vp_o`、`vp_k`），恰是 Kaptive 分别发布 O 与 K
 数据库的方式——依然完全有效：单 scheme 文档保持渲染字节冻结的 `gapit.cluster/1`，
 当 O 与 K 判定分属不同流水线时拆分仍是首选。测试套件同时断言合并后的 /2 golden
@@ -356,8 +358,8 @@ vc_inaba.fa  wbe      O1    inaba      100.00    99.44     3        0        -
 ```console
 $ gapit db build vp_ok vp_ok.gbk --typing vp_ok.json   # 一个合并库 → gapit.cluster/2
 $ gapit screen sample.fa --db vp_ok --quiet
-FILE      BEST_LOCUS  TYPE  PHENOTYPES                                        ...
-sample.fa OL3_or_O13  O3/O13  o_group=O3/O13;k_group=K6;serotype=O3/O13:K6  ...
+FILE      SEROTYPE   O_GROUP  O_LOCUS     O_COVERAGE  ...  K_GROUP  K_LOCUS  K_COVERAGE  ...
+sample.fa O3/O13:K6  O3/O13   OL3_or_O13  100.00      ...  K6       KL6     100.00      ...
 
 $ gapit db build vp_o vp_ok.gbk --typing vp_o_group.json   # /1 拆分（各一个 scheme）
 $ gapit db build vp_k vp_ok.gbk --typing vp_k_group.json

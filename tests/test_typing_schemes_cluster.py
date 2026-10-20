@@ -413,9 +413,9 @@ class TestGoldens:
         assert render_cluster2_json([report], params, now=PINNED_NOW) == (
             GOLDEN / f"cluster2_{sample}.json"
         ).read_text(encoding="utf-8")
-        assert render_cluster2_md([report], params, now=PINNED_NOW) == (
+        assert render_cluster2_md([report], params, now=PINNED_NOW, document=typing_document) == (
             GOLDEN / f"cluster2_{sample}.md"
         ).read_text(encoding="utf-8")
-        assert format_cluster2_tsv([report], csv=False, noheader=False, nopath=False) == (
-            GOLDEN / f"cluster2_{sample}.tsv"
-        ).read_text(encoding="utf-8")
+        assert format_cluster2_tsv(
+            [report], csv=False, noheader=False, nopath=False, document=typing_document
+        ) == (GOLDEN / f"cluster2_{sample}.tsv").read_text(encoding="utf-8")

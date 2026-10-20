@@ -64,7 +64,7 @@ cluster engine can compute — there is no re-readable screen table for it. Scre
 typed cluster database annotates the cluster document directly — a single-scheme db
 annotates `gapit.cluster/1` (the typed-only `PHENOTYPE` TSV column, `best.phenotype` +
 `best.phenotype_detail` in JSON/MD), and a multi-scheme db renders `gapit.cluster/2`
-(one call per scheme in a `phenotypes` map, packed `PHENOTYPES` TSV column).
+(one call per scheme in a `phenotypes` map, per-scheme winner-evidence TSV columns).
 
 ## One document, two engines
 
@@ -92,7 +92,7 @@ Which engine evaluates the document depends on the database kind:
 |---|---|---|---|
 | **gene** | marker FASTA | blastn gene path | `gapit typing` over the screen results: `gapit.typing_result/1` (JSON) and the eight-column TSV/MD table |
 | **cluster** (one scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gapit screen`: `best.phenotype` + `best.phenotype_detail` of `gapit.cluster/1`, plus the typed-only `PHENOTYPE` TSV column |
-| **cluster** (multi-scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gapit screen`: `files[].phenotypes` of `gapit.cluster/2` (one call per scheme, compose rendered from its ingredients), plus the packed `PHENOTYPES` TSV column |
+| **cluster** (multi-scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gapit screen`: `files[].phenotypes` of `gapit.cluster/2` (one call per scheme, compose rendered from its ingredients), plus per-scheme winner-evidence TSV columns |
 
 Two hard constraints by kind:
 
@@ -104,9 +104,11 @@ Two hard constraints by kind:
   document with **more than one** scheme renders `gapit.cluster/2`: every scheme is called
   (schemes evaluate even without a best-locus call, so fallbacks always render), each file
   carries a `phenotypes` map keyed by scheme name in document order, `best` drops its
-  phenotype fields, and the TSV/CSV `PHENOTYPE` column becomes a packed `PHENOTYPES` cell
-  (`o_group=O3;k_group=K6`; a `;` inside a phenotype would degrade the cell — the same
-  accepted caveat as typing_result's GENES column). `/2` builds guarantee globally-unique
+  phenotype fields, and the TSV/CSV columns derive from the document: each compose scheme's
+  value column renders first (`SEROTYPE`), then every non-compose scheme carries its call
+  column plus its winning locus's evidence (`<SCHEME>_LOCUS/_COVERAGE/_IDENTITY/_PRESENT/
+  _PARTIAL/_MISSING`; the `o_group` evidence prefix shortens to `O`) — `-` cells where no
+  winner exists. `/2` builds guarantee globally-unique
   gene ids: a `/gene` name shared across loci is resolved at build time to its
   `/locus_tag`, or to `locus:id@start` when no free locus_tag exists. A single
   compose-only scheme is unparseable (its placeholders must reference a non-composing
@@ -254,8 +256,10 @@ Three schemes:
 The vp_ok cookbook document installs as **one merged database** rendering
 `gapit.cluster/2`: every scheme is called per file (`o_group`, `k_group`, then the
 `serotype` compose rendered from its ingredients — `O3/O13:K6` in one scan), and its
-TSV row carries the packed `PHENOTYPES` cell
-(`o_group=O3/O13;k_group=K6;serotype=O3/O13:K6`). The historical `/1` install —
+TSV row puts the composed serotype FIRST and then gives each scheme its call plus the
+winning locus's own evidence (coverage, identity, gene counts, missing ids):
+`FILE SEROTYPE O_GROUP O_LOCUS O_COVERAGE ... K_GROUP K_LOCUS K_COVERAGE ...`. The
+historical `/1` install —
 **two databases** (`vp_o`, `vp_k`) built from the same GBK with one scheme each,
 exactly how Kaptive ships separate O and K databases — remains fully valid: a
 single-scheme document keeps rendering byte-frozen `gapit.cluster/1`, and the split
@@ -381,8 +385,8 @@ historical /1 split (one database per scheme):
 ```console
 $ gapit db build vp_ok vp_ok.gbk --typing vp_ok.json   # ONE merged db → gapit.cluster/2
 $ gapit screen sample.fa --db vp_ok --quiet
-FILE      BEST_LOCUS  TYPE  PHENOTYPES                                        ...
-sample.fa OL3_or_O13  O3/O13  o_group=O3/O13;k_group=K6;serotype=O3/O13:K6  ...
+FILE      SEROTYPE   O_GROUP  O_LOCUS     O_COVERAGE  ...  K_GROUP  K_LOCUS  K_COVERAGE  ...
+sample.fa O3/O13:K6  O3/O13   OL3_or_O13  100.00      ...  K6       KL6     100.00      ...
 
 $ gapit db build vp_o vp_ok.gbk --typing vp_o_group.json   # /1 split (one scheme each)
 $ gapit db build vp_k vp_ok.gbk --typing vp_k_group.json

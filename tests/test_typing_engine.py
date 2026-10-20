@@ -207,41 +207,56 @@ class TestClusterMatch:
 
     def test_perfect_locus_scores_weight_sum(self) -> None:
         """Given a locus at 100/100 with both key genes present, When
-        scored, Then the total is the documented weight sum (1.0 here)."""
+        scored, Then the total is the documented weight sum (1.0 here)
+        with that locus surfaced as the winner evidence."""
         genes = [gene("wzx"), gene("manC")]
-        score, components = score_cluster_match(self.RULE, report([locus_call("locusA", genes)]))
+        score, components, winner = score_cluster_match(
+            self.RULE, report([locus_call("locusA", genes)])
+        )
         assert score == pytest.approx(1.0)
         assert [c.name for c in components] == ["coverage", "identity", "key_genes"]
         assert [c.score for c in components] == pytest.approx([0.5, 0.3, 0.2])
+        assert winner is not None
+        assert winner.locus == "locusA"
+        assert winner.coverage_pct == 100.0
+        assert winner.identity_pct == 100.0
+        assert winner.genes_present == 2
+        assert winner.genes_partial == 0
+        assert winner.missing == ()
 
     def test_coverage_below_floor_scores_zero(self) -> None:
         """Given a locus below the coverage floor, When scored, Then the
-        rule scores 0 for that locus."""
+        rule scores 0 for that locus and carries no winner."""
         genes = [gene("wzx"), gene("manC")]
         scored = report([locus_call("locusA", genes, coverage=89.9)])
         assert score_cluster_match(self.RULE, scored)[0] == 0.0
+        assert score_cluster_match(self.RULE, scored)[2] is None
 
     def test_identity_below_floor_scores_zero(self) -> None:
         """Given a locus below the identity floor, When scored, Then the
-        rule scores 0 even with perfect coverage."""
+        rule scores 0 even with perfect coverage, no winner."""
         genes = [gene("wzx"), gene("manC")]
         scored = report([locus_call("locusA", genes, identity=94.9)])
         assert score_cluster_match(self.RULE, scored)[0] == 0.0
+        assert score_cluster_match(self.RULE, scored)[2] is None
 
     def test_key_gene_fraction_counts_present_only(self) -> None:
         """Given one of two key genes present, When scored, Then the
         key-genes component carries half its weight."""
         genes = [gene("wzx"), gene("manC", verdict="partial")]
-        score, components = score_cluster_match(self.RULE, report([locus_call("locusA", genes)]))
+        score, components, evidence = score_cluster_match(
+            self.RULE, report([locus_call("locusA", genes)])
+        )
         assert components[2].name == "key_genes"
         assert components[2].score == pytest.approx(0.1)
         assert score == pytest.approx(0.9)
+        assert evidence is not None and evidence.locus == "locusA"
 
     def test_partial_coverage_scales_component(self) -> None:
         """Given a locus at 95% coverage, When scored, Then the coverage
         component is weight * 0.95."""
         genes = [gene("wzx"), gene("manC")]
-        _, components = score_cluster_match(
+        _, components, _ = score_cluster_match(
             self.RULE, report([locus_call("locusA", genes, coverage=95.0)])
         )
         assert components[0].name == "coverage"
@@ -249,23 +264,25 @@ class TestClusterMatch:
 
     def test_higher_scoring_locus_wins(self) -> None:
         """Given two covered loci, When scored, Then the higher total wins
-        (here: the rank-2 locus whose key genes are present)."""
+        (here: the rank-2 locus whose key genes are present) and the
+        winner evidence names that locus."""
         weak = locus_call("locusA", [gene("gtrA")], coverage=100.0, rank=1)
         strong = locus_call("locusB", [gene("wzx"), gene("manC")], coverage=100.0, rank=2)
-        score, components = score_cluster_match(self.RULE, report([weak, strong]))
+        score, components, evidence = score_cluster_match(self.RULE, report([weak, strong]))
         assert score == pytest.approx(1.0)
         assert [component.score for component in components] == pytest.approx([0.5, 0.3, 0.2])
+        assert evidence is not None and evidence.locus == "locusB"
 
     def test_no_loci_scores_zero(self) -> None:
         """Given a report with no covered loci, When scored, Then the rule
-        scores 0 with no components."""
-        assert score_cluster_match(self.RULE, report([])) == (0.0, ())
+        scores 0 with no components and no winner evidence."""
+        assert score_cluster_match(self.RULE, report([])) == (0.0, (), None)
 
     def test_key_genes_absent_from_locus_count_as_absent(self) -> None:
         """Given a key gene that exists elsewhere but not in the scored
         locus, When scored, Then it counts as absent for this locus."""
         genes = [gene("wzx")]
-        _, components = score_cluster_match(self.RULE, report([locus_call("locusA", genes)]))
+        _, components, _ = score_cluster_match(self.RULE, report([locus_call("locusA", genes)]))
         assert components[2].score == pytest.approx(0.1)
 
 

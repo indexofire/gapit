@@ -152,7 +152,11 @@ def run_cluster_screen(
     return value."""
     features = load_features(database)
     typing_document = load_typing(database)
-    v2 = typing_document is not None and uses_cluster_v2(typing_document)
+    v2_document = (
+        typing_document
+        if typing_document is not None and uses_cluster_v2(typing_document)
+        else None
+    )
     if typing_document is not None:
         validate_references(typing_document, features)
     typed = typing_document is not None
@@ -172,28 +176,32 @@ def run_cluster_screen(
 
     if output_format is OutputFormat.json:
         reports = [screen_one(path) for path in files]
-        if v2:
+        if v2_document is not None:
             sink(render_cluster2_json(reports, params, now=datetime.now(UTC)))
         else:
             sink(render_cluster_json(reports, params, now=datetime.now(UTC), typed=typed))
     elif output_format is OutputFormat.md:
-        if v2:
+        if v2_document is not None:
             sink(cluster2_md_head(params, now=datetime.now(UTC)))
         else:
             # Static frontmatter leads; each file's section (its own summary
             # row + gene table) streams the moment the file completes.
             sink(cluster_md_head(params, now=datetime.now(UTC)))
         for path in files:
-            if v2:
-                sink(cluster2_md_file_chunk(screen_one(path)))
+            if v2_document is not None:
+                sink(cluster2_md_file_chunk(screen_one(path), v2_document))
             else:
                 sink(cluster_md_file_chunk(screen_one(path), typed=typed))
     else:
         csv = output_format is OutputFormat.csv
-        if v2:
-            sink(cluster2_tsv_preamble(csv=csv, noheader=noheader))
+        if v2_document is not None:
+            sink(cluster2_tsv_preamble(csv=csv, noheader=noheader, document=v2_document))
             for path in files:
-                sink(cluster2_tsv_file_chunk(screen_one(path), csv=csv, nopath=nopath))
+                sink(
+                    cluster2_tsv_file_chunk(
+                        screen_one(path), csv=csv, nopath=nopath, document=v2_document
+                    )
+                )
         else:
             sink(cluster_tsv_preamble(csv=csv, noheader=noheader, typed=typed))
             for path in files:

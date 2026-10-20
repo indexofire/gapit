@@ -5,6 +5,23 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **`gapit.cluster/2` TSV/CSV reshaped: per-scheme winner evidence replaces the packed
+  PHENOTYPES cell and the global-best columns.** The header now derives from the typing
+  document: each compose scheme's value column renders first (`SEROTYPE` — the headline
+  answer leads), then every non-compose scheme carries its call plus the winning locus's
+  own evidence (`O_GROUP, O_LOCUS, O_COVERAGE, O_IDENTITY, O_PRESENT, O_PARTIAL,
+  O_MISSING` — the `o_group` evidence prefix shortens to `O`); `-` cells where no winner
+  exists. The misleading `BEST_LOCUS`/global-evidence columns are gone (they described
+  whichever locus of either family ranked first), and the JSON `phenotypes` map gains
+  additive `winner_*` fields (`winner_locus`, `winner_coverage_pct`, `winner_identity_pct`,
+  `winner_present`, `winner_partial`, `winner_missing`). Amendment of a contract shipped
+  in 0.5.5 days earlier with no downstream adoption; `/1` and `gapit.typing_result/1`
+  outputs are byte-frozen.
+
 ## [0.5.5] - 2026-10-13
 
 ### Added

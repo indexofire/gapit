@@ -1,12 +1,13 @@
 """gapit.cluster/1 + /2 Markdown renderers.
 
 Split from formats/cluster.py at the 250-LOC ceiling (stage 3): the per-file
-summary row (with a ``Phenotype`` column on typed databases, a packed
-``Phenotypes`` column on /2 multi-scheme databases), the best locus's gene
-table, and YAML frontmatter mirroring the engine params. The frontmatter is
-STATIC metadata only and each file's section carries its own summary row +
-gene table, so the document streams one chunk per file exactly like the TSV
-— no all-files summary table, no run totals.
+summary row (with a ``Phenotype`` column on typed databases, the /2
+per-scheme columns — compose schemes first — on multi-scheme databases),
+the best locus's gene table, and YAML frontmatter mirroring the engine
+params. The frontmatter is STATIC metadata only and each file's section
+carries its own summary row + gene table, so the document streams one
+chunk per file exactly like the TSV — no all-files summary table, no run
+totals.
 """
 
 from collections.abc import Iterable
@@ -14,8 +15,15 @@ from datetime import UTC, datetime
 
 from gapit import __version__
 from gapit.cluster import ClusterParams, ClusterReport, LocusCall
-from gapit.formats.cluster2 import phenotypes_cell
+from gapit.formats.cluster2 import (
+    cluster2_columns,
+    cluster2_row_cells,
+    count_or_dash,
+    pct_or_dash,
+)
 from gapit.formats.md import md_cell
+from gapit.typing_models import TypingDocument
+from gapit.typing_results import SchemeCall
 
 _SUMMARY_COLUMNS = (
     "File",
@@ -37,9 +45,6 @@ _SUMMARY_COLUMNS_TYPED = (
     "Present",
     "Partial",
     "Missing",
-)
-_SUMMARY_COLUMNS_V2 = tuple(
-    "Phenotypes" if column == "Phenotype" else column for column in _SUMMARY_COLUMNS_TYPED
 )
 _GENE_COLUMNS = ("Gene", "Start", "End", "Strand", "Coverage%", "Identity%", "Verdict")
 
@@ -177,34 +182,37 @@ def render_cluster_md(
     )
 
 
+def _winner_tail(call: SchemeCall) -> str:
+    """The winner-evidence tail of a /2 per-scheme line ("" when the call
+    carries no winning locus — compose schemes, gate/fallback calls)."""
+    if call.winner_locus is None:
+        return ""
+    missing = call.winner_missing
+    return (
+        f"; winner locus `{call.winner_locus}`"
+        f" coverage {pct_or_dash(call.winner_coverage_pct)}%"
+        f", identity {pct_or_dash(call.winner_identity_pct)}%"
+        f", {count_or_dash(call.winner_present)} present"
+        f", {count_or_dash(call.winner_partial)} partial"
+        f", missing {';'.join(missing) if missing else '-'}"
+    )
+
+
 def _phenotypes_lines(report: ClusterReport) -> list[str]:
     """One ``Phenotype `scheme` = call`` line per scheme in document order —
-    the /2 twin of the /1 phenotype detail line (a null call renders -)."""
+    the /2 twin of the /1 phenotype detail line (a null call renders -);
+    a rule-based call appends its winning locus's evidence."""
     return [
         f"Phenotype `{name}` = {call.phenotype or '-'}"
-        f" (score {call.score:.4f}, {call.confidence} confidence)"
+        f" (score {call.score:.4f}, {call.confidence} confidence{_winner_tail(call)})"
         for name, call in report.phenotypes.items()
     ]
 
 
-def _summary_row_v2(report: ClusterReport) -> tuple[str, ...]:
-    """One file's /2 summary row; a null best renders the untyped dashes,
-    the packed Phenotypes cell stays populated."""
-    cell = phenotypes_cell(report)
-    if report.best is None:
-        return (report.file, "-", "-", cell, "0.00", "0.00", "0", "0", "-")
-    best = report.best
-    return (
-        report.file,
-        best.locus,
-        best.type,
-        cell,
-        f"{best.coverage_pct:.2f}",
-        f"{best.identity_pct:.2f}",
-        str(best.genes_present),
-        str(best.genes_partial),
-        _missing_cell(report, best.locus),
-    )
+def _summary_row_v2(report: ClusterReport, document: TypingDocument) -> tuple[str, ...]:
+    """One file's /2 summary row: the exact /2 TSV cells (compose schemes
+    first, then each scheme's call + winner evidence)."""
+    return tuple(cluster2_row_cells(report, document, nopath=False))
 
 
 def cluster2_md_head(params: ClusterParams, *, now: datetime) -> str:
@@ -213,13 +221,14 @@ def cluster2_md_head(params: ClusterParams, *, now: datetime) -> str:
     return cluster_md_head(params, now=now, schema_tag="gapit.cluster/2")
 
 
-def cluster2_md_file_chunk(report: ClusterReport) -> str:
+def cluster2_md_file_chunk(report: ClusterReport, document: TypingDocument) -> str:
     """One file's /2 section, self-contained so it streams the moment the
-    file completes: heading, the summary row (packed Phenotypes column),
-    one line per scheme in document order, then the best locus's gene
-    table (or the no-locus note — the phenotypes lines still render)."""
+    file completes: heading, the summary row (the /2 columns — compose
+    schemes first, then per-scheme evidence), one line per scheme in
+    document order, then the best locus's gene table (or the no-locus
+    note — the phenotypes lines still render)."""
     lines: list[str] = [f"## `{report.file}`", ""]
-    lines.extend(_md_table(_SUMMARY_COLUMNS_V2, [_summary_row_v2(report)]))
+    lines.extend(_md_table(cluster2_columns(document), [_summary_row_v2(report, document)]))
     lines.append("")
     lines.extend(_phenotypes_lines(report))
     lines.append("")
@@ -239,12 +248,17 @@ def cluster2_md_file_chunk(report: ClusterReport) -> str:
 
 
 def render_cluster2_md(
-    reports: Iterable[ClusterReport], params: ClusterParams, *, now: datetime
+    reports: Iterable[ClusterReport],
+    params: ClusterParams,
+    *,
+    now: datetime,
+    document: TypingDocument,
 ) -> str:
     """Render multi-scheme cluster screening as deterministic Markdown: /2
-    frontmatter, then one section per file. The head + file chunks
-    concatenate to exactly this document."""
+    frontmatter, then one section per file (summary row + per-scheme lines
+    + best-locus gene table). The head + file chunks concatenate to
+    exactly this document."""
     files = list(reports)
     return cluster2_md_head(params, now=now) + "".join(
-        cluster2_md_file_chunk(report) for report in files
+        cluster2_md_file_chunk(report, document) for report in files
     )

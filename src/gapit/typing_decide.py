@@ -49,7 +49,10 @@ def decide_typing(
     """Rank evaluated rules (score desc, declared order on ties) and apply
     the scheme's cutoff + ambiguity-margin decision; returns the phenotype
     string (or None when ambiguous) plus the explainable detail of the
-    winning rule."""
+    winning rule — carrying the winning cluster_match locus's evidence
+    (``winner``) only when the call is rule-based (top >= cutoff): an
+    ambiguous call keeps it (the detail exists even though the call is
+    null), a fallback drops it (no rule cleared the cutoff)."""
     ranked = sorted(enumerate(scored), key=lambda pair: (-pair[1].score, pair[0]))
     top = ranked[0][1]
     second = ranked[1][1] if len(ranked) > 1 else None
@@ -88,6 +91,7 @@ def decide_typing(
             else ()
         ),
         notes=top.notes,
+        winner=top.winner if top.score >= scheme.cutoff else None,
     )
 
 

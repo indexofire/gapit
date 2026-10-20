@@ -14,12 +14,12 @@ threads: 1
 
 ## `vp_o3k6.fa`
 
-| File | Best locus | Type | Phenotypes | Coverage% | Identity% | Present | Partial | Missing |
-|---|---|---|---|---|---|---|---|---|
-| vp_o3k6.fa | OL3_or_O13 | O3/O13 | o_group=O3/O13;k_group=K6;serotype=O3/O13:K6 | 100.00 | 100.00 | 3 | 0 | - |
+| FILE | SEROTYPE | O_GROUP | O_LOCUS | O_COVERAGE | O_IDENTITY | O_PRESENT | O_PARTIAL | O_MISSING | K_GROUP | K_LOCUS | K_COVERAGE | K_IDENTITY | K_PRESENT | K_PARTIAL | K_MISSING |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| vp_o3k6.fa | O3/O13:K6 | O3/O13 | OL3_or_O13 | 100.00 | 100.00 | 3 | 0 | - | K6 | KL6 | 100.00 | 100.00 | 3 | 0 | - |
 
-Phenotype `o_group` = O3/O13 (score 1.0000, high confidence)
-Phenotype `k_group` = K6 (score 1.0000, high confidence)
+Phenotype `o_group` = O3/O13 (score 1.0000, high confidence; winner locus `OL3_or_O13` coverage 100.00%, identity 100.00%, 3 present, 0 partial, missing -)
+Phenotype `k_group` = K6 (score 1.0000, high confidence; winner locus `KL6` coverage 100.00%, identity 100.00%, 3 present, 0 partial, missing -)
 Phenotype `serotype` = O3/O13:K6 (score 1.0000, high confidence)
 
 Best locus `OL3_or_O13` (OL3, type O3/O13):

@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from gapit.typing_models import TypingDocument
+from gapit.typing_rules import ExactSetRule
 
 _DB = Path(__file__).resolve().parents[1] / "src" / "gapit" / "data" / "dbs" / "vc_serogroup"
 
@@ -35,7 +34,10 @@ def test_typing_document_valid_and_exclusive():
     scheme = doc.schemes[0]
     assert scheme.name == "serogroup"
     phenotypes = {r.phenotype: r for r in scheme.rules}
-    assert phenotypes["O1"].requires == ["wbeN"]
-    assert phenotypes["O139"].requires == ["wbfR"]
-    assert "wbfR" in (phenotypes["O1"].excludes or [])
-    assert "wbeN" in (phenotypes["O139"].excludes or [])
+    o1, o139 = phenotypes["O1"], phenotypes["O139"]
+    assert isinstance(o1, ExactSetRule)
+    assert isinstance(o139, ExactSetRule)
+    assert o1.requires == ["wbeN"]
+    assert o139.requires == ["wbfR"]
+    assert "wbfR" in (o1.excludes or [])
+    assert "wbeN" in (o139.excludes or [])

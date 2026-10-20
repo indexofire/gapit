@@ -51,7 +51,13 @@
           },
           "notes": [
             "O3 and O13 loci contain the same genes and cannot be distinguished by gene content — one combined label (van der Graaf-van Bloois et al. 2023, Microb Genom 9:mgen001007)"
-          ]
+          ],
+          "winner_locus": "OL3_or_O13",
+          "winner_coverage_pct": 100.0,
+          "winner_identity_pct": 100.0,
+          "winner_present": 3,
+          "winner_partial": 0,
+          "winner_missing": []
         },
         "k_group": {
           "phenotype": "K6",
@@ -74,7 +80,13 @@
           "runner_up": {
             "phenotype": "K18",
             "score": 0.8
-          }
+          },
+          "winner_locus": "KL6",
+          "winner_coverage_pct": 100.0,
+          "winner_identity_pct": 100.0,
+          "winner_present": 3,
+          "winner_partial": 0,
+          "winner_missing": []
         },
         "serotype": {
           "phenotype": "O3/O13:K6",

@@ -236,6 +236,12 @@ consumes abricate-built datadirs.
 > `gapit.cluster/1`. /2 builds guarantee globally-unique gene ids (collision-aware
 > /gene→locus_tag→`locus:id@start` resolution at build time). Registered as
 > `gapit schema cluster2`. The vp_ok cookbook now installs as one merged db.
+> **Amended (2026-10-20, pre-adoption):** the packed `PHENOTYPES` cell and the
+> global-best columns are replaced by document-derived per-scheme columns — compose
+> value columns first (`SEROTYPE`), then each scheme's call + winner-locus evidence
+> (`O_LOCUS/O_COVERAGE/...`); JSON `phenotypes` gains additive `winner_*` fields. /2
+> shipped in 0.5.5 days earlier with no downstream adoption; /1 and typing_result/1
+> stay byte-frozen.
 
 ## Milestones
 

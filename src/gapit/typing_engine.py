@@ -28,7 +28,7 @@ from gapit.cluster import ClusterReport, GeneCall, LocusCall
 from gapit.errors import DatabaseError
 from gapit.typing_decide import decide_scheme
 from gapit.typing_models import TypingScheme
-from gapit.typing_results import ScoreComponent, ScoredRule
+from gapit.typing_results import LocusEvidence, ScoreComponent, ScoredRule
 from gapit.typing_rules import (
     ClusterMatchRule,
     ExactSetRule,
@@ -118,14 +118,29 @@ def score_exact_set(
     return (1.0 if ok else 0.0), components
 
 
+def _locus_evidence(locus: LocusCall) -> LocusEvidence:
+    """One locus call distilled into the winner-evidence model: its own
+    coverage/identity, verdict counts, and the not-fully-present ids."""
+    return LocusEvidence(
+        locus=locus.locus,
+        coverage_pct=locus.coverage_pct,
+        identity_pct=locus.identity_pct,
+        genes_present=sum(1 for gene in locus.genes if gene.verdict == "present"),
+        genes_partial=sum(1 for gene in locus.genes if gene.verdict == "partial"),
+        missing=locus.missing,
+    )
+
+
 def score_cluster_match(
     rule: ClusterMatchRule, report: ClusterReport
-) -> tuple[float, tuple[ScoreComponent, ...]]:
+) -> tuple[float, tuple[ScoreComponent, ...], LocusEvidence | None]:
     """Best covered locus's weighted component sum (raw, not normalized):
     below-floor coverage or identity zeroes THAT locus's score; key genes
     are the fraction of the listed ids present inside the locus (an empty
-    list scores 0). Ties keep the earlier rank."""
-    winner: tuple[float, tuple[ScoreComponent, ...]] | None = None
+    list scores 0). Ties keep the earlier rank. The third element is the
+    winning locus's evidence (None when no locus cleared the floors) —
+    what the gapit.cluster/2 per-scheme columns surface."""
+    winner: tuple[float, tuple[ScoreComponent, ...], LocusEvidence] | None = None
     for locus in report.loci:
         if locus.coverage_pct < rule.coverage.floor or locus.identity_pct < rule.identity.floor:
             continue
@@ -149,8 +164,8 @@ def score_cluster_match(
         )
         total = sum(component.score for component in components)
         if winner is None or total > winner[0]:
-            winner = (total, components)
-    return winner if winner is not None else (0.0, ())
+            winner = (total, components, _locus_evidence(locus))
+    return winner if winner is not None else (0.0, (), None)
 
 
 def score_learned_linear(
@@ -234,6 +249,7 @@ def score_rules(report: ClusterReport, scheme: TypingScheme) -> list[ScoredRule]
     scored: list[ScoredRule] = []
     for rule in scheme.rules:
         exact = False
+        winner: LocusEvidence | None = None
         match rule:
             case WeightedGenesRule():
                 score, components = score_weighted_genes(rule, genes)
@@ -241,10 +257,12 @@ def score_rules(report: ClusterReport, scheme: TypingScheme) -> list[ScoredRule]
                 score, components = score_exact_set(rule, genes)
                 exact = True
             case ClusterMatchRule():
-                score, components = score_cluster_match(rule, report)
+                score, components, winner = score_cluster_match(rule, report)
             case LearnedLinearRule():
                 score, components = score_learned_linear(rule, report, genes)
-        scored.append(ScoredRule(rule.phenotype, score, components, tuple(rule.notes), exact))
+        scored.append(
+            ScoredRule(rule.phenotype, score, components, tuple(rule.notes), exact, winner)
+        )
     return scored
 
 

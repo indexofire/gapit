@@ -5,12 +5,23 @@ A cluster database whose typing document holds more than one scheme
 cluster document: same body as /1, but each file's ``best`` drops its
 phenotype fields and a ``phenotypes`` map keyed by scheme name (document
 order) carries one :class:`~gapit.typing_results.SchemeCall` per scheme —
-compose schemes included, rendered from their sibling calls. The TSV/CSV
-header swaps PHENOTYPE for a packed PHENOTYPES column
-(``o_group=O3;k_group=K6``; a phenotype containing ``;`` would degrade the
-cell — the same accepted precedent as typing_result's GENES column).
-Single-scheme and untyped databases keep byte-identical gapit.cluster/1
-(formats/cluster.py). Registered in the schema registry as ``cluster2``.
+compose schemes included, rendered from their sibling calls, each
+rule-based call carrying its winning locus's evidence (the additive
+``winner_*`` fields).
+
+The TSV/CSV table is DERIVED from the typing document (no global-best
+columns): ``FILE``, then every compose scheme's value column in document
+order (uppercased name, ``-``→``_``), then each non-compose scheme's
+seven-column block in document order — the call, then the winning
+locus's evidence (``<P>_LOCUS``, ``<P>_COVERAGE``, ``<P>_IDENTITY``,
+``<P>_PRESENT``, ``<P>_PARTIAL``, ``<P>_MISSING`` where ``<P>`` is the
+uppercased scheme name minus a trailing ``_GROUP``, so ``o_group``
+renders ``O_GROUP`` then ``O_LOCUS``). Fallback calls render the
+fallback string with ``-`` evidence; ambiguous calls render ``-`` in the
+call column. For vp_ok the header is ``FILE  SEROTYPE  O_GROUP  O_LOCUS
+… K_MISSING`` — the composed serotype leads. Single-scheme and untyped
+databases keep byte-identical gapit.cluster/1 (formats/cluster.py).
+Registered in the schema registry as ``cluster2``.
 """
 
 from collections.abc import Iterable
@@ -25,14 +36,13 @@ from gapit.formats.cluster import (
     ClusterLocusDocument,
     ClusterParamsDocument,
     locus_document,
-    missing_ids,
 )
 from gapit.formats.json import ToolDocument, utc_timestamp
+from gapit.typing_models import TypingDocument
 from gapit.typing_results import SchemeCall
 
-CLUSTER2_TSV_HEADER = (
-    "FILE\tBEST_LOCUS\tTYPE\tPHENOTYPES\tCOVERAGE\tIDENTITY\tPRESENT\tPARTIAL\tMISSING_IDS"
-)
+_EVIDENCE_COLUMNS = ("LOCUS", "COVERAGE", "IDENTITY", "PRESENT", "PARTIAL", "MISSING")
+_GROUP_SUFFIX = "_GROUP"
 
 
 class Cluster2BestDocument(BaseModel, frozen=True):
@@ -107,49 +117,95 @@ def render_cluster2_json(
     return document.model_dump_json(indent=2, by_alias=True)
 
 
-def phenotypes_cell(report: ClusterReport) -> str:
-    """The packed PHENOTYPES cell (the one rendering both the TSV column and
-    the MD summary column consume): ``name=phenotype`` per scheme in
-    document order, ``;``-joined; a null (ambiguous) call renders as
-    ``name=-``."""
-    return ";".join(f"{name}={call.phenotype or '-'}" for name, call in report.phenotypes.items())
+def _scheme_column(name: str) -> str:
+    """A scheme name as a column token: uppercased, ``-`` → ``_``."""
+    return name.upper().replace("-", "_")
 
 
-def _tsv_row(report: ClusterReport, sep: str, nopath: bool) -> str:
-    """One table line per file; a null best renders the /1 null-call dashes
-    with the phenotypes cell still populated (schemes call without a best
-    locus); missing ids join with ``;``."""
-    file_column = PurePath(report.file).name if nopath else report.file
-    phenotypes = phenotypes_cell(report)
-    if report.best is None:
-        return sep.join([file_column, "-", "-", phenotypes, "0.00", "0.00", "0", "0", "-"])
-    best = report.best
-    return sep.join(
-        [
-            file_column,
-            best.locus,
-            best.type,
-            phenotypes,
-            f"{best.coverage_pct:.2f}",
-            f"{best.identity_pct:.2f}",
-            str(best.genes_present),
-            str(best.genes_partial),
-            missing_ids(report, best.locus) or "-",
-        ]
+def _evidence_prefix(name: str) -> str:
+    """The evidence-column prefix: the column token minus a trailing
+    ``_GROUP`` (``o_group`` → ``O`` — the call column keeps the full
+    ``O_GROUP`` token, its evidence columns stay short); names without
+    the suffix keep their full token."""
+    token = _scheme_column(name)
+    return (
+        token[: -len(_GROUP_SUFFIX)]
+        if token.endswith(_GROUP_SUFFIX) and len(token) > len(_GROUP_SUFFIX)
+        else token
     )
 
 
-def cluster2_tsv_preamble(*, csv: bool, noheader: bool) -> str:
+def cluster2_columns(document: TypingDocument) -> tuple[str, ...]:
+    """The /2 TSV/CSV column names: ``FILE``, every compose scheme's value
+    column in document order, then each non-compose scheme's call +
+    winner-evidence block in document order (deterministic in the doc)."""
+    columns: list[str] = ["FILE"]
+    columns.extend(
+        _scheme_column(scheme.name) for scheme in document.schemes if scheme.compose is not None
+    )
+    for scheme in document.schemes:
+        if scheme.compose is None:
+            prefix = _evidence_prefix(scheme.name)
+            columns.append(_scheme_column(scheme.name))
+            columns.extend(f"{prefix}_{suffix}" for suffix in _EVIDENCE_COLUMNS)
+    return tuple(columns)
+
+
+def pct_or_dash(value: float | None) -> str:
+    """A percentage cell: ``%.2f`` or ``-`` (the shared winner-evidence
+    formatting of the TSV and MD /2 renderers)."""
+    return "-" if value is None else f"{value:.2f}"
+
+
+def count_or_dash(value: int | None) -> str:
+    """A count cell: the integer or ``-`` (unset evidence)."""
+    return "-" if value is None else str(value)
+
+
+def cluster2_row_cells(
+    report: ClusterReport, document: TypingDocument, *, nopath: bool
+) -> list[str]:
+    """One file's /2 cells aligned to :func:`cluster2_columns` (the shared
+    builder behind the TSV row and the MD summary row): compose values,
+    then each scheme's call followed by its winning locus's evidence —
+    ``-`` cells when the call is fallback/gate-based or ambiguous."""
+    cells = [PurePath(report.file).name if nopath else report.file]
+    cells.extend(
+        report.phenotypes[scheme.name].phenotype or "-"
+        for scheme in document.schemes
+        if scheme.compose is not None
+    )
+    for scheme in document.schemes:
+        if scheme.compose is None:
+            call = report.phenotypes[scheme.name]
+            cells.extend(
+                (
+                    call.phenotype or "-",
+                    call.winner_locus or "-",
+                    pct_or_dash(call.winner_coverage_pct),
+                    pct_or_dash(call.winner_identity_pct),
+                    count_or_dash(call.winner_present),
+                    count_or_dash(call.winner_partial),
+                    ";".join(call.winner_missing) if call.winner_missing else "-",
+                )
+            )
+    return cells
+
+
+def cluster2_tsv_preamble(*, csv: bool, noheader: bool, document: TypingDocument) -> str:
     """The cluster/2 header chunk ("" under noheader; sinks skip empties)."""
     if noheader:
         return ""
-    return CLUSTER2_TSV_HEADER.replace("\t", "," if csv else "\t") + "\n"
+    return ("," if csv else "\t").join(cluster2_columns(document)) + "\n"
 
 
-def cluster2_tsv_file_chunk(report: ClusterReport, *, csv: bool, nopath: bool) -> str:
+def cluster2_tsv_file_chunk(
+    report: ClusterReport, *, csv: bool, nopath: bool, document: TypingDocument
+) -> str:
     """One file's /2 chunk: its single table row (the streaming unit the
     cluster use-case emits as each file's report exists)."""
-    return _tsv_row(report, "," if csv else "\t", nopath) + "\n"
+    sep = "," if csv else "\t"
+    return sep.join(cluster2_row_cells(report, document, nopath=nopath)) + "\n"
 
 
 def format_cluster2_tsv(
@@ -158,9 +214,12 @@ def format_cluster2_tsv(
     csv: bool,
     noheader: bool,
     nopath: bool,
+    document: TypingDocument,
 ) -> str:
     """Render cluster screening as TSV/CSV with the cluster/2 header (one
-    row per file, PHENOTYPES packed per scheme)."""
-    return cluster2_tsv_preamble(csv=csv, noheader=noheader) + "".join(
-        cluster2_tsv_file_chunk(report, csv=csv, nopath=nopath) for report in reports
+    row per file: compose schemes first, then each scheme's call and its
+    winning-locus evidence)."""
+    return cluster2_tsv_preamble(csv=csv, noheader=noheader, document=document) + "".join(
+        cluster2_tsv_file_chunk(report, csv=csv, nopath=nopath, document=document)
+        for report in reports
     )

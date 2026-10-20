@@ -14,9 +14,9 @@ threads: 1
 
 ## `vp_none.fa`
 
-| File | Best locus | Type | Phenotypes | Coverage% | Identity% | Present | Partial | Missing |
-|---|---|---|---|---|---|---|---|---|
-| vp_none.fa | - | - | o_group=OUT;k_group=KUT;serotype=OUT:KUT | 0.00 | 0.00 | 0 | 0 | - |
+| FILE | SEROTYPE | O_GROUP | O_LOCUS | O_COVERAGE | O_IDENTITY | O_PRESENT | O_PARTIAL | O_MISSING | K_GROUP | K_LOCUS | K_COVERAGE | K_IDENTITY | K_PRESENT | K_PARTIAL | K_MISSING |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| vp_none.fa | OUT:KUT | OUT | - | - | - | - | - | - | KUT | - | - | - | - | - | - |
 
 Phenotype `o_group` = OUT (score 0.0000, low confidence)
 Phenotype `k_group` = KUT (score 0.0000, low confidence)
