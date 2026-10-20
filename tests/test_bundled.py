@@ -190,7 +190,7 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     from the license audit (2 VFDB records hid past header-spotting) is
     locked mechanically across all six bundles (record counts pinned;
     the vp_ok cluster snapshot's bare locus ids are trivially clean)."""
-    typed_counts = {"ecoli_dec": 16, "lm_doumith": 5, "vc_serogroup": 2, "vp_ok": VP_OK_LOCI}
+    typed_counts = {"ecoli_dec": 16, "lm_doumith": 5, "vc_serogroup": 3, "vp_ok": VP_OK_LOCI}
     for bundled in bundled_databases():
         text = bundled.sequences_path.read_text(encoding="utf-8")
         headers = [line for line in text.splitlines() if line.startswith(">")]
@@ -492,7 +492,7 @@ def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> N
         "gapit-curated (public-domain INSDC sources)",
         "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\tNCBI",
         "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\tDTU CGE",
-        "vc_serogroup\tVibrio cholerae O1/O139 serogroup markers (wbeN/wbfR); handed over from gside\tbundled\tnucl\tgapit-curated (NCBI X59554.1 slice / KY660230.1)",
+        "vc_serogroup\tVibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed over from gside\tbundled\tnucl\tgapit-curated (NCBI X59554.1 slice / KY660230.1 / X00171.1)",
         "vp_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
         "nucl\tgapit-curated (vpasero)",
     ]

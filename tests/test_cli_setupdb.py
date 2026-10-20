@@ -44,7 +44,7 @@ def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
         )
     ]
     assert stderr_lines[5:7] == [
-        f"gapit: materializing bundled database vc_serogroup (2 records) into {datadir}",
+        f"gapit: materializing bundled database vc_serogroup (3 records) into {datadir}",
         f"gapit: materializing bundled database vp_ok (195 loci) into {datadir}",
     ]
     assert stderr_lines[7:] == [
@@ -54,7 +54,7 @@ def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
         "Indexed ncbi (8373 sequences, nucl)",
         "Indexed resfinder (3206 sequences, nucl)",
         "Indexed tinyamr (3 sequences, nucl)",
-        "Indexed vc_serogroup (2 sequences, nucl)",
+        "Indexed vc_serogroup (3 sequences, nucl)",
         "Indexed vp_ok (195 sequences, nucl)",
     ]
 

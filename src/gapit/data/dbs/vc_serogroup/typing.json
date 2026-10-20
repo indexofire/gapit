@@ -45,6 +45,24 @@
       "cutoff": 1.0,
       "ambiguity_margin": 0.0,
       "fallback": "non-O1/non-O139"
+    },
+    {
+      "name": "toxigenicity",
+      "cutoff": 1.0,
+      "ambiguity_margin": 0.0,
+      "fallback": "non-toxigenic",
+      "rules": [
+        {
+          "model": "exact_set",
+          "phenotype": "toxigenic",
+          "requires": [
+            "ctxA"
+          ],
+          "notes": [
+            "ctxA (cholera toxin A subunit); non-O1/non-O139 serogroups and V. mimicus can also carry ctxA \u2014 pair with species-level identification"
+          ]
+        }
+      ]
     }
   ]
 }

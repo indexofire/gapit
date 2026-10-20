@@ -21,7 +21,7 @@ def test_records_and_sequences_agree():
 
     records = [json.loads(line) for line in (_DB / "records.jsonl").read_text().splitlines()]
     genes = {r["gene"] for r in records}
-    assert genes == {"wbeN", "wbfR"}
+    assert genes == {"wbeN", "wbfR", "ctxA"}
     seq_genes = {
         line.split("gene=")[1].split("|")[0]
         for line in (_DB / "sequences").read_text().splitlines()

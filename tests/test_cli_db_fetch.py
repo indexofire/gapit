@@ -295,7 +295,7 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
         "gapit-curated (public-domain INSDC sources)\n"
         "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\tNCBI\n"
         "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\tDTU CGE\n"
-        "vc_serogroup\tVibrio cholerae O1/O139 serogroup markers (wbeN/wbfR); handed over from gside\tbundled\tnucl\tgapit-curated (NCBI X59554.1 slice / KY660230.1)\n"
+        "vc_serogroup\tVibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed over from gside\tbundled\tnucl\tgapit-curated (NCBI X59554.1 slice / KY660230.1 / X00171.1)\n"
         "vp_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
         "nucl\tgapit-curated (vpasero)\n"
     )
