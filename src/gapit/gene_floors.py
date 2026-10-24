@@ -22,7 +22,7 @@ aggregation (:func:`apply_gene_floors`), so breadth is recomputed from the
 surviving rows — that collapse is the point.
 """
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -95,6 +95,25 @@ def validate_floors(floors: GeneFloors, genes: frozenset[str], *, source: Path) 
         )
 
 
+def iter_apply_gene_floors(
+    rows: Iterable[PafRecord], floors: GeneFloors, *, default_db: str
+) -> Iterator[PafRecord]:
+    """Streaming form of :func:`apply_gene_floors`: one row at a time."""
+    per_target: dict[str, float | None] = {}
+
+    def floor_of(tname: str) -> float | None:
+        if tname not in per_target:
+            per_target[tname] = floors.genes.get(
+                decode_seqid(tname, default_db).gene, floors.default
+            )
+        return per_target[tname]
+
+    for row in rows:
+        floor = floor_of(row.tname)
+        if floor is None or alignment_identity(row) >= floor:
+            yield row
+
+
 def apply_gene_floors(
     rows: Iterable[PafRecord], floors: GeneFloors, *, default_db: str
 ) -> list[PafRecord]:
@@ -106,17 +125,4 @@ def apply_gene_floors(
     ``--min-identity`` filter — a row must clear both when both apply
     (max-of-both). The gene is decoded from the target seqid once per
     unique tname (duplicate records of one gene share the floor)."""
-    per_target: dict[str, float | None] = {}
-
-    def floor_of(tname: str) -> float | None:
-        if tname not in per_target:
-            per_target[tname] = floors.genes.get(
-                decode_seqid(tname, default_db).gene, floors.default
-            )
-        return per_target[tname]
-
-    return [
-        row
-        for row in rows
-        if (floor := floor_of(row.tname)) is None or alignment_identity(row) >= floor
-    ]
+    return list(iter_apply_gene_floors(rows, floors, default_db=default_db))

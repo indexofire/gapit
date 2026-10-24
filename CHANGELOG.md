@@ -7,6 +7,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.5.6] - 2026-10-20
 
+### Added
+
+- **Bundled `vc_serogroup`: V. cholerae O1/O139 serogrouping + ctxA toxigenicity.** A
+  gene-kind bundle handed over from gside: `wbeN` (O1 wbe cluster) and `wbfR` (O139 wbf
+  cluster) as an exact-set `serogroup` scheme, plus the ctxA toxigenicity marker; O1 and
+  O139 exclude each other by construction, so a double call flags a mixed sample. Ships
+  from the wheel with zero network (the seventh bundled database), with floors and a
+  `gapit.typing/2` document.
+
 ### Changed
 
 - **`gapit.cluster/2` TSV/CSV reshaped: per-scheme winner evidence replaces the packed

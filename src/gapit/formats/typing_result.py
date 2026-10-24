@@ -19,7 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gapit import __version__
 from gapit.formats.json import ToolDocument, utc_timestamp
-from gapit.formats.md import md_cell
+from gapit.formats.md import md_cell, yaml_scalar
 from gapit.typing_results import PhenotypeScore, SchemeCall
 
 COLUMNS = ("FILE", "SCHEME", "PHENOTYPE", "GENES", "CONFIDENCE", "SCORE", "RUNNER_UP", "NOTES")
@@ -140,7 +140,7 @@ def render_typing_md(
         "schema: gapit.typing_result/1",
         f"tool: gapit {__version__}",
         f"created_at: {utc_timestamp(now)}",
-        f"db: {db}",
+        f"db: {yaml_scalar(db)}",
         "source:",
         *(f"  - {entry}" for entry in source),
         f"files: {len(files)}",

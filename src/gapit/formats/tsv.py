@@ -10,12 +10,14 @@ exception — locus databases have no re-readable screen table.
 from collections.abc import Iterable
 from pathlib import PurePath
 
+from gapit.formats.csvutil import delimited_line
 from gapit.report import Report
 
 HEADER = (
     "#FILE\tSEQUENCE\tSTART\tEND\tSTRAND\tGENE\tCOVERAGE\tCOVERAGE_MAP\tGAPS\t"
     "%COVERAGE\t%IDENTITY\tDATABASE\tACCESSION\tPRODUCT\tRESISTANCE"
 )
+_HEADER_CELLS = tuple(HEADER.split("\t"))
 
 
 def tsv_preamble(*, csv: bool, noheader: bool) -> str:
@@ -23,16 +25,15 @@ def tsv_preamble(*, csv: bool, noheader: bool) -> str:
     skip empty chunks, so a noheader stream starts straight at file rows)."""
     if noheader:
         return ""
-    return HEADER.replace("\t", "," if csv else "\t") + "\n"
+    return delimited_line(_HEADER_CELLS, as_csv=csv)
 
 
 def tsv_file_chunk(report: Report, *, csv: bool, nopath: bool) -> str:
     """One file's chunk: one line per hit in report order, the streaming
     unit the use-case emits as soon as the file's report exists."""
-    sep = "," if csv else "\t"
     file_column = PurePath(report.file).name if nopath else report.file
     return "".join(
-        sep.join(
+        delimited_line(
             (
                 file_column,
                 hit.sequence,
@@ -49,18 +50,20 @@ def tsv_file_chunk(report: Report, *, csv: bool, nopath: bool) -> str:
                 hit.accession,
                 hit.product,
                 hit.function,
-            )
+            ),
+            as_csv=csv,
         )
-        + "\n"
         for hit in report.hits
     )
 
 
 def format_tsv(reports: Iterable[Report], *, csv: bool, noheader: bool, nopath: bool) -> str:
     """Render reports as abricate-format lines: one header (unless noheader),
-    then one line per hit per report in report order. Line = sep.join(fields)
-    + "\\n"; fields never contain the separator (product cleanup strips
-    commas).
+    then one line per hit per report in report order.
+
+    CSV is RFC 4180-quoted by :mod:`gapit.formats.csvutil`; TSV keeps the
+    frozen raw-tab shape, so control characters in DB fields are rejected at
+    the database-build boundary (BUILD_INVALID) instead of being escaped.
     """
     return tsv_preamble(csv=csv, noheader=noheader) + "".join(
         tsv_file_chunk(report, csv=csv, nopath=nopath) for report in reports

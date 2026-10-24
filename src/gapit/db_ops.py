@@ -214,6 +214,7 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
                 installed=manifest is not None,
                 records=manifest.n_records if manifest else None,
                 kind=manifest.kind if manifest else database.metadata.kind,
+                license=database.metadata.license or None,
                 source="bundled",
             )
         )

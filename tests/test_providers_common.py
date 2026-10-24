@@ -228,7 +228,9 @@ def test_fetch_provider_missing_source_raises_download_failed(
     assert error.exit_code == 4
     assert error.context == {"url": url}
     assert not (db_dir / "gapit-manifest.json").exists()
-    assert all(entry.is_file() for entry in db_dir.iterdir())
+    # A failed first fetch is rolled back entirely; when the target exists,
+    # only cleaned-up files may remain (no .part/workdir directories).
+    assert not db_dir.exists() or all(entry.is_file() for entry in db_dir.iterdir())
 
 
 def test_fetch_provider_prot_normalizes_to_x(
@@ -338,4 +340,37 @@ def test_fetch_provider_stalled_download_raises_download_failed(
     assert error.exit_code == 4
     assert error.context == {"url": url}
     assert not (db_dir / "gapit-manifest.json").exists()
-    assert all(entry.is_file() for entry in db_dir.iterdir())  # .part cleaned, no workdir left
+    # The failed first fetch is rolled back; no partial target survives.
+    assert not db_dir.exists() or all(entry.is_file() for entry in db_dir.iterdir())
+
+
+def test_insecure_source_urls_flags_only_plain_http() -> None:
+    """Given mixed source URLs, When screened, Then only plain HTTP is
+    surfaced for the integrity warning."""
+    from gapit.providers.common import insecure_source_urls
+
+    assert insecure_source_urls(
+        ("https://example.org/a.fa", "http://example.org/b.fa", "file:///tmp/c.fa")
+    ) == ("http://example.org/b.fa",)
+
+
+def test_download_file_rejects_an_oversized_body(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a body over the configured cap, When downloaded, Then
+    DOWNLOAD_TOO_LARGE fires and no destination/.part file is left."""
+    from gapit.providers.common import download_file
+
+    def fake_urlopen(request: urllib.request.Request, timeout: float = -1) -> _FakeResponse:
+        return _FakeResponse(b"x" * 20)
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr("gapit.providers.common._MAX_DOWNLOAD_BYTES", 8)
+    dest = tmp_path / "body.bin"
+
+    with pytest.raises(DatabaseError) as excinfo:
+        download_file("https://example.org/body.bin", dest)
+
+    assert excinfo.value.code == "DOWNLOAD_TOO_LARGE"
+    assert not dest.exists()
+    assert not (tmp_path / ".body.bin.part").exists()

@@ -372,9 +372,10 @@ def test_db_fetch_from_source_flag_is_rejected(
 def test_db_list_json_surfaces_provider_licenses(tmp_path: Path) -> None:
     """Given the REAL registry and an empty datadir, When `db list --json`,
     Then the gapit.dblist/1 entries carry a license field exactly for the
-    providers that pin one — card (McMaster terms), vfdb + ecoli_vf
-    (CC BY-NC), the seven kaptive cluster providers (GPL) — and omit it for
-    the rest; every entry also names its upstream maintainer in vendor."""
+    providers/bundles that pin one — card (McMaster terms), vfdb + ecoli_vf
+    (CC BY-NC), the seven kaptive cluster providers (GPL), and the bundled
+    content licenses — and omit it for the rest; every entry also names its
+    upstream maintainer in vendor."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
 
@@ -386,7 +387,7 @@ def test_db_list_json_surfaces_provider_licenses(tmp_path: Path) -> None:
     assert by_name["vfdb"]["license"] == "CC BY-NC 4.0 (non-commercial)"
     assert by_name["ecoli_vf"]["license"] == "CC BY-NC 4.0 (VFDB-derived content)"
     assert by_name["kpsc_k"]["license"] == "GPL-3.0 (database content)"
-    assert "license" not in by_name["ncbi"]
+    assert by_name["ncbi"]["license"] == "Public domain (NCBI AMRFinderPlus)"
     assert "license" not in by_name["argannot"]
     assert by_name["kpsc_k"]["vendor"] == "Kaptive (klebgenomics)"
     assert by_name["ab_k"]["vendor"] == "Kaptive (Kenyon lab)"

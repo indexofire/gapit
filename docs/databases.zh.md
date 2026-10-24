@@ -52,7 +52,7 @@ vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nuc
 
 NAME 是传给 `--db` 的数据库名；PROVIDER 是上游维护机构。当
 `<datadir>/<name>/gapit-manifest.json` 存在时 STATUS 显示 `installed (N)`，N 是
-记录数，否则显示 `available`。最后六行是按名称排序的 wheel 内置数据库（见下文
+记录数，否则显示 `available`。最后七行是按名称排序的 wheel 内置数据库（见下文
 "内置数据库（即装即用）"一节）：物化前为 `bundled`，物化后为 `installed (N)`。
 其中三个（`ecoh`、`ncbi`、`resfinder`）同时是注册表
 提供商 —— 这类名字只渲染一次，位于内置区（绝不会重复出现一条注册表 `available`
@@ -113,7 +113,7 @@ $ gapit db list --json
 | `providers[].kind` | string | `gene`（逐基因 BLAST 筛查）或 `cluster`（minimap2 位点筛查，见 [screen.md](./screen.md)） |
 | `providers[].installed` | boolean | 数据目录里存在 manifest 时为 true |
 | `providers[].records` | integer | 记录数，数据库未安装时省略 |
-| `providers[].license` | string | 上游内容许可证，仅提供商声明时出现（card、vfdb、ecoli_vf、kaptive） |
+| `providers[].license` | string | 上游内容许可证，仅提供商或内置快照声明时出现（card、vfdb、ecoli_vf、kaptive、内置内容） |
 | `providers[].source` | string | 目录之外装进数据目录的数据库（`db build` / `db install`）为 `local`，wheel 内置数据库为 `bundled`（见下）；注册表条目省略该字段 |
 
 `gapit db list` 是唯一的列表入口：即上面的数据库目录，`--json` 返回
@@ -123,7 +123,7 @@ abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 ## 内置数据库（即装即用）
 
 大多数数据库在 `db fetch` 时才从上游下载，因为许可证禁止再分发（见"提供商"一节）。
-少数**内置**数据库随 gapit wheel 一起发布 —— 共六个，其内容经过逐条记录的来源
+少数**内置**数据库随 gapit wheel 一起发布 —— 共七个，其内容经过逐条记录的来源
 审计（公共领域来源，或 Apache-2.0 / BSD-3-Clause / MIT 宽松许可面板；GPL 与
 非商业许可内容绝不随 wheel 分发）。无需下载、无需确认：内置数据库开箱即用。
 
@@ -134,6 +134,7 @@ abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 | `lm_doumith` | 单核细胞增生李斯特菌血清群分型（5 条记录，Doumith 2004 标记） | 2026-10-03 | `gapit.typing/2`（方案 `doumith_serogroup`） |
 | `ncbi` | NCBI AMRFinderPlus 精选 AMR（8373 条记录） | 2026-10-02 | — |
 | `resfinder` | CGE ResFinder 获得性耐药基因（3206 条记录） | 2026-10-02 | — |
+| `vc_serogroup` | 霍乱弧菌 O1/O139 血清群 + ctxA 产毒标记 | 2026-10-19 | `gapit.typing/2`（`serogroup` 方案） |
 | `vp_ok` | 副溶血性弧菌 O/K 抗原位点（195 个位点，vpautils OAgc+CPSgc；cluster 类） | 2026-10-12 | `gapit.typing/2`（`o_group`、`k_group`、`serotype` 三方案） |
 
 **许可证来源声明。** `ecoli_dec` 的每条记录都取自公共领域的一级提交（NCBI
@@ -149,7 +150,7 @@ Apache-2.0，srst2 的 EcOH 为 BSD-3-Clause —— 三者均允许随 MIT 许�
 vpautils 内容（实验室逐位点精选、Bakta 注释，经
 [indexofire/vpautils](https://github.com/indexofire/vpautils)）；以一次完整
 gapit.typing/2 构建产出的已解析 `sequences` + `features.json` 形式入轮。回归测试
-锁定了六个内置库的头部不出现任何 `VF*` / `VFDB` / `ARO:` 标签。
+锁定了七个内置库的头部不出现任何 `VF*` / `VFDB` / `ARO:` 标签。
 
 **快照是一个时间点。** 每个快照的 `sequences` 文件与快照当日上游内容产出的结果
 逐字节一致（resfinder 由回归测试对着一份固定的上游
@@ -226,7 +227,7 @@ $ gapit screen RIMD.fna --db vp_ok --format json
 ```
 
 数据库内容为 **MIT**（经 vpautils，Bakta 注释），与 kaptive 提供商不同，许可上可再
-分发——已解析快照作为第六个内置库随 wheel 发布（入轮产物 8.3 MiB，在 30 MiB 预算
+分发——已解析快照作为第七个内置库随 wheel 发布（入轮产物 8.3 MiB，在 30 MiB 预算
 内），首次使用即零网络物化。入轮 typing 规格按位点重新计算序列唯一关键基因
 （变异体折叠：OL4V1 → O4、KL20V1 → K20；未定型的 OLU*/KLU* 位点不设规则，回退
 OUT/KUT），并且该资产在构建与物化时对位点做校验——上游 GBK 漂移会以
@@ -236,7 +237,7 @@ O3:K6（逐位点调参见规则 notes）。
 ## 检查数据库新鲜度
 
 `gapit db outdated` 报告每个已安装数据库相对于过期阈值的年龄。对装满的数据
-目录（输出裁剪到二十二行中的三行）：
+目录（输出裁剪到二十三行中的三行）：
 ```console
 $ gapit db outdated --days 30
 NAME	FETCHED_AT	AGE_DAYS	STATUS
@@ -327,7 +328,7 @@ $ gapit db search "tet(M)" --field gene --exact --json | head -1
 ## 提供商
 
 gapit 自带十九个提供商。每一个——包括 `card` 和 `vfdb`——都在抓取时从上游下载：
-除上文六个通过审计、宽松许可的内置库之外，包里不内置任何内容，因为多家上游许可
+除上文七个通过审计、宽松许可的内置库之外，包里不内置任何内容，因为多家上游许可
 （CARD 的 McMaster 条款、VFDB 的 CC BY-NC、
 Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发。七个 kaptive 提供商是
 **基因簇**数据库（抓取时经基因簇管线构建，见下文 Kaptive 提供商一节）；第八个

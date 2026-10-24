@@ -4,5 +4,6 @@
   "vendor": "gapit-curated (public-domain INSDC sources)",
   "dbtype": "nucl",
   "kind": "gene",
-  "snapshotted": "2026-10-03"
+  "snapshotted": "2026-10-03",
+  "license": "Public domain (INSDC sources)"
 }

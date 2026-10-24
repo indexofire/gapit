@@ -9,7 +9,9 @@ CLI hands in, labeled :data:`STDIN_LABEL`) — stdin is one more input and
 follows the same parser path, error labels included.
 """
 
-from collections.abc import Callable
+import csv
+import io
+from collections.abc import Callable, Iterator
 from pathlib import Path, PurePath
 from typing import Literal
 
@@ -118,6 +120,22 @@ def _malformed(label: str, line_number: int, detail: str) -> InputError:
     )
 
 
+def _iter_rows(text: str, separator: str) -> Iterator[tuple[int, list[str]]]:
+    """Physical line number + cells, using the csv module for comma tables.
+
+    TSV keeps the abricate-parity raw split (no quoting convention); CSV
+    uses csv.reader so a quoted comma/newline inside a field round-trips.
+    """
+    if separator == ",":
+        reader = csv.reader(io.StringIO(text))
+        for columns in reader:
+            if columns:
+                yield reader.line_num, columns
+        return
+    for line_number, line in enumerate(_lines(text), start=1):
+        yield line_number, line.split(separator)
+
+
 def build_summary(
     paths: list[Path], params: SummaryParams, *, warn: Warn, stdin_text: str | None = None
 ) -> SummaryMatrix:
@@ -151,8 +169,7 @@ def build_summary(
         if not dutch:
             data[label] = {}
         separator = _detect_separator(text)
-        for line_number, line in enumerate(_lines(text), start=1):
-            columns = line.split(separator)
+        for line_number, columns in _iter_rows(text, separator):
             if indexes is None:
                 # Header-name -> column index with Perl zip semantics (later dups win).
                 indexes = dict(zip(columns, range(len(columns)), strict=True))

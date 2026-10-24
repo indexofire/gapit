@@ -5,7 +5,7 @@ half-open interval math used to aggregate alignment spans into coverage, and
 the per-alignment identity rule behind gapit.reads/2 filtering.
 """
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from typing import Literal
 
 from pydantic import BaseModel
@@ -57,38 +57,44 @@ def parse_paf_row(line: str) -> PafRecord:
     is_primary = True
     nm: int | None = None
     cs: str | None = None
-    for tag in fields[12:]:
-        if tag.startswith("tp:A:"):
-            is_primary = tag == "tp:A:P"
-        elif tag.startswith("NM:i:"):
-            nm = int(tag[len("NM:i:") :])
-        elif tag.startswith("cs:Z:"):
-            cs = tag[len("cs:Z:") :]
-    strand = fields[4]
-    if strand not in ("+", "-"):
-        raise GapitError(
-            f"can not parse PAF strand (expected + or -): {strand!r}",
-            code="PAF_PARSE_FAILED",
+    try:
+        for tag in fields[12:]:
+            if tag.startswith("tp:A:"):
+                is_primary = tag == "tp:A:P"
+            elif tag.startswith("NM:i:"):
+                nm = int(tag[len("NM:i:") :])
+            elif tag.startswith("cs:Z:"):
+                cs = tag[len("cs:Z:") :]
+        strand = fields[4]
+        if strand not in ("+", "-"):
+            raise GapitError(
+                f"can not parse PAF strand (expected + or -): {strand!r}",
+                code="PAF_PARSE_FAILED",
+            )
+        # model_construct: the manual int()/strand checks above already guarantee
+        # the field types; re-validating per PAF row would be redundant.
+        return PafRecord.model_construct(
+            qname=fields[0],
+            qlen=int(fields[1]),
+            qstart=int(fields[2]),
+            qend=int(fields[3]),
+            strand=strand,
+            tname=fields[5],
+            tlen=int(fields[6]),
+            tstart=int(fields[7]),
+            tend=int(fields[8]),
+            nmatch=int(fields[9]),
+            alen=int(fields[10]),
+            mapq=int(fields[11]),
+            is_primary=is_primary,
+            nm=nm,
+            cs=cs,
         )
-    # model_construct: the manual int()/strand checks above already guarantee
-    # the field types; re-validating per PAF row would be redundant.
-    return PafRecord.model_construct(
-        qname=fields[0],
-        qlen=int(fields[1]),
-        qstart=int(fields[2]),
-        qend=int(fields[3]),
-        strand=strand,
-        tname=fields[5],
-        tlen=int(fields[6]),
-        tstart=int(fields[7]),
-        tend=int(fields[8]),
-        nmatch=int(fields[9]),
-        alen=int(fields[10]),
-        mapq=int(fields[11]),
-        is_primary=is_primary,
-        nm=nm,
-        cs=cs,
-    )
+    except (TypeError, ValueError) as exc:
+        raise GapitError(
+            f"can not parse PAF row (numeric field): {line!r}",
+            code="PAF_PARSE_FAILED",
+        ) from exc
 
 
 def alignment_identity(record: PafRecord) -> float:
@@ -101,6 +107,18 @@ def alignment_identity(record: PafRecord) -> float:
     return 100.0 * (record.alen - record.nm) / record.alen
 
 
+def iter_filter_alignments(
+    rows: Iterable[PafRecord], *, min_identity: float = 0.0, min_mapq: int = 0
+) -> Iterator[PafRecord]:
+    """Streaming form of :func:`filter_alignments`: one row at a time."""
+    if min_identity <= 0.0 and min_mapq <= 0:
+        yield from rows
+        return
+    for row in rows:
+        if row.mapq >= min_mapq and alignment_identity(row) >= min_identity:
+            yield row
+
+
 def filter_alignments(
     rows: Iterable[PafRecord], *, min_identity: float = 0.0, min_mapq: int = 0
 ) -> list[PafRecord]:
@@ -109,9 +127,7 @@ def filter_alignments(
     thresholds default off, in which case every row is kept verbatim — the
     gapit.reads/1 path must stay byte-identical, even for pathological rows
     whose arithmetic identity is negative)."""
-    if min_identity <= 0.0 and min_mapq <= 0:
-        return list(rows)
-    return [row for row in rows if row.mapq >= min_mapq and alignment_identity(row) >= min_identity]
+    return list(iter_filter_alignments(rows, min_identity=min_identity, min_mapq=min_mapq))
 
 
 def union_length(intervals: Iterable[tuple[int, int]]) -> int:

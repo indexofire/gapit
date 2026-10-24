@@ -11,6 +11,7 @@ import shlex
 import subprocess
 import sys
 import threading
+from collections.abc import Iterator
 from pathlib import Path
 
 from gapit.db import Database
@@ -18,12 +19,11 @@ from gapit.errors import DependencyError, GapitError
 from gapit.paf import PafRecord, Preset, parse_paf_row
 
 
-def _stream_minimap2(argv: list[str], r1: Path) -> list[PafRecord]:
-    """Run one minimap2 invocation, streaming PAF rows off stdout as lines
-    arrive (no full-PAF materialization). stderr is drained by a background
-    thread: an undrained stderr pipe fills (~64 KB) and blocks the child
-    mid-run. Returncode != 0 raises MINIMAP2_FAILED with the captured
-    stderr text."""
+def _iter_minimap2(argv: list[str], r1: Path) -> Iterator[PafRecord]:
+    """Run one minimap2 invocation, yielding PAF rows as stdout lines arrive
+    (no full-PAF materialization). stderr is drained by a background thread:
+    an undrained stderr pipe fills (~64 KB) and blocks the child mid-run.
+    Returncode != 0 raises MINIMAP2_FAILED with the captured stderr text."""
     try:
         process = subprocess.Popen(
             argv,
@@ -46,13 +46,12 @@ def _stream_minimap2(argv: list[str], r1: Path) -> list[PafRecord]:
 
     thread = threading.Thread(target=drain)
     thread.start()
-    rows: list[PafRecord] = []
     try:
         if process.stdout is not None:
             for line in process.stdout:
                 stripped = line.rstrip("\n")
                 if stripped.strip():
-                    rows.append(parse_paf_row(stripped))
+                    yield parse_paf_row(stripped)
     finally:
         if process.stdout is not None:
             process.stdout.close()  # on a parse error, SIGPIPE stops the child
@@ -64,10 +63,9 @@ def _stream_minimap2(argv: list[str], r1: Path) -> list[PafRecord]:
             code="MINIMAP2_FAILED",
             context={"binary": "minimap2", "file": str(r1)},
         )
-    return rows
 
 
-def run_minimap2(
+def iter_minimap2(
     lanes: list[tuple[Path, Path | None]],
     database: Database,
     *,
@@ -75,24 +73,13 @@ def run_minimap2(
     threads: int,
     debug: bool = False,
     nm_tags: bool = False,
-) -> list[PafRecord]:
-    """Run one minimap2 invocation per lane (PAF on stdout) and concatenate
-    the rows, streaming each lane's output row by row. The index argument is
-    always the ``sequences`` FASTA — minimap2 indexes it in memory with the
-    invocation preset's own parameters. A persisted ``.mmi`` is deliberately
-    rejected even when one sits beside the FASTA: a default-built index
-    overrides the ``-x`` preset's indexing parameters (``-k, -w or -H
-    overridden by prebuilt index``), which misassigns close homologs and
-    benchmarks slower than in-memory indexing (2026-09-19: blaCTX-M/blaSHV
-    allele divergence, +1.2 s on the ncbi db). minimap2's pairing semantics
-    for >2 input files are undocumented; per-lane runs (r1[i] alone or with
-    its mate r2[i]) are deterministic. ``read_type`` is the reads-mode preset
-    vocabulary or the cluster engine's ``asm20``. With ``nm_tags``, ``--cs``
-    is added so rows carry ``NM:i:`` and ``cs:Z:`` (minimap2 omits both from
-    PAF output without it; the alignments themselves are unchanged) — used by
-    gapit.reads/2 identity filtering and the cluster engine's per-gene math.
-    With ``debug``, echo each argv to stderr (abricate --debug parity)."""
-    rows: list[PafRecord] = []
+) -> Iterator[PafRecord]:
+    """Stream PAF rows from one minimap2 invocation per lane.
+
+    The public iterator is the production path (reads/cluster consume it
+    incrementally); ``run_minimap2`` remains the list-returning convenience
+    wrapper for callers/tests that want a materialized view.
+    """
     for r1, r2 in lanes:
         argv = [
             "minimap2",
@@ -118,5 +105,27 @@ def run_minimap2(
             argv.append(str(r2.absolute()))
         if debug:
             print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
-        rows.extend(_stream_minimap2(argv, r1))
-    return rows
+        yield from _iter_minimap2(argv, r1)
+
+
+def run_minimap2(
+    lanes: list[tuple[Path, Path | None]],
+    database: Database,
+    *,
+    read_type: Preset,
+    threads: int,
+    debug: bool = False,
+    nm_tags: bool = False,
+) -> list[PafRecord]:
+    """Materialized convenience view over :func:`iter_minimap2`; production
+    reads/cluster paths consume the iterator to keep memory O(targets)."""
+    return list(
+        iter_minimap2(
+            lanes,
+            database,
+            read_type=read_type,
+            threads=threads,
+            debug=debug,
+            nm_tags=nm_tags,
+        )
+    )

@@ -6,7 +6,9 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from gapit import __version__
+from gapit.formats.csvutil import delimited_line
 from gapit.formats.json import ToolDocument, utc_timestamp
+from gapit.formats.md import md_cell
 from gapit.summary import ABSENT, FIELDSEP, SummaryMatrix, SummaryRow
 
 
@@ -51,13 +53,13 @@ def _display_cell(matrix: SummaryMatrix, row: SummaryRow, gene: str) -> str:
 def format_summary_tsv(matrix: SummaryMatrix, *, csv: bool) -> str:
     """Render the matrix in abricate --summary shape: '#FILE NUM_FOUND <genes>'
     header, one row per input ('+'/'-' presence cells by default; metric
-    values under -i/-c). Line = sep.join + '\\n'."""
-    sep = "," if csv else "\t"
-    lines = [sep.join(("#FILE", "NUM_FOUND", *matrix.genes))]
+    values under -i/-c). Each row goes through the shared CSV/TSV line
+    writer, so comma-bearing gene/file cells are quoted in CSV."""
+    lines = [delimited_line(("#FILE", "NUM_FOUND", *matrix.genes), as_csv=csv)]
     for row in matrix.rows:
         cells = [_display_cell(matrix, row, gene) for gene in matrix.genes]
-        lines.append(sep.join((row.file, str(row.num_found), *cells)))
-    return "".join(line + "\n" for line in lines)
+        lines.append(delimited_line((row.file, str(row.num_found), *cells), as_csv=csv))
+    return "".join(lines)
 
 
 def render_summary_json(matrix: SummaryMatrix, *, now: datetime) -> str:
@@ -80,7 +82,7 @@ def render_summary_json(matrix: SummaryMatrix, *, now: datetime) -> str:
 
 def _md_cell(value: str) -> str:
     """Escape Markdown table metacharacters so cells cannot break the table."""
-    return value.replace("\\", "\\\\").replace("|", "\\|")
+    return md_cell(value)
 
 
 def render_summary_md(matrix: SummaryMatrix, *, now: datetime) -> str:

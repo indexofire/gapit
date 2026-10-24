@@ -65,6 +65,13 @@ def _gene(row: list[str], path: Path, line_no: int) -> tuple[str, GeneFeature]:
             f"{path}: CDS at line {line_no} has no gene/Name/locus_tag attribute",
             line=str(line_no),
         )
+    if start < 1:
+        raise _fail(
+            "GENE_OUT_OF_BOUNDS",
+            f"{path}: locus {seqid!r} gene {gene_id!r} starts before coordinate 1",
+            locus=seqid,
+            gene=gene_id,
+        )
     gene = GeneFeature(
         gene_id=gene_id, start=start, end=end, strand=strand, product=attrs.get("product", "")
     )

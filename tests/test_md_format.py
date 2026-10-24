@@ -199,3 +199,28 @@ def test_reads_table_row_keeps_column_count_with_pipes() -> None:
     output = render_reads_markdown([report], ReadsParams(db="victors"), now=PINNED_NOW)
     row = next(line for line in output.splitlines() if "115534241" in line)
     assert len(_cells_on_unescaped_pipes(row)) == 9
+
+
+def test_md_cell_turns_newlines_into_br() -> None:
+    """Given a cell containing a newline and a pipe, When escaped, Then the
+    newline becomes <br> and the pipe is backslash-escaped, so the table row
+    cannot be split."""
+    from gapit.formats.md import md_cell
+
+    assert md_cell("a\nb|c") == "a<br>b\\|c"
+
+
+def test_md_frontmatter_quotes_a_yaml_breaking_db_name() -> None:
+    """Given a db name containing YAML metacharacters, When the report
+    preamble is rendered, Then the value is a quoted scalar; plain names stay
+    unquoted so existing goldens remain byte-identical."""
+    from datetime import UTC, datetime
+
+    from gapit.formats.md import md_report_preamble
+    from gapit.report import ScreeningParams
+
+    now = datetime(2026, 10, 22, tzinfo=UTC)
+    quoted = md_report_preamble(ScreeningParams(db="x: y#z"), now=now)
+    plain = md_report_preamble(ScreeningParams(db="tinyamr"), now=now)
+    assert 'db: "x: y#z"' in quoted
+    assert "db: tinyamr" in plain

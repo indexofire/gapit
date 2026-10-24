@@ -133,3 +133,23 @@ def test_unexpected_exception_envelope() -> None:
     assert "ValueError" in envelope.message
     assert "boom" in envelope.message
     assert envelope.context == {}
+
+
+def test_unknown_option_renders_usage_envelope() -> None:
+    """Given an unknown option, When click rejects it before the command body,
+    Then stderr is still the gapit.error/1 usage envelope, not click prose."""
+    result = runner.invoke(app, ["screen", "--bogus"])
+    assert result.exit_code == 2
+    envelope = last_envelope(result.stderr)
+    assert envelope.code == "USAGE_ERROR"
+    assert "--bogus" in envelope.message
+
+
+def test_missing_required_option_renders_usage_envelope() -> None:
+    """Given a missing required --db, When click rejects the invocation,
+    Then the same typed usage envelope is emitted (exit 2)."""
+    result = runner.invoke(app, ["screen", str(CONTIGS / "full.fa")])
+    assert result.exit_code == 2
+    envelope = last_envelope(result.stderr)
+    assert envelope.code == "USAGE_ERROR"
+    assert "--db" in envelope.message

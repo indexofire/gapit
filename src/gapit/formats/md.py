@@ -4,6 +4,8 @@ The report is pure gene detection (typed and untyped gene databases render
 byte-identically; designation renders from formats/typing_result.py).
 """
 
+import json
+import re
 from collections.abc import Iterable
 from datetime import UTC, datetime
 
@@ -29,10 +31,29 @@ _COLUMNS = (
 )
 
 
+_YAML_PLAIN = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+
+def yaml_scalar(value: str) -> str:
+    """Render a YAML scalar, quoting only values that would change meaning.
+
+    Plain identifiers (db names such as ``ecoli_dec``) stay byte-identical;
+    values containing spaces, colons, hashes, quotes, or newlines become a
+    JSON-compatible double-quoted YAML scalar.
+    """
+    return value if _YAML_PLAIN.fullmatch(value) else json.dumps(value, ensure_ascii=False)
+
+
 def md_cell(value: str) -> str:
     """Escape Markdown table metacharacters so cells cannot break the table
     (victors gene ids like ``gi|115534241:2616-3152`` contain pipes)."""
-    return value.replace("\\", "\\\\").replace("|", "\\|")
+    return (
+        value.replace("\\", "\\\\")
+        .replace("|", "\\|")
+        .replace("\r\n", "<br>")
+        .replace("\n", "<br>")
+        .replace("\r", "<br>")
+    )
 
 
 def md_report_preamble(params: ScreeningParams, *, now: datetime) -> str:
@@ -45,7 +66,7 @@ def md_report_preamble(params: ScreeningParams, *, now: datetime) -> str:
         "schema: gapit.report/1",
         f"tool: gapit {__version__}",
         f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
-        f"db: {params.db}",
+        f"db: {yaml_scalar(params.db)}",
         f"minid: {params.minid}",
         f"mincov: {params.mincov}",
         f"threads: {params.threads}",
@@ -171,7 +192,7 @@ def _render_reads_markdown(
         f"schema: {schema}",
         f"tool: gapit {__version__}",
         f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
-        f"db: {params.db}",
+        f"db: {yaml_scalar(params.db)}",
         f"read_type: {params.read_type}",
         f"min_breadth: {params.min_breadth}",
         f"threads: {params.threads}",
@@ -237,7 +258,7 @@ def reads_md_preamble(params: ReadsParams, *, now: datetime, reads2: bool = Fals
         "schema: gapit.reads/2" if reads2 else "schema: gapit.reads/1",
         f"tool: gapit {__version__}",
         f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
-        f"db: {params.db}",
+        f"db: {yaml_scalar(params.db)}",
         f"read_type: {params.read_type}",
         f"min_breadth: {params.min_breadth}",
         f"threads: {params.threads}",

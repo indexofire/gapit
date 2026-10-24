@@ -23,7 +23,7 @@ jobs:
         with:
           cache: true
       - run: pixi run -e ${{ matrix.env }} lint
-      - run: pixi run -e ${{ matrix.env }} fmt -- --check
+      - run: pixi run -e ${{ matrix.env }} fmt-check
       - run: pixi run -e ${{ matrix.env }} typecheck
       - run: pixi run -e ${{ matrix.env }} test
 

@@ -670,3 +670,11 @@ def test_cluster_bundle_materialization_is_idempotent_and_quiet(
     assert silent.exit_code == 0, silent.stderr
     assert silent.stderr == ""
     assert (other / "vp_ok" / "gapit-manifest.json").is_file()
+
+
+def test_every_bundle_declares_a_content_license() -> None:
+    """Given the wheel's audited bundles, When metadata is parsed, Then every
+    one carries a machine-readable content license (the policy gate cannot be
+    checked from prose alone)."""
+    for database in bundled_databases():
+        assert database.metadata.license, database.name

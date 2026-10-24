@@ -63,7 +63,7 @@ gapit screen --r1 ont_reads.fastq.gz --db ncbi --read-type map-ont --format json
 # Summarize report tables into a gene presence/absence matrix
 gapit summary *.tsv
 
-# Databases: six ship in-wheel and work instantly; the rest download from upstream on fetch
+# Databases: seven ship in-wheel and work instantly; the rest download from upstream on fetch
 gapit db fetch all         # default set (card, vfdb)
 gapit db fetch ncbi
 gapit db list
@@ -81,14 +81,14 @@ presence defaults to 90% alignment breadth (`--min-breadth 90`).
 ## Databases
 
 A database is a directory under the datadir, resolved from `$GAPIT_DATADIR`, then
-`~/.local/share/gapit/db` (override per call with `--datadir`). Twenty-two databases are
+`~/.local/share/gapit/db` (override per call with `--datadir`). Twenty-three databases are
 built into the catalog — twelve gene providers, seven kaptive cluster providers, and
-three typed bundles (`ecoli_dec`, `lm_doumith`, and the cluster-kind `vp_ok`). Every
+seven bundled snapshots (`ecoh`, `ecoli_dec`, `lm_doumith`, `ncbi`, `resfinder`,
+`vc_serogroup`, `vp_ok`; `ecoh`/`ncbi`/`resfinder` are also provider names). Every
 provider builds on `gapit db fetch`,
-which downloads from upstream — and six content-provenance-audited ones also ship inside
-the package (`ecoli_dec` and
-`lm_doumith` plus the `ncbi`, `resfinder`, `ecoh` snapshots — public
-domain / Apache-2.0 /
+which downloads from upstream — and seven content-provenance-audited ones also ship inside
+the package (`ecoli_dec`, `lm_doumith`, and `vc_serogroup` plus the `ncbi`, `resfinder`,
+`ecoh` snapshots — public domain / Apache-2.0 /
 BSD-3-Clause / MIT — and the MIT typed-cluster snapshot `vp_ok`), materialized into the
 datadir on first use with zero network; the
 bundled `ecoli_dec` additionally carries per-gene identity floors (`floors.json`, `pic`
@@ -114,6 +114,7 @@ redistribution inside an MIT-licensed distribution, so everything else is fetch-
 | `bacmet2` | BacMet2 biocide/resistance genes (protein) | prot |
 | `victors` | Victors virulence factors | nucl |
 | `upec_expec_vf` | UPEC/ExPEC virulence genes | nucl |
+| `vc_serogroup` | V. cholerae O1/O139 serogroup + ctxA toxigenicity markers | nucl |
 | `vp_ok` | V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero; cluster, MIT, one-scan O:K serotype) | nucl |
 
 gapit also reads datadirs built by abricate itself (legacy `~~~` headers). The reverse
@@ -179,8 +180,9 @@ Register it with an MCP client:
 |---|---|
 | `pixi run lint` | ruff check |
 | `pixi run fmt` | ruff format |
+| `pixi run fmt-check` | ruff format --check |
 | `pixi run typecheck` | basedpyright (strict) |
-| `pixi run test` | pytest, 1024 offline tests |
+| `pixi run test` | pytest, 1218 offline tests |
 | `pixi run -e parity parity` | byte-diff screening vs real abricate |
 | `pixi run -e parity summary-parity` | byte-diff summary vs real abricate |
 
@@ -194,6 +196,6 @@ guide, `CHANGELOG.md` the change history.
 
 gapit is MIT-licensed. It is a behavioral reimplementation of abricate (GPL-2.0) and
 copies no Perl code; abricate itself remains GPL-2.0. The only database content inside
-the package is the six audited, permissively licensed bundles under `src/gapit/data/dbs/`
+the package is the seven audited, permissively licensed bundles under `src/gapit/data/dbs/`
 (public domain / Apache-2.0 / BSD-3-Clause / MIT); every other provider downloads from
 upstream at fetch time, under its own license (SPEC.md §9).

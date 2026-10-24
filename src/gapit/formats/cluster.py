@@ -18,6 +18,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from gapit.cluster import BestCall, ClusterParams, ClusterReport, GeneCall, LocusCall
+from gapit.formats.csvutil import delimited_line
 from gapit.formats.json import ToolDocument, utc_timestamp
 from gapit.typing_results import PhenotypeDetail
 
@@ -179,8 +180,8 @@ def missing_ids(report: ClusterReport, locus_id: str) -> str:
     )
 
 
-def _tsv_row(report: ClusterReport, sep: str, nopath: bool, typed: bool) -> str:
-    """One table line per file; a null best renders as the untyped row
+def _tsv_cells(report: ClusterReport, nopath: bool, typed: bool) -> list[str]:
+    """One table row's cells; a null best renders as the untyped row
     ``-  -  0.00  0.00  0  0  -`` (with a ``-`` phenotype on typed dbs);
     missing ids join with ``;``."""
     file_column = PurePath(report.file).name if nopath else report.file
@@ -188,7 +189,7 @@ def _tsv_row(report: ClusterReport, sep: str, nopath: bool, typed: bool) -> str:
         cells = [file_column, "-", "-", "0.00", "0.00", "0", "0", "-"]
         if typed:
             cells.insert(3, "-")
-        return sep.join(cells)
+        return cells
     best = report.best
     cells = [
         file_column,
@@ -202,7 +203,7 @@ def _tsv_row(report: ClusterReport, sep: str, nopath: bool, typed: bool) -> str:
     ]
     if typed:
         cells.insert(3, best.phenotype or "-")
-    return sep.join(cells)
+    return cells
 
 
 def cluster_tsv_preamble(*, csv: bool, noheader: bool, typed: bool) -> str:
@@ -210,13 +211,13 @@ def cluster_tsv_preamble(*, csv: bool, noheader: bool, typed: bool) -> str:
     if noheader:
         return ""
     header = CLUSTER_TSV_HEADER_TYPED if typed else CLUSTER_TSV_HEADER
-    return header.replace("\t", "," if csv else "\t") + "\n"
+    return delimited_line(tuple(header.split("\t")), as_csv=csv)
 
 
 def cluster_tsv_file_chunk(report: ClusterReport, *, csv: bool, nopath: bool, typed: bool) -> str:
     """One file's chunk: its single table row (the streaming unit the
     cluster use-case emits as each file's report exists)."""
-    return _tsv_row(report, "," if csv else "\t", nopath, typed) + "\n"
+    return delimited_line(_tsv_cells(report, nopath, typed), as_csv=csv)
 
 
 def format_cluster_tsv(

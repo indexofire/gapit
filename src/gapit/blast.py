@@ -64,23 +64,29 @@ def parse_blast_row(line: str) -> BlastRow:
     fields = line.split("\t")
     if len(fields) != 15:
         raise GapitError("can not find sequence data", code="BLAST_PARSE_FAILED")
-    return BlastRow(
-        qseqid=fields[0],
-        qstart=int(fields[1]),
-        qend=int(fields[2]),
-        qlen=int(fields[3]),
-        sseqid=fields[4],
-        sstart=int(fields[5]),
-        send=int(fields[6]),
-        slen=int(fields[7]),
-        sstrand=fields[8],
-        evalue=float(fields[9]),
-        length=int(fields[10]),
-        pident=float(fields[11]),
-        gaps=int(fields[12]),
-        gapopen=int(fields[13]),
-        stitle=fields[14],
-    )
+    try:
+        return BlastRow(
+            qseqid=fields[0],
+            qstart=int(fields[1]),
+            qend=int(fields[2]),
+            qlen=int(fields[3]),
+            sseqid=fields[4],
+            sstart=int(fields[5]),
+            send=int(fields[6]),
+            slen=int(fields[7]),
+            sstrand=fields[8],
+            evalue=float(fields[9]),
+            length=int(fields[10]),
+            pident=float(fields[11]),
+            gaps=int(fields[12]),
+            gapopen=int(fields[13]),
+            stitle=fields[14],
+        )
+    except (TypeError, ValueError) as exc:
+        raise GapitError(
+            f"can not parse BLAST row (numeric field): {line!r}",
+            code="BLAST_PARSE_FAILED",
+        ) from exc
 
 
 def ensure_blast() -> None:

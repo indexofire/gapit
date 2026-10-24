@@ -25,7 +25,8 @@ from typing import Literal
 from urllib.parse import urlparse
 
 from gapit import __version__
-from gapit.dbbuild import build_database
+from gapit.db_txn import staged_database
+from gapit.dbbuild import build_database, validate_records
 from gapit.errors import DatabaseError
 from gapit.proctools import note
 from gapit.records import Manifest, Record, write_records
@@ -34,6 +35,9 @@ _NUCL_JUNK = re.compile(r"[^AGCT]")
 _PROT_JUNK = re.compile(r"[^A-Z]")
 _WHITESPACE = re.compile(r"\s+")
 _CHUNK_BYTES = 1 << 20
+# Allow large upstream archives while still refusing a runaway/compromised
+# body before it fills the disk. One GiB is well above every catalog source.
+_MAX_DOWNLOAD_BYTES = 1 << 30
 # Bounded fetch: socket.timeout (an OSError) already maps to DOWNLOAD_FAILED below.
 _DOWNLOAD_TIMEOUT_SECONDS = 60
 
@@ -81,6 +85,14 @@ def url_basename(url: str) -> str:
     return urlparse(url).path.rstrip("/").rsplit("/", 1)[-1]
 
 
+def insecure_source_urls(urls: Sequence[str]) -> tuple[str, ...]:
+    """The source URLs not protected by TLS (plain ``http://``).
+
+    The catalog still has three HTTP-only upstreams; flagging them keeps the
+    integrity limitation visible in ``db fetch`` diagnostics."""
+    return tuple(url for url in urls if urlparse(url).scheme == "http")
+
+
 def download_file(url: str, dest: Path) -> None:
     """Fetch ``url`` into ``dest`` atomically: urlopen a Request carrying
     the module User-Agent, stream the body into a hidden .part file beside
@@ -95,7 +107,15 @@ def download_file(url: str, dest: Path) -> None:
             urllib.request.urlopen(request, timeout=_DOWNLOAD_TIMEOUT_SECONDS) as response,
             temp.open("wb") as out,
         ):
+            total = 0
             while chunk := response.read(_CHUNK_BYTES):
+                total += len(chunk)
+                if total > _MAX_DOWNLOAD_BYTES:
+                    raise DatabaseError(
+                        f"download exceeds {_MAX_DOWNLOAD_BYTES} bytes: {url}",
+                        code="DOWNLOAD_TOO_LARGE",
+                        context={"url": url, "limit": str(_MAX_DOWNLOAD_BYTES)},
+                    )
                 out.write(chunk)
         os.replace(temp, dest)
     except (OSError, ValueError) as exc:
@@ -178,32 +198,36 @@ def fetch_provider(
             code="DB_ALREADY_EXISTS",
             context={"db": provider.name},
         )
-    db_dir.mkdir(parents=True, exist_ok=True)
-    with TemporaryDirectory(dir=db_dir, prefix=".download.") as workdir_name:
-        workdir = Path(workdir_name)
-        for url in provider.source_urls:
-            download_file(url, workdir / url_basename(url))
-        note(quiet, f"downloaded {len(provider.source_urls)} source file(s)")
-        records = tuple(
-            _normalize_record(record, provider.dbtype) for record in provider.transform(workdir)
+    insecure = insecure_source_urls(provider.source_urls)
+    if insecure:
+        note(quiet, f"WARNING: plain HTTP source(s), no transport integrity: {', '.join(insecure)}")
+    with staged_database(db_dir):
+        with TemporaryDirectory(dir=db_dir, prefix=".download.") as workdir_name:
+            workdir = Path(workdir_name)
+            for url in provider.source_urls:
+                download_file(url, workdir / url_basename(url))
+            note(quiet, f"downloaded {len(provider.source_urls)} source file(s)")
+            records = tuple(
+                _normalize_record(record, provider.dbtype) for record in provider.transform(workdir)
+            )
+        kept, dropped = _dedupe(records)
+        note(quiet, f"read {len(records)} records from {provider.name}")
+        note(quiet, f"dropped {dropped} duplicate sequence(s), kept {len(kept)}")
+        if not kept:
+            raise DatabaseError(
+                f"provider {provider.name} yielded no records",
+                code="PROVIDER_EMPTY",
+                context={"db": provider.name},
+            )
+        validate_records(kept)
+        write_records(sorted(kept, key=lambda record: record.gene), db_dir / "records.jsonl")
+        return build_database(
+            db_dir,
+            name=provider.name,
+            dbtype=provider.dbtype,
+            source_urls=provider.source_urls,
+            fetched_at=fetched_at,
+            content_license=provider.license or "",
+            quiet=quiet,
+            debug=debug,
         )
-    kept, dropped = _dedupe(records)
-    note(quiet, f"read {len(records)} records from {provider.name}")
-    note(quiet, f"dropped {dropped} duplicate sequence(s), kept {len(kept)}")
-    if not kept:
-        raise DatabaseError(
-            f"provider {provider.name} yielded no records",
-            code="PROVIDER_EMPTY",
-            context={"db": provider.name},
-        )
-    write_records(sorted(kept, key=lambda record: record.gene), db_dir / "records.jsonl")
-    return build_database(
-        db_dir,
-        name=provider.name,
-        dbtype=provider.dbtype,
-        source_urls=provider.source_urls,
-        fetched_at=fetched_at,
-        content_license=provider.license or "",
-        quiet=quiet,
-        debug=debug,
-    )

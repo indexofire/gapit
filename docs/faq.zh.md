@@ -128,7 +128,7 @@ build --floors FILE` 安装，或直接把文件放进数据库目录；没有�
 
 ## 数据库适用哪些许可证？
 
-gapit 本身以 MIT 许可。六个经过审计、许可宽松的内置库随 wheel 发布（公有领域的
+gapit 本身以 MIT 许可。七个经过审计、许可宽松的内置库随 wheel 发布（公有领域的
 `ecoli_dec`、`lm_doumith` 面板，`ncbi`、`resfinder`、`ecoh`
 快照，以及 MIT 的 `vp_ok` typed-cluster 快照），首次使用时物化进数据目录；其余每个提供商
 都在抓取时从上游下载，内容保留其原始许可证（CARD 的 McMaster 非商业条款、VFDB 的
@@ -139,5 +139,5 @@ CC BY-NC、CGE、Kaptive 的 GPL-3.0 等），gapit 不重新授权。声明了�
 ## 如何向默认集合添加新数据库？
 
 写一个提供商模块并按名字抓取：每个提供商都在抓取时从上游下载、变换记录、本地构建。
-除六个经审计的内置库之外，wheel 不携带任何内容（CARD、VFDB 等上游许可禁止随 MIT
+除七个经审计的内置库之外，wheel 不携带任何内容（CARD、VFDB 等上游许可禁止随 MIT
 许可的发行版再分发）。表头格式、变换和构建流水线见 SPEC.md §11。

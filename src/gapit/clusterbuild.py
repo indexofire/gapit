@@ -124,6 +124,37 @@ def _verify_cluster(loci: Sequence[LocusSequence], sequences_path: Path) -> None
         raise _check_failed("", "extra_fasta_record")
 
 
+_TABLE_CONTROL = "\t\r\n"
+
+
+def _validate_loci(loci: Sequence[LocusSequence]) -> None:
+    """Reject table-breaking control characters before any artifact write."""
+    for locus in loci:
+        for field, value in (
+            ("id", locus.features.id),
+            ("label", locus.features.label),
+            ("type", locus.features.type),
+        ):
+            if any(control in value for control in _TABLE_CONTROL):
+                raise DatabaseError(
+                    f"locus {locus.features.id!r}: {field} contains a table delimiter",
+                    code="BUILD_INVALID",
+                    context={"locus": locus.features.id, "field": field},
+                )
+        for gene in locus.features.genes:
+            for field, value in (("gene_id", gene.gene_id), ("product", gene.product)):
+                if any(control in value for control in _TABLE_CONTROL):
+                    raise DatabaseError(
+                        f"locus {locus.features.id!r}: {field} contains a table delimiter",
+                        code="BUILD_INVALID",
+                        context={
+                            "locus": locus.features.id,
+                            "gene": gene.gene_id,
+                            "field": field,
+                        },
+                    )
+
+
 def build_cluster_database(
     db_dir: Path,
     *,
@@ -147,6 +178,7 @@ def build_cluster_database(
     provenance (kaptive-style providers); both default to empty and
     serialize only when set. ``source: "bundled"`` stamps a wheel-materialized
     build (gapit.bundled); None serializes away (every other caller)."""
+    _validate_loci(loci)
     sequences_path = db_dir / "sequences"
     _write_locus_fasta(loci, sequences_path)
     note(quiet, f"generated {sequences_path}")

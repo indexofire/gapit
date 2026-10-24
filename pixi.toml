@@ -8,6 +8,7 @@ version = "0.5.6"
 [tasks]
 lint = "ruff check"
 fmt = "ruff format"
+fmt-check = "ruff format --check"
 typecheck = "basedpyright"
 test = "pytest"
 gapit = "gapit"

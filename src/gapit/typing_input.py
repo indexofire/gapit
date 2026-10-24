@@ -14,6 +14,9 @@ this boundary: a single DATABASE value across every row of every file
 and well-formed numeric columns (SCREEN_TABLE_MALFORMED).
 """
 
+import csv
+import io
+from collections.abc import Iterator
 from pathlib import Path
 from typing import NamedTuple
 
@@ -136,18 +139,30 @@ def _header(label: str, line_number: int, columns: list[str]) -> _Columns:
     return _Columns(file_at, gene_at, database_at, identity_at, coverage_at)
 
 
+def _iter_rows(text: str, separator: str) -> Iterator[tuple[int, list[str]]]:
+    """Physical line number + cells: csv.reader for comma tables, raw split
+    for tab tables (the abricate-parity convention)."""
+    if separator == ",":
+        reader = csv.reader(io.StringIO(text))
+        for columns in reader:
+            if columns:
+                yield reader.line_num, columns
+        return
+    lines = text.split("\n")
+    if lines and lines[-1] == "":
+        lines.pop()
+    for line_number, line in enumerate(lines, start=1):
+        yield line_number, line.split(separator)
+
+
 def _parse_rows(label: str, text: str) -> list[ScreenRow]:
     """One table's data rows (``label`` names it in errors); the first line
     is the column map and later ``#``-prefixed lines are skipped headers
     (multi-run concatenations)."""
     separator = _detect_separator(text)
-    lines = text.split("\n")
-    if lines and lines[-1] == "":
-        lines.pop()
     header: _Columns | None = None
     rows: list[ScreenRow] = []
-    for line_number, line in enumerate(lines, start=1):
-        columns = line.split(separator)
+    for line_number, columns in _iter_rows(text, separator):
         if header is None:
             header = _header(label, line_number, columns)
             continue

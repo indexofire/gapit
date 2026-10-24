@@ -261,12 +261,15 @@ def parse_genbank_features(path: Path) -> list[LocusSequence]:
             for raw_line in handle:
                 line = raw_line.rstrip("\n")
                 if in_origin:
+                    if record is None:
+                        raise _fail(
+                            "INVALID_GENBANK",
+                            f"{path}: ORIGIN before any LOCUS record",
+                        )
                     if line.startswith("//"):
-                        assert record is not None
                         loci.append(record.features(path))
                         record, in_origin = None, False
                     else:
-                        assert record is not None
                         # seqconvert ORIGIN rule: drop the 10-column coordinate
                         # prefix, remove remaining whitespace, keep other chars.
                         record.sequence.append(re.sub(r"\s+", "", line[10:]))
@@ -289,15 +292,19 @@ def parse_genbank_features(path: Path) -> list[LocusSequence]:
                             f"{path}: record {record.id!r} is not terminated by //",
                             locus=record.id,
                         )
-                    record = _Record(line.split()[1])
+                    parts = line.split()
+                    if len(parts) < 2:
+                        raise _fail(
+                            "INVALID_GENBANK",
+                            f"{path}: LOCUS line without a locus name: {line!r}",
+                        )
+                    record = _Record(parts[1])
                     continue
                 if record is None or not line.startswith(" "):
                     continue  # pre-FEATURES keywords and column-1 header lines
-                if line[:5] == "     " and line[5] != " ":  # feature header, column 6
-                    assert record is not None
+                if len(line) >= 6 and line[:5] == "     " and line[5] != " ":
                     record.start_feature(line[5:21].strip(), line[21:].strip())
                     continue
-                assert record is not None
                 content = line[21:]
                 if content.startswith("/"):
                     record.qualifier(content)

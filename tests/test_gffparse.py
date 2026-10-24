@@ -111,3 +111,19 @@ def test_cds_on_unknown_sequence_is_rejected() -> None:
         assert excinfo.value.context["seqid"] == "ghost"
     finally:
         stray.unlink()
+
+
+def test_zero_start_cds_raises_typed_input_error(tmp_path: Path) -> None:
+    """Given a CDS row with start 0, When parsed, Then the GFF boundary raises
+    InputError (GENE_OUT_OF_BOUNDS) instead of pydantic ValidationError."""
+    path = tmp_path / "zero_start.gff3"
+    path.write_text(
+        "##gff-version 3\n"
+        "chr1\tsrc\tCDS\t0\t5\t.\t+\t0\tID=g1;gene=g1\n"
+        "##FASTA\n>chr1\nACGTACGTAC\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(InputError) as excinfo:
+        parse_gff3_features(path)
+    assert excinfo.value.code == "GENE_OUT_OF_BOUNDS"

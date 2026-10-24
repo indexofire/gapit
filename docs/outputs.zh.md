@@ -473,7 +473,7 @@ frontmatter 在第一个文件之前即可知，因此 md 与 tsv 行一样逐�
 | 字段 | 类型 | 含义 |
 |---|---|---|
 | `schema` | string | 恒为 `gapit.error/1` |
-| `code` | string | 机器稳定的错误码，snake_case |
+| `code` | string | 机器稳定的错误码，SCREAMING_SNAKE_CASE |
 | `message` | string | 人类可读的描述 |
 | `context` | object | 字符串值的细节（文件路径、摘要、数据库名） |
 
@@ -524,7 +524,7 @@ $ gapit --version --json
 {"schema":"gapit.version/1","name":"gapit","version":"0.5.6"}
 ```
 
-`gapit schema <name>` 打印每个文档的 JSON Schema。十一个名字：`report`、
+`gapit schema <name>` 打印每个文档的 JSON Schema。十二个名字：`report`、
 `typing_result`、`reads`、`reads2`、`cluster`、`summary`、`error`、`version`，外加
 数据库侧文档 `features`（gapit.features/1，基因簇数据库的特征表）、`typing`
 （gapit.typing/1，基因簇数据

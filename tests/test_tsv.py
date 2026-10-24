@@ -81,8 +81,9 @@ def test_empty_hits_still_print_header() -> None:
 
 
 def test_csv_separator_everywhere() -> None:
-    """Given csv=True, When formatted, Then header and rows use ',' — and no
-    field ever contains a ',' (product cleanup strips them), so join is safe."""
+    """Given csv=True and a comma-free fixture, When formatted, Then header
+    and rows use ',' byte-identically; comma-bearing fields are covered by
+    tests/test_csv_contract.py (the csv writer quotes them)."""
     output = format_tsv([make_report([row()])], csv=True, noheader=False, nopath=False)
     assert output == HEADER.replace("\t", ",") + "\n" + FULL_LINE.replace("\t", ",") + "\n"
 

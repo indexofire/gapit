@@ -4,5 +4,6 @@
   "vendor": "gapit-curated (NCBI X59554.1 slice / KY660230.1 / X00171.1)",
   "dbtype": "nucl",
   "kind": "gene",
-  "snapshotted": "2026-10-19"
+  "snapshotted": "2026-10-19",
+  "license": "Public domain (NCBI)"
 }

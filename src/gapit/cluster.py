@@ -15,6 +15,7 @@ the gene path's.
 """
 
 from collections import Counter
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -31,7 +32,7 @@ from gapit.cluster_math import (
 from gapit.db import Database
 from gapit.errors import DatabaseError, GapitError
 from gapit.gbfeatures import FeaturesDocument, LocusFeatures
-from gapit.minimap2_run import run_minimap2
+from gapit.minimap2_run import iter_minimap2
 from gapit.paf import PafRecord
 from gapit.typing_models import TypingDocument, read_typing_document
 from gapit.typing_results import PhenotypeDetail, SchemeCall
@@ -133,7 +134,7 @@ def load_typing(database: Database) -> TypingDocument | None:
     return read_typing_document(path) if path.is_file() else None
 
 
-def _runs_by_locus(rows: list[PafRecord]) -> dict[str, tuple[list[tuple[CsRun, ...]], int]]:
+def _runs_by_locus(rows: Iterable[PafRecord]) -> dict[str, tuple[list[tuple[CsRun, ...]], int]]:
     """Primary rows grouped by target locus: each record's parsed cs runs
     plus the first-seen tlen (the reads-mode denominator contract)."""
     grouped: dict[str, tuple[list[tuple[CsRun, ...]], int]] = {}
@@ -215,7 +216,7 @@ def screen_cluster_file(
     """Screen one assembly file: one minimap2 asm20 --cs invocation (query =
     the file's contigs, target = the locus FASTA), primary rows only, per-
     gene/locus union math, ranked loci, best call above min_cluster_cov."""
-    rows = run_minimap2(
+    rows = iter_minimap2(
         [(query, None)],
         database,
         read_type="asm20",

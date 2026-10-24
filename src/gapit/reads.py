@@ -12,13 +12,13 @@ from gapit.db import Database
 from gapit.dbcodec import decode_seqid
 from gapit.errors import InputError
 from gapit.fasta import iter_fasta_headers
-from gapit.gene_floors import apply_gene_floors, gene_floors
-from gapit.minimap2_run import run_minimap2
+from gapit.gene_floors import gene_floors, iter_apply_gene_floors
+from gapit.minimap2_run import iter_minimap2
 from gapit.paf import (
     PafRecord,
     ReadType,
     alignment_identity,
-    filter_alignments,
+    iter_filter_alignments,
     union_length,
 )
 
@@ -212,7 +212,7 @@ def screen_reads(
     (:func:`gapit.gene_floors.apply_gene_floors`) — db-driven opt-in; a
     floorless database is byte-identical to the pre-floors behavior."""
     reads2 = min_identity > 0.0 or min_mapq > 0
-    rows = run_minimap2(
+    rows: Iterable[PafRecord] = iter_minimap2(
         lanes,
         database,
         read_type=read_type,
@@ -221,10 +221,10 @@ def screen_reads(
         nm_tags=True,
     )
     if reads2:
-        rows = filter_alignments(rows, min_identity=min_identity, min_mapq=min_mapq)
+        rows = iter_filter_alignments(rows, min_identity=min_identity, min_mapq=min_mapq)
     floors = gene_floors(database)
     if floors is not None:
-        rows = apply_gene_floors(rows, floors, default_db=database.name)
+        rows = iter_apply_gene_floors(rows, floors, default_db=database.name)
     products = dict(iter_fasta_headers(database.sequences_path))
     genes = aggregate_coverage(
         rows, default_db=database.name, min_breadth=min_breadth, products=products

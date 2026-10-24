@@ -4,5 +4,6 @@
   "vendor": "Holt lab (srst2)",
   "dbtype": "nucl",
   "kind": "gene",
-  "snapshotted": "2026-10-02"
+  "snapshotted": "2026-10-02",
+  "license": "BSD-3-Clause (srst2 EcOH content)"
 }

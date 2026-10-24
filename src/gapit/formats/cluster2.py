@@ -37,6 +37,7 @@ from gapit.formats.cluster import (
     ClusterParamsDocument,
     locus_document,
 )
+from gapit.formats.csvutil import delimited_line
 from gapit.formats.json import ToolDocument, utc_timestamp
 from gapit.typing_models import TypingDocument
 from gapit.typing_results import SchemeCall
@@ -196,7 +197,7 @@ def cluster2_tsv_preamble(*, csv: bool, noheader: bool, document: TypingDocument
     """The cluster/2 header chunk ("" under noheader; sinks skip empties)."""
     if noheader:
         return ""
-    return ("," if csv else "\t").join(cluster2_columns(document)) + "\n"
+    return delimited_line(cluster2_columns(document), as_csv=csv)
 
 
 def cluster2_tsv_file_chunk(
@@ -204,8 +205,7 @@ def cluster2_tsv_file_chunk(
 ) -> str:
     """One file's /2 chunk: its single table row (the streaming unit the
     cluster use-case emits as each file's report exists)."""
-    sep = "," if csv else "\t"
-    return sep.join(cluster2_row_cells(report, document, nopath=nopath)) + "\n"
+    return delimited_line(cluster2_row_cells(report, document, nopath=nopath), as_csv=csv)
 
 
 def format_cluster2_tsv(

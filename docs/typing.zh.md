@@ -150,7 +150,7 @@ ambiguous。
 
 ### 李斯特菌血清群 —— 内置 lm_doumith 面板（基因库）
 
-`lm_doumith` 是第六个内置数据库：取自公共领域 INSDC 记录的 Doumith 标记，加上
+`lm_doumith` 是一个内置数据库：取自公共领域 INSDC 记录的 Doumith 标记，加上
 `doumith_serogroup` 方案（`gapit.typing/2`）——与 LisSero 相同的五标记多重 PCR
 语义，`prs` 为属级 `control_gene`，每条规则 95/95 阈值（Doumith 等 2004，J Clin
 Microbiol 42:3819）：

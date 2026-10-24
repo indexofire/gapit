@@ -76,3 +76,13 @@ def test_row_with_16_fields_fails() -> None:
 def test_ensure_blast_passes_version_gate() -> None:
     """Given the env's blastn (>= 2.7), When ensured, Then no exception."""
     assert ensure_blast() is None
+
+
+def test_non_numeric_field_is_a_typed_parse_error() -> None:
+    """Given a 15-field row with a corrupt numeric column, When parsed, Then
+    BLAST_PARSE_FAILED (not a raw ValueError)."""
+    fields = CANONICAL.split("\t")
+    fields[1] = "not-an-int"
+    with pytest.raises(GapitError) as excinfo:
+        parse_blast_row("\t".join(fields))
+    assert excinfo.value.code == "BLAST_PARSE_FAILED"

@@ -3,13 +3,14 @@
 import os
 import re
 import shlex
+import shutil
 import sys
 from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel
 
-from gapit.errors import DatabaseError, InputError
+from gapit.errors import DatabaseError, DependencyError, InputError
 from gapit.fasta import iter_fasta
 from gapit.proctools import run_tool
 
@@ -106,6 +107,12 @@ def make_blast_db(
     if dbtype is None:
         letters = "".join(record.sequence for record in iter_fasta(sequences_path))
         dbtype = mol_type(letters)
+    if shutil.which("makeblastdb") is None:
+        raise DependencyError(
+            "required binary not found on PATH: makeblastdb",
+            code="MISSING_DEPENDENCY",
+            context={"binary": "makeblastdb"},
+        )
     for index_file in sequences_path.parent.glob(f"{sequences_path.name}.[np]??"):
         index_file.unlink()
     argv = [

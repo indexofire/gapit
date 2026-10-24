@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING
 from pydantic import ValidationError
 
 from gapit.clusterbuild import build_cluster_database
+from gapit.db_txn import staged_database
 from gapit.errors import DatabaseError
 from gapit.fasta import iter_fasta
 from gapit.gbfeatures import FeaturesDocument, LocusSequence
@@ -100,17 +101,17 @@ def materialize_cluster_bundle(
             document, FeaturesDocument(loci=tuple(locus.features for locus in loci))
         )
         typing_schema = typing_schema_of(bundled.typing_path)
-    db_dir.mkdir(parents=True, exist_ok=True)
-    build_cluster_database(
-        db_dir,
-        name=name,
-        loci=loci,
-        typing=bundled.typing_path,
-        source_urls=("local",),
-        fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        typing_schema=typing_schema,
-        quiet=True,  # the materializing note above is the only stderr line (gene-path parity)
-        content_license=bundled.metadata.license,
-        content_note=bundled.metadata.note,
-        source="bundled",
-    )
+    with staged_database(db_dir):
+        build_cluster_database(
+            db_dir,
+            name=name,
+            loci=loci,
+            typing=bundled.typing_path,
+            source_urls=("local",),
+            fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            typing_schema=typing_schema,
+            quiet=True,  # the materializing note above is the only stderr line (gene-path parity)
+            content_license=bundled.metadata.license,
+            content_note=bundled.metadata.note,
+            source="bundled",
+        )

@@ -52,7 +52,7 @@ vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nuc
 
 NAME is the database name you pass to `--db`; PROVIDER names the upstream maintainer
 organisation. STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`
-exists, with N the record count, otherwise `available`. The last six rows are the
+exists, with N the record count, otherwise `available`. The last seven rows are the
 wheel-shipped [bundled](#bundled-databases-install-time-ready) databases, alphabetical:
 `bundled` before materialization, `installed (N)` after. Three of them (`ecoh`, `ncbi`,
 `resfinder`) are also registry providers — such names render
@@ -115,7 +115,7 @@ $ gapit db list --json
 | `providers[].kind` | string | `gene` (per-gene BLAST screening) or `cluster` (minimap2 locus screening, [screen.md](./screen.md#cluster-databases-kind-cluster)) |
 | `providers[].installed` | boolean | True when a manifest exists in the datadir |
 | `providers[].records` | integer | Record count, omitted when the database isn't installed |
-| `providers[].license` | string | Upstream content license, omitted unless the provider pins one (card, vfdb, ecoli_vf, kaptive) |
+| `providers[].license` | string | Upstream content license, omitted unless the provider or bundled snapshot pins one (card, vfdb, ecoli_vf, kaptive, bundled content) |
 | `providers[].source` | string | `local` for a datadir-discovered database outside the catalog (`db build` / `db install`), `bundled` for a wheel-shipped database (see below); absent for registry entries |
 
 `gapit db list` is the single listing surface: the database catalog above, with `--json`
@@ -127,7 +127,7 @@ surface.) See [outputs.md](./outputs.md).
 
 Most databases download from upstream at `db fetch` time because their licenses forbid
 redistribution (see [Providers](#providers)). A small set of **bundled** databases ships
-inside the gapit wheel instead — six databases whose content provenance was audited
+inside the gapit wheel instead — seven databases whose content provenance was audited
 record-by-record (public-domain sources, or Apache-2.0 / BSD-3-Clause / MIT panels;
 GPL and non-commercial content never rides the wheel). Nothing to download, nothing to
 accept: a bundled database works out of the box.
@@ -139,6 +139,7 @@ accept: a bundled database works out of the box.
 | `lm_doumith` | Listeria monocytogenes serogrouping (5 records, Doumith 2004 markers) | 2026-10-03 | `gapit.typing/2` (scheme `doumith_serogroup`) |
 | `ncbi` | NCBI AMRFinderPlus curated AMR (8373 records) | 2026-10-02 | — |
 | `resfinder` | CGE ResFinder acquired resistance genes (3206 records) | 2026-10-02 | — |
+| `vc_serogroup` | V. cholerae O1/O139 serogroup + ctxA toxigenicity markers | 2026-10-19 | `gapit.typing/2` (scheme `serogroup`) |
 | `vp_ok` | V. parahaemolyticus O and K antigen loci (195 loci, vpautils OAgc+CPSgc; cluster kind) | 2026-10-12 | `gapit.typing/2` (schemes `o_group`, `k_group`, `serotype`) |
 
 **License provenance.** Every `ecoli_dec` record was re-sourced from primary
@@ -158,7 +159,7 @@ MIT-licensed vpautils content (lab-curated loci, Bakta-annotated, via
 [indexofire/vpautils](https://github.com/indexofire/vpautils)); it ships as the
 resolved `sequences` + `features.json` pair a completed gapit.typing/2 build
 produces. A regression test pins that no `VF*` / `VFDB` / `ARO:` tags appear in any
-of the six bundles' headers.
+of the seven bundles' headers.
 
 **Snapshots are point-in-time.** Each snapshot's `sequences` file is byte-for-byte what
 the upstream content produces on the snapshot date (a regression test proves the
@@ -245,7 +246,7 @@ $ gapit screen RIMD.fna --db vp_ok --format json
 
 The database content is **MIT** (Bakta-annotated, via vpautils), so unlike the
 kaptive providers it is license-clean for redistribution — a resolved snapshot ships
-inside the wheel as the sixth bundled database (8.3 MiB committed artifacts, within
+inside the wheel as the seventh bundled database (8.3 MiB committed artifacts, within
 the 30 MiB budget), and first use materializes it with zero network. The
 typing rules recompute sequence-unique key genes per locus (variants fold: OL4V1 →
 O4, KL20V1 → K20; untyped OLU*/KLU* loci get no rule and fall back to OUT/KUT), and
@@ -257,7 +258,7 @@ documented per-locus tuning).
 ## Checking database freshness
 
 `gapit db outdated` reports every installed database's age against the staleness
-threshold. Against a fully installed datadir (output trimmed to three of twenty-two rows):
+threshold. Against a fully installed datadir (output trimmed to three of twenty-three rows):
 
 ```console
 $ gapit db outdated --days 30
@@ -350,7 +351,7 @@ unknown `--db NAME` is a usage error (exit 2) listing what is installed.
 ## Providers
 
 Nineteen providers ship with gapit. Every one of them — `card` and `vfdb` included —
-downloads from its upstream source at fetch time: with the exception of the six
+downloads from its upstream source at fetch time: with the exception of the seven
 audited, permissively licensed bundles above, nothing is bundled inside the package,
 because several upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's
 GPL-3.0) forbid redistribution inside an MIT-licensed distribution. The seven kaptive

@@ -76,10 +76,12 @@ def generate_sequences(records_path: Path, sequences_path: Path) -> None:
             temp_path.unlink(missing_ok=True)
 
 
+_TABLE_CONTROL = "\t\r\n"
+
+
 def _check_record(record: Record) -> None:
-    """Generation-time validation: the two record shapes that would produce a
-    broken FASTA (headers must stay one line; empty sequences cannot be
-    indexed)."""
+    """Generation-time validation: the record shapes that would produce a
+    broken FASTA or break the 15-column table contract."""
     if "\n" in record.product or "\r" in record.product:
         raise DatabaseError(
             f"record {record.gene!r}: product contains a line break",
@@ -92,6 +94,30 @@ def _check_record(record: Record) -> None:
             code="BUILD_INVALID",
             context={"gene": record.gene},
         )
+    fields: tuple[tuple[str, str], ...] = (
+        ("db", record.db),
+        ("gene", record.gene),
+        ("accession", record.accession),
+        *((f"function[{index}]", value) for index, value in enumerate(record.function)),
+    )
+    for field, value in fields:
+        if any(control in value for control in _TABLE_CONTROL):
+            raise DatabaseError(
+                f"record {record.gene!r}: {field} contains a table delimiter",
+                code="BUILD_INVALID",
+                context={"gene": record.gene, "field": field},
+            )
+
+
+def validate_records(records: Sequence[Record]) -> None:
+    """Validate records before any database artifact is written.
+
+    This is the build boundary's table-safety gate: a tab/newline in a
+    database field would corrupt the frozen 15-column TSV, so it is a typed
+    BUILD_INVALID error, never a silent render-time surprise.
+    """
+    for record in records:
+        _check_record(record)
 
 
 def drop_exact_duplicates(records: Sequence[Record]) -> tuple[list[Record], int]:

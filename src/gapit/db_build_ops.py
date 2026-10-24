@@ -29,7 +29,8 @@ from gapit import config
 from gapit.clusterbuild import is_cluster_input, perform_cluster_build
 from gapit.db import mol_type
 from gapit.db_build_meta import merge_metadata, read_metadata, split_function
-from gapit.dbbuild import build_database, drop_exact_duplicates
+from gapit.db_txn import staged_database
+from gapit.dbbuild import build_database, drop_exact_duplicates, validate_records
 from gapit.dbcodec import decode_seqid
 from gapit.errors import DatabaseError, InputError, UsageError
 from gapit.fasta import FastaRecord, iter_fasta
@@ -159,7 +160,8 @@ def perform_build(
             context={"db": name},
         )
     if detected == "cluster":
-        manifest = perform_cluster_build(name, fasta, typing, db_dir, quiet=quiet)
+        with staged_database(db_dir):
+            manifest = perform_cluster_build(name, fasta, typing, db_dir, quiet=quiet)
         return BuildReceipt(
             db=name,
             records=manifest.n_records,
@@ -185,22 +187,23 @@ def perform_build(
         validate_floors(
             read_floors(floors), frozenset(record.gene for record in records), source=floors
         )
-    db_dir.mkdir(parents=True, exist_ok=True)
-    write_records(records, db_dir / "records.jsonl")
-    if typing is not None:
-        shutil.copyfile(typing, db_dir / "typing.json")
-    if floors is not None:
-        shutil.copyfile(floors, db_dir / FLOORS_FILENAME)
-    manifest = build_database(
-        db_dir,
-        name=name,
-        dbtype=_resolve_dbtype(dbtype, records),
-        source_urls=("local",),
-        fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        typing_schema=typing_schema,
-        source=source,
-        quiet=quiet,
-    )
+    validate_records(records)
+    with staged_database(db_dir):
+        write_records(records, db_dir / "records.jsonl")
+        if typing is not None:
+            shutil.copyfile(typing, db_dir / "typing.json")
+        if floors is not None:
+            shutil.copyfile(floors, db_dir / FLOORS_FILENAME)
+        manifest = build_database(
+            db_dir,
+            name=name,
+            dbtype=_resolve_dbtype(dbtype, records),
+            source_urls=("local",),
+            fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            typing_schema=typing_schema,
+            source=source,
+            quiet=quiet,
+        )
     return BuildReceipt(
         db=name,
         records=manifest.n_records,

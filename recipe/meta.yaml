@@ -34,8 +34,8 @@ requirements:
     - minimap2 >=2.24
 
 test:
-  # The repo's pytest suite (776 offline tests) is NOT run here: the sdist does
-  # not ship tests/ and bioconda-recipes carries only this recipe file. Full
+  # The repo's pytest suite (1218 tests) is NOT run here: bioconda-recipes
+  # carries only this recipe file. Full
   # suite coverage lives in the repo's own CI. These commands smoke-test the
   # installed console script end to end (no network: listing + schema only —
   # provider fetches download from upstream and are exercised in repo CI).

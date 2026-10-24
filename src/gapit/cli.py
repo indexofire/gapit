@@ -1,7 +1,9 @@
 """gapit command-line interface (click entrypoint)."""
 
 import json
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -12,13 +14,61 @@ from gapit.cmd_screen import register_screen_command
 from gapit.cmd_summary import register_summary_command
 from gapit.cmd_typing import register_typing_command
 from gapit.dispatch import datadir_option, dispatch
-from gapit.errors import usage_fail
+from gapit.errors import UsageError, render_error, usage_fail
 from gapit.formats.json import VersionDocument
 from gapit.formats.schemas import SCHEMA_MODELS
 from gapit.mcp import register_mcp_command
 
 
+class GapitGroup(click.Group):
+    """Click group that renders click's own parse failures as gapit envelopes.
+
+    Click validates options/arguments before the command body runs, so
+    ``dispatch`` never sees unknown options or missing required options. The
+    agent-facing contract says every failure is ``gapit.error/1``; this
+    override is the one place that translates click's exceptions.
+    """
+
+    def main(
+        self,
+        args: Sequence[str] | None = None,
+        prog_name: str | None = None,
+        complete_var: str | None = None,
+        standalone_mode: bool = True,
+        windows_expand_args: bool = True,
+        # Any mirrors click's own **extra signature; this is the click interop
+        # boundary, not a gapit data model.
+        **extra: Any,
+    ) -> Any:
+        try:
+            result = super().main(
+                args,
+                prog_name,
+                complete_var,
+                standalone_mode=False,
+                windows_expand_args=windows_expand_args,
+                **extra,
+            )
+            # Click returns an explicit ctx.exit(code) value in non-standalone
+            # mode; turn it back into the process exit status.
+            if isinstance(result, int):
+                raise SystemExit(result)
+            return result
+        except click.exceptions.Exit as exc:
+            raise SystemExit(exc.exit_code) from None
+        except click.exceptions.NoArgsIsHelpError as exc:
+            # Help-on-bare is not an error envelope: click has already
+            # rendered the command help; keep the historical exit 2.
+            exc.show()
+            raise SystemExit(exc.exit_code or 2) from None
+        except (click.UsageError, click.ClickException) as exc:
+            envelope = UsageError(exc.format_message(), code="USAGE_ERROR")
+            click.echo(render_error(envelope), err=True)
+            raise SystemExit(2) from None
+
+
 @click.group(
+    cls=GapitGroup,
     name="gapit",
     help="Mass screening of contigs and reads for known genes across reference databases.",
     no_args_is_help=True,

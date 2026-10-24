@@ -15,7 +15,7 @@ $ gapit --version --json
 {"schema":"gapit.version/1","name":"gapit","version":"0.5.6"}
 ```
 
-输出 schema。十一个文档可自省：`report`、`typing_result`、`reads`、`reads2`、`cluster`、
+输出 schema。十二个文档可自省：`report`、`typing_result`、`reads`、`reads2`、`cluster`、`cluster2`、
 `summary`、`error`、`version`，外加数据库侧文档 `features`、`typing` 和 `floors`。每个都打印完整的
 JSON Schema：
 
@@ -25,6 +25,7 @@ $ gapit schema typing_result   # gapit.typing_result/1 (gapit typing 判定)
 $ gapit schema reads           # gapit.reads/1  (FASTQ screening)
 $ gapit schema reads2          # gapit.reads/2  (filtered FASTQ screening)
 $ gapit schema cluster         # gapit.cluster/1 (cluster-database screening)
+$ gapit schema cluster2        # gapit.cluster/2 (multi-scheme cluster screening)
 $ gapit schema summary         # gapit.summary/1
 $ gapit schema error           # gapit.error/1
 $ gapit schema version         # gapit.version/1
@@ -61,7 +62,7 @@ $ gapit schema floors          # gapit.floors/1 (per-gene identity floors, reads
 }
 ```
 
-数据库：数据库目录与安装状态（`gapit db list --json`；真实输出，二十二个中的前两
+数据库：数据库目录与安装状态（`gapit db list --json`；真实输出，二十三个中的前两
 个，有删节）：
 
 ```console

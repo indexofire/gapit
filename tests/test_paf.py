@@ -73,3 +73,13 @@ def test_parse_equals_fully_validated_record() -> None:
     assert secondary == expected.model_copy(update={"is_primary": False})
     bare = "\t".join(CANONICAL.split("\t")[:12])
     assert parse_paf_row(bare) == expected
+
+
+def test_non_numeric_field_is_a_typed_parse_error() -> None:
+    """Given a 12-field PAF row with a corrupt numeric column, When parsed,
+    Then PAF_PARSE_FAILED (not a raw ValueError)."""
+    fields = CANONICAL.split("\t")
+    fields[1] = "not-an-int"
+    with pytest.raises(GapitError) as excinfo:
+        parse_paf_row("\t".join(fields))
+    assert excinfo.value.code == "PAF_PARSE_FAILED"

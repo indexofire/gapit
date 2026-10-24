@@ -8,10 +8,13 @@ single document. Chunk concatenation is byte-identical to the buffered
 
 from collections.abc import Iterable
 
+from gapit.formats.csvutil import delimited_line
 from gapit.reads import GeneCoverage, ReadsReport
 
 _READS_HEADER = "#SAMPLE\tGENE\tBREADTH%\tDEPTH\tREADS\tPRESENT\tDATABASE\tACCESSION\tPRODUCT"
 _READS2_HEADER = f"{_READS_HEADER}\tIDENTITY%"
+_READS_HEADER_CELLS = tuple(_READS_HEADER.split("\t"))
+_READS2_HEADER_CELLS = tuple(_READS2_HEADER.split("\t"))
 
 
 def _gene_row(gene: GeneCoverage, sample: str, *, reads2: bool) -> list[str]:
@@ -38,8 +41,8 @@ def _gene_row(gene: GeneCoverage, sample: str, *, reads2: bool) -> list[str]:
 def reads_tsv_preamble(*, reads2: bool = False, csv: bool = False) -> str:
     """The header chunk (abricate's ``#``-prefixed first line): static,
     knowable before sample 1, so a streaming caller emits it first."""
-    header = _READS2_HEADER if reads2 else _READS_HEADER
-    return header.replace("\t", "," if csv else "\t") + "\n"
+    cells = _READS2_HEADER_CELLS if reads2 else _READS_HEADER_CELLS
+    return delimited_line(cells, as_csv=csv)
 
 
 def reads_tsv_chunk(
@@ -49,10 +52,11 @@ def reads_tsv_chunk(
     calls join with ``all_genes``), the streaming unit emitted as that
     sample's screening completes (a gene-less sample contributes no
     rows, like the contig table's hit-less report)."""
-    sep = "," if csv else "\t"
     sample = ", ".join(report.reads)
     genes = report.genes if all_genes else [g for g in report.genes if g.present]
-    return "".join(sep.join(_gene_row(gene, sample, reads2=reads2)) + "\n" for gene in genes)
+    return "".join(
+        delimited_line(_gene_row(gene, sample, reads2=reads2), as_csv=csv) for gene in genes
+    )
 
 
 def format_reads_tsv(

@@ -4,5 +4,6 @@
   "vendor": "DTU CGE",
   "dbtype": "nucl",
   "kind": "gene",
-  "snapshotted": "2026-10-02"
+  "snapshotted": "2026-10-02",
+  "license": "Apache-2.0 (CGE ResFinder)"
 }

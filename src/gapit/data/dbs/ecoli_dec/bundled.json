@@ -4,5 +4,6 @@
   "vendor": "gapit-curated (public-domain sources)",
   "dbtype": "nucl",
   "kind": "gene",
-  "snapshotted": "2026-10-02"
+  "snapshotted": "2026-10-02",
+  "license": "Public domain (NCBI/GenBank/DDBJ sources)"
 }

@@ -65,12 +65,13 @@ class IdleBatch:
 class _LiveBatch:
     """Adapter pinning a rich Progress to its one batch task."""
 
-    def __init__(self, progress: Progress, task_id: TaskID) -> None:
+    def __init__(self, progress: Progress, task_id: TaskID, prefix: str) -> None:
         self._progress = progress
         self._task_id = task_id
+        self._prefix = prefix
 
     def describe(self, text: str) -> None:
-        self._progress.update(self._task_id, description=text)
+        self._progress.update(self._task_id, description=f"{self._prefix} {text}")
 
     def advance(self) -> None:
         self._progress.advance(self._task_id)
@@ -114,6 +115,6 @@ def screen_progress(
     if progress is not None and progress.console.is_terminal:
         with progress:
             task_id = progress.add_task(description, total=len(items))
-            yield _LiveBatch(progress, task_id), task_id
+            yield _LiveBatch(progress, task_id, description), task_id
         return
     yield _IDLE, None

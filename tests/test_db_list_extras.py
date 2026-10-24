@@ -169,3 +169,12 @@ def test_db_list_manifestless_dir_counts_fasta_and_detects_dbtype(tmp_path: Path
 
     assert lines[-2] == "alegacy\t\tinstalled (2)\tnucl\tlocal"
     assert lines[-1] == "zproto\t\tinstalled (1)\tprot\tlocal"
+
+
+def test_db_list_json_surfaces_a_bundled_content_license(tmp_path: Path) -> None:
+    """Given the bundled vp_ok row, When listed, Then its pinned MIT content
+    license is carried in the gapit.dblist/1 entry."""
+    from gapit.db_ops import db_list_entries
+
+    entries = {entry.name: entry for entry in db_list_entries(tmp_path)}
+    assert entries["vp_ok"].license == "MIT (database content)"

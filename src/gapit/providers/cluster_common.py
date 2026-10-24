@@ -21,10 +21,11 @@ from tempfile import TemporaryDirectory
 from typing import Literal
 
 from gapit.clusterbuild import build_cluster_database, parse_cluster_input, resolve_gene_ids
+from gapit.db_txn import staged_database
 from gapit.errors import DatabaseError
 from gapit.gbfeatures import FeaturesDocument, LocusSequence
 from gapit.proctools import note
-from gapit.providers.common import Dbtype, download_file, url_basename
+from gapit.providers.common import Dbtype, download_file, insecure_source_urls, url_basename
 from gapit.records import Manifest
 from gapit.typing_models import (
     read_typing_document,
@@ -81,34 +82,39 @@ def fetch_cluster_provider(
             code="DB_ALREADY_EXISTS",
             context={"db": provider.name},
         )
-    db_dir.mkdir(parents=True, exist_ok=True)
-    with TemporaryDirectory(dir=db_dir, prefix=".download.") as workdir_name:
-        workdir = Path(workdir_name)
-        for url in provider.source_urls:
-            download_file(url, workdir / url_basename(url))
-        note(quiet, f"downloaded {len(provider.source_urls)} source file(s)")
-        loci = _merged_loci(provider, workdir)
-    note(quiet, f"parsed {len(loci)} loci from {provider.name}")
-    typing_schema = ""
-    if provider.typing is not None:
-        document = read_typing_document(provider.typing)
-        if uses_cluster_v2(document):
-            loci = resolve_gene_ids(loci)
-        validate_references(document, FeaturesDocument(loci=tuple(item.features for item in loci)))
-        typing_schema = typing_schema_of(provider.typing)
-    return build_cluster_database(
-        db_dir,
-        name=provider.name,
-        loci=loci,
-        typing=provider.typing,
-        source_urls=provider.source_urls,
-        fetched_at=fetched_at,
-        typing_schema=typing_schema,
-        content_license=provider.license,
-        content_note=provider.note,
-        quiet=quiet,
-        debug=debug,
-    )
+    insecure = insecure_source_urls(provider.source_urls)
+    if insecure:
+        note(quiet, f"WARNING: plain HTTP source(s), no transport integrity: {', '.join(insecure)}")
+    with staged_database(db_dir):
+        with TemporaryDirectory(dir=db_dir, prefix=".download.") as workdir_name:
+            workdir = Path(workdir_name)
+            for url in provider.source_urls:
+                download_file(url, workdir / url_basename(url))
+            note(quiet, f"downloaded {len(provider.source_urls)} source file(s)")
+            loci = _merged_loci(provider, workdir)
+        note(quiet, f"parsed {len(loci)} loci from {provider.name}")
+        typing_schema = ""
+        if provider.typing is not None:
+            document = read_typing_document(provider.typing)
+            if uses_cluster_v2(document):
+                loci = resolve_gene_ids(loci)
+            validate_references(
+                document, FeaturesDocument(loci=tuple(item.features for item in loci))
+            )
+            typing_schema = typing_schema_of(provider.typing)
+        return build_cluster_database(
+            db_dir,
+            name=provider.name,
+            loci=loci,
+            typing=provider.typing,
+            source_urls=provider.source_urls,
+            fetched_at=fetched_at,
+            typing_schema=typing_schema,
+            content_license=provider.license,
+            content_note=provider.note,
+            quiet=quiet,
+            debug=debug,
+        )
 
 
 def _merged_loci(provider: ClusterProvider, workdir: Path) -> list[LocusSequence]:

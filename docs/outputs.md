@@ -491,7 +491,7 @@ Any failure prints one line of JSON to stderr:
 | Field | Type | Meaning |
 |---|---|---|
 | `schema` | string | Always `gapit.error/1` |
-| `code` | string | Machine-stable error code, snake_case |
+| `code` | string | Machine-stable error code, SCREAMING_SNAKE_CASE |
 | `message` | string | Human-readable description |
 | `context` | object | String-valued details (file paths, digests, db names) |
 

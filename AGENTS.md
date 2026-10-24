@@ -40,6 +40,7 @@ are we?** A modern, typed, testable Python tool that:
 ```bash
 pixi run lint        # ruff check
 pixi run fmt         # ruff format
+pixi run fmt-check   # ruff format --check
 pixi run typecheck   # basedpyright --strict
 pixi run test        # pytest (unit, offline)
 pixi run gapit       # the CLI itself
@@ -63,7 +64,7 @@ gapit/
 │   └── ci.yml           # gates matrix 3.11/3.13/3.14 + parity job
 ├── src/gapit/
 │   ├── __init__.py
-│   ├── cli.py           # typer entrypoint: screen / summary / db / setupdb / schema / mcp
+│   ├── cli.py           # click entrypoint: screen / summary / db / setupdb / schema / mcp
 │   ├── config.py        # datadir resolution, defaults, env vars
 │   ├── dispatch.py      # shared CLI dispatch (error envelope → exit codes) + --datadir option + --output target
 │   ├── proctools.py     # external-tool plumbing: argv subprocess runner + stderr notes
@@ -71,6 +72,7 @@ gapit/
 │   ├── seqconvert.py    # native input normalization: fa/fq/gbk/embl (±gz/bz2) → FASTA
 │   ├── db.py            # database discovery, header parsing, makeblastdb wrapper
 │   ├── dbcodec.py       # gapit/v1 tagged-header codec (percent-encoded ids)
+│   ├── db_txn.py        # transactional rebuild staging (backup/restore on failure)
 │   ├── records.py       # records.jsonl truth store + gapit.manifest/1 provenance
 │   ├── dbbuild.py       # deterministic native-db build pipeline with self-check
 │   ├── clusterbuild.py  # cluster-db build pipeline: GBK/GFF → locus FASTA + features.json + typing copy
@@ -123,6 +125,7 @@ gapit/
 │   ├── errors.py        # typed errors + JSON error envelope
 │   ├── formats/
 │   │   ├── tsv.py       # abricate-compatible TSV/CSV (phenotype-free in every typing version)
+│   │   ├── csvutil.py   # one RFC 4180 CSV row at a time (streaming renderers)
 │   │   ├── json.py      # versioned JSON (gapit.report/1 et al.)
 │   │   ├── reads_json.py # versioned JSON (gapit.reads/1, gapit.reads/2)
 │   │   ├── md.py        # Markdown (human + agent readable, YAML frontmatter)
@@ -183,11 +186,11 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   database fetch from the provider catalog (every provider downloads from upstream at fetch
   time — nothing catalog-side is bundled inside the wheel beyond the sanctioned exceptions,
   a license-compliance requirement: CARD/VFDB terms are non-commercial and Kaptive is GPL,
-  so none of those may ride an MIT distribution; the sanctioned exceptions are the six
+  so none of those may ride an MIT distribution; the sanctioned exceptions are the seven
   content-provenance-audited bundles under `src/gapit/data/dbs/` — the public-domain
-  `ecoli_dec` and `lm_doumith` panels, three permissively licensed provider snapshots
-  (`ncbi` public domain, `resfinder` Apache-2.0, `ecoh` BSD-3-Clause), and the MIT
-  `vp_ok` typed cluster snapshot — a pure built-in in the ecoli_dec/lm_doumith pattern: no
+  `ecoli_dec`, `lm_doumith`, and `vc_serogroup` panels, three permissively licensed
+  provider snapshots (`ncbi` public domain, `resfinder` Apache-2.0, `ecoh` BSD-3-Clause),
+  and the MIT `vp_ok` typed cluster snapshot — a pure built-in in the ecoli_dec/lm_doumith pattern: no
   provider module, no `db fetch`; vpautils OAgc+CPSgc merged content, MIT
   (GPL/NC content is never bundled) — materialized into the datadir on first use via
   `bundled.py` (gene bundles replay the gene pipeline, the cluster bundle the cluster

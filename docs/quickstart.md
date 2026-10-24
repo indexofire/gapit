@@ -47,7 +47,7 @@ argannot	ARG-ANNOT acquired resistance genes	available	nucl	IHU Méditerranée-I
 ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	installed (8373)	nucl	NCBI
 ```
 
-(twenty-two catalog databases in total: the six bundled ones now read `installed` in
+(twenty-three catalog databases in total: the seven bundled ones now read `installed` in
 this datadir, the sixteen fetch-only registry entries read `available` until you
 `gapit db fetch` them)
 

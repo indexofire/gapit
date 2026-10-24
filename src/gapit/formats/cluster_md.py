@@ -21,7 +21,7 @@ from gapit.formats.cluster2 import (
     count_or_dash,
     pct_or_dash,
 )
-from gapit.formats.md import md_cell
+from gapit.formats.md import md_cell, yaml_scalar
 from gapit.typing_models import TypingDocument
 from gapit.typing_results import SchemeCall
 
@@ -120,7 +120,7 @@ def cluster_md_head(
         f"schema: {schema_tag}",
         f"tool: gapit {__version__}",
         f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
-        f"db: {params.db}",
+        f"db: {yaml_scalar(params.db)}",
         f"preset: {params.preset}",
         f"min_gene_cov: {params.min_gene_cov}",
         f"min_gene_id: {params.min_gene_id}",

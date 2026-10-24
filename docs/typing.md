@@ -163,7 +163,7 @@ INSDC sequences, its own test module) described first below.
 
 ### Listeria serogroups — the bundled lm_doumith panel (gene db)
 
-`lm_doumith` is the sixth bundled database: the Doumith markers extracted from public-domain
+`lm_doumith` is a bundled database: the Doumith markers extracted from public-domain
 INSDC records and the `doumith_serogroup` scheme (`gapit.typing/2`) — the same five-marker
 multiplex-PCR semantics as LisSero, with `prs` as the genus-level `control_gene` and 95/95
 floors on every rule (Doumith et al. 2004, J Clin Microbiol 42:3819):

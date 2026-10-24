@@ -15,8 +15,8 @@ import pytest
 
 from gapit.db import Database
 from gapit.errors import DependencyError, GapitError
+from gapit.minimap2_run import run_minimap2
 from gapit.paf import PafRecord
-from gapit.reads import run_minimap2
 
 # > 64 KB so the child's stderr write blocks unless something drains it.
 STDERR_SPEW = "spew-line-that-never-ends\n" * 3000
@@ -172,3 +172,66 @@ def test_input_paths_are_absolute_and_stdin_is_devnull(
     assert Path(r1_arg) == reads.absolute()
     assert Path(r2_arg) == mate.absolute()
     assert not any(argument.startswith("-") for argument in argv[11:])
+
+
+def test_iter_minimap2_yields_rows_lazily(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given a Popen that produces PAF rows, When iter_minimap2 is consumed,
+    Then the first row is available without materializing the whole lane."""
+    from gapit.minimap2_run import iter_minimap2
+
+    database = Database(name="fakedb", path=tmp_path, sequences_path=Path("sequences"))
+    reads = tmp_path / "reads.fq"
+    reads.write_text("@r1\nACGT\n+\nIIII\n", encoding="utf-8")
+
+    def fake_popen(argv: list[str], **kwargs: object) -> _FakePopen:
+        return _FakePopen()
+
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    rows = iter_minimap2([(reads, None)], database, read_type="sr", threads=1)
+    assert next(rows).qname == "r1"
+    assert [row.qname for row in rows] == ["r2"]
+
+
+def test_screen_reads_consumes_an_iterator(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given a streaming row iterator, When screen_reads aggregates, Then the
+    pipeline consumes it without requiring a materialized list."""
+    from collections.abc import Iterator
+
+    from gapit.paf import PafRecord
+    from gapit.reads import screen_reads
+
+    sequences = tmp_path / "sequences"
+    sequences.write_text(">gapit|db=db|gene=g1|acc=A|func=f product\n" + "ACGT" * 25 + "\n")
+    database = Database(name="db", path=tmp_path, sequences_path=sequences)
+    reads = tmp_path / "reads.fq"
+    reads.write_text("@r1\nACGT\n+\nIIII\n", encoding="utf-8")
+
+    def rows() -> Iterator[PafRecord]:
+        yield PafRecord(
+            qname="r1",
+            qlen=100,
+            qstart=0,
+            qend=100,
+            strand="+",
+            tname="gapit|db=db|gene=g1|acc=A|func=f",
+            tlen=100,
+            tstart=0,
+            tend=100,
+            nmatch=100,
+            alen=100,
+            mapq=60,
+        )
+
+    def fake_iter(*args: object, **kwargs: object) -> Iterator[PafRecord]:
+        return rows()
+
+    monkeypatch.setattr("gapit.reads.iter_minimap2", fake_iter)
+    report = screen_reads(
+        [(reads, None)],
+        database,
+        read_type="sr",
+        min_breadth=90.0,
+        threads=1,
+    )
+    assert report.genes[0].gene == "g1"
+    assert report.genes[0].present is True

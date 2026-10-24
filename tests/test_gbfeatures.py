@@ -131,3 +131,24 @@ def test_real_bakta_database_parses_163_loci() -> None:
         assert length > 0
         for gene in locus.features.genes:
             assert 1 <= gene.start <= gene.end <= length, (locus.features.id, gene.gene_id)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "LOCUS \n//\n",
+        "LOCUS       TEST\n     \n//\n",
+        "ORIGIN\n        1 acgt\n//\n",
+    ],
+)
+def test_malformed_bakta_shapes_raise_typed_input_error(tmp_path: Path, text: str) -> None:
+    """Given a truncated/odd GenBank shape (LOCUS without a name, a bare
+    five-space continuation, ORIGIN before LOCUS), When parsed, Then the
+    parser raises InputError INVALID_GENBANK instead of leaking IndexError/
+    AssertionError to the dispatch layer."""
+    path = tmp_path / "malformed.gbk"
+    path.write_text(text, encoding="utf-8")
+
+    with pytest.raises(InputError) as excinfo:
+        parse_genbank_features(path)
+    assert excinfo.value.code == "INVALID_GENBANK"
