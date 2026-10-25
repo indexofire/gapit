@@ -23,7 +23,7 @@ are we?** A modern, typed, testable Python tool that:
 - **Environment manager**: [pixi](https://pixi.sh) (conda-forge channel). Never use pip/conda
   directly; add dependencies to `pixi.toml` (`pixi add <pkg>` for conda, `pixi add --pypi <pkg>`
   for PyPI).
-- **Python**: 3.14 in the pixi dev env (current stable); the package declares
+- **Python**: 3.12 in the pixi dev env; the package declares
   `requires-python = ">=3.12,<3.13"` and CI tests Python 3.12.
 - **External binaries**: BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2`
   (FASTQ read screening, SPEC.md §10), all from conda-forge/bioconda. Invoked only via `subprocess`
