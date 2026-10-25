@@ -433,3 +433,28 @@ def test_minimap2_long_target_names_disable_index(
     )
     assert rows == []
     assert fake.kwargs["index"] == "none"
+
+
+def test_legacy_engine_does_not_import_gseek() -> None:
+    import subprocess
+    import sys
+
+    code = """
+import sys
+class Blocker:
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == "gseek" or fullname.startswith("gseek."):
+            raise ImportError("gseek blocked")
+sys.meta_path.insert(0, Blocker())
+from gapit.blast import run_blastn
+from gapit.gseek_engine import engine
+assert engine().mode.value == "legacy"
+assert callable(run_blastn)
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr

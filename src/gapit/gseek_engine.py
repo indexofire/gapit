@@ -14,24 +14,46 @@ from __future__ import annotations
 
 import importlib
 import logging
+import os
 import sys
 import tempfile
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Protocol, cast
-
-from gseek.compat import Engine
+from typing import TYPE_CHECKING, Literal, Protocol, TypeVar, cast
 
 from gapit.db import Database
 from gapit.errors import DependencyError, GapitError
 from gapit.report import ScreeningParams
 
 if TYPE_CHECKING:
+    from gseek.compat import Engine
+
     from gapit.blast import BlastRow
     from gapit.paf import PafRecord
 
 _LOGGER = logging.getLogger("gapit.gseek")
 _ENGINE_ENV = "GAPIT_ENGINE"
+_VALID_MODES = frozenset({"legacy", "gseek", "shadow"})
+T = TypeVar("T")
+
+
+class _LegacyMode:
+    value = "legacy"
+
+
+class _LegacyEngine:
+    """No-gseek fallback so legacy installs never import the optional package."""
+
+    mode = _LegacyMode()
+
+    def run(
+        self,
+        legacy: Callable[[], T],
+        gseek: Callable[[], T],
+        *,
+        compare: Callable[[T, T], bool] | None = None,
+    ) -> T:
+        return legacy()
 
 
 class _GseekRecord(Protocol):
@@ -68,8 +90,25 @@ class _GseekModule(Protocol):
     def align(self, **kwargs: object) -> _GseekResult: ...
 
 
-def engine() -> Engine:
-    """Return the shared gseek engine switch for gapit."""
+def engine() -> _LegacyEngine | Engine:
+    """Return the engine switch, importing gseek only for gseek/shadow modes."""
+    raw = os.environ.get(_ENGINE_ENV, "legacy").strip().lower() or "legacy"
+    if raw not in _VALID_MODES:
+        raise GapitError(
+            f"unknown engine mode {raw!r}; expected one of {sorted(_VALID_MODES)}",
+            code="INVALID_ENGINE",
+            context={_ENGINE_ENV: raw},
+        )
+    if raw == "legacy":
+        return _LegacyEngine()
+    try:
+        from gseek.compat import Engine
+    except ImportError as exc:
+        raise DependencyError(
+            f"{_ENGINE_ENV}={raw} requires the optional gseek package (install gapit[gseek])",
+            code="MISSING_DEPENDENCY",
+            context={"package": "gseek"},
+        ) from exc
     return Engine.from_env(_ENGINE_ENV, logger=_LOGGER)
 
 

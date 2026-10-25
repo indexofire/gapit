@@ -14,8 +14,6 @@ import threading
 from collections.abc import Iterator
 from pathlib import Path
 
-from gseek.compat import EngineMode
-
 from gapit.db import Database
 from gapit.errors import DependencyError, GapitError
 from gapit.gseek_engine import engine, iter_paf_gseek
@@ -123,7 +121,7 @@ def iter_minimap2(
     result is materialized per lane by gseek's alignment API.
     """
     switch = engine()
-    if switch.mode is EngineMode.LEGACY:
+    if switch.mode.value == "legacy":
         yield from _iter_legacy(
             lanes,
             database,
@@ -133,7 +131,7 @@ def iter_minimap2(
             nm_tags=nm_tags,
         )
         return
-    if switch.mode is EngineMode.GSEEK:
+    if switch.mode.value == "gseek":
         yield from iter_paf_gseek(
             lanes,
             database,
