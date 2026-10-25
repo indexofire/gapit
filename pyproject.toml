@@ -8,7 +8,7 @@ version = "0.6.0"
 description = "Mass screening of contigs and reads for known genes — agent-first Python reimplementation of abricate"
 readme = "README.md"
 authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]
-requires-python = ">=3.11"
+requires-python = ">=3.12,<3.13"
 license = "MIT"
 keywords = ["bioinformatics", "gene-screening", "blast", "genomics", "abricate", "AMR", "virulence"]
 dependencies = [
@@ -24,10 +24,7 @@ classifiers = [
   "Operating System :: POSIX :: Linux",
   "Operating System :: MacOS",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
@@ -43,7 +40,7 @@ gapit = "gapit.cli:app"
 gapit-mcp = "gapit.mcp:main"
 
 [project.optional-dependencies]
-gseek = ["gseek>=0.9; python_version >= '3.12'"]
+gseek = ["gseek>=0.9.1"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gapit"]
@@ -56,7 +53,7 @@ packages = ["src/gapit"]
 
 [tool.ruff]
 src = ["src"]
-target-version = "py311"
+target-version = "py312"
 line-length = 100
 exclude = [".pixi", "dist", "build"]
 

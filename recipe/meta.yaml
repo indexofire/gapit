@@ -22,11 +22,11 @@ build:
 
 requirements:
   host:
-    - python >=3.11
+    - python >=3.12,<3.13
     - pip
     - hatchling
   run:
-    - python >=3.11
+    - python >=3.12,<3.13
     - click >=8.2
     - pydantic >=2.7
     - rich >=13

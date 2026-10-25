@@ -24,7 +24,7 @@ are we?** A modern, typed, testable Python tool that:
   directly; add dependencies to `pixi.toml` (`pixi add <pkg>` for conda, `pixi add --pypi <pkg>`
   for PyPI).
 - **Python**: 3.14 in the pixi dev env (current stable); the package declares
-  `requires-python = ">=3.11"` and CI tests 3.11 / 3.13 / 3.14.
+  `requires-python = ">=3.12,<3.13"` and CI tests Python 3.12.
 - **External binaries**: BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2`
   (FASTQ read screening, SPEC.md §10), all from conda-forge/bioconda. Invoked only via `subprocess`
   with an argument list — never `shell=True`. Input normalization (fa/fq/gbk/embl, gz/bz2) is
@@ -61,7 +61,7 @@ gapit/
 ├── recipe/
 │   └── meta.yaml        # conda recipe (submission deferred)
 ├── .github/workflows/
-│   └── ci.yml           # gates matrix 3.11/3.13/3.14 + parity job
+│   └── ci.yml           # gates matrix Python 3.12 + parity job
 ├── src/gapit/
 │   ├── __init__.py
 │   ├── cli.py           # click entrypoint: screen / summary / db / setupdb / schema / mcp
@@ -256,7 +256,7 @@ Growth tiers past the budget — split rather than inflate the ceiling:
   gene, %identity, %coverage). **From v0.5.0 this is a regression reference for the frozen
   baseline surface, not a release gate for new work** — new features need not check abricate
   and may diverge deliberately.
-- Full suite + CI matrix 3.11/3.13/3.14; parity byte-diff is opt-in via the `parity` pixi env.
+- Full suite + CI matrix Python 3.12; parity byte-diff is opt-in via the `parity` pixi env.
   Offline tests stay fast.
 
 ## 8. Domain knowledge (abridged; full detail in SPEC.md)

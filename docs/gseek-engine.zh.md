@@ -33,13 +33,13 @@ reads/cluster 消费者会聚合/排序，最终报告不变。bridge 还保留�
 
 ## 安装
 
-gseek 要求 Python >= 3.12，因此在 Python 3.11 上该 extra 不会安装 gseek：
+gapit 要求 Python >= 3.12，所有支持的环境都包含 gseek：
 
 ```bash
 pip install "gapit[gseek]"
 ```
 
-pixi 的 `default` 与 `py313` 环境包含 `gseek>=0.9`；`py311` 环境刻意不包含。
+pixi 的 `default` 与 `py312` 环境使用 Python 3.12，并包含 `gseek>=0.9.1`。
 没有 gseek 时，`GAPIT_ENGINE=gseek` 会抛类型化的 `MISSING_DEPENDENCY` 错误；
 `legacy` 和所有现有命令不受影响。
 

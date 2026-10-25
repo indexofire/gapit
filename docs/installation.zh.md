@@ -22,7 +22,7 @@ BLAST+ 和 minimap2：请先装好它们（见下文 "外部二进制" 一节，
 
 - [git](https://git-scm.com) 和 [pixi](https://pixi.sh)。macOS/Linux 上：
   `curl -fsSL https://pixi.sh/install.sh | bash`
-- 如果在 pixi 之外用 pip/pyproject 安装本包，需要 Python 3.11+。用 pixi 则无需操心：
+- 如果在 pixi 之外用 pip/pyproject 安装本包，需要 Python 3.12。用 pixi 则无需操心：
   环境自带 Python（开发环境锁定 3.14）。
 
 ### 安装
@@ -55,7 +55,7 @@ $ gapit --version --json
 
 Python >= 3.12 时，`pip install "gapit[gseek]"` 可启用
 `GAPIT_ENGINE=gseek|shadow`；pixi 的 `default` 与 `py313` 环境包含 gseek，
-`py311` 不包含。详见 [gseek 引擎](gseek-engine.md)。
+`py312` 环境是 3.12 基线。详见 [gseek 引擎](gseek-engine.md)。
 
 ## 外部二进制
 
