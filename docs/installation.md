@@ -53,6 +53,12 @@ $ gapit --version --json
 {"schema":"gapit.version/1","name":"gapit","version":"0.5.6"}
 ```
 
+## Optional gseek engine
+
+On Python >= 3.12, `pip install "gapit[gseek]"` enables
+`GAPIT_ENGINE=gseek|shadow`; the pixi `default` and `py313` environments include
+gseek, while `py311` does not. See [gseek engine](gseek-engine.md).
+
 ## External binaries
 
 gapit shells out to BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2`.

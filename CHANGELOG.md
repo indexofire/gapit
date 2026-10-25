@@ -5,6 +5,21 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Optional gseek engine for BLAST and minimap2.** `GAPIT_ENGINE=legacy|gseek|shadow`
+  routes contig/protein screening, reads, and cluster minimap2 through
+  [gseek](https://github.com/indexofire/gseek). `legacy` remains the default and is
+  retained on every path; `shadow` logs coarse differences and returns the legacy
+  result. gseek requires Python >= 3.12 and is available through `gapit[gseek]` or
+  the pixi `default`/`py313` environments.
+- **FASTQ reads parity:** vfdb/card reads/1 and reads/2 are byte-identical to
+  legacy on a 3.07M-pair sample. gseek 0.8.1 allows duplicate minimap2 targets
+  (VFDB); the bridge uses `index="none"` for CARD's >255-character target names;
+  gseek 0.9.0 skips manifest-only query record counts.
+
 ## [0.5.6] - 2026-10-20
 
 ### Added

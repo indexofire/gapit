@@ -51,6 +51,12 @@ $ gapit --version --json
 {"schema":"gapit.version/1","name":"gapit","version":"0.5.6"}
 ```
 
+## 可选 gseek 引擎
+
+Python >= 3.12 时，`pip install "gapit[gseek]"` 可启用
+`GAPIT_ENGINE=gseek|shadow`；pixi 的 `default` 与 `py313` 环境包含 gseek，
+`py311` 不包含。详见 [gseek 引擎](gseek-engine.md)。
+
 ## 外部二进制
 
 gapit 会调用 BLAST+（`blastn`、`blastx`、`makeblastdb`、`blastdbcmd`）和 `minimap2`。

@@ -42,6 +42,9 @@ Issues = "https://github.com/indexofire/gapit/issues"
 gapit = "gapit.cli:app"
 gapit-mcp = "gapit.mcp:main"
 
+[project.optional-dependencies]
+gseek = ["gseek>=0.9; python_version >= '3.12'"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/gapit"]
 # Hatchling's `packages` selection ships every non-gitignored file under the
