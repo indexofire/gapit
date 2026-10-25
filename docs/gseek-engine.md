@@ -38,14 +38,14 @@ such names with numeric sequence indices.
 
 ## Install
 
-gseek requires Python >= 3.12, so the extra is a no-op on Python 3.11:
+gapit requires Python >= 3.12, and every supported environment includes
+gseek:
 
 ```bash
 pip install "gapit[gseek]"
 ```
 
-The pixi `default` and `py313` environments include `gseek>=0.9`; the `py311`
-environment deliberately does not. Without gseek, `GAPIT_ENGINE=gseek` raises a
+The pixi `default` and `py312` environments use Python 3.12 and include `gseek>=0.9.1`. Without gseek, `GAPIT_ENGINE=gseek` raises a
 typed `MISSING_DEPENDENCY` error; `legacy` and all existing commands are
 unaffected.
 

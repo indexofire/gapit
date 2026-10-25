@@ -39,7 +39,7 @@ pixi install
 pixi run gapit --version
 ```
 
-The package supports Python 3.11+; the dev environment pins 3.14.
+The package supports Python 3.12 (3.12 only); the dev environment pins 3.14.
 
 ## Quick start
 

@@ -7,6 +7,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Python 3.12 is now the supported version.** Drop the 3.11/3.13/3.14
+  environments from pixi/CI and align the package metadata, recipe, and docs
+  with gside/gmlst (`>=3.12,<3.13`).
+
 ## [0.6.0] - 2026-10-25
 
 ### Added

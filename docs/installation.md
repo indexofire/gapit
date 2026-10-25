@@ -24,7 +24,7 @@ bioconda blast minimap2`).
 
 - [git](https://git-scm.com) and [pixi](https://pixi.sh). On macOS/Linux:
   `curl -fsSL https://pixi.sh/install.sh | bash`
-- Python 3.11+ if you install the package outside pixi (pip/pyproject). With pixi this is
+- Python 3.12 if you install the package outside pixi (pip/pyproject). With pixi this is
   moot: the environment ships its own Python (the dev env pins 3.14).
 
 ### Install
@@ -57,7 +57,7 @@ $ gapit --version --json
 
 On Python >= 3.12, `pip install "gapit[gseek]"` enables
 `GAPIT_ENGINE=gseek|shadow`; the pixi `default` and `py313` environments include
-gseek, while `py311` does not. See [gseek engine](gseek-engine.md).
+gseek. The `py312` environment is the 3.12 baseline. See [gseek engine](gseek-engine.md).
 
 ## External binaries
 
