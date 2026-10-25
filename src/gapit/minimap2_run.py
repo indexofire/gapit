@@ -14,14 +14,11 @@ import threading
 from collections.abc import Iterator
 from pathlib import Path
 
+from gseek.compat import EngineMode
+
 from gapit.db import Database
 from gapit.errors import DependencyError, GapitError
-from gapit.gseek_engine import (
-    engine_mode,
-    iter_paf_gseek,
-    log_paf_shadow,
-    log_shadow_error,
-)
+from gapit.gseek_engine import engine, iter_paf_gseek
 from gapit.paf import PafRecord, Preset, parse_paf_row
 
 
@@ -125,8 +122,8 @@ def iter_minimap2(
     wrapper for callers/tests that want a materialized view. In gseek mode the
     result is materialized per lane by gseek's alignment API.
     """
-    mode = engine_mode()
-    if mode == "legacy":
+    switch = engine()
+    if switch.mode is EngineMode.LEGACY:
         yield from _iter_legacy(
             lanes,
             database,
@@ -136,7 +133,7 @@ def iter_minimap2(
             nm_tags=nm_tags,
         )
         return
-    if mode == "gseek":
+    if switch.mode is EngineMode.GSEEK:
         yield from iter_paf_gseek(
             lanes,
             database,
@@ -146,18 +143,18 @@ def iter_minimap2(
             nm_tags=nm_tags,
         )
         return
-    legacy_rows = list(
-        _iter_legacy(
-            lanes,
-            database,
-            read_type=read_type,
-            threads=threads,
-            debug=debug,
-            nm_tags=nm_tags,
-        )
-    )
-    try:
-        new_rows = list(
+    yield from switch.run(
+        lambda: list(
+            _iter_legacy(
+                lanes,
+                database,
+                read_type=read_type,
+                threads=threads,
+                debug=debug,
+                nm_tags=nm_tags,
+            )
+        ),
+        lambda: list(
             iter_paf_gseek(
                 lanes,
                 database,
@@ -166,13 +163,8 @@ def iter_minimap2(
                 debug=debug,
                 nm_tags=nm_tags,
             )
-        )
-    except GapitError as exc:
-        log_shadow_error("minimap2", exc)
-        yield from legacy_rows
-        return
-    log_paf_shadow(legacy_rows, new_rows)
-    yield from legacy_rows
+        ),
+    )
 
 
 def run_minimap2(

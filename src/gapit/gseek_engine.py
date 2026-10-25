@@ -14,12 +14,13 @@ from __future__ import annotations
 
 import importlib
 import logging
-import os
 import sys
 import tempfile
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol, cast
+
+from gseek.compat import Engine
 
 from gapit.db import Database
 from gapit.errors import DependencyError, GapitError
@@ -31,7 +32,6 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger("gapit.gseek")
 _ENGINE_ENV = "GAPIT_ENGINE"
-_VALID_MODES = frozenset({"legacy", "gseek", "shadow"})
 
 
 class _GseekRecord(Protocol):
@@ -68,16 +68,14 @@ class _GseekModule(Protocol):
     def align(self, **kwargs: object) -> _GseekResult: ...
 
 
+def engine() -> Engine:
+    """Return the shared gseek engine switch for gapit."""
+    return Engine.from_env(_ENGINE_ENV, logger=_LOGGER)
+
+
 def engine_mode() -> str:
-    """Return ``GAPIT_ENGINE`` (``legacy`` by default), validating its value."""
-    raw = os.environ.get(_ENGINE_ENV, "legacy").strip().lower() or "legacy"
-    if raw not in _VALID_MODES:
-        raise GapitError(
-            f"unknown {_ENGINE_ENV}={raw!r}; expected one of {sorted(_VALID_MODES)}",
-            code="INVALID_ENGINE",
-            context={_ENGINE_ENV: raw},
-        )
-    return raw
+    """Return the selected mode as a string (backward-compatible helper)."""
+    return engine().mode.value
 
 
 def _gseek() -> _GseekModule:
@@ -301,52 +299,9 @@ def iter_paf_gseek(
             yield _paf_record(record)
 
 
-def log_shadow_error(engine: str, exc: BaseException) -> None:
-    """Log a shadow-mode gseek failure without interrupting the legacy path."""
-    _LOGGER.warning("gseek shadow %s failed; returning legacy: %s", engine, exc)
-
-
-def log_blast_shadow(legacy: Sequence[BlastRow], new: Sequence[BlastRow]) -> None:
-    """Log a coarse legacy-vs-gseek BLAST difference."""
-    legacy_keys = {
-        (row.qseqid, row.qstart, row.qend, row.sseqid, round(row.pident, 2)) for row in legacy
-    }
-    new_keys = {(row.qseqid, row.qstart, row.qend, row.sseqid, round(row.pident, 2)) for row in new}
-    if legacy_keys != new_keys:
-        _LOGGER.warning(
-            "gseek shadow BLAST differs: legacy=%d gseek=%d only_legacy=%d only_gseek=%d",
-            len(legacy),
-            len(new),
-            len(legacy_keys - new_keys),
-            len(new_keys - legacy_keys),
-        )
-
-
-def log_paf_shadow(legacy: Sequence[PafRecord], new: Sequence[PafRecord]) -> None:
-    """Log a coarse legacy-vs-gseek minimap2 difference."""
-    legacy_keys = {
-        (row.qname, row.tname, row.tstart, row.tend, row.strand, row.is_primary, row.mapq)
-        for row in legacy
-    }
-    new_keys = {
-        (row.qname, row.tname, row.tstart, row.tend, row.strand, row.is_primary, row.mapq)
-        for row in new
-    }
-    if legacy_keys != new_keys:
-        _LOGGER.warning(
-            "gseek shadow minimap2 differs: legacy=%d gseek=%d only_legacy=%d only_gseek=%d",
-            len(legacy),
-            len(new),
-            len(legacy_keys - new_keys),
-            len(new_keys - legacy_keys),
-        )
-
-
 __all__ = [
+    "engine",
     "engine_mode",
     "iter_paf_gseek",
-    "log_blast_shadow",
-    "log_paf_shadow",
-    "log_shadow_error",
     "run_blast_gseek",
 ]

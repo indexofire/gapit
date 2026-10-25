@@ -45,6 +45,9 @@ pixi 的 `default` 与 `py312` 环境使用 Python 3.12，并包含 `gseek>=0.9.
 
 ## 为什么保留 legacy
 
+切换本身使用 `gseek.compat.Engine`，与其他消费者共享 legacy/gseek/shadow
+选择与回退逻辑；gapit 只保留自己的 legacy 实现、gseek 调用和结果语义。
+
 这是有意的双路径设计：
 
 - `legacy` 是所有安装的默认值；
