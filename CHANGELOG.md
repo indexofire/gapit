@@ -9,6 +9,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **gapit now uses `gseek.compat` for `GAPIT_ENGINE`.** The shared switch
+  replaces gapit's duplicate mode parser and shadow fallback; legacy remains
+  the default and gapit still owns its result mapping.
+
 - **Python 3.12 is now the supported version.** Drop the 3.11/3.13/3.14
   environments from pixi/CI and align the package metadata, recipe, and docs
   with gside/gmlst (`>=3.12,<3.13`).

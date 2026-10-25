@@ -71,7 +71,7 @@ def test_engine_mode_default_and_validation(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setenv("GAPIT_ENGINE", "gseek")
     assert engine_mode() == "gseek"
     monkeypatch.setenv("GAPIT_ENGINE", "bogus")
-    with pytest.raises(Exception, match="unknown GAPIT_ENGINE"):
+    with pytest.raises(Exception, match="unknown engine mode"):
         engine_mode()
 
 
@@ -278,7 +278,7 @@ def test_run_blastn_shadow_returns_legacy_and_logs(
     with caplog.at_level(logging.WARNING, logger="gapit.gseek"):
         result = blast.run_blastn(query, database, params, dbtype="nucl")
     assert result[0].sseqid.startswith("gapit|")
-    assert "gseek shadow BLAST differs" in caplog.text
+    assert "legacy and gseek results differ" in caplog.text
 
 
 def test_iter_minimap2_dispatches_to_gseek(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -348,7 +348,7 @@ def test_iter_minimap2_shadow_returns_legacy_and_logs(
             )
         )
     assert rows == [legacy]
-    assert "gseek shadow minimap2 differs" in caplog.text
+    assert "legacy and gseek results differ" in caplog.text
 
 
 def test_run_blastn_shadow_falls_back_on_gseek_failure(
@@ -373,7 +373,7 @@ def test_run_blastn_shadow_falls_back_on_gseek_failure(
     with caplog.at_level(logging.WARNING, logger="gapit.gseek"):
         rows = blast.run_blastn(query, database, params, dbtype="nucl")
     assert rows[0].sseqid.startswith("gapit|")
-    assert "gseek shadow BLAST failed" in caplog.text
+    assert "gseek path failed" in caplog.text
 
 
 def test_iter_minimap2_shadow_falls_back_on_gseek_failure(
@@ -413,7 +413,7 @@ def test_iter_minimap2_shadow_falls_back_on_gseek_failure(
             )
         )
     assert rows == [expected]
-    assert "gseek shadow minimap2 failed" in caplog.text
+    assert "gseek path failed" in caplog.text
 
 
 def test_minimap2_long_target_names_disable_index(

@@ -12,12 +12,7 @@ from pydantic import BaseModel
 from gapit.db import Database
 from gapit.errors import DependencyError, GapitError, InputError
 from gapit.fragments import merge_fragment_hits
-from gapit.gseek_engine import (
-    engine_mode,
-    log_blast_shadow,
-    log_shadow_error,
-    run_blast_gseek,
-)
+from gapit.gseek_engine import engine, run_blast_gseek
 from gapit.hits import process_rows, process_rows_with_partials
 from gapit.report import Report, ScreeningParams
 from gapit.seqconvert import SeqFormat, detect_format, to_fasta_lines
@@ -227,28 +222,21 @@ def run_blastn(
             "10000",
         ]
     fasta_text, fmt = _normalize(query)
-    mode = engine_mode()
+    switch = engine()
+    mode = switch.mode.value
     if debug:
         sys.stderr.write(f"gapit: normalize: {query} ({fmt.value})\n")
         if mode in {"legacy", "shadow"}:
             sys.stderr.write(f"gapit: run: {shlex.join(argv)}\n")
-    legacy_rows: list[BlastRow] | None = None
-    if mode in {"legacy", "shadow"}:
+
+    def legacy_rows() -> list[BlastRow]:
         output = _pipeline(fasta_text, argv)
-        legacy_rows = [parse_blast_row(line) for line in output.splitlines() if line.strip()]
-    if mode == "legacy":
-        assert legacy_rows is not None
-        return legacy_rows
-    if mode == "gseek":
+        return [parse_blast_row(line) for line in output.splitlines() if line.strip()]
+
+    def gseek_rows() -> list[BlastRow]:
         return run_blast_gseek(fasta_text, database, params, dbtype=dbtype, debug=debug)
-    assert legacy_rows is not None
-    try:
-        new_rows = run_blast_gseek(fasta_text, database, params, dbtype=dbtype, debug=debug)
-    except GapitError as exc:
-        log_shadow_error("BLAST", exc)
-        return legacy_rows
-    log_blast_shadow(legacy_rows, new_rows)
-    return legacy_rows
+
+    return switch.run(legacy_rows, gseek_rows)
 
 
 def screen_file(

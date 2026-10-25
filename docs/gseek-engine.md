@@ -51,6 +51,10 @@ unaffected.
 
 ## Why legacy is retained
 
+The switch itself uses `gseek.compat.Engine`, so the legacy/gseek/shadow
+selection and fallback are shared with the other consumers; gapit keeps only
+its own legacy implementation, gseek call, and result semantics.
+
 This is a deliberate dual-path design:
 
 - `legacy` is the default for every installation;
