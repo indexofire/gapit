@@ -39,7 +39,7 @@ pixi install
 pixi run gapit --version
 ```
 
-The package supports Python 3.12 (3.12 only); the dev environment pins 3.14.
+The package supports Python 3.12 (3.12 only); the dev environment pins 3.12.
 
 ## Quick start
 
@@ -180,7 +180,7 @@ Register it with an MCP client:
 reads minimap2, and cluster minimap2 through
 [gseek](https://github.com/indexofire/gseek). `legacy` remains the default and
 is retained on every path; `shadow` runs both and returns legacy. gseek requires
-Python >= 3.12 and is installed by the `default`/`py313` pixi environments or
+Python >= 3.12 and is installed by the `default`/`py312` pixi environments or
 `pip install "gapit[gseek]"`. See [gseek engine](docs/gseek-engine.md).
 
 ## Development
