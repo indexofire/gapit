@@ -16,6 +16,12 @@ from pathlib import Path
 
 from gapit.db import Database
 from gapit.errors import DependencyError, GapitError
+from gapit.gseek_engine import (
+    engine_mode,
+    iter_paf_gseek,
+    log_paf_shadow,
+    log_shadow_error,
+)
 from gapit.paf import PafRecord, Preset, parse_paf_row
 
 
@@ -65,7 +71,7 @@ def _iter_minimap2(argv: list[str], r1: Path) -> Iterator[PafRecord]:
         )
 
 
-def iter_minimap2(
+def _iter_legacy(
     lanes: list[tuple[Path, Path | None]],
     database: Database,
     *,
@@ -74,12 +80,7 @@ def iter_minimap2(
     debug: bool = False,
     nm_tags: bool = False,
 ) -> Iterator[PafRecord]:
-    """Stream PAF rows from one minimap2 invocation per lane.
-
-    The public iterator is the production path (reads/cluster consume it
-    incrementally); ``run_minimap2`` remains the list-returning convenience
-    wrapper for callers/tests that want a materialized view.
-    """
+    """The original subprocess path; kept as the legacy/shadow oracle."""
     for r1, r2 in lanes:
         argv = [
             "minimap2",
@@ -106,6 +107,72 @@ def iter_minimap2(
         if debug:
             print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
         yield from _iter_minimap2(argv, r1)
+
+
+def iter_minimap2(
+    lanes: list[tuple[Path, Path | None]],
+    database: Database,
+    *,
+    read_type: Preset,
+    threads: int,
+    debug: bool = False,
+    nm_tags: bool = False,
+) -> Iterator[PafRecord]:
+    """Stream PAF rows from one minimap2 invocation per lane.
+
+    The public iterator is the production path (reads/cluster consume it
+    incrementally); ``run_minimap2`` remains the list-returning convenience
+    wrapper for callers/tests that want a materialized view. In gseek mode the
+    result is materialized per lane by gseek's alignment API.
+    """
+    mode = engine_mode()
+    if mode == "legacy":
+        yield from _iter_legacy(
+            lanes,
+            database,
+            read_type=read_type,
+            threads=threads,
+            debug=debug,
+            nm_tags=nm_tags,
+        )
+        return
+    if mode == "gseek":
+        yield from iter_paf_gseek(
+            lanes,
+            database,
+            read_type=read_type,
+            threads=threads,
+            debug=debug,
+            nm_tags=nm_tags,
+        )
+        return
+    legacy_rows = list(
+        _iter_legacy(
+            lanes,
+            database,
+            read_type=read_type,
+            threads=threads,
+            debug=debug,
+            nm_tags=nm_tags,
+        )
+    )
+    try:
+        new_rows = list(
+            iter_paf_gseek(
+                lanes,
+                database,
+                read_type=read_type,
+                threads=threads,
+                debug=debug,
+                nm_tags=nm_tags,
+            )
+        )
+    except GapitError as exc:
+        log_shadow_error("minimap2", exc)
+        yield from legacy_rows
+        return
+    log_paf_shadow(legacy_rows, new_rows)
+    yield from legacy_rows
 
 
 def run_minimap2(
