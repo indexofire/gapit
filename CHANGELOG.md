@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-25
+
 ### Added
 
 - **Optional gseek engine for BLAST and minimap2.** `GAPIT_ENGINE=legacy|gseek|shadow`
