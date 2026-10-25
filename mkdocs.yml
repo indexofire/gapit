@@ -45,6 +45,7 @@ plugins:
             MCP server: MCP 服务器
             gapit for agents: 面向 agent 的 gapit
             FAQ: 常见问题
+            gseek engine: gseek 引擎
 
 markdown_extensions:
   - tables
@@ -64,6 +65,7 @@ nav:
   - Custom databases: custom-db.md
   - Typing schemes: typing.md
   - Outputs: outputs.md
+  - gseek engine: gseek-engine.md
   - MCP server: mcp.md
   - gapit for agents: agents.md
   - FAQ: faq.md

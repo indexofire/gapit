@@ -3,7 +3,7 @@ authors = ["indexofire <indexofire@gmail.com>"]
 channels = ["conda-forge", "bioconda"]
 name = "gapit"
 platforms = ["linux-64"]
-version = "0.5.6"
+version = "0.6.0"
 
 [tasks]
 lint = "ruff check"
@@ -51,11 +51,15 @@ summary-parity = ".pixi/envs/default/bin/python tests/parity/run_summary_parity.
 mkdocs-material = ">=9.5"
 mkdocs-static-i18n = ">=1.2"
 
+# gseek is optional (Python >= 3.12), so it is not in the py311 environment.
+[feature.gseek.pypi-dependencies]
+gseek = ">=0.9"
+
 [environments]
-default = ["py314"]
+default = ["py314", "gseek"]
 parity = { features = ["parity"], no-default-feature = true }
 py311 = ["py311"]
-py313 = ["py313"]
+py313 = ["py313", "gseek"]
 # py314 needed alongside docs: python lives in the pyXX features, not the
 # default feature, and the mkdocs pypi-dep requires a conda python to solve.
 docs = { features = ["py314", "docs"] }

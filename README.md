@@ -174,6 +174,15 @@ Register it with an MCP client:
 {"mcpServers": {"gapit": {"command": "gapit-mcp"}}}
 ```
 
+## Optional gseek engine
+
+`GAPIT_ENGINE=legacy|gseek|shadow` can route contig BLAST, protein `blastx-fast`,
+reads minimap2, and cluster minimap2 through
+[gseek](https://github.com/indexofire/gseek). `legacy` remains the default and
+is retained on every path; `shadow` runs both and returns legacy. gseek requires
+Python >= 3.12 and is installed by the `default`/`py313` pixi environments or
+`pip install "gapit[gseek]"`. See [gseek engine](docs/gseek-engine.md).
+
 ## Development
 
 | Task | Runs |
@@ -182,7 +191,7 @@ Register it with an MCP client:
 | `pixi run fmt` | ruff format |
 | `pixi run fmt-check` | ruff format --check |
 | `pixi run typecheck` | basedpyright (strict) |
-| `pixi run test` | pytest, 1218 offline tests |
+| `pixi run test` | pytest, 1234 offline tests |
 | `pixi run -e parity parity` | byte-diff screening vs real abricate |
 | `pixi run -e parity summary-parity` | byte-diff summary vs real abricate |
 

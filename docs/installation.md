@@ -48,10 +48,16 @@ gapit --version
 
 ```console
 $ gapit --version
-gapit 0.5.6
+gapit 0.6.0
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.5.6"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.6.0"}
 ```
+
+## Optional gseek engine
+
+On Python >= 3.12, `pip install "gapit[gseek]"` enables
+`GAPIT_ENGINE=gseek|shadow`; the pixi `default` and `py313` environments include
+gseek, while `py311` does not. See [gseek engine](gseek-engine.md).
 
 ## External binaries
 

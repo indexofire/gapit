@@ -46,10 +46,16 @@ gapit --version
 
 ```console
 $ gapit --version
-gapit 0.5.6
+gapit 0.6.0
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.5.6"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.6.0"}
 ```
+
+## 可选 gseek 引擎
+
+Python >= 3.12 时，`pip install "gapit[gseek]"` 可启用
+`GAPIT_ENGINE=gseek|shadow`；pixi 的 `default` 与 `py313` 环境包含 gseek，
+`py311` 不包含。详见 [gseek 引擎](gseek-engine.md)。
 
 ## 外部二进制
 
