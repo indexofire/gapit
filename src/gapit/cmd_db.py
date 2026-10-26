@@ -32,7 +32,14 @@ from gapit.cmd_db_build import db_build_command
 from gapit.cmd_db_install import db_install_command
 from gapit.cmd_db_outdated import db_outdated_command
 from gapit.cmd_db_search import db_search_command
-from gapit.db_ops import db_list_entries, db_list_json, db_list_status, db_list_table, perform_fetch
+from gapit.db_ops import (
+    datadir_json,
+    db_list_entries,
+    db_list_json,
+    db_list_status,
+    db_list_table,
+    perform_fetch,
+)
 from gapit.dispatch import datadir_option, dispatch, quiet_option
 from gapit.errors import usage_fail
 
@@ -73,13 +80,32 @@ def db_fetch_command(
 
 @datadir_option()
 @click.option(
+    "--json", "-J", "as_json", is_flag=True, help="Print the gapit.datadir/1 JSON document."
+)
+def db_path_command(datadir: Path | None, as_json: bool) -> None:
+    """Print the resolved datadir (the directory `db list`/`db fetch` use)."""
+
+    def run() -> None:
+        if as_json:
+            click.echo(datadir_json(datadir))
+            return
+        click.echo(str(config.datadir_path(datadir)))
+
+    dispatch(run)
+
+
+@datadir_option()
+@click.option(
     "--json", "-J", "as_json", is_flag=True, help="Print machine-readable JSON instead of a table."
 )
 def db_list_command(datadir: Path | None, as_json: bool) -> None:
     """List known databases (NAME, DESCRIPTION, STATUS, DBTYPE, PROVIDER) and their state."""
 
     def run() -> None:
-        root = config.resolve_datadir(datadir)
+        # Catalog bootstrap: a fresh pip/conda install has no datadir yet, but
+        # listing must still work and leave the default location ready for the
+        # first fetch/screen. Installed-state checks below only read manifests.
+        root = config.ensure_datadir(datadir)
         if as_json:
             click.echo(db_list_json(root))
             return
@@ -113,6 +139,7 @@ def register_db_command(app: click.Group) -> None:
     db_app.command("install", no_args_is_help=True)(db_install_command)
     db_app.command("build", no_args_is_help=True)(db_build_command)
     db_app.command("fetch", no_args_is_help=True)(db_fetch_command)
+    db_app.command("path")(db_path_command)
     db_app.command("list")(db_list_command)
     db_app.command("outdated")(db_outdated_command)
     db_app.command("search", no_args_is_help=True)(db_search_command)

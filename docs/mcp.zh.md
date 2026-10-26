@@ -28,8 +28,11 @@ shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0�
 
 ## 工具
 
-九个工具：五个只读分析工具，四个数据库自备工具（`db_fetch`、`db_build`、
-`db_search`、`db_outdated`），与 `gapit db ...` 完全对应。下表参数列表转写自线上的
+九个工具：四个分析工具（`screen`、`screen_reads`、`summary`、`schema`）和五个
+数据库工具（`db_list`、`db_fetch`、`db_build`、`db_search`、`db_outdated`），与
+`gapit db ...` 完全对应。`db_list`/`db_search`/`db_outdated` 是只读的
+（`db_list` 首次使用可能创建空 datadir）；`db_fetch`/`db_build` 会修改 datadir。
+下表参数列表转写自线上的
 `tools/list` `inputSchema` 对象。
 
 | 工具 | 参数 | 返回 |
@@ -38,7 +41,7 @@ shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0�
 | `screen_reads` | `r1`（字符串数组，必填，每条 lane 一个路径）、`r2`（字符串数组，数量与 `r1` 相同）、`read_type`（string：`sr` \| `map-ont` \| `map-hifi`，默认 `sr`）、`min_breadth`（number 0-100，默认 `90`）、`min_identity`（number 0-100，默认 `0`）、`min_mapq`（integer ≥ 0，默认 `0`）、`format`（string：`json` \| `md`，默认 `json`）、`db`（string，必填 —— 无默认值）、`datadir`（string） | 默认 `gapit.reads/1` JSON，按 `format` 可为 Markdown；`min_identity`/`min_mapq` > 0 切换为 `gapit.reads/2` |
 | `summary` | `files`（报告表路径数组，必填）、`identity`（boolean）、`nopath`（boolean） | `gapit.summary/1` JSON |
 | `schema` | `name`（string，必填，取值 `cluster`、`error`、`features`、`floors`、`reads`、`reads2`、`report`、`summary`、`typing`、`typing_result`、`version` 之一） | 该输出文档的 JSON Schema |
-| `db_list` | 无 | `gapit.dblist/1`：数据库名、安装状态、记录数 |
+| `db_list` | `datadir`（string） | `gapit.dblist/1`：数据库名、安装状态、记录数 |
 | `db_fetch` | `name`（string，必填——数据库名，或 `all` 表示 card+vfdb 默认集合）、`datadir`（string）、`force`（boolean，默认 `false`） | 每个数据库一行 JSON 回执（`db`、`records`、`dbtype`、`destination`）。每个数据库都从其上游提供商下载，安装需要网络且可能耗时数分钟 |
 | `db_build` | `name`（string，必填）、`fasta`（string，必填，本地文件系统路径）、`tsv`（string）、`dbtype`（string：`nucl` \| `prot`）、`description`（string）、`datadir`（string）、`force`（boolean，默认 `false`） | 一行 JSON 回执（`db`、`records`、`dbtype`、`destination`） |
 | `db_search` | `term`（string，必填）、`db`（string）、`field`（string：`gene` \| `accession` \| `function` \| `product` \| `any`，默认 `any`）、`exact`（boolean，默认 `false`）、`limit`（integer ≥ 0，默认 `100`；`0` = 不限）、`datadir`（string） | TSV 命中行，列为 `DB`、`GENE`、`ACCESSION`、`FUNCTION`、`PRODUCT`、`LENGTH` |
@@ -52,8 +55,11 @@ shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0�
 注意事项：
 
 - 文件路径相对服务器的工作目录解析；绝对路径最稳妥。
-- 数据目录来自 `GAPIT_DATADIR` 环境变量，然后 `~/.local/share/gapit/db`（见
-  `./databases.md`）。db 工具也接受每次调用显式的 `datadir` 参数。
+- 数据目录来自 `--datadir`（可用时），然后 `$GAPIT_DATADIR`，然后
+  `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db`（见 `./datadir.md`）。
+  db 工具也接受每次调用显式的 `datadir` 参数。`db_list` 在列出
+  前会创建缺失的数据目录（全新安装引导）；`db_search`/`db_outdated` 要求它存在，
+  否则返回类型化的 `DATADIR_NOT_FOUND` 信封。
 - `csv` 输出仅限 CLI：MCP `screen` 提供 `json`/`tsv`/`md`，`screen_reads` 提供
   `json`/`md`（reads 模式拒绝表格式输出）。
 - `db_build` 的 `fasta` 必须是服务器文件系统上的路径：agent 提供本地路径，而非文件

@@ -185,6 +185,35 @@ def test_db_fetch_debug_echoes_index_argv(tmp_path: Path, monkeypatch: pytest.Mo
     assert not any("minimap2 -d " in line for line in run_lines)
 
 
+def test_db_list_bootstraps_a_missing_datadir(tmp_path: Path) -> None:
+    """Given a fresh install with no datadir at all, When `db list` runs,
+    Then exit 0, the datadir is created automatically, and the catalog plus
+    bundled rows render (bundled content is discoverable before first use)."""
+    missing = tmp_path / "fresh" / "machine" / "db"
+
+    result = runner.invoke(app, ["db", "list", "--datadir", str(missing)])
+
+    assert result.exit_code == 0, result.stderr
+    assert missing.is_dir()
+    lines = result.stdout.splitlines()
+    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER"
+    assert any(line.startswith("ecoh\t") and "\tbundled\t" in line for line in lines)
+
+
+def test_db_list_bootstraps_a_missing_datadir_json(tmp_path: Path) -> None:
+    """Given the same fresh-install state, When `db list --json` runs, Then
+    it emits the gapit.dblist/1 document and creates the datadir."""
+    missing = tmp_path / "fresh" / "db"
+
+    result = runner.invoke(app, ["db", "list", "--datadir", str(missing), "--json"])
+
+    assert result.exit_code == 0, result.stderr
+    assert missing.is_dir()
+    document = json.loads(result.stdout)
+    assert document["schema"] == "gapit.dblist/1"
+    assert any(entry["name"] == "ecoh" for entry in document["providers"])
+
+
 def test_db_list_text_shows_installed_state(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

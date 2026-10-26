@@ -71,8 +71,19 @@ def find_database(datadir: Path, name: str, *, quiet: bool = False) -> db.Databa
     for database in databases:
         if database.name == name:
             return database
-    if find_bundled(name) is not None and not (datadir / name / "gapit-manifest.json").is_file():
-        materialize_bundled(name, datadir, quiet=quiet)
+    if find_bundled(name) is not None:
+        if not (datadir / name / "gapit-manifest.json").is_file():
+            try:
+                materialize_bundled(name, datadir, quiet=quiet)
+            except DatabaseError as exc:
+                # A concurrent first-use screen may have won the writer lock
+                # and published the same bundle between our discovery and
+                # materialize. That is success for us: re-discover and use it.
+                if exc.code != "DB_ALREADY_EXISTS":
+                    raise
+        # Re-discover even when the manifest was already there: a concurrent
+        # materializer may have published between the first discovery and this
+        # point (the manifest check then skips materialization).
         for database in db.discover_databases(datadir):
             if database.name == name:
                 return database

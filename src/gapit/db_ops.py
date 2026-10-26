@@ -75,6 +75,22 @@ class DbListEntry(BaseModel, frozen=True):
     source: Literal["local", "bundled"] | None = None
 
 
+class DatadirDocument(BaseModel, frozen=True):
+    """gapit.datadir/1 — the resolved datadir plus how it was chosen.
+
+    A CLI introspection document (like :class:`DbListDocument`, local to this
+    module): agents and container entrypoints can discover the effective path
+    without guessing environment precedence.
+    """
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_name: Literal["gapit.datadir/1"] = Field(default="gapit.datadir/1", alias="schema")
+    datadir: str
+    exists: bool
+    source: Literal["cli", "env", "xdg", "default"]
+
+
 class DbListDocument(BaseModel, frozen=True):
     """gapit.dblist/1 — `gapit db list --json` output.
 
@@ -147,6 +163,14 @@ def perform_fetch(
             receipt = fetch_one(provider_name)
             bar.advance()
             yield receipt
+
+
+def datadir_json(cli_value: Path | None) -> str:
+    """The gapit.datadir/1 document for the resolved datadir (CLI + agents)."""
+    path, source = config.datadir_source(cli_value)
+    return DatadirDocument(datadir=str(path), exists=path.is_dir(), source=source).model_dump_json(
+        by_alias=True
+    )
 
 
 def _detected_dbtype(database: Database) -> str:

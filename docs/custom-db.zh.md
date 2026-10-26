@@ -25,7 +25,7 @@ gapit db build NAME FASTA [OPTIONS]
 | `--kind` / `-k` | `gene` 或 `cluster` | 强制数据库类型（默认：从输入后缀自动检测；与后缀不一致是用法错误）。 |
 | `--typing` / `-T` | path | `gapit.typing/1` 或 `/2` 评分规范：先校验，再复制进数据库成为 `typing.json`，并记入其 manifest。 |
 | `--floors` / `-F` | path | `gapit.floors/1` 逐基因一致性下限，用于 reads 模式的存在判定：先校验，再复制进数据库成为 `floors.json`（仅限基因库构建）。 |
-| `--datadir` | path | 数据库目录（默认：`$GAPIT_DATADIR`，然后 `~/.local/share/gapit/db`）。 |
+| `--datadir` | path | 数据库目录（默认：`$GAPIT_DATADIR`，然后 `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db`）。 |
 | `--description` | 文本 | FASTA 表头没有描述文本的记录的默认产物。 |
 | `--force` | 开关 | 数据库已存在时覆盖。 |
 | `--quiet` | 开关 | 静默 stderr 诊断。 |
@@ -289,8 +289,8 @@ $ grep -c '"gene"' db/labghost/records.jsonl
 ### 9. 不带 --datadir 时构建落在哪
 
 数据目录按调用解析：`--datadir`，然后 `$GAPIT_DATADIR`，然后
-`~/.local/share/gapit/db`。本例把 `GAPIT_DATADIR` 指向一个临时目录（不设置时，同一
-命令会写进默认的 `~/.local/share/gapit/db`）：
+`$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db`。本例把 `GAPIT_DATADIR`
+指向一个临时目录（不设置时，同一命令会写进 XDG/默认数据目录）：
 
 ```console
 $ export GAPIT_DATADIR=/tmp/opencode/customdb-default/db

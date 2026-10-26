@@ -15,6 +15,7 @@ TSV on stdout, plus first-class JSON and Markdown outputs with versioned schemas
 | [Screening reads](./reads.md) | FASTQ and assembly FASTA through minimap2: `--r1`/`--r2`, presets, breadth-based presence, two-stage survey |
 | [Summary](./summary.md) | `gapit summary`: gene presence/absence matrix across report tables |
 | [Databases](./databases.md) | The database catalog, `gapit db fetch/list/install`, datadirs, native `gapit/v1` format, cluster databases (GBK/GFF, typing.json, kaptive) |
+| [Data directory](./datadir.md) | Datadir resolution (`db path`), database anatomy, sharing across envs, conda/Docker guidance, security/reproducibility |
 | [Custom databases](./custom-db.md) | `gapit db build` walkthrough: any FASTA to a screenable database, worked examples |
 | [Typing schemes](./typing.md) | The two-stage designation pipeline (`gapit screen` then `gapit typing`) and `gapit.typing/2`: rule/scheme primitives, the six-scheme cookbook (Doumith, ShigaTyper, meningotype, VP O/K, cholerae, DEC), allele probe tricks, calibration |
 | [Outputs](./outputs.md) | TSV/JSON/Markdown formats, schemas, error envelopes, exit codes |
@@ -31,6 +32,7 @@ TSV on stdout, plus first-class JSON and Markdown outputs with versioned schemas
 | `gapit summary` | Summarize report table(s) into a gene presence/absence matrix | [Summary](./summary.md) |
 | `gapit db fetch` | Fetch and build database(s) into the datadir (kaptive cluster dbs download on fetch) | [Databases](./databases.md) |
 | `gapit db list` | List known databases (NAME, upstream PROVIDER, install state) | [Databases](./databases.md) |
+| `gapit db path` | Print the resolved datadir (no creation) | [Data directory](./datadir.md) |
 | `gapit db install` | Install a local file after verifying its SHA256 | [Databases](./databases.md) |
 | `gapit db build` | Build a database from a gene FASTA, or from GBK/GFF loci as a cluster database (optionally with a `--typing` phenotype spec) | [Custom databases](./custom-db.md) |
 | `gapit setupdb` | Build BLAST indices for all databases under the datadir | here |

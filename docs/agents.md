@@ -166,8 +166,10 @@ Parsing guidance:
 Discover, screen, parse, summarize. Session below run against the repo's test
 fixture datadir (setup recipe in `./mcp.md`).
 
-1. Discover available databases (`gapit db list --json`, or the `db_list` MCP
-   tool), pick a `db` name.
+1. Resolve the effective datadir if your environment may redirect it
+   (`gapit db path --json`; `gapit.datadir/1` names the path and its source),
+   then discover available databases (`gapit db list --json`, or the
+   `db_list` MCP tool) and pick a `db` name.
 
 2. Screen each sample as JSON and parse hits straight out of the document:
 

@@ -109,7 +109,9 @@ app = main
 
 
 def _setupdb(datadir: Path | None, debug: bool) -> None:
-    root = config.resolve_datadir(datadir)
+    # setupdb is the explicit bootstrap command: create the datadir when the
+    # machine has none, then materialize the bundled databases and index all.
+    root = config.ensure_datadir(datadir)
     for bundled_name in bundled_names():
         if not (root / bundled_name / "gapit-manifest.json").is_file():
             materialize_bundled(bundled_name, root, quiet=False)

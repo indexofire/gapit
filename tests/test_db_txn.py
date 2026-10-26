@@ -1,12 +1,13 @@
 """Database rebuild transactions: a failed --force must not damage the old DB."""
 
+import threading
 from pathlib import Path
 
 import pytest
 
 from gapit import db as db_module
 from gapit import db_build_ops
-from gapit.db import make_blast_db
+from gapit.db import discover_databases, make_blast_db
 from gapit.db_build_ops import perform_build
 from gapit.db_txn import staged_database
 from gapit.errors import DatabaseError, DependencyError
@@ -21,12 +22,15 @@ def test_staged_database_replaces_on_success(tmp_path: Path) -> None:
     db_dir.mkdir()
     (db_dir / "old").write_text("old", encoding="utf-8")
 
-    with staged_database(db_dir):
-        (db_dir / "new").write_text("new", encoding="utf-8")
+    with staged_database(db_dir) as build_dir:
+        assert build_dir != db_dir
+        assert (db_dir / "old").read_text(encoding="utf-8") == "old"
+        (build_dir / "new").write_text("new", encoding="utf-8")
 
     assert (db_dir / "new").read_text(encoding="utf-8") == "new"
     assert not (db_dir / "old").exists()
-    assert list(tmp_path.glob(".db.backup.*")) == []
+    assert list(tmp_path.glob(".gapit-txn.backup.*")) == []
+    assert list(tmp_path.glob(".gapit-txn.build.*")) == []
 
 
 def test_staged_database_restores_on_failure(tmp_path: Path) -> None:
@@ -36,13 +40,13 @@ def test_staged_database_restores_on_failure(tmp_path: Path) -> None:
     db_dir.mkdir()
     (db_dir / "old").write_text("old", encoding="utf-8")
 
-    with pytest.raises(RuntimeError), staged_database(db_dir):
-        (db_dir / "new").write_text("new", encoding="utf-8")
+    with pytest.raises(RuntimeError), staged_database(db_dir) as build_dir:
+        (build_dir / "new").write_text("new", encoding="utf-8")
         raise RuntimeError("boom")
 
     assert (db_dir / "old").read_text(encoding="utf-8") == "old"
     assert not (db_dir / "new").exists()
-    assert list(tmp_path.glob(".db.backup.*")) == []
+    assert list(tmp_path.glob(".gapit-txn.backup.*")) == []
 
 
 def test_staged_database_removes_a_failed_first_build(tmp_path: Path) -> None:
@@ -50,8 +54,8 @@ def test_staged_database_removes_a_failed_first_build(tmp_path: Path) -> None:
     partial target is removed too."""
     db_dir = tmp_path / "db"
 
-    with pytest.raises(RuntimeError), staged_database(db_dir):
-        (db_dir / "partial").write_text("x", encoding="utf-8")
+    with pytest.raises(RuntimeError), staged_database(db_dir) as build_dir:
+        (build_dir / "partial").write_text("x", encoding="utf-8")
         raise RuntimeError("boom")
 
     assert not db_dir.exists()
@@ -89,7 +93,7 @@ def test_force_rebuild_failure_restores_the_previous_database(
 
     assert (old / "sequences").read_text(encoding="utf-8") == "OLD-SEQUENCES"
     assert (old / "gapit-manifest.json").read_text(encoding="utf-8") == "OLD-MANIFEST"
-    assert list(datadir.glob(".keep.backup.*")) == []
+    assert list(datadir.glob(".gapit-txn.backup.*")) == []
 
 
 def test_make_blast_db_does_not_delete_an_index_before_preflight(
@@ -119,3 +123,62 @@ def test_make_blast_db_does_not_delete_an_index_before_preflight(
         make_blast_db(sequences, "db", dbtype="nucl")
 
     assert index.read_text(encoding="utf-8") == "OLD-INDEX"
+
+
+def test_staged_database_serializes_concurrent_writers(tmp_path: Path) -> None:
+    """Given two writers for one database, When they overlap, Then the second
+    waits for the first transaction to publish before staging its own build."""
+    db_dir = tmp_path / "db"
+    db_dir.mkdir()
+    (db_dir / "version").write_text("0", encoding="utf-8")
+
+    first_inside = threading.Event()
+    release_first = threading.Event()
+    second_inside = threading.Event()
+    errors: list[BaseException] = []
+
+    def first() -> None:
+        try:
+            with staged_database(db_dir) as build_dir:
+                first_inside.set()
+                assert release_first.wait(timeout=5)
+                (build_dir / "version").write_text("1", encoding="utf-8")
+        except BaseException as exc:  # pragma: no cover - failure reporting
+            errors.append(exc)
+
+    def second() -> None:
+        try:
+            assert first_inside.wait(timeout=5)
+            with staged_database(db_dir) as build_dir:
+                second_inside.set()
+                (build_dir / "version").write_text("2", encoding="utf-8")
+        except BaseException as exc:  # pragma: no cover - failure reporting
+            errors.append(exc)
+
+    one = threading.Thread(target=first)
+    two = threading.Thread(target=second)
+    one.start()
+    assert first_inside.wait(timeout=5)
+    two.start()
+    assert not second_inside.wait(timeout=0.2), "second writer entered while the lock was held"
+    release_first.set()
+    one.join(timeout=10)
+    two.join(timeout=10)
+
+    assert errors == []
+    assert second_inside.is_set()
+    assert (db_dir / "version").read_text(encoding="utf-8") == "2"
+
+
+def test_discovery_ignores_hidden_transaction_directories(tmp_path: Path) -> None:
+    """Given a real DB beside hidden staging/backup leftovers, When databases
+    are discovered, Then only the canonical directory is listed."""
+    real = tmp_path / "real"
+    real.mkdir()
+    (real / "sequences").write_text(">g\nACGT\n", encoding="utf-8")
+    for leftover in (".gapit-txn.build.real.dead", ".gapit-txn.backup.real.dead"):
+        stale = tmp_path / leftover
+        stale.mkdir()
+        (stale / "sequences").write_text(">stale\nACGT\n", encoding="utf-8")
+
+    assert [database.name for database in discover_databases(tmp_path)] == ["real"]

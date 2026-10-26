@@ -22,8 +22,8 @@ targeted usage error pointing at `--db`.
 | Flag | Short | Type | Default | Description |
 |---|---|---|---|---|
 | `FILE...` | — | path(s) | required* | Input contig file(s) to screen. An all-FASTQ wildcard enters reads mode with samples auto-paired from filenames (see [./reads.md](./reads.md)). |
-| `--db` | `-d`, `-db` | str | required | Database to screen against (datadir subdir). No default: a screen never silently materializes a bundled database — pick one explicitly (`gapit db list`). |
-| `--datadir` | `-D` | path | `$GAPIT_DATADIR`, then `~/.local/share/gapit/db` | Database directory. |
+| `--db` | `-d`, `-db` | str | required | Database to screen against (datadir subdir). No default database; naming a bundled database auto-materializes it on first use (stderr note unless `--quiet`), while other names must already be fetched/built (`gapit db list`). |
+| `--datadir` | `-D` | path | `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db` | Database directory. |
 | `--minid` | `-i` | float | `80.0` | Minimum %identity, `0 < x <= 100`. Enforced inside BLAST via `-perc_identity`. |
 | `--mincov` | `-c` | float | `80.0` | Minimum %coverage, `0 <= x <= 100`. Post-filter on the unrounded float. |
 | `--threads` | `-t` | int | `1` | BLAST worker threads (passed to `-num_threads`). |
@@ -325,8 +325,8 @@ Merged-row semantics:
 - `%COVERAGE` is the union coverage; `%IDENTITY` is the aligned-length-weighted mean of the
   fragment identities; `GAPS` and the `COVERAGE_MAP` '/' marker come from summed gap counts,
   with the map binned over the interval union (same 15-char arithmetic as normal rows).
-- `SEQUENCE` is the comma-joined list of contig names carrying the fragments (sorted; fine
-  for TSV — avoid `--format csv` for merged rows, where a comma inside a field is ambiguous).
+- `SEQUENCE` is the comma-joined list of contig names carrying the fragments (sorted). TSV
+  keeps the raw commas; CSV quotes the cell per RFC 4180, so both dialects round-trip.
 - `START`/`END`/`STRAND` come from the **anchor**: the fragment with the largest aligned
   length (ties: first in `(contig, start)` order). `COVERAGE` is the union's bounding span.
 - JSON (`gapit.report/1`) additionally carries `"merged": true` and a `fragments` array with

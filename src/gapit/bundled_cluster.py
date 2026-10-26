@@ -101,9 +101,15 @@ def materialize_cluster_bundle(
             document, FeaturesDocument(loci=tuple(locus.features for locus in loci))
         )
         typing_schema = typing_schema_of(bundled.typing_path)
-    with staged_database(db_dir):
+    with staged_database(db_dir) as build_dir:
+        if (db_dir / "gapit-manifest.json").is_file():
+            raise DatabaseError(
+                f"won't overwrite existing database {name} (use --force)",
+                code="DB_ALREADY_EXISTS",
+                context={"db": name},
+            )
         build_cluster_database(
-            db_dir,
+            build_dir,
             name=name,
             loci=loci,
             typing=bundled.typing_path,

@@ -13,7 +13,7 @@
 | Option | Type | Default | Notes |
 |---|---|---|---|
 | `--db` | str | `ncbi` | subdir of datadir |
-| `--datadir` | path | `<script-dir>/../db` | gapit: default to env var `GAPIT_DATADIR`, then platform data dir |
+| `--datadir` | path | `<script-dir>/../db` | gapit: `--datadir`, then `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db` (absolute XDG only), then `~/.local/share/gapit/db` |
 | `--minid` | float | **80** | `0 < minid <= 100`; enforced only via blastn `-perc_identity` |
 | `--mincov` | float | **80** | `0 <= mincov <= 100`; post-filter on unrounded float |
 | `--threads` | int | 1 | passed to `-num_threads` |
@@ -415,12 +415,15 @@ path and is not exercised by the offline suite.
 - `gapit db fetch NAME [--datadir D] [--force] [--quiet]` — full pipeline into
   `<datadir>/NAME`; stdout = one-line JSON receipt `{db, records, dbtype, destination}`;
   unknown NAME → UsageError exit 2 (registry lookup precedes datadir resolution).
+- `gapit db path [--datadir D] [--json]` — print the resolved datadir without creating it;
+  `--json` emits `gapit.datadir/1` (`datadir`, `exists`, `source` = `cli|env|xdg|default`).
 - `gapit db list [--datadir D] [--json]` — `NAME PROVIDER STATUS DBTYPE DESCRIPTION`
   table (NAME = the `--db` value, PROVIDER = upstream maintainer org; `installed (N)`
   iff `<datadir>/<name>/gapit-manifest.json` exists, else `available`),
   or `gapit.dblist/1` JSON (`providers[]`: `name`, `vendor`, `description`, `dbtype`,
   `installed`, `records` omitted when unset). Module-local schema, deliberately NOT in
-  `gapit schema`.
+  `gapit schema`. A missing datadir is bootstrapped (created) before listing, so a fresh
+  installation can inspect the catalog; `setupdb` bootstraps it too.
 - `gapit db install SOURCE --sha256 HASH --output TARGET` — verified LOCAL-FILE install
   only (no network, no providers, no archives): streaming SHA256, atomic replace after the
   digest verifies; stdout receipt `{destination, sha256}`; mismatch → InputError

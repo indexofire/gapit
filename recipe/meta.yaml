@@ -34,7 +34,7 @@ requirements:
     - minimap2 >=2.24
 
 test:
-  # The repo's pytest suite (1218 tests) is NOT run here: bioconda-recipes
+  # The repo's pytest suite is NOT run here: bioconda-recipes
   # carries only this recipe file. Full
   # suite coverage lives in the repo's own CI. These commands smoke-test the
   # installed console script end to end (no network: listing + schema only —
@@ -60,8 +60,9 @@ about:
     Agent-first Python reimplementation of abricate: BLAST-based screening of
     assemblies with byte-compatible TSV output plus first-class JSON and
     Markdown, FASTQ read screening via minimap2, and on-demand database
-    installs — every provider downloads from upstream at fetch time (nothing
-    is bundled: CARD/VFDB terms forbid redistribution).
+    installs. Seven license-audited databases ship in the wheel; every other
+    provider downloads from upstream at fetch time (CARD/VFDB terms forbid
+    redistribution).
   dev_url: https://github.com/indexofire/gapit
   doc_url: https://indexofire.github.io/gapit/
 

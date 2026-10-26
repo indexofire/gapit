@@ -20,8 +20,8 @@
 | 参数 | 短 | 类型 | 默认值 | 说明 |
 |---|---|---|---|---|
 | `FILE...` | — | 路径 | 必填* | 要筛查的 contig 输入文件。全 FASTQ 的通配符进入 reads 模式并按文件名自动配对样本（见 [./reads.md](./reads.md)）。 |
-| `--db` | `-d`, `-db` | str | 必填 | 用于筛查的数据库（数据目录的子目录）。没有默认值：一次筛查绝不会悄悄物化内置数据库 —— 请显式选择（`gapit db list`）。 |
-| `--datadir` | `-D` | path | `$GAPIT_DATADIR`，然后 `~/.local/share/gapit/db` | 数据库目录。 |
+| `--db` | `-d`, `-db` | str | 必填 | 用于筛查的数据库（数据目录的子目录）。没有默认数据库；指名内置数据库会在首次使用时自动物化它（非 `--quiet` 时 stderr 有提示），其他名字必须已经 fetch/build 好（`gapit db list`）。 |
+| `--datadir` | `-D` | path | `$GAPIT_DATADIR`，然后 `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db` | 数据库目录。 |
 | `--minid` | `-i` | float | `80.0` | 最小一致性百分比，`0 < x <= 100`。在 BLAST 内部通过 `-perc_identity` 强制执行。 |
 | `--mincov` | `-c` | float | `80.0` | 最小覆盖度百分比，`0 <= x <= 100`。对未取整的浮点值做后置过滤。 |
 | `--threads` | `-t` | int | `1` | BLAST 工作线程数（传给 `-num_threads`）。 |
@@ -314,8 +314,8 @@ Found 1 genes in tests/data/contigs/full.fa
 - `%COVERAGE` 是并集覆盖度；`%IDENTITY` 是按比对长度加权的片段一致性均值；`GAPS`
   和 `COVERAGE_MAP` 的 `/` 标记来自求和后的缺口数，map 按区间并集分箱（与普通行相
   同的 15 字符算术）。
-- `SEQUENCE` 是携带这些片段的 contig 名的逗号串接（已排序；TSV 没问题，合并行请避
-  免 `--format csv`，字段内逗号会有歧义）。
+- `SEQUENCE` 是携带这些片段的 contig 名的逗号串接（已排序）。TSV 保留原始逗号；CSV
+  按 RFC 4180 加引号，两种方言都能正确回读。
 - `START`/`END`/`STRAND` 取自**锚点**片段：比对长度最大的那个（平局取 `(contig, start)`
   顺序的第一个）。`COVERAGE` 是并集的包围跨度。
 - JSON（`gapit.report/1`）额外携带 `"merged": true` 和一个 `fragments` 数组，每个片

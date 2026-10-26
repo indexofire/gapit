@@ -8,10 +8,11 @@ import re
 import shutil
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
 
 from gapit.cli import app
-from gapit.db import list_databases
+from gapit.db import DatabaseInfo, list_databases
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 
@@ -86,6 +87,30 @@ def test_setupdb_on_empty_datadir_materializes_bundled(tmp_path: Path) -> None:
     assert "Indexed ecoli_dec (16 sequences, nucl)" in setup.stderr
     assert (datadir / "ecoli_dec" / "gapit-manifest.json").is_file()
     assert (datadir / "ecoli_dec" / "typing.json").is_file()
+
+
+def test_setupdb_bootstraps_a_missing_datadir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a datadir path that does not exist, When setupdb runs, Then the
+    root is created before the bundled/index work (fresh-machine bootstrap)."""
+    import gapit.cli as cli_module
+
+    # Keep this a bootstrap test: no bundle materialization or index build.
+    def no_bundles() -> list[str]:
+        return []
+
+    def no_databases(datadir: Path, *, setupdb: bool, debug: bool = False) -> list[DatabaseInfo]:
+        return []
+
+    monkeypatch.setattr(cli_module, "bundled_names", no_bundles)
+    monkeypatch.setattr(cli_module.db, "list_databases", no_databases)
+    missing = tmp_path / "fresh" / "machine" / "db"
+
+    result = runner.invoke(app, ["setupdb", "--datadir", str(missing)])
+
+    assert result.exit_code == 0, result.stderr
+    assert missing.is_dir()
 
 
 def test_setupdb_debug_echoes_makeblastdb_argv(tmp_path: Path) -> None:

@@ -10,6 +10,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from gapit.db_txn import TXN_PREFIX
 from gapit.errors import DatabaseError, DependencyError, InputError
 from gapit.fasta import iter_fasta
 from gapit.proctools import run_tool
@@ -174,9 +175,16 @@ def blast_db_info(db_prefix: Path) -> BlastDbInfo:
 
 def discover_databases(datadir: Path) -> list[Database]:
     """Immediate subdirectories of the datadir holding a readable ``sequences``
-    file, sorted by name, each tagged gene/cluster from its manifest."""
+    file, sorted by name, each tagged gene/cluster from its manifest. A
+    missing datadir yields no databases: catalog listing (``db list``) must
+    work on a fresh install before any datadir exists."""
+    if not datadir.is_dir():
+        return []
     databases: list[Database] = []
     for child in datadir.iterdir():
+        if child.name.startswith(TXN_PREFIX):
+            # hidden siblings are transactional build/backup/lock entries
+            continue
         sequences = child / "sequences"
         if child.is_dir() and sequences.is_file() and os.access(sequences, os.R_OK):
             databases.append(

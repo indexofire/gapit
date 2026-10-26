@@ -159,7 +159,9 @@ $ gapit db list --json
 发现、筛查、解析、汇总。下面的会话对仓库测试夹具数据目录运行（搭建配方见
 `./mcp.md`）。
 
-1. 发现可用数据库（`gapit db list --json`，或 `db_list` MCP 工具），选一个 `db`
+1. 如果环境可能重定向数据目录，先解析生效位置（`gapit db path --json`；
+   `gapit.datadir/1` 给出路径与来源），再发现可用数据库（`gapit db list --json`，
+   或 `db_list` MCP 工具），选一个 `db`
    名。
 
 2. 以 JSON 筛查每个样本，直接从文档解析命中：

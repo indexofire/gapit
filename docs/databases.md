@@ -2,7 +2,9 @@
 
 A gapit database is a directory of reference genes you screen contigs and reads against.
 This page covers where databases live, how to get them, what gapit writes on disk, and how
-to bring your own. For how screening uses them, see [screen.md](./screen.md).
+to bring your own. For the full datadir layout, sharing, conda/Docker guidance, and the
+database anatomy, see [Data directory](./datadir.md). For how screening uses them, see
+[screen.md](./screen.md).
 
 ## Where databases live
 
@@ -11,13 +13,27 @@ datadir in this order:
 
 1. `--datadir` on the individual call
 2. `$GAPIT_DATADIR`
-3. `~/.local/share/gapit/db`
+3. `$XDG_DATA_HOME/gapit/db` (absolute `XDG_DATA_HOME` only)
+4. `~/.local/share/gapit/db`
 
-The resolved path must exist. If it doesn't, commands fail with a typed error and exit 4:
+The location is resolved even before it exists. `gapit db list` and `gapit setupdb`
+bootstrap the missing root automatically (so a fresh `pip install gapit` can be inspected
+and set up immediately); `db fetch`/`db build` create it as part of their write path.
+Commands that consume installed databases require it — except that `screen`/`typing`
+against a **bundled** name materialize that bundle and create the root on first use. A
+missing root on a strict read path is a typed error and exit 4:
 
 ```console
-$ gapit db list --datadir /no/such/dir
+$ gapit db outdated --datadir /no/such/dir
 {"schema":"gapit.error/1","code":"DATADIR_NOT_FOUND","message":"datadir does not exist: /no/such/dir","context":{"datadir":"/no/such/dir"}}
+```
+
+To keep databases inside an activated conda environment instead of your home directory,
+opt in explicitly (recommended only when you need env-local data — the home default
+survives environment rebuilds and is shared by every env):
+
+```bash
+export GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"
 ```
 
 ## Listing what's installed
@@ -40,6 +56,7 @@ kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	Kaptive (k
 kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
 megares	MEGARes antimicrobial resistance genes	available	nucl	MEG Lab
 plasmidfinder	CGE PlasmidFinder replicons	available	nucl	DTU CGE
+upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	FordeGenomics
 vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	USTC (VFDB)
 victors	Victors virulence factors	available	nucl	University of Chicago
 ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	Holt lab (srst2)
@@ -47,6 +64,7 @@ ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring design
 lm_doumith	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	gapit-curated (public-domain INSDC sources)
 ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	bundled	nucl	NCBI
 resfinder	CGE ResFinder acquired resistance genes	bundled	nucl	DTU CGE
+vc_serogroup	Vibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed over from gside	bundled	nucl	gapit-curated (NCBI X59554.1 slice / KY660230.1 / X00171.1)
 vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	gapit-curated (vpasero)
 ```
 
@@ -188,9 +206,10 @@ bundles (`vp_ok`) run the cluster pipeline instead: materialization rebuilds the
 FASTA and `features.json` from the committed artifacts through the same cluster build
 entry a `db build` uses — gene ids stay snapshot-resolved, the typing spec re-validates
 against them, no re-resolution. Deterministic, zero
-network. A missing datadir is created on this path only; `gapit setupdb` materializes
-every bundled database alongside indexing; re-running either is a no-op once the
-manifest exists. `db list` shows the database as `bundled` before that and
+network. A missing datadir is bootstrapped by `gapit db list`, `gapit setupdb`,
+`db fetch`/`db build`, and the first screen against a bundled name; `gapit setupdb`
+materializes every bundled database alongside indexing; re-running either is a no-op
+once the manifest exists. `db list` shows the database as `bundled` before that and
 `installed (16)` after — on all four listing surfaces (TSV, rich table, `--json`, MCP
 `db_list`).
 

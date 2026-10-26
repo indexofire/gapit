@@ -90,7 +90,7 @@ minimap 用 15 个字符格勾画比对落在基因的什么位置：
 
 ### 变体
 
-- `--format csv` 把分隔符换成 `,`。
+- `--format csv` 使用 RFC 4180 引号规则（字段内的逗号/引号/换行可正确回读）。
 - `--noheader` 去掉 `#FILE ...` 表头行。
 - `--nopath` 把 `FILE` 列文件名化。
 - 不同 query 跨度上的重叠基因都报告。共享同一 `(contig, start, end)` 的命中去重，

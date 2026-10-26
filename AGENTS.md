@@ -65,7 +65,7 @@ gapit/
 ├── src/gapit/
 │   ├── __init__.py
 │   ├── cli.py           # click entrypoint: screen / summary / db / setupdb / schema / mcp
-│   ├── config.py        # datadir resolution, defaults, env vars
+│   ├── config.py        # datadir resolution, first-run bootstrap, defaults, env vars
 │   ├── dispatch.py      # shared CLI dispatch (error envelope → exit codes) + --datadir option + --output target
 │   ├── proctools.py     # external-tool plumbing: argv subprocess runner + stderr notes
 │   ├── fasta.py         # streaming FASTA reader + shared gz/bz2 text opener
@@ -182,7 +182,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   byte-identically), then `gapit typing result.tsv [-D|-f|-o|-q]` designates from the screen
   table (`gapit.typing_result/1`; cluster dbs refuse — their typing rides the screen).
   No typing MCP tool yet (future work).
-- **DB acquisition** `[gapit-extension]`: `gapit db fetch|list|search|outdated|build|install` —
+- **DB acquisition** `[gapit-extension]`: `gapit db fetch|path|list|search|outdated|build|install` —
   database fetch from the provider catalog (every provider downloads from upstream at fetch
   time — nothing catalog-side is bundled inside the wheel beyond the sanctioned exceptions,
   a license-compliance requirement: CARD/VFDB terms are non-commercial and Kaptive is GPL,
@@ -205,11 +205,16 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   MIT-licensed `vp_ok` typed cluster bundle (OAgc+CPSgc merged: the committed typing asset
   installs a 3-scheme `gapit.typing/2` doc so one screen renders `gapit.cluster/2` with
   the composed `O:K` serotype, zero network from first install), and SHA256-verified
-  local-file install.
+  local-file install. Datadir precedence is `--datadir`, `$GAPIT_DATADIR`,
+  `$XDG_DATA_HOME/gapit/db` (absolute XDG only), then `~/.local/share/gapit/db`;
+  `gapit db path [--json]` introspects it without creating, while `db list`/`setupdb`
+  bootstrap a missing root. See `docs/datadir.md` for the database anatomy, sharing and
+  Docker policy.
 - **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing nine tools:
   read-only `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via
-  minimap2), `summary`, `schema`, `db_list`, `db_search`, `db_outdated`, plus the datadir-mutating
-  `db_fetch` (installs databases from the provider catalog; may download) and `db_build` (writes a custom db);
+  minimap2), `summary`, `schema`, `db_search`, `db_outdated`, plus `db_list` (may create the
+  empty datadir on first use), and the datadir-mutating `db_fetch` (installs databases from
+  the provider catalog; may download) and `db_build` (writes a custom db);
   tool failures carry the `gapit.error/1` envelope.
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
 - **Self-description**: `gapit --version --json`, `gapit db list --json`, `gapit schema` — an agent

@@ -97,7 +97,7 @@ alignment is gapped. An ungapped full-length alignment prints 15 `=` characters,
 
 ### Variations
 
-- `--format csv` switches the separator to `,`.
+- `--format csv` uses RFC 4180 quoting (commas/quotes/newlines in fields round-trip).
 - `--noheader` drops the `#FILE ...` header row.
 - `--nopath` basenames the `FILE` column.
 - Overlapping genes at different query spans are both reported. Hits sharing one

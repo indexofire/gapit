@@ -27,9 +27,11 @@ from click.testing import CliRunner, Result
 from gapit.bundled import BUNDLED_ROOT, bundled_databases, bundled_names, find_bundled
 from gapit.cli import app
 from gapit.dbcodec import decode_seqid
+from gapit.errors import DatabaseError
 from gapit.fasta import iter_fasta
 from gapit.providers import REGISTRY
 from gapit.records import read_manifest
+from gapit.screening import find_database
 
 TYPING = Path(__file__).parent / "data" / "typing"
 GOLDEN = Path(__file__).parent / "golden"
@@ -213,6 +215,29 @@ def test_bundled_root_stays_within_the_wheel_budget() -> None:
         f"{BUDGET_BYTES // 1024 // 1024} MiB wheel budget (AGENTS.md §6): "
         "split a gapit-data wheel or keep the new content fetch-on-demand"
     )
+
+
+def test_find_database_tolerates_concurrent_first_use(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a concurrent materializer that wins the lock and publishes first,
+    When our materialize call reports DB_ALREADY_EXISTS, Then discovery still
+    returns the now-installed database instead of failing the screen."""
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    def wins_the_race(name: str, root: Path, *, quiet: bool = True) -> None:
+        target = root / name
+        target.mkdir()
+        (target / "sequences").write_text(">g\nACGT\n", encoding="utf-8")
+        raise DatabaseError("won by another writer", code="DB_ALREADY_EXISTS")
+
+    monkeypatch.setattr("gapit.screening.materialize_bundled", wins_the_race)
+
+    database = find_database(datadir, "ecoli_dec", quiet=True)
+
+    assert database.name == "ecoli_dec"
+    assert database.sequences_path == datadir / "ecoli_dec" / "sequences"
 
 
 def test_screen_auto_materializes_on_fresh_empty_datadir(tmp_path: Path) -> None:

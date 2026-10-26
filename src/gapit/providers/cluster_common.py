@@ -85,8 +85,14 @@ def fetch_cluster_provider(
     insecure = insecure_source_urls(provider.source_urls)
     if insecure:
         note(quiet, f"WARNING: plain HTTP source(s), no transport integrity: {', '.join(insecure)}")
-    with staged_database(db_dir):
-        with TemporaryDirectory(dir=db_dir, prefix=".download.") as workdir_name:
+    with staged_database(db_dir) as build_dir:
+        if (db_dir / "gapit-manifest.json").is_file() and not force:
+            raise DatabaseError(
+                f"won't overwrite existing database {provider.name} (use --force)",
+                code="DB_ALREADY_EXISTS",
+                context={"db": provider.name},
+            )
+        with TemporaryDirectory(dir=build_dir, prefix=".download.") as workdir_name:
             workdir = Path(workdir_name)
             for url in provider.source_urls:
                 download_file(url, workdir / url_basename(url))
@@ -103,7 +109,7 @@ def fetch_cluster_provider(
             )
             typing_schema = typing_schema_of(provider.typing)
         return build_cluster_database(
-            db_dir,
+            build_dir,
             name=provider.name,
             loci=loci,
             typing=provider.typing,

@@ -46,8 +46,12 @@ $ gapit db fetch ncbi --force
 ## 我的数据目录在哪里？
 
 解析顺序：命令行 `--datadir`，然后 `$GAPIT_DATADIR`，然后
-`~/.local/share/gapit/db`。解析出的路径不存在是错误（`DATADIR_NOT_FOUND`，退出码
-4）。见 `./databases.md`。
+`$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db`。`gapit db path` 只打印路径、
+不创建；`gapit db list` 与 `gapit setupdb` 会自动创建缺失的根目录；
+`db outdated`、`db search` 等严格查询仍要求它存在，否则以 `DATADIR_NOT_FOUND`
+（退出码 4）失败。若要把数据库放进当前激活的 conda 环境，可设置
+`GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"`（home 默认值能跨环境重建保留，并被所有
+环境共享）。见 `./databases.md`。
 
 ## 能用现有的 abricate 数据库吗？
 

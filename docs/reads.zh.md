@@ -125,7 +125,7 @@ reads 模式走同一条 `gapit screen` 命令；以下是适用的参数（转�
 | `--min-identity` | float | `0.0`（关闭） | 单条比对的最小一致性百分比（0-100）；任意非零值开启 gapit.reads/2 过滤（见下文）。 |
 | `--min-mapq` | int | `0`（关闭） | 单条比对的最小 MAPQ；任意非零值开启 gapit.reads/2 过滤。 |
 | `--db` | str | 必填 | 用于筛查的数据库（数据目录的子目录）。没有默认值 —— 请显式选择（`gapit db list`）。 |
-| `--datadir` | path | `$GAPIT_DATADIR`，然后 `~/.local/share/gapit/db` | 数据库目录。 |
+| `--datadir` | path | `$GAPIT_DATADIR`，然后 `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db` | 数据库目录。 |
 | `--threads` | int | `1` | minimap2 工作线程数。 |
 | `--jobs` | int | `1` | 仅通配符路径：并发筛查 N 个样本（`--r1`/`--r2` 拒绝它）。输出顺序始终是样本顺序。 |
 | `--quiet` | 开关 | 关闭 | 静默 stderr 诊断（包括 assembly-FASTA 提示）。 |

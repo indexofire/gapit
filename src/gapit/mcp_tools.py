@@ -236,7 +236,9 @@ def _tool_schema(arguments: dict[str, Any]) -> str:
 
 
 def _tool_db_list(arguments: dict[str, Any]) -> str:
-    return db_list_json(config.resolve_datadir(None))
+    # Same fresh-install bootstrap as the CLI: db list must work before the
+    # user has ever fetched a database. An explicit datadir is honored.
+    return db_list_json(config.ensure_datadir(_optional_path(arguments, "datadir")))
 
 
 def _tool_db_fetch(arguments: dict[str, Any]) -> str:

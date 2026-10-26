@@ -160,8 +160,14 @@ def perform_build(
             context={"db": name},
         )
     if detected == "cluster":
-        with staged_database(db_dir):
-            manifest = perform_cluster_build(name, fasta, typing, db_dir, quiet=quiet)
+        with staged_database(db_dir) as build_dir:
+            if (db_dir / "gapit-manifest.json").is_file() and not force:
+                raise DatabaseError(
+                    f"won't overwrite existing database {name} (use --force)",
+                    code="DB_ALREADY_EXISTS",
+                    context={"db": name},
+                )
+            manifest = perform_cluster_build(name, fasta, typing, build_dir, quiet=quiet)
         return BuildReceipt(
             db=name,
             records=manifest.n_records,
@@ -188,14 +194,20 @@ def perform_build(
             read_floors(floors), frozenset(record.gene for record in records), source=floors
         )
     validate_records(records)
-    with staged_database(db_dir):
-        write_records(records, db_dir / "records.jsonl")
+    with staged_database(db_dir) as build_dir:
+        if (db_dir / "gapit-manifest.json").is_file() and not force:
+            raise DatabaseError(
+                f"won't overwrite existing database {name} (use --force)",
+                code="DB_ALREADY_EXISTS",
+                context={"db": name},
+            )
+        write_records(records, build_dir / "records.jsonl")
         if typing is not None:
-            shutil.copyfile(typing, db_dir / "typing.json")
+            shutil.copyfile(typing, build_dir / "typing.json")
         if floors is not None:
-            shutil.copyfile(floors, db_dir / FLOORS_FILENAME)
+            shutil.copyfile(floors, build_dir / FLOORS_FILENAME)
         manifest = build_database(
-            db_dir,
+            build_dir,
             name=name,
             dbtype=_resolve_dbtype(dbtype, records),
             source_urls=("local",),

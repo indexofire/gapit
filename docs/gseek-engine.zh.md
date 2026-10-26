@@ -39,7 +39,7 @@ gapit 要求 Python >= 3.12，所有支持的环境都包含 gseek：
 pip install "gapit[gseek]"
 ```
 
-pixi 的 `default` 与 `py312` 环境使用 Python 3.12，并包含 `gseek>=0.9.1`。
+pixi 的 `default` 环境（启用 `py312` feature）使用 Python 3.12，并包含 `gseek>=0.9.1`。
 没有 gseek 时，`GAPIT_ENGINE=gseek` 会抛类型化的 `MISSING_DEPENDENCY` 错误；
 `legacy` 和所有现有命令不受影响。
 

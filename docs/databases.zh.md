@@ -1,7 +1,8 @@
 # 数据库
 
 gapit 数据库是一个参考基因目录，你用 contigs 和 reads 去筛查它。本页介绍数据库存放
-在哪里、如何获取、gapit 在磁盘上写了什么，以及如何带上自己的数据库。筛查如何使用
+在哪里、如何获取、gapit 在磁盘上写了什么，以及如何带上自己的数据库。完整的数据目录布局、
+共享、conda/Docker 规范和数据库结构见[数据目录](./datadir.md)。筛查如何使用
 它们见 [screen.md](./screen.md)。
 
 ## 数据库存放在哪里
@@ -11,13 +12,25 @@ gapit 数据库是一个参考基因目录，你用 contigs 和 reads 去筛查�
 
 1. 单次调用上的 `--datadir`
 2. `$GAPIT_DATADIR`
-3. `~/.local/share/gapit/db`
+3. `$XDG_DATA_HOME/gapit/db`（仅限绝对的 `XDG_DATA_HOME`）
+4. `~/.local/share/gapit/db`
 
-解析出的路径必须存在，否则命令以类型化错误失败并退出码 4：
+数据目录的位置在它还不存在时也会被解析出来。`gapit db list` 与 `gapit setupdb`
+会自动创建缺失的根目录（因此全新 `pip install gapit` 可以立即查看目录并完成初始化）；
+`db fetch`/`db build` 作为写路径的一部分创建它。真正消费已安装数据库的命令仍要求
+它存在——但 `screen`/`typing` 指向**内置**库名时会物化该内置库并在首次使用时创建
+根目录。严格读路径上缺失根目录会得到类型化错误并退出码 4：
 
 ```console
-$ gapit db list --datadir /no/such/dir
+$ gapit db outdated --datadir /no/such/dir
 {"schema":"gapit.error/1","code":"DATADIR_NOT_FOUND","message":"datadir does not exist: /no/such/dir","context":{"datadir":"/no/such/dir"}}
+```
+
+如果希望把数据库放进当前激活的 conda 环境而不是 home 目录，请显式选择（仅在确实
+需要环境内数据时推荐——home 默认值能跨环境重建保留，并被所有环境共享）：
+
+```bash
+export GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"
 ```
 
 ## 查看已安装的数据库
@@ -40,6 +53,7 @@ kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	Kaptive (k
 kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
 megares	MEGARes antimicrobial resistance genes	available	nucl	MEG Lab
 plasmidfinder	CGE PlasmidFinder replicons	available	nucl	DTU CGE
+upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	FordeGenomics
 vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	USTC (VFDB)
 victors	Victors virulence factors	available	nucl	University of Chicago
 ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	Holt lab (srst2)
@@ -47,6 +61,7 @@ ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring design
 lm_doumith	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	gapit-curated (public-domain INSDC sources)
 ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	bundled	nucl	NCBI
 resfinder	CGE ResFinder acquired resistance genes	bundled	nucl	DTU CGE
+vc_serogroup	Vibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed over from gside	bundled	nucl	gapit-curated (NCBI X59554.1 slice / KY660230.1 / X00171.1)
 vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	gapit-curated (vpasero)
 ```
 
@@ -175,10 +190,10 @@ stderr 提示与回执中的 `duplicates_dropped` 计数）。基因簇内置库
 FASTA 与
 `features.json` —— 基因 id 保持快照时的已解析状态，typing 规格对其重新校验、
 不做重解析。全程确定性、零
-网络。仅这条路径会在数据目录缺失时自动创建它；`gapit setupdb` 在建索引的同时
-物化全部内置库；manifest 一旦存在，两者重跑都是无操作。`db list` 在物化前显示
-`bundled`、物化后显示 `installed (16)` —— 四个列表入口（TSV、rich 表格、
-`--json`、MCP `db_list`）一致。
+网络。`gapit db list`、`gapit setupdb`、`db fetch`/`db build`，以及对内置库名的
+第一次筛查都会自动创建缺失的数据目录；`gapit setupdb` 在建索引的同时物化全部内置库；
+manifest 一旦存在，重跑都是无操作。`db list` 在物化前显示 `bundled`、物化后显示
+`installed (16)` —— 四个列表入口（TSV、rich 表格、`--json`、MCP `db_list`）一致。
 
 ### 李斯特菌血清群分型（`lm_doumith`）
 

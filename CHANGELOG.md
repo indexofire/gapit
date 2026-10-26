@@ -7,6 +7,30 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Fresh-install datadir bootstrap.** `gapit db list` (CLI, `--json`, and the MCP
+  `db_list` tool) no longer fails with `DATADIR_NOT_FOUND` when the datadir has never
+  been created: it bootstraps the resolved root and lists the catalog/bundled rows, so
+  a fresh `pip install gapit` can be inspected before any database is installed.
+  `gapit setupdb` likewise creates a missing datadir before materializing bundles.
+  Commands that consume installed databases keep the strict `DATADIR_NOT_FOUND`
+  semantics (bundled-name `screen`/`typing` still bootstrap on first use).
+- **Shared-datadir writes are serialized and published atomically.** Database builds now
+  write into a hidden staging directory and swap it into place only after success; a
+  per-database `flock` prevents concurrent `db fetch`/`db build` writers from interleaving.
+  Hidden staging/backup/lock entries are ignored by database discovery. New datadirs and
+  staging directories are private (`0700`). Readers see the old database for the whole
+  build, then the new one after the swap (a short rename window remains).
+
+### Added
+
+- **`gapit db path [--json]`.** Prints the effective datadir without creating it;
+  `--json` emits `gapit.datadir/1` (`datadir`, `exists`, `source` = `cli|env|xdg|default`).
+- **XDG Base Directory support.** Datadir precedence is now `--datadir`,
+  `$GAPIT_DATADIR`, `$XDG_DATA_HOME/gapit/db` (absolute XDG only), then
+  `~/.local/share/gapit/db`.
+
 ### Changed
 
 - **gapit now uses `gseek.compat` for `GAPIT_ENGINE`.** The shared switch
@@ -26,7 +50,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   [gseek](https://github.com/indexofire/gseek). `legacy` remains the default and is
   retained on every path; `shadow` logs coarse differences and returns the legacy
   result. gseek requires Python >= 3.12 and is available through `gapit[gseek]` or
-  the pixi `default`/`py313` environments.
+  the pixi `default` environment.
 - **FASTQ reads parity:** vfdb/card reads/1 and reads/2 are byte-identical to
   legacy on a 3.07M-pair sample. gseek 0.8.1 allows duplicate minimap2 targets
   (VFDB); the bridge uses `index="none"` for CARD's >255-character target names;

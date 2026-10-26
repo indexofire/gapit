@@ -23,7 +23,7 @@ gapit db build NAME FASTA [OPTIONS]
 | `--kind` / `-k` | `gene` or `cluster` | Force the database kind (default: auto-detect from the input suffix; a disagreement is a usage error). |
 | `--typing` / `-T` | path | `gapit.typing/1` or `/2` scoring spec: validated, copied into the db as `typing.json`, recorded in its manifest. |
 | `--floors` / `-F` | path | `gapit.floors/1` per-gene identity floors for reads-mode presence: validated, copied into the db as `floors.json` (gene builds only). |
-| `--datadir` | path | Database directory (default: `$GAPIT_DATADIR`, then `~/.local/share/gapit/db`). |
+| `--datadir` | path | Database directory (default: `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`). |
 | `--description` | text | Default product for records whose FASTA header has no description text. |
 | `--force` | flag | Overwrite the database if it already exists. |
 | `--quiet` | flag | Silence stderr diagnostics. |
@@ -265,7 +265,7 @@ $ grep -c '"gene"' db/labghost/records.jsonl
 
 ### 9. Where builds land without --datadir
 
-The datadir resolves per call: `--datadir`, then `$GAPIT_DATADIR`, then `~/.local/share/gapit/db`. This example points `GAPIT_DATADIR` at a scratch directory (unset, the same command writes into the default `~/.local/share/gapit/db`):
+The datadir resolves per call: `--datadir`, then `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`. This example points `GAPIT_DATADIR` at a scratch directory (unset, the same command writes into the XDG/default datadir):
 
 ```console
 $ export GAPIT_DATADIR=/tmp/opencode/customdb-default/db

@@ -39,6 +39,7 @@ plugins:
             Reads (FASTQ): reads（FASTQ）筛查
             Summarizing reports: 汇总报告
             Databases: 数据库
+            Data directory: 数据目录
             Custom databases: 自定义数据库
             Typing schemes: 分型方案
             Outputs: 输出
@@ -62,6 +63,7 @@ nav:
       - Reads (FASTQ): reads.md
   - Summarizing reports: summary.md
   - Databases: databases.md
+  - Data directory: datadir.md
   - Custom databases: custom-db.md
   - Typing schemes: typing.md
   - Outputs: outputs.md

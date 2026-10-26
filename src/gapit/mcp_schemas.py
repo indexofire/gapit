@@ -90,6 +90,7 @@ TOOLS: list[dict[str, object]] = [
     _tool_entry(
         "db_list",
         "List known databases with NAME, upstream PROVIDER, and install state (gapit.dblist/1).",
+        dict(datadir=_STR),
     ),
     _tool_entry(
         "db_fetch",

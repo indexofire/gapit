@@ -80,8 +80,12 @@ presence defaults to 90% alignment breadth (`--min-breadth 90`).
 
 ## Databases
 
-A database is a directory under the datadir, resolved from `$GAPIT_DATADIR`, then
-`~/.local/share/gapit/db` (override per call with `--datadir`). Twenty-three databases are
+A database is a directory under the datadir, resolved from `--datadir`, then
+`$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`
+(use `gapit db path` to inspect it). On a fresh install
+`gapit db list` bootstraps the datadir and lists the catalog (bundled rows ready for
+first use); `gapit setupdb` creates it and materializes all seven bundled databases.
+Twenty-three databases are
 built into the catalog — twelve gene providers, seven kaptive cluster providers, and
 seven bundled snapshots (`ecoh`, `ecoli_dec`, `lm_doumith`, `ncbi`, `resfinder`,
 `vc_serogroup`, `vp_ok`; `ecoh`/`ncbi`/`resfinder` are also provider names). Every
@@ -96,7 +100,8 @@ at 90%) that reads mode applies before presence calls. Several
 upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0) forbid
 redistribution inside an MIT-licensed distribution, so everything else is fetch-on-demand
 — and `db fetch <name>` refreshes the provider-backed bundled names (`ecoh`, `ncbi`,
-`resfinder`) from the latest upstream.
+`resfinder`) from the latest upstream. For the database anatomy, datadir sharing,
+conda/Docker guidance, and security notes, see [Data directory](docs/datadir.md).
 
 | Name | Content | dbtype |
 |---|---|---|
@@ -180,7 +185,7 @@ Register it with an MCP client:
 reads minimap2, and cluster minimap2 through
 [gseek](https://github.com/indexofire/gseek). `legacy` remains the default and
 is retained on every path; `shadow` runs both and returns legacy. gseek requires
-Python >= 3.12 and is installed by the `default`/`py312` pixi environments or
+Python 3.12 and is installed by the pixi `default` environment (the `py312` feature) or
 `pip install "gapit[gseek]"`. See [gseek engine](docs/gseek-engine.md).
 
 ## Development
@@ -191,7 +196,7 @@ Python >= 3.12 and is installed by the `default`/`py312` pixi environments or
 | `pixi run fmt` | ruff format |
 | `pixi run fmt-check` | ruff format --check |
 | `pixi run typecheck` | basedpyright (strict) |
-| `pixi run test` | pytest, 1234 offline tests |
+| `pixi run test` | pytest, offline unit/CLI suite |
 | `pixi run -e parity parity` | byte-diff screening vs real abricate |
 | `pixi run -e parity summary-parity` | byte-diff summary vs real abricate |
 

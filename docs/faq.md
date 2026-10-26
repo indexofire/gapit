@@ -52,8 +52,12 @@ overwriting.
 ## Where is my datadir?
 
 Resolution order: `--datadir` on the command line, then `$GAPIT_DATADIR`, then
-`~/.local/share/gapit/db`. A resolved path that does not exist is an error
-(`DATADIR_NOT_FOUND`, exit 4). See `./databases.md`.
+`$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`. `gapit db path` prints it
+without creating; `gapit db list` and `gapit setupdb` create a missing root
+automatically; strict queries such as `db outdated` and `db search` require it and fail
+with `DATADIR_NOT_FOUND` (exit 4). To keep databases inside an activated conda
+environment, set `GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"` (the home default survives
+environment rebuilds and is shared across envs). See `./databases.md`.
 
 ## Can I use my existing abricate databases?
 

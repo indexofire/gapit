@@ -30,9 +30,11 @@ the module CLI as `{"command": "gapit", "args": ["mcp"]}`.
 
 ## Tools
 
-Nine tools: five read-only analysis tools and four database
-self-provisioning tools (`db_fetch`, `db_build`, `db_search`,
-`db_outdated`) that mirror `gapit db ...` exactly. Argument lists below are
+Nine tools: four analysis tools (`screen`, `screen_reads`, `summary`, `schema`)
+and five database tools (`db_list`, `db_fetch`, `db_build`, `db_search`,
+`db_outdated`) that mirror `gapit db ...` exactly. `db_list`/`db_search`/
+`db_outdated` are read-only (`db_list` may create an empty datadir on first
+use); `db_fetch`/`db_build` mutate the datadir. Argument lists below are
 transcribed from the live `tools/list` `inputSchema` objects.
 
 | Tool | Arguments | Returns |
@@ -41,7 +43,7 @@ transcribed from the live `tools/list` `inputSchema` objects.
 | `screen_reads` | `r1` (array of strings, required — one path per lane), `r2` (array of strings, same count as `r1`), `read_type` (string: `sr` \| `map-ont` \| `map-hifi`, default `sr`), `min_breadth` (number 0–100, default `90`), `min_identity` (number 0–100, default `0`), `min_mapq` (integer ≥ 0, default `0`), `format` (string: `json` \| `md`, default `json`), `db` (string, required — no default), `datadir` (string) | `gapit.reads/1` JSON by default or Markdown per `format`; `min_identity`/`min_mapq` > 0 switches to `gapit.reads/2` |
 | `summary` | `files` (array of report table paths, required), `identity` (boolean), `nopath` (boolean) | `gapit.summary/1` JSON |
 | `schema` | `name` (string, required, one of `cluster`, `error`, `features`, `floors`, `reads`, `reads2`, `report`, `summary`, `typing`, `typing_result`, `version`) | The JSON Schema of that output document |
-| `db_list` | none | `gapit.dblist/1`: database names, install state, record counts |
+| `db_list` | `datadir` (string) | `gapit.dblist/1`: database names, install state, record counts |
 | `db_fetch` | `name` (string, required — a database NAME, or `all` for the card+vfdb default set), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line per database (`db`, `records`, `dbtype`, `destination`). Every database downloads from its upstream provider, so installs need network and can take minutes |
 | `db_build` | `name` (string, required), `fasta` (string, required — a LOCAL filesystem path), `tsv` (string), `dbtype` (string: `nucl` \| `prot`), `description` (string), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line (`db`, `records`, `dbtype`, `destination`) |
 | `db_search` | `term` (string, required), `db` (string), `field` (string: `gene` \| `accession` \| `function` \| `product` \| `any`, default `any`), `exact` (boolean, default `false`), `limit` (integer ≥ 0, default `100`; `0` = unlimited), `datadir` (string) | TSV hit rows with columns `DB`, `GENE`, `ACCESSION`, `FUNCTION`, `PRODUCT`, `LENGTH` |
@@ -57,9 +59,11 @@ Notes:
 
 - File paths resolve relative to the server's working directory; absolute
   paths are safest.
-- The datadir comes from the `GAPIT_DATADIR` environment variable, then
-  `~/.local/share/gapit/db` (see `./databases.md`). The db tools also accept
-  an explicit `datadir` argument per call.
+- The datadir comes from `--datadir` (where available), then `$GAPIT_DATADIR`, then
+  `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db` (see `./datadir.md`). The db tools also accept
+  an explicit `datadir` argument per call. `db_list` creates a missing datadir
+  before listing (fresh-install bootstrap); `db_search`/`db_outdated` require
+  it and return the typed `DATADIR_NOT_FOUND` envelope.
 - `csv` output is CLI-only: MCP `screen` offers `json`/`tsv`/`md` and
   `screen_reads` offers `json`/`md` (reads mode rejects tabular output).
 - `db_build`'s `fasta` must be a path on the server's filesystem — the agent

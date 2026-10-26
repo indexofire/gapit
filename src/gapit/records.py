@@ -14,6 +14,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
+from gapit.db_txn import TXN_PREFIX
 from gapit.errors import InputError
 from gapit.formats.json import ToolDocument
 
@@ -163,7 +164,9 @@ def installed_db_dirs(root: Path) -> list[Path]:
         (
             child
             for child in root.iterdir()
-            if child.is_dir() and (child / "gapit-manifest.json").is_file()
+            if not child.name.startswith(TXN_PREFIX)
+            and child.is_dir()
+            and (child / "gapit-manifest.json").is_file()
         ),
         key=lambda child: child.name,
     )

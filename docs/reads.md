@@ -136,7 +136,7 @@ to the wildcard path only.
 | `--min-identity` | float | `0.0` (off) | Minimum %identity per alignment (0–100); any nonzero value turns on [gapit.reads/2](#filtering-alignments-by-identity-and-mapq-gapitreads2) filtering. |
 | `--min-mapq` | int | `0` (off) | Minimum MAPQ per alignment; any nonzero value turns on gapit.reads/2 filtering. |
 | `--db` | str | required | Database to screen against (datadir subdir). No default — pick one explicitly (`gapit db list`). |
-| `--datadir` | path | `$GAPIT_DATADIR`, then `~/.local/share/gapit/db` | Database directory. |
+| `--datadir` | path | `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db` | Database directory. |
 | `--threads` | int | `1` | minimap2 worker threads. |
 | `--jobs` | int | `1` | Wildcard path only: screen N samples concurrently (`--r1`/`--r2` rejects it). Output order is always sample order. |
 | `--quiet` | flag | off | Silence stderr diagnostics (including the assembly-FASTA note). |

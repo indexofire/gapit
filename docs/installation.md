@@ -56,8 +56,8 @@ $ gapit --version --json
 ## Optional gseek engine
 
 On Python >= 3.12, `pip install "gapit[gseek]"` enables
-`GAPIT_ENGINE=gseek|shadow`; the pixi `default` and `py312` environments include
-gseek. The `py312` environment is the 3.12 baseline. See [gseek engine](gseek-engine.md).
+`GAPIT_ENGINE=gseek|shadow`; the pixi `default` environment (which enables the `py312` feature) includes
+gseek; `py312` is the 3.12 baseline feature, not a separate environment. See [gseek engine](gseek-engine.md).
 
 ## External binaries
 
@@ -69,14 +69,21 @@ normalization (plain/gz/bz2 FASTA, FASTQ, GenBank, EMBL) is native — no `any2f
 ## Database bootstrap
 
 Screening needs at least one database in the datadir (`$GAPIT_DATADIR`, then
-`~/.local/share/gapit/db`; override per call with `--datadir`). Seven audited,
-permissively licensed databases ship inside the wheel and need no network: the first
-screen against a bundled name materializes it automatically, and `gapit setupdb`
+`~/.local/share/gapit/db`; override per call with `--datadir`). On a fresh install,
+`gapit db path` shows the effective location, `gapit db list` works before any database
+exists (it bootstraps the datadir and lists the catalog), and `gapit setupdb` creates the
+datadir and materializes the bundled databases.
+Seven audited, permissively licensed databases ship inside the wheel and need no network:
+the first screen against a bundled name materializes it automatically, and `gapit setupdb`
 materializes all seven at once. Every other provider downloads from upstream when fetched
 (network required), because several
 upstream licenses — CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0 — forbid
 redistribution inside an MIT-licensed package. See [Databases](./databases.md) for the
 full database table and the [bundled section](./databases.md#bundled-databases-install-time-ready).
+
+To keep databases inside an activated conda environment instead of your home directory,
+set `GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"` (the home default survives environment
+rebuilds and is shared by every env).
 
 ```bash
 gapit db fetch all         # installs the default set (card, vfdb) into the default datadir

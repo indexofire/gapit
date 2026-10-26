@@ -293,6 +293,36 @@ def test_db_build_missing_fasta_is_input_error(tmp_path: Path) -> None:
 # ------------------------------------------------------------------ list --
 
 
+def test_db_list_honors_an_explicit_datadir(tmp_path: Path) -> None:
+    """Given an explicit datadir argument, When db_list runs, Then it creates
+    and lists that path (not the ambient GAPIT_DATADIR)."""
+    explicit = tmp_path / "explicit" / "db"
+
+    is_error, text = call_tool("db_list", {"datadir": str(explicit)})
+
+    assert is_error is False
+    assert explicit.is_dir()
+    assert json.loads(text)["schema"] == "gapit.dblist/1"
+
+
+def test_db_list_bootstraps_a_missing_datadir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a fresh GAPIT_DATADIR that does not exist, When db_list runs,
+    Then the MCP tool creates it and returns the catalog instead of a
+    DATADIR_NOT_FOUND error envelope."""
+    missing = tmp_path / "fresh" / "machine" / "db"
+    monkeypatch.setenv("GAPIT_DATADIR", str(missing))
+
+    is_error, text = call_tool("db_list", {})
+
+    assert is_error is False
+    assert missing.is_dir()
+    document = json.loads(text)
+    assert document["schema"] == "gapit.dblist/1"
+    assert any(entry["name"] == "ecoh" for entry in document["providers"])
+
+
 def test_db_list_surfaces_locally_built_databases(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
