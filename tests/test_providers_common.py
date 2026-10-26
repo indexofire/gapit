@@ -10,6 +10,7 @@ public API: basedpyright strict (reportPrivateUsage) blocks tests from
 importing underscore members, the Wave A3 lesson."""
 
 import urllib.request
+import zipfile
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Literal, Self
@@ -374,3 +375,38 @@ def test_download_file_rejects_an_oversized_body(
     assert excinfo.value.code == "DOWNLOAD_TOO_LARGE"
     assert not dest.exists()
     assert not (tmp_path / ".body.bin.part").exists()
+
+
+def test_safe_extractall_rejects_parent_escape(tmp_path: Path) -> None:
+    """Given a ZIP member that escapes the destination, When extracted, Then
+    ARCHIVE_INVALID fires before any file is written."""
+    from gapit.providers.common import safe_extractall
+
+    archive_path = tmp_path / "bad.zip"
+    with zipfile.ZipFile(archive_path, "w") as archive:
+        archive.writestr("../escape.txt", "x")
+    destination = tmp_path / "out"
+
+    with zipfile.ZipFile(archive_path) as archive, pytest.raises(DatabaseError) as excinfo:
+        safe_extractall(archive, destination)
+
+    assert excinfo.value.code == "ARCHIVE_INVALID"
+    assert not (tmp_path / "escape.txt").exists()
+
+
+def test_safe_extractall_rejects_expanded_size(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given an archive whose advertised uncompressed size exceeds the cap,
+    When extracted, Then ARCHIVE_TOO_LARGE fires before extraction."""
+    from gapit.providers import common
+
+    monkeypatch.setattr(common, "_MAX_EXTRACTED_BYTES", 1)
+    archive_path = tmp_path / "big.zip"
+    with zipfile.ZipFile(archive_path, "w") as archive:
+        archive.writestr("file.txt", "payload")
+
+    with zipfile.ZipFile(archive_path) as archive, pytest.raises(DatabaseError) as excinfo:
+        common.safe_extractall(archive, tmp_path / "out")
+
+    assert excinfo.value.code == "ARCHIVE_TOO_LARGE"

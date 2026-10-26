@@ -23,7 +23,7 @@ from gapit.bundled import find_bundled
 from gapit.cli import app
 from gapit.fasta import iter_fasta
 
-TYPING_ASSET = Path(gapit.__file__).resolve().parent / "data" / "typing" / "vp_ok.json"
+TYPING_ASSET = Path(gapit.__file__).resolve().parent / "data" / "dbs" / "vp_ok" / "typing.json"
 VP_OK_LOCI = 195
 
 runner = CliRunner()

@@ -1,4 +1,9 @@
-# PLAN.md — gapit development roadmap
+# PLAN.md — gapit development roadmap (historical)
+
+> **Historical record.** The phase notes below cover the 0.2–0.5 era and may mention
+> retired tooling (typer, any2fasta, Python 3.11/3.13/3.14). Current toolchain and
+> contracts live in AGENTS.md/SPEC.md and `docs/datadir.md`; this file is kept for
+> project history rather than as a current setup guide.
 
 > Phase-gated. Each phase ends green on `pixi run lint && pixi run typecheck && pixi run test`.
 > Behavior targets come from `SPEC.md`; engineering rules from `AGENTS.md`.

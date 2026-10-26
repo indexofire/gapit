@@ -7,7 +7,7 @@
 - 判定输出文档（`gapit.typing_result/1`）见 [输出](./outputs.md)。
 - 分型文档的 JSON Schema 用 `gapit schema typing` 打印。
 
-## 两阶段判定工作流
+## 两阶段判定工作流 {#two-stage-workflow}
 
 基因类判定是两阶段流水线（权利方设计）：**`gapit screen` 检测基因，`gapit typing`
 从结果中获得型别。**

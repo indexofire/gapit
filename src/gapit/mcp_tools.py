@@ -106,8 +106,8 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     minid = _number(arguments, "minid", 80.0)
     mincov = _number(arguments, "mincov", 80.0)
     output_format = _string(arguments, "format", "json")
-    if output_format not in ("json", "tsv", "md"):
-        usage_fail(f"format must be one of json, tsv, md: got {output_format}")
+    if output_format not in ("json", "tsv", "csv", "md"):
+        usage_fail(f"format must be one of json, tsv, csv, md: got {output_format}")
     aligner_name = _string(arguments, "aligner", "blastn")
     try:
         aligner = AlignerEnum(aligner_name)
@@ -191,8 +191,8 @@ def _tool_screen_reads(arguments: dict[str, Any]) -> str:
     except ValueError:
         usage_fail(f"read_type must be one of {', '.join(t.value for t in ReadTypeEnum)}")
     output_format = _string(arguments, "format", "json")
-    if output_format not in ("json", "md"):
-        usage_fail(f"format must be one of json, md: got {output_format}")
+    if output_format not in ("json", "tsv", "csv", "md"):
+        usage_fail(f"format must be one of json, tsv, csv, md: got {output_format}")
     min_breadth = _number(arguments, "min_breadth", 90.0)
     if not 0.0 <= min_breadth <= 100.0:
         usage_fail(f"min_breadth must be in [0, 100]: got {min_breadth}")
@@ -254,6 +254,9 @@ def _tool_db_build(arguments: dict[str, Any]) -> str:
     dbtype = _optional_string(arguments, "dbtype")
     if dbtype is not None and dbtype not in ("nucl", "prot"):
         usage_fail(f"dbtype must be nucl or prot: got {dbtype}")
+    kind = _optional_string(arguments, "kind")
+    if kind is not None and kind not in ("gene", "cluster"):
+        usage_fail(f"kind must be gene or cluster: got {kind}")
     receipt = perform_build(
         _required_string(arguments, "name"),
         Path(_required_string(arguments, "fasta")),
@@ -263,6 +266,9 @@ def _tool_db_build(arguments: dict[str, Any]) -> str:
         _optional_path(arguments, "datadir"),
         _flag(arguments, "force"),
         warn=lambda message: None,
+        kind=kind,
+        typing=_optional_path(arguments, "typing"),
+        floors=_optional_path(arguments, "floors"),
     )
     return receipt.model_dump_json(exclude_none=True)
 

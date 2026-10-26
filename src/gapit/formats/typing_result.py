@@ -18,6 +18,7 @@ from typing import Literal, NamedTuple
 from pydantic import BaseModel, ConfigDict, Field
 
 from gapit import __version__
+from gapit.formats.csvutil import delimited_line
 from gapit.formats.json import ToolDocument, utc_timestamp
 from gapit.formats.md import md_cell, yaml_scalar
 from gapit.typing_results import PhenotypeScore, SchemeCall
@@ -93,14 +94,14 @@ def typing_row(result: TypingFileResult, scheme: str, call: SchemeCall) -> tuple
 
 def typing_tsv_preamble() -> str:
     """The header chunk of the typing TSV."""
-    return "\t".join(COLUMNS) + "\n"
+    return delimited_line(COLUMNS, as_csv=False)
 
 
 def typing_file_chunk(result: TypingFileResult) -> str:
     """One FILE's chunk: a row per scheme in declaration order — the
     streaming unit the use-case emits per typed file."""
     return "".join(
-        "\t".join(typing_row(result, scheme, call)) + "\n"
+        delimited_line(typing_row(result, scheme, call), as_csv=False)
         for scheme, call in result.phenotypes.items()
     )
 

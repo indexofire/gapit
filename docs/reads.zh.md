@@ -35,7 +35,7 @@ gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map
 $ gapit screen -d ecoli_dec *.gz
 ```
 
-当**每个**位置参数文件都是 FASTQ —— 扩展名是 `.fastq`/`.fq`（可带 `.gz`），或扩展名
+当**每个**位置参数文件都是 FASTQ —— 扩展名是 `.fastq`/`.fq`（可带 `.gz`/`.gzip`），或扩展名
 含糊时内容嗅探为 FASTQ —— 命令即无需 `--r1`/`--r2` 进入 reads 模式。文件按文件名
 （大小写不敏感地剥掉 reads 扩展名之后）分组为样本：
 
@@ -67,7 +67,7 @@ $ gapit screen -d ecoli_dec *.gz
   `--nopath`、`--merge-fragments`；而 `--min-identity`/`--min-mapq` 可用（在这里它们
   就是 reads 模式参数，不再是错误）。`--jobs` 只在这条通配符路径上合法
   （`--r1`/`--r2` 单样本调用拒绝它）——见下文
-  [并行与流式输出](#并行与流式输出通配符批量)。
+  [并行与流式输出](#parallel-wildcard)。
 - `--read-type` 与 `--r1`/`--r2` 路径完全同规则解析：内容检测为 FASTQ 选 `sr`，除非
   你显式指定预设。
 - FASTA 与 FASTQ 位置参数混用是用法错误（退出码 2），错误信息点名 reads 文件：
@@ -77,7 +77,7 @@ $ gapit screen -d ecoli_dec *.gz
 - bzip2 压缩的 FASTQ 文件名不按扩展名分类（reads 引擎只读明文与 gzip）；这类文件
   保持今天走的 contig 流水线。
 
-### 并行与流式输出（通配符批量）
+### 并行与流式输出（通配符批量） {#parallel-wildcard}
 
 `--jobs N`/`-j N` 并发筛查 N 个样本，契约与 contig 路径完全一致：每个 worker 对
 共享数据库跑自己的 minimap2，`--jobs × --threads` 超过 cpu 数时 stderr 提示一行超
@@ -339,7 +339,7 @@ genes_found: 1
 | geneA | 100.00 | 14.98 | 15 | yes | homologs | SYN-A | true allele carried by the sample | TETRACYCLINE | 98.04 |
 ```
 
-## 按基因设置一致性下限（gapit.floors/1，数据库侧）
+## 按基因设置一致性下限（gapit.floors/1，数据库侧） {#gene-floors}
 
 `--min-identity` 是每次运行时由调用方做的决定。有时这个决定应该属于数据库本身：
 一张精选面板知道自己的哪些基因身处同源家族之中、真等位基因必须达到多少一致性。
@@ -366,7 +366,7 @@ schema 为 `gapit.floors/1`（用 `gapit schema floors` 内省）：
   （`genes` 中的每个基因必须存在于 FASTA、取值在 [0, 100] 内），再原样拷入数据库
   目录成为 `floors.json`。把 floors.json 直接放进既有数据库目录同样有效；筛查时
   读取。详见
-  [databases.zh.md](./databases.zh.md#floorsjson--按基因设置一致性下限)。
+  [databases.zh.md](./databases.zh.md#floorsjson)。
 
 ### 实战示例：`pic` 的 SPATE 假阳性（内置 `ecoli_dec`）
 
@@ -714,7 +714,7 @@ kpneu_mgh78578.fna.gz	NC_016838.1	108291	108766	-	dfrA50	2-477/477	=============
   `tmexD2`/`tmexD3` 对（56-60%）过了放宽的 50% 普查下限，但它们是部分或分歧位点，
   确认阶段的 80/80 一致性/覆盖度阈值会拒绝。放宽普查下限是刻意用精度换召回；精确
   过滤属于第二阶段——唯一的例外是数据库带有
-  [按基因下限](#按基因设置一致性下限gapitfloors1数据库侧) 的基因，普查同样尊重它。
+  [按基因下限](#gene-floors) 的基因，普查同样尊重它。
 
 需要一次拿到精确等位基因时，直接用 contig 流水线；需要快速从大量 assembly 得到基
 因家族层面的答案时，用普查。

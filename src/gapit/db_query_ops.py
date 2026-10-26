@@ -20,6 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gapit import config
 from gapit.errors import DatabaseError, InputError, UsageError
+from gapit.formats.csvutil import tsv_cell
 from gapit.proctools import note
 from gapit.records import Record, installed_db_dirs, read_manifest, read_records
 
@@ -75,8 +76,9 @@ def _matches(record: Record, needle: str, field: SearchField, exact: bool) -> bo
 def search_tsv_row(record: Record) -> str:
     """The hit row: DB\tGENE\tACCESSION\tFUNCTION\tPRODUCT\tLENGTH."""
     return (
-        f"{record.db}\t{record.gene}\t{record.accession}\t"
-        f"{';'.join(record.function)}\t{record.product}\t{len(record.sequence)}"
+        f"{tsv_cell(record.db)}\t{tsv_cell(record.gene)}\t{tsv_cell(record.accession)}\t"
+        f"{tsv_cell(';'.join(record.function))}\t{tsv_cell(record.product)}"
+        f"\t{len(record.sequence)}"
     )
 
 
@@ -223,6 +225,7 @@ def outdated_tsv_lines(entries: Iterable[DbOutdatedEntry]) -> list[str]:
     """The NAME/FETCHED_AT/AGE_DAYS/STATUS table lines (CLI stdout = MCP text)."""
     lines = ["NAME\tFETCHED_AT\tAGE_DAYS\tSTATUS"]
     lines.extend(
-        f"{entry.db}\t{entry.fetched_at}\t{entry.age_days:.2f}\t{entry.status}" for entry in entries
+        f"{tsv_cell(entry.db)}\t{tsv_cell(entry.fetched_at)}\t{entry.age_days:.2f}\t{entry.status}"
+        for entry in entries
     )
     return lines

@@ -129,6 +129,12 @@ def perform_build(
             code="USAGE_ERROR",
             context={"name": name},
         )
+    if any(control in name for control in "\t\r\n"):
+        raise UsageError(
+            f"database name must not contain tabs or line breaks: {name!r}",
+            code="USAGE_ERROR",
+            context={"name": name},
+        )
     if not fasta.is_file():
         raise InputError(
             f"FASTA file not found or unreadable: {fasta}",

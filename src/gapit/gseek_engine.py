@@ -175,7 +175,7 @@ def _blast_row(record: _GseekRecord, *, protein: bool = False) -> BlastRow:
     )
 
 
-_INDEX_POLICY: dict[Path, str] = {}
+_INDEX_POLICY: dict[tuple[Path, int, int], str] = {}
 _MINIMAP2_NAME_LIMIT = 255
 
 
@@ -188,12 +188,15 @@ def _minimap2_index_policy(database: Database) -> str:
     changes the reported gene even though the alignment is identical.
     """
     path = database.sequences_path
-    cached = _INDEX_POLICY.get(path)
+    try:
+        stat = path.stat()
+    except OSError:
+        return "auto"
+    cache_key = (path, stat.st_mtime_ns, stat.st_size)
+    cached = _INDEX_POLICY.get(cache_key)
     if cached is not None:
         return cached
     policy = "auto"
-    if not path.is_file():
-        return policy
     with path.open(encoding="utf-8") as handle:
         for line in handle:
             if line.startswith(">"):
@@ -201,7 +204,7 @@ def _minimap2_index_policy(database: Database) -> str:
                 if len(name) > _MINIMAP2_NAME_LIMIT:
                     policy = "none"
                     break
-    _INDEX_POLICY[path] = policy
+    _INDEX_POLICY[cache_key] = policy
     return policy
 
 
@@ -268,6 +271,8 @@ def run_blast_gseek(
         query_path = Path(tmp) / "query.fasta"
         query_path.write_text(fasta_text, encoding="utf-8")
         gseek = _gseek()
+        from gseek.errors import ToolNotFoundError
+
         try:
             result = gseek.align(
                 backend="blast",
@@ -279,6 +284,13 @@ def run_blast_gseek(
                 index="auto",
                 record_manifest=False,
             )
+        except ToolNotFoundError as exc:
+            binary = "blastx" if dbtype == "prot" else "blastn"
+            raise DependencyError(
+                f"required binary not found on PATH: {binary}",
+                code="MISSING_DEPENDENCY",
+                context={"binary": binary, "backend": "blast"},
+            ) from exc
         except Exception as exc:
             raise GapitError(
                 f"gseek BLAST failed: {exc}",
@@ -303,6 +315,8 @@ def iter_paf_gseek(
     invocation keeps minimap2's default secondary output and filters later.
     """
     gseek = _gseek()
+    from gseek.errors import ToolNotFoundError
+
     for r1, r2 in lanes:
         query = (r1,) if r2 is None else (r1, r2)
         gseek_params: dict[str, object] = {
@@ -328,6 +342,12 @@ def iter_paf_gseek(
                 index=_minimap2_index_policy(database),
                 record_manifest=False,
             )
+        except ToolNotFoundError as exc:
+            raise DependencyError(
+                "required binary not found on PATH: minimap2",
+                code="MISSING_DEPENDENCY",
+                context={"binary": "minimap2", "backend": "minimap2"},
+            ) from exc
         except Exception as exc:
             raise GapitError(
                 f"gseek minimap2 failed: {exc}",

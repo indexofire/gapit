@@ -140,10 +140,18 @@ def test_screen_reads_md_format_renders_markdown(reads_datadir: Path) -> None:
     assert "schema: gapit.reads/1" in text
 
 
-def test_screen_reads_rejects_tsv_format(reads_datadir: Path) -> None:
-    """Given screen_reads with format tsv (CLI-only), When served, Then
-    isError with the USAGE_ERROR envelope."""
+def test_screen_reads_accepts_tsv_format(reads_datadir: Path) -> None:
+    """Given screen_reads with format tsv, When served, Then the reads table
+    is returned (MCP now mirrors the CLI format set)."""
     is_error, text = call_tool("screen_reads", reads_args(reads_datadir, format="tsv"))
+    assert is_error is False
+    assert text.startswith("#SAMPLE\tGENE\t")
+
+
+def test_screen_reads_rejects_unknown_format(reads_datadir: Path) -> None:
+    """Given screen_reads with an unknown format, When served, Then
+    isError with the USAGE_ERROR envelope."""
+    is_error, text = call_tool("screen_reads", reads_args(reads_datadir, format="yaml"))
     assert is_error is True
     assert envelope_code(text) == "USAGE_ERROR"
 

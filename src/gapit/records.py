@@ -64,7 +64,15 @@ def read_records(path: Path) -> Iterator[Record]:
 
 
 def _iter_records(path: Path) -> Iterator[Record]:
-    with path.open(encoding="utf-8") as handle:
+    try:
+        handle = path.open(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise InputError(
+            f"records file not found or unreadable: {path}",
+            code="INPUT_NOT_FOUND",
+            context={"file": str(path)},
+        ) from exc
+    with handle:
         for line_number, line in enumerate(handle, start=1):
             if not line.strip():
                 continue
@@ -150,6 +158,12 @@ def read_manifest(path: Path) -> Manifest:
         )
     try:
         return Manifest.model_validate_json(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError) as exc:
+        raise InputError(
+            f"manifest file not found or unreadable: {path}",
+            code="INPUT_NOT_FOUND",
+            context={"file": str(path)},
+        ) from exc
     except ValidationError as exc:
         raise InputError(
             f"malformed manifest {path}: {_reason(exc)}",

@@ -33,6 +33,8 @@ def _record(**overrides: object) -> Record:
         ("accession", "A\t1"),
         ("db", "d\tb"),
         ("function", ("class\tone",)),
+        ("product", "p\tq"),
+        ("product", "p\nq"),
     ],
 )
 def test_validate_records_rejects_control_characters(field: str, value: object) -> None:

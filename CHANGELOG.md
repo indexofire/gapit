@@ -22,6 +22,45 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Hidden staging/backup/lock entries are ignored by database discovery. New datadirs and
   staging directories are private (`0700`). Readers see the old database for the whole
   build, then the new one after the swap (a short rename window remains).
+- **CLI flag routing.** `--all-genes` is now forwarded to the minimap2 assembly
+  path, and reads-only flags (`--read-type`, `--min-breadth`, `--all-genes`) are
+  usage errors on blastn/cluster modes instead of being silently ignored.
+- **Fragment merging is record-aware.** The merge key now includes database,
+  accession, and subject length; zero aligned lengths no longer divide by zero.
+- **Cluster build rejects duplicate IDs.** Duplicate locus IDs and duplicate
+  gene IDs within a locus fail `BUILD_INVALID` before any artifact is written.
+- **Typing configuration is table-safe and compose-safe.** Compose schemes need
+  at least one placeholder; phenotype/fallback/notes reject tab/CR/LF; malformed
+  documents fail as `TYPING_MALFORMED` instead of crashing at screen time.
+- **Table output is delimiter-safe.** TSV cells neutralize embedded tab/CR/LF
+  (screen, reads, cluster, summary, typing, db list/search/outdated); product
+  tabs and cluster DB names are rejected at build time.
+- **Gene/cluster builds no longer require minimap2.** Its manifest version is
+  optional; `makeblastdb_version` now records the actual makeblastdb version.
+  BLAST indexes build under a temporary prefix and replace the old index only on
+  success.
+- **gseek parity fixes.** Missing gseek binaries map back to
+  `MISSING_DEPENDENCY`/exit 3, and the minimap2 index policy cache invalidates
+  when the target content changes.
+- **Reads suffix consistency.** `.fastq.gzip`/`.fq.gzip` now pair correctly.
+- **cluster/2 column collisions.** Schemes such as `o_group` and `o` fall back
+  to full evidence prefixes, keeping every column unique.
+- **Summary params completeness.** `gapit.summary/1` records `metrics`, so `-ic`
+  can be reproduced from the JSON document.
+- **Schema accuracy.** The never-serialized `PhenotypeDetail.winner` is omitted
+  from the public cluster schema.
+- **Read/metadata errors are typed.** OSError/UnicodeDecodeError in manifests,
+  records, floors, features, bundled metadata, fofn, summary/typing tables is
+  wrapped as the documented input/database error.
+- **Archive safety.** ZIP extraction rejects escaping members and caps expanded
+  size; plain-HTTP provider warnings survive `--quiet`.
+- **MCP parity.** Protocol version negotiation, CSV formats, and
+  `db_build` `kind`/`typing`/`floors` now match the CLI.
+- **Release safety.** The release workflow now runs the full gates, `twine check`,
+  and a wheel install smoke test before publishing.
+- **Documentation:** new `docs/datadir.md` (+zh), complete database catalog rows,
+  fixed anchors/links, historical `PLAN.md`, synced AGENTS tree, and new
+  `CONTRIBUTING.md`/`SECURITY.md`/`CITATION.cff`.
 
 ### Added
 

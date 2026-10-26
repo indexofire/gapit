@@ -58,3 +58,13 @@ def test_schema_unknown_name_exits_2_with_usage_envelope() -> None:
     last_line = [line for line in result.stderr.splitlines() if line.strip()][-1]
     payload = json.loads(last_line)
     assert payload["code"] == "USAGE_ERROR"
+
+
+def test_schema_cluster_omits_internal_winner_field() -> None:
+    """The in-memory PhenotypeDetail.winner is never serialized, so it must
+    not be advertised by the public cluster schema."""
+    result = runner.invoke(app, ["schema", "cluster"])
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    detail = payload["$defs"]["PhenotypeDetail"]
+    assert "winner" not in detail["properties"]

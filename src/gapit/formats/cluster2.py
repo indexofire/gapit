@@ -24,6 +24,7 @@ databases keep byte-identical gapit.cluster/1 (formats/cluster.py).
 Registered in the schema registry as ``cluster2``.
 """
 
+from collections import Counter
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import PurePath
@@ -123,17 +124,26 @@ def _scheme_column(name: str) -> str:
     return name.upper().replace("-", "_")
 
 
-def _evidence_prefix(name: str) -> str:
-    """The evidence-column prefix: the column token minus a trailing
-    ``_GROUP`` (``o_group`` → ``O`` — the call column keeps the full
-    ``O_GROUP`` token, its evidence columns stay short); names without
-    the suffix keep their full token."""
+def _short_evidence_prefix(name: str) -> str:
+    """The preferred evidence prefix: the token minus a trailing ``_GROUP``."""
     token = _scheme_column(name)
     return (
         token[: -len(_GROUP_SUFFIX)]
         if token.endswith(_GROUP_SUFFIX) and len(token) > len(_GROUP_SUFFIX)
         else token
     )
+
+
+def _evidence_prefix(name: str, *, colliding: frozenset[str] = frozenset()) -> str:
+    """The evidence-column prefix, disambiguated when short tokens collide.
+
+    Two schemes such as ``o_group`` and ``o`` both prefer ``O``; in that case
+    both keep their full token (``O_GROUP`` / ``O``) so every column stays
+    unique. The common non-colliding case keeps the familiar short form.
+    """
+    token = _scheme_column(name)
+    short = _short_evidence_prefix(name)
+    return token if short in colliding else short
 
 
 def cluster2_columns(document: TypingDocument) -> tuple[str, ...]:
@@ -144,9 +154,12 @@ def cluster2_columns(document: TypingDocument) -> tuple[str, ...]:
     columns.extend(
         _scheme_column(scheme.name) for scheme in document.schemes if scheme.compose is not None
     )
+    non_compose = [scheme.name for scheme in document.schemes if scheme.compose is None]
+    short_counts = Counter(_short_evidence_prefix(name) for name in non_compose)
+    colliding = frozenset(short for short, count in short_counts.items() if count > 1)
     for scheme in document.schemes:
         if scheme.compose is None:
-            prefix = _evidence_prefix(scheme.name)
+            prefix = _evidence_prefix(scheme.name, colliding=colliding)
             columns.append(_scheme_column(scheme.name))
             columns.extend(f"{prefix}_{suffix}" for suffix in _EVIDENCE_COLUMNS)
     return tuple(columns)

@@ -230,7 +230,7 @@ table.tsv`。
 性弧菌血清型参考——`OAgc.gbk`（32 个 O 抗原基因簇位点）和 `CPSgc.gbk`（163 个荚膜多
 糖位点）——合并为一个 `kind: cluster` 数据库。它是 `ecoli_dec`/`lm_doumith` 模式的
 纯内置数据库：没有提供商、没有 source URL、没有 `gapit db fetch vp_ok`。自带的
-三 scheme typing 资产（`src/gapit/data/typing/vp_ok.json`，由
+三 scheme typing 资产（`src/gapit/data/dbs/vp_ok/typing.json`，由
 `scripts/generate_vp_typing.py` 可复现生成）随之一并安装，筛查随之渲染
 `gapit.cluster/2`，按文件给出 `o_group`、`k_group` 与组合出的
 `serotype` `"{o_group}:{k_group}"`（回退 OUT/KUT）——一次扫描即得 O:K 血清型：
@@ -553,11 +553,11 @@ manifest，来自 plasmidfinder 数据库：
 `records.jsonl` 和 manifest 是文件契约。它们从不出现在 stdout，也未注册到
 `gapit schema`。
 
-### floors.json — 按基因设置一致性下限
+### floors.json — 按基因设置一致性下限 {#floorsjson}
 
 一个可选边车，为 reads 模式的存在判定声明逐基因的最小比对一致性（%）（schema 为
 `gapit.floors/1`，用 `gapit schema floors` 内省；筛查语义与 `pic` 实战示例见
-[reads.zh.md](./reads.zh.md#按基因设置一致性下限gapitfloors1数据库侧)）：
+[reads.zh.md](./reads.zh.md#gene-floors)）：
 
 ```json
 {"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
@@ -673,7 +673,7 @@ syn_betalac	SYN-0001	ampicillin;cephalosporin
 
 `--floors FILE` 把一份 `gapit.floors/1` 文档安装为数据库的 `floors.json` 边车——
 reads 模式存在判定的逐基因最小比对一致性（见
-[reads.zh.md](./reads.zh.md#按基因设置一致性下限gapitfloors1数据库侧)）。文档在
+[reads.zh.md](./reads.zh.md#gene-floors)）。文档在
 任何产物落盘前先校验：`genes` 里的每个基因必须存在于 FASTA
 （`FLOORS_UNKNOWN_GENE`，exit 4——给缺失基因设下限是静默失效的安全配置），取值必
 须在 [0, 100] 内、结构必须可解析（`FLOORS_MALFORMED`，exit 4）。随后文件原样拷入；
@@ -811,7 +811,7 @@ gapit: BLAST index built (nucl)
 数据库的筛查输出与 untyped 完全相同（纯基因检测）；其判定来自两阶段流水线 ——
 `gapit screen -o result.tsv` 写出结果表，`gapit typing result.tsv` 按 scheme 渲染
 判定，输出 `gapit.typing_result/1`
-（见[分型方案](./typing.zh.md#两阶段判定工作流)）。
+（见[分型方案](./typing.zh.md#two-stage-workflow)）。
 
 typing/2 第二阶段新增六个规则/scheme 原语（全部可选、纯附加；完整定义见
 `gapit schema typing`）：`exact_set` 规则（Doumith/志贺氏菌式标记表 —— 所有

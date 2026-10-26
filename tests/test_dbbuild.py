@@ -13,6 +13,7 @@ from gapit.dbbuild import (
     build_database,
     drop_exact_duplicates,
     generate_sequences,
+    optional_tool_version_line,
     verify_sequences,
 )
 from gapit.errors import DatabaseError
@@ -96,7 +97,7 @@ def test_generate_sequences_failure_leaves_no_partial_file(tmp_path: Path) -> No
     error = excinfo.value
     assert error.code == "BUILD_INVALID"
     assert error.exit_code == 4
-    assert error.context == {"gene": "badGene"}
+    assert error.context == {"gene": "badGene", "field": "product"}
     assert [entry.name for entry in db_dir.iterdir()] == ["records.jsonl"]
 
 
@@ -311,3 +312,9 @@ def test_manifest_written_last_when_blast_index_fails(
     assert (db_dir / "sequences").is_file()
     assert not (db_dir / "sequences.nin").exists()
     assert not (db_dir / "gapit-manifest.json").exists()
+
+
+def test_optional_tool_version_line_tolerates_missing_binary() -> None:
+    """Given a binary that is not on PATH, When optional version capture runs,
+    Then it returns "" instead of making a gene build fail."""
+    assert optional_tool_version_line(["definitely-not-a-gapit-tool"]) == ""

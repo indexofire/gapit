@@ -27,7 +27,7 @@ from tempfile import TemporaryDirectory
 
 from gapit.errors import DatabaseError
 from gapit.fasta import iter_fasta
-from gapit.providers.common import Provider
+from gapit.providers.common import Provider, safe_extractall
 from gapit.records import Record
 
 NAME = "resfinder"
@@ -91,7 +91,7 @@ def transform(workdir: Path) -> Iterator[Record]:
     ):
         extract_dir = Path(extract_name)
         with zipfile.ZipFile(workdir / ARCHIVE) as archive:
-            archive.extractall(extract_dir)
+            safe_extractall(archive, extract_dir)
         classes = _read_classes(extract_dir)
         for index, fsa in enumerate(sorted(extract_dir.glob("**/*.fsa"))):
             repaired = _INLINE_HEADER.sub(r"\1\n>", fsa.read_text(encoding="utf-8"))

@@ -37,13 +37,13 @@ shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0�
 
 | 工具 | 参数 | 返回 |
 |---|---|---|
-| `screen` | `files`（字符串数组，必填）、`db`（string，必填 —— 无默认值）、`minid`（number）、`mincov`（number）、`format`（string：`json` \| `tsv` \| `md`，默认 `json`）、`aligner`（string：`blastn` \| `minimap2`，默认 `blastn`）、`mergeFragments`（boolean，默认 `false`；仅 blastn：跨 contig 片段合并）、`min_breadth`（number 0-100，默认 `90`；仅 minimap2）、`min_identity`（number 0-100，默认 `0`；仅 minimap2）、`min_mapq`（integer ≥ 0，默认 `0`；仅 minimap2）、`minGeneCov`（number 0-100，默认 `90`；仅 cluster 数据库）、`minGeneId`（number 0-100，默认 `90`；仅 cluster 数据库）、`minClusterCov`（number 0-100，默认 `96`；仅 cluster 数据库）、`datadir`（string） | 报告文本：默认 `gapit.report/1` JSON，按 `format` 也可为 TSV 或 Markdown；`aligner minimap2` 跑 reads 引擎并输出 `gapit.reads/1`。cluster 类型的 `db` 输出 `gapit.cluster/1`：最佳位点判定、逐基因判定，数据库携带单 scheme `typing.json` 时还有带 `phenotype_detail` 分数分解的表型判定；多 scheme `typing.json` 则输出 `gapit.cluster/2`，携带每个 scheme 判定的 `phenotypes` 映射 |
-| `screen_reads` | `r1`（字符串数组，必填，每条 lane 一个路径）、`r2`（字符串数组，数量与 `r1` 相同）、`read_type`（string：`sr` \| `map-ont` \| `map-hifi`，默认 `sr`）、`min_breadth`（number 0-100，默认 `90`）、`min_identity`（number 0-100，默认 `0`）、`min_mapq`（integer ≥ 0，默认 `0`）、`format`（string：`json` \| `md`，默认 `json`）、`db`（string，必填 —— 无默认值）、`datadir`（string） | 默认 `gapit.reads/1` JSON，按 `format` 可为 Markdown；`min_identity`/`min_mapq` > 0 切换为 `gapit.reads/2` |
+| `screen` | `files`（字符串数组，必填）、`db`（string，必填 —— 无默认值）、`minid`（number）、`mincov`（number）、`format`（string：`json` \| `tsv` \| `csv` \| `md`，默认 `json`）、`aligner`（string：`blastn` \| `minimap2`，默认 `blastn`）、`mergeFragments`（boolean，默认 `false`；仅 blastn：跨 contig 片段合并）、`min_breadth`（number 0-100，默认 `90`；仅 minimap2）、`min_identity`（number 0-100，默认 `0`；仅 minimap2）、`min_mapq`（integer ≥ 0，默认 `0`；仅 minimap2）、`minGeneCov`（number 0-100，默认 `90`；仅 cluster 数据库）、`minGeneId`（number 0-100，默认 `90`；仅 cluster 数据库）、`minClusterCov`（number 0-100，默认 `96`；仅 cluster 数据库）、`datadir`（string） | 报告文本：默认 `gapit.report/1` JSON，按 `format` 也可为 TSV、CSV 或 Markdown；`aligner minimap2` 跑 reads 引擎并输出 `gapit.reads/1`。cluster 类型的 `db` 输出 `gapit.cluster/1`：最佳位点判定、逐基因判定，数据库携带单 scheme `typing.json` 时还有带 `phenotype_detail` 分数分解的表型判定；多 scheme `typing.json` 则输出 `gapit.cluster/2`，携带每个 scheme 判定的 `phenotypes` 映射 |
+| `screen_reads` | `r1`（字符串数组，必填，每条 lane 一个路径）、`r2`（字符串数组，数量与 `r1` 相同）、`read_type`（string：`sr` \| `map-ont` \| `map-hifi`，默认 `sr`）、`min_breadth`（number 0-100，默认 `90`）、`min_identity`（number 0-100，默认 `0`）、`min_mapq`（integer ≥ 0，默认 `0`）、`format`（string：`json` \| `tsv` \| `csv` \| `md`，默认 `json`）、`db`（string，必填 —— 无默认值）、`datadir`（string） | 默认 `gapit.reads/1` JSON，按 `format` 可为 TSV、CSV 或 Markdown；`min_identity`/`min_mapq` > 0 切换为 `gapit.reads/2` |
 | `summary` | `files`（报告表路径数组，必填）、`identity`（boolean）、`nopath`（boolean） | `gapit.summary/1` JSON |
 | `schema` | `name`（string，必填，取值 `cluster`、`error`、`features`、`floors`、`reads`、`reads2`、`report`、`summary`、`typing`、`typing_result`、`version` 之一） | 该输出文档的 JSON Schema |
 | `db_list` | `datadir`（string） | `gapit.dblist/1`：数据库名、安装状态、记录数 |
 | `db_fetch` | `name`（string，必填——数据库名，或 `all` 表示 card+vfdb 默认集合）、`datadir`（string）、`force`（boolean，默认 `false`） | 每个数据库一行 JSON 回执（`db`、`records`、`dbtype`、`destination`）。每个数据库都从其上游提供商下载，安装需要网络且可能耗时数分钟 |
-| `db_build` | `name`（string，必填）、`fasta`（string，必填，本地文件系统路径）、`tsv`（string）、`dbtype`（string：`nucl` \| `prot`）、`description`（string）、`datadir`（string）、`force`（boolean，默认 `false`） | 一行 JSON 回执（`db`、`records`、`dbtype`、`destination`） |
+| `db_build` | `name`（string，必填）、`fasta`（string，必填，本地文件系统路径）、`tsv`（string）、`dbtype`（string：`nucl` \| `prot`）、`description`（string）、`kind`（string：`gene` \| `cluster`）、`typing`（string）、`floors`（string）、`datadir`（string）、`force`（boolean，默认 `false`） | 一行 JSON 回执（`db`、`records`、`dbtype`、`destination`） |
 | `db_search` | `term`（string，必填）、`db`（string）、`field`（string：`gene` \| `accession` \| `function` \| `product` \| `any`，默认 `any`）、`exact`（boolean，默认 `false`）、`limit`（integer ≥ 0，默认 `100`；`0` = 不限）、`datadir`（string） | TSV 命中行，列为 `DB`、`GENE`、`ACCESSION`、`FUNCTION`、`PRODUCT`、`LENGTH` |
 | `db_outdated` | `days`（integer ≥ 0，默认 `90`）、`datadir`（string） | TSV 行，列为 `NAME`、`FETCHED_AT`、`AGE_DAYS`、`STATUS` |
 
@@ -60,8 +60,8 @@ shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0�
   db 工具也接受每次调用显式的 `datadir` 参数。`db_list` 在列出
   前会创建缺失的数据目录（全新安装引导）；`db_search`/`db_outdated` 要求它存在，
   否则返回类型化的 `DATADIR_NOT_FOUND` 信封。
-- `csv` 输出仅限 CLI：MCP `screen` 提供 `json`/`tsv`/`md`，`screen_reads` 提供
-  `json`/`md`（reads 模式拒绝表格式输出）。
+- MCP 的格式集合与 CLI 一致：`screen`/`screen_reads` 都提供 `json`、`tsv`、
+  `csv`、`md`。
 - `db_build` 的 `fasta` 必须是服务器文件系统上的路径：agent 提供本地路径，而非文件
   内容。
 - 工具失败不使用 JSON-RPC 错误，而是返回 `isError: true`，文本内容为序列化的

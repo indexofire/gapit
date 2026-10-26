@@ -119,7 +119,16 @@ def bundled_databases() -> list[BundledDatabase]:
         metadata_path = child / "bundled.json"
         if not (child.is_dir() and (child / "sequences").is_file() and metadata_path.is_file()):
             continue
-        metadata = BundledMetadata.model_validate_json(metadata_path.read_text(encoding="utf-8"))
+        try:
+            metadata = BundledMetadata.model_validate_json(
+                metadata_path.read_text(encoding="utf-8")
+            )
+        except (OSError, UnicodeDecodeError, ValueError) as exc:
+            raise DatabaseError(
+                f"bundled metadata is malformed: {metadata_path}: {exc}",
+                code="BUNDLED_MALFORMED",
+                context={"db": child.name, "file": str(metadata_path)},
+            ) from exc
         if metadata.kind == "cluster" and not (child / "features.json").is_file():
             raise DatabaseError(
                 f"bundled cluster database {metadata.name} lacks features.json",

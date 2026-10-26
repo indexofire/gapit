@@ -251,7 +251,7 @@ O-antigen gene cluster loci) and `CPSgc.gbk` (163 capsular polysaccharide loci) 
 into ONE merged `kind: cluster` database. It is a PURE built-in bundled database in
 the `ecoli_dec`/`lm_doumith` pattern: no provider, no source URLs, no
 `gapit db fetch vp_ok`. The committed three-scheme typing asset
-(`src/gapit/data/typing/vp_ok.json`, generated reproducibly by
+(`src/gapit/data/dbs/vp_ok/typing.json`, generated reproducibly by
 `scripts/generate_vp_typing.py`) installs with it, so screening renders
 `gapit.cluster/2` with per-file phenotypes `o_group`, `k_group`, and the composed
 `serotype` `"{o_group}:{k_group}"` (fallbacks `OUT`/`KUT`) — the O:K serotype from a

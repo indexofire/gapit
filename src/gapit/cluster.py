@@ -119,6 +119,12 @@ def load_features(database: Database) -> FeaturesDocument:
         )
     try:
         return FeaturesDocument.model_validate_json(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError) as exc:
+        raise DatabaseError(
+            f"cluster database {database.name} has an unreadable features.json: {exc}",
+            code="FEATURES_MALFORMED",
+            context={"db": database.name},
+        ) from exc
     except ValidationError as exc:
         raise DatabaseError(
             f"cluster database {database.name} has a malformed features.json: {exc}",

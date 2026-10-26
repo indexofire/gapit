@@ -67,7 +67,7 @@ def _read_table(path: Path) -> str:
         )
     try:
         return path.read_text(encoding="utf-8")
-    except UnicodeDecodeError as exc:
+    except (OSError, UnicodeDecodeError) as exc:
         raise InputError(
             f"screen result is not valid UTF-8: {path}",
             code="SCREEN_TABLE_MALFORMED",

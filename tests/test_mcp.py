@@ -52,19 +52,26 @@ def tool_call(name: str, arguments: dict[str, object], *, id_value: int = 1) -> 
     }
 
 
-def test_initialize_echoes_requested_protocol_version() -> None:
-    """Given initialize with a requested version, When served, Then the
-    response echoes it with gapit serverInfo and tools capabilities."""
-    (response,) = exchange(
+def test_initialize_negotiates_supported_protocol_version() -> None:
+    """Given initialize, When the requested version is supported it is
+    echoed; an unsupported version falls back to gapit's supported version."""
+    supported, unsupported = exchange(
         {
             "jsonrpc": "2.0",
             "id": 1,
             "method": "initialize",
-            "params": {"protocolVersion": "2025-03-26"},
-        }
+            "params": {"protocolVersion": "2025-06-18"},
+        },
+        {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "initialize",
+            "params": {"protocolVersion": "1999-01-01"},
+        },
     )
-    result = response["result"]
-    assert result["protocolVersion"] == "2025-03-26"
+    result = supported["result"]
+    assert result["protocolVersion"] == "2025-06-18"
+    assert unsupported["result"]["protocolVersion"] == "2025-06-18"
     assert result["capabilities"] == {"tools": {}}
     assert result["serverInfo"]["name"] == "gapit"
     assert result["serverInfo"]["version"]
@@ -243,6 +250,17 @@ def test_screen_call_merge_fragments_requires_blastn_aligner() -> None:
     )
     assert response["result"]["isError"] is True
     assert json.loads(response["result"]["content"][0]["text"])["code"] == "USAGE_ERROR"
+
+
+def test_screen_call_csv_format_matches_cli_dialect(datadir: Path) -> None:
+    """Given format csv, When the screen tool runs, Then header and rows use
+    the RFC 4180 comma dialect (MCP mirrors the CLI format set)."""
+    (response,) = exchange(
+        tool_call("screen", {"files": [str(CONTIGS / "full.fa")], "db": "tinyamr", "format": "csv"})
+    )
+    text = response["result"]["content"][0]["text"]
+    assert response["result"]["isError"] is False
+    assert text.startswith("#FILE,SEQUENCE,")
 
 
 def test_summary_call_returns_summary_json() -> None:

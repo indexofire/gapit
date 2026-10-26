@@ -77,6 +77,12 @@ def _merged_hit(fragments: list[Hit], *, mincov: float) -> Hit | None:
         if hit.aligned_len > anchor.aligned_len:
             anchor = hit
     gap_openings = sum(hit.gap_openings for hit in ordered)
+    aligned_total = sum(hit.aligned_len for hit in ordered)
+    identity_pct = (
+        sum(hit.identity_pct * hit.aligned_len for hit in ordered) / aligned_total
+        if aligned_total > 0
+        else 0.0
+    )
     return Hit(
         sequence=",".join(sorted({hit.sequence for hit in ordered})),
         start=anchor.start,
@@ -93,8 +99,7 @@ def _merged_hit(fragments: list[Hit], *, mincov: float) -> Hit | None:
         coverage_map=union_coverage_map(spans, anchor.s_len, broken=gap_openings > 0),
         gap_openings=gap_openings,
         gaps=sum(hit.gaps for hit in ordered),
-        identity_pct=sum(hit.identity_pct * hit.aligned_len for hit in ordered)
-        / sum(hit.aligned_len for hit in ordered),
+        identity_pct=identity_pct,
         coverage_pct=coverage_pct,
         aligned_len=sum(hit.aligned_len for hit in ordered),
         merged=True,
@@ -122,10 +127,17 @@ def merge_fragment_hits(hits: list[Hit], partials: list[Hit], *, mincov: float) 
     appended after ``hits``; the caller's (sequence, start) report sort
     produces the final order.
     """
-    reported_genes = {hit.gene for hit in hits}
-    groups: dict[str, list[Hit]] = {}
+
+    def key(hit: Hit) -> tuple[str, str, int, str]:
+        """The merge identity: a shared gene NAME alone is not enough — two
+        different accessions/lengths may legitimately carry the same name."""
+        return (hit.database, hit.accession, hit.s_len, hit.gene)
+
+    reported_keys = {key(hit) for hit in hits}
+    groups: dict[tuple[str, str, int, str], list[Hit]] = {}
     for partial in partials:
-        if partial.gene not in reported_genes:
-            groups.setdefault(partial.gene, []).append(partial)
+        partial_key = key(partial)
+        if partial_key not in reported_keys:
+            groups.setdefault(partial_key, []).append(partial)
     merged = (_merged_hit(group, mincov=mincov) for group in groups.values())
     return hits + [hit for hit in merged if hit is not None]

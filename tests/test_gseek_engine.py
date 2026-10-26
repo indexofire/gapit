@@ -11,6 +11,7 @@ import pytest
 
 from gapit import blast, minimap2_run
 from gapit.db import Database
+from gapit.errors import DependencyError
 from gapit.gseek_engine import (
     engine_mode,
     iter_paf_gseek,
@@ -458,3 +459,43 @@ assert callable(run_blastn)
         check=False,
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_index_policy_cache_invalidates_when_target_changes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a cached long-name policy, When the target is replaced with short
+    names, Then the policy is recomputed instead of reusing the stale entry."""
+    from gapit import gseek_engine
+
+    database = Database(name="changing", path=tmp_path, sequences_path=tmp_path / "changing.fa")
+    database.sequences_path.write_text(">" + "x" * 256 + "\nACGT\n", encoding="utf-8")
+    fake = _FakeGseek([])
+    monkeypatch.setattr(gseek_engine, "_gseek", lambda: fake)
+    list(iter_paf_gseek([(tmp_path / "r.fq", None)], database, read_type="sr", threads=1))
+    assert fake.kwargs["index"] == "none"
+
+    database.sequences_path.write_text(">short\nACGT\n", encoding="utf-8")
+    list(iter_paf_gseek([(tmp_path / "r.fq", None)], database, read_type="sr", threads=1))
+    assert fake.kwargs["index"] == "auto"
+
+
+def test_gseek_missing_minimap2_maps_to_dependency_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given gseek reports a missing minimap2, When the bridge runs, Then the
+    legacy MISSING_DEPENDENCY contract (exit 3) is preserved."""
+    errors = pytest.importorskip("gseek.errors")
+
+    class MissingTool:
+        def align(self, **kwargs: object) -> object:
+            raise errors.ToolNotFoundError("minimap2: not found")
+
+    monkeypatch.setattr("gapit.gseek_engine._gseek", lambda: MissingTool())
+    database = _database(tmp_path)
+    with pytest.raises(DependencyError) as excinfo:
+        list(iter_paf_gseek([(tmp_path / "r.fq", None)], database, read_type="sr", threads=1))
+
+    assert excinfo.value.code == "MISSING_DEPENDENCY"
+    assert excinfo.value.exit_code == 3
+    assert excinfo.value.context["binary"] == "minimap2"

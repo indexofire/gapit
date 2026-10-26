@@ -57,6 +57,8 @@ def _reconstruct_loci(bundled: "BundledDatabase") -> list[LocusSequence]:
     features_path = bundled.path / "features.json"
     try:
         document = FeaturesDocument.model_validate_json(features_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError) as exc:
+        raise _malformed(bundled.name, f"unreadable features.json: {exc}") from exc
     except ValidationError as exc:
         raise _malformed(bundled.name, f"unparseable features.json: {exc}") from exc
     records = list(iter_fasta(bundled.sequences_path))

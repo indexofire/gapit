@@ -1,5 +1,6 @@
 """Summary output formats: abricate-parity TSV/CSV, gapit.summary/1 JSON, Markdown."""
 
+import json
 from datetime import datetime
 from typing import Literal
 
@@ -16,6 +17,7 @@ class SummaryParamsDocument(BaseModel, frozen=True):
     """The summary parameters in effect (metric is explicit)."""
 
     metric: Literal["%COVERAGE", "%IDENTITY"]
+    metrics: list[Literal["%COVERAGE", "%IDENTITY"]]
     nopath: bool
 
 
@@ -66,7 +68,11 @@ def render_summary_json(matrix: SummaryMatrix, *, now: datetime) -> str:
     """Serialize the matrix as gapit.summary/1 (indented, schema first)."""
     document = SummaryDocument(
         created_at=utc_timestamp(now),
-        params=SummaryParamsDocument(metric=matrix.params.metric, nopath=matrix.params.nopath),
+        params=SummaryParamsDocument(
+            metric=matrix.params.metric,
+            metrics=list(matrix.params.metrics),
+            nopath=matrix.params.nopath,
+        ),
         genes=list(matrix.genes),
         rows=[
             SummaryRowDocument(
@@ -95,6 +101,7 @@ def render_summary_md(matrix: SummaryMatrix, *, now: datetime) -> str:
         f"tool: gapit {__version__}",
         f"created_at: {utc_timestamp(now)}",
         f"metric: '{matrix.params.metric}'",
+        f"metrics: {json.dumps(list(matrix.params.metrics))}",
         f"nopath: {str(matrix.params.nopath).lower()}",
         f"files: {len(matrix.rows)}",
         f"genes: {len(matrix.genes)}",

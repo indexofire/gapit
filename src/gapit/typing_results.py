@@ -12,6 +12,7 @@ Pure pydantic value models — no I/O, no arithmetic.
 from typing import Literal, NamedTuple
 
 from pydantic import BaseModel, model_serializer
+from pydantic.json_schema import SkipJsonSchema
 
 
 class ScoreComponent(BaseModel, frozen=True):
@@ -63,7 +64,7 @@ class PhenotypeDetail(BaseModel, frozen=True):
     runner_up: PhenotypeScore | None = None
     ambiguous: tuple[PhenotypeScore, ...] = ()
     notes: tuple[str, ...] = ()
-    winner: LocusEvidence | None = None
+    winner: SkipJsonSchema[LocusEvidence | None] = None
 
     @model_serializer
     def _serialize(self) -> dict[str, object]:
@@ -147,4 +148,4 @@ class ScoredRule(NamedTuple):
     components: tuple[ScoreComponent, ...]
     notes: tuple[str, ...] = ()
     exact: bool = False
-    winner: LocusEvidence | None = None
+    winner: SkipJsonSchema[LocusEvidence | None] = None

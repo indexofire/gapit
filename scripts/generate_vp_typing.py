@@ -29,7 +29,7 @@ vpautils reference defines 12 O groups (no OL13), so O3 stays plain O3.
 
 Usage:
     python scripts/generate_vp_typing.py OAgc.gbk CPSgc.gbk \
-        --output src/gapit/data/typing/vp_ok.json \
+        --output src/gapit/data/dbs/vp_ok/typing.json \
         --matrix scripts/vp_rules_matrix.tsv \
         [--calibration-dir DIR]
 

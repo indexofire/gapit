@@ -33,6 +33,7 @@ from gapit.mcp_tools import TOOL_HANDLERS
 JsonRpcId = str | int | float | None
 
 PROTOCOL_VERSION = "2025-06-18"
+SUPPORTED_PROTOCOL_VERSIONS = frozenset({PROTOCOL_VERSION})
 
 
 class _Frame(BaseModel, frozen=True):
@@ -70,8 +71,9 @@ def _text(text: str, *, is_error: bool) -> dict[str, object]:
 def _initialize(params: dict[str, Any] | None) -> dict[str, object]:
     version = (params or {}).get("protocolVersion", "")
     requested = version if isinstance(version, str) else ""
+    negotiated = requested if requested in SUPPORTED_PROTOCOL_VERSIONS else PROTOCOL_VERSION
     return {
-        "protocolVersion": requested or PROTOCOL_VERSION,
+        "protocolVersion": negotiated,
         "capabilities": {"tools": {}},
         "serverInfo": {"name": "gapit", "version": __version__},
     }

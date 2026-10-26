@@ -5,6 +5,7 @@ import re
 import shlex
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 from typing import Literal
 
@@ -114,27 +115,39 @@ def make_blast_db(
             code="MISSING_DEPENDENCY",
             context={"binary": "makeblastdb"},
         )
-    for index_file in sequences_path.parent.glob(f"{sequences_path.name}.[np]??"):
-        index_file.unlink()
-    argv = [
-        "makeblastdb",
-        "-in",
-        str(sequences_path),
-        "-title",
-        name,
-        "-dbtype",
-        dbtype,
-        "-logfile",
-        "/dev/null",
-    ]
-    if debug:
-        print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
-    result = run_tool(argv)
-    if result.returncode != 0:
-        raise DatabaseError(
-            f"makeblastdb failed for {name}: {result.stderr.strip()}",
-            code="MAKEBLASTDB_FAILED",
-        )
+    with tempfile.TemporaryDirectory(dir=sequences_path.parent, prefix=".gapit-index.") as tmp:
+        temp_prefix = Path(tmp) / sequences_path.name
+        argv = [
+            "makeblastdb",
+            "-in",
+            str(sequences_path),
+            "-out",
+            str(temp_prefix),
+            "-title",
+            name,
+            "-dbtype",
+            dbtype,
+            "-logfile",
+            "/dev/null",
+        ]
+        if debug:
+            print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
+        result = run_tool(argv)
+        if result.returncode != 0:
+            raise DatabaseError(
+                f"makeblastdb failed for {name}: {result.stderr.strip()}",
+                code="MAKEBLASTDB_FAILED",
+            )
+        generated = sorted(Path(tmp).glob(f"{sequences_path.name}.*"))
+        if not generated:
+            raise DatabaseError(
+                f"makeblastdb produced no index files for {name}",
+                code="MAKEBLASTDB_FAILED",
+            )
+        for index_file in sequences_path.parent.glob(f"{sequences_path.name}.[np]??"):
+            index_file.unlink()
+        for index_file in generated:
+            os.replace(index_file, sequences_path.parent / index_file.name)
 
 
 _SEQUENCES_RE = re.compile(r"([\d,]+)\s+sequences;")

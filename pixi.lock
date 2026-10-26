@@ -924,7 +924,7 @@ packages:
 - pypi: ./
   name: gapit
   version: 0.6.1
-  sha256: 1fa4136969b441fb106c8d783c1c76d51eafc85f6ba16d5b8a272ee73a24f76b
+  sha256: 4a479d05ee4b26aa6a17ab54bd6f95c079aa038af5c501f14770e2a90615ca2e
   requires_dist:
   - click>=8.2
   - pydantic>=2.7

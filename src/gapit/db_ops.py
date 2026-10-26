@@ -228,7 +228,8 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
     entries: list[DbListEntry] = []
     for database in bundled:
         manifest_path = root / database.name / "gapit-manifest.json"
-        manifest = read_manifest(manifest_path) if manifest_path.is_file() else None
+        installed = manifest_path.is_file() and (root / database.name / "sequences").is_file()
+        manifest = read_manifest(manifest_path) if installed else None
         entries.append(
             DbListEntry(
                 name=database.name,
@@ -261,7 +262,7 @@ def db_list_entries(root: Path) -> list[DbListEntry]:
             continue
         provider = REGISTRY[provider_name]
         manifest_path = root / provider_name / "gapit-manifest.json"
-        installed = manifest_path.is_file()
+        installed = manifest_path.is_file() and (root / provider_name / "sequences").is_file()
         manifest = read_manifest(manifest_path) if installed else None
         entries.append(
             DbListEntry(

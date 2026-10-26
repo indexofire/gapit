@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use gapit in research, please cite this software."
+title: "gapit: mass screening of contigs and reads for known genes"
+type: software
+authors:
+  - name: "indexofire"
+repository-code: "https://github.com/indexofire/gapit"
+url: "https://indexofire.github.io/gapit/"
+license: MIT
+version: "0.6.1"
+date-released: "2026-10-26"
+keywords:
+  - bioinformatics
+  - genomics
+  - antimicrobial resistance
+  - virulence factors
+  - BLAST
+  - minimap2

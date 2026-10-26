@@ -21,7 +21,7 @@ import pytest
 from gapit.fasta import iter_fasta
 from gapit.mcp import serve
 from gapit.providers.common import Provider
-from gapit.records import Manifest, Record, write_manifest, write_records
+from gapit.records import Manifest, Record, read_manifest, write_manifest, write_records
 
 SYN = "synamr"
 SEQ = "ACGTAG" * 10  # 60 bp, the synthetic-fixture convention
@@ -132,6 +132,7 @@ def test_tools_list_carries_the_four_db_tools_with_schemas() -> None:
     by_name = {tool["name"]: tool for tool in response["result"]["tools"]}
     assert by_name["db_fetch"]["inputSchema"]["required"] == ["name"]
     assert by_name["db_build"]["inputSchema"]["required"] == ["name", "fasta"]
+    assert {"kind", "typing", "floors"} <= set(by_name["db_build"]["inputSchema"]["properties"])
     assert by_name["db_search"]["inputSchema"]["required"] == ["term"]
     assert by_name["db_outdated"]["inputSchema"]["required"] == []
     for name in ("db_fetch", "db_build", "db_search", "db_outdated"):
@@ -469,3 +470,33 @@ def test_db_fetch_default_set_downloads_card_vfdb(
     assert all(receipt["records"] == 2 for receipt in receipts)
     for name in ("card", "vfdb"):
         assert (datadir / name / "gapit-manifest.json").is_file(), name
+
+
+def test_db_build_forwards_typing_and_floors(tmp_path: Path) -> None:
+    """Given typing/floors assets, When db_build runs through MCP, Then the
+    manifest records the typing schema and both sidecars are installed."""
+    datadir = tmp_path / "datadir"
+    fasta = Path("tests/data/typing/markers.fa")
+    typing = Path("tests/data/typing/typing_markers_v2.json")
+    floors = tmp_path / "floors.json"
+    floors.write_text(
+        '{"schema": "gapit.floors/1", "genes": {"marker_a": 90.0}}',
+        encoding="utf-8",
+    )
+
+    is_error, text = call_tool(
+        "db_build",
+        {
+            "name": "typed",
+            "fasta": str(fasta),
+            "typing": str(typing),
+            "floors": str(floors),
+            "datadir": str(datadir),
+        },
+    )
+
+    assert is_error is False, text
+    manifest = read_manifest(datadir / "typed" / "gapit-manifest.json")
+    assert manifest.typing_schema == "gapit.typing/2"
+    assert (datadir / "typed" / "typing.json").is_file()
+    assert (datadir / "typed" / "floors.json").is_file()

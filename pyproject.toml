@@ -71,3 +71,8 @@ include = ["src", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.hatch.build.targets.sdist]
+# The conda recipe contains the sdist's own SHA256; including it would make the
+# hash self-referential. The recipe lives in the repo, never in the sdist.
+exclude = ["/recipe"]

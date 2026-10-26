@@ -21,7 +21,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 _READ_EXTENSIONS = (".fastq", ".fq")
-_COMPRESSION_EXTENSIONS = (".gz", ".bz2")
+_COMPRESSION_EXTENSIONS = (".gzip", ".gz", ".bz2")
 
 # Longest suffix first: _R1_001 must win over _R1 before _1. Side 0 marks a
 # marker-less file (its stem is the sample key; it never pairs).

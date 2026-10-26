@@ -16,7 +16,9 @@ discarded — a no-op.
 
 import os
 import re
+import sys
 import urllib.request
+import zipfile
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -38,6 +40,7 @@ _CHUNK_BYTES = 1 << 20
 # Allow large upstream archives while still refusing a runaway/compromised
 # body before it fills the disk. One GiB is well above every catalog source.
 _MAX_DOWNLOAD_BYTES = 1 << 30
+_MAX_EXTRACTED_BYTES = 2 << 30
 # Bounded fetch: socket.timeout (an OSError) already maps to DOWNLOAD_FAILED below.
 _DOWNLOAD_TIMEOUT_SECONDS = 60
 
@@ -78,6 +81,39 @@ class Provider:
     transform: Callable[[Path], Iterable[Record]]
     license: str | None = None
     kind: Literal["gene"] = "gene"
+
+
+def security_note(message: str) -> None:
+    """A trust-boundary warning that survives ``--quiet`` (stderr only)."""
+    print(f"gapit: WARNING: {message}", file=sys.stderr)
+
+
+def safe_extractall(archive: zipfile.ZipFile, destination: Path) -> None:
+    """Extract a ZIP after checking member paths and expanded size.
+
+    ``ZipFile.extractall`` sanitizes absolute/parent paths but still trusts
+    the advertised uncompressed sizes; a zip bomb can exhaust the disk. This
+    wrapper rejects escaping members and caps the summed uncompressed size
+    before any extraction.
+    """
+    destination = destination.resolve()
+    total = 0
+    for member in archive.infolist():
+        member_path = Path(member.filename)
+        if member_path.is_absolute() or ".." in member_path.parts:
+            raise DatabaseError(
+                f"unsafe archive member: {member.filename}",
+                code="ARCHIVE_INVALID",
+                context={"member": member.filename, "archive": str(destination)},
+            )
+        total += member.file_size
+        if total > _MAX_EXTRACTED_BYTES:
+            raise DatabaseError(
+                f"archive expands beyond {_MAX_EXTRACTED_BYTES} bytes",
+                code="ARCHIVE_TOO_LARGE",
+                context={"archive": str(destination), "limit": str(_MAX_EXTRACTED_BYTES)},
+            )
+    archive.extractall(destination)
 
 
 def url_basename(url: str) -> str:
@@ -200,7 +236,7 @@ def fetch_provider(
         )
     insecure = insecure_source_urls(provider.source_urls)
     if insecure:
-        note(quiet, f"WARNING: plain HTTP source(s), no transport integrity: {', '.join(insecure)}")
+        security_note(f"plain HTTP source(s), no transport integrity: {', '.join(insecure)}")
     with staged_database(db_dir) as build_dir:
         if (db_dir / "gapit-manifest.json").is_file() and not force:
             raise DatabaseError(

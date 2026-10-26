@@ -33,6 +33,8 @@ def frag(
     gapopen: int = 0,
     aligned: int | None = None,
     gene: str = "demoGene",
+    accession: str = "FRAG-0001",
+    database: str = "fragdb",
 ) -> Hit:
     """A decoded partial hit with per-test overrides; ``aligned`` defaults to
     the gap-free subject span length (blast length == span when ungapped)."""
@@ -43,8 +45,8 @@ def frag(
         end=qend,
         strand=strand,
         gene=gene,
-        database="fragdb",
-        accession="FRAG-0001",
+        database=database,
+        accession=accession,
         product="demo gene",
         function="DEMOCLASS",
         s_start=s_start,
@@ -291,3 +293,35 @@ def test_no_partials_returns_hits_unchanged() -> None:
     """Given only full hits, When merged, Then the list is returned as-is."""
     full = frag("cA", 1, 600, 1, 600)
     assert merge_fragment_hits([full], [], mincov=80.0) == [full]
+
+
+def test_same_gene_name_with_different_accession_is_not_merged() -> None:
+    """Given two partials sharing a gene name but not the database record,
+    When merged, Then they stay independent (a name is not a record id)."""
+    partials = [
+        frag("c1", 1, 300, 1, 300, gene="dup", accession="ACC1", slen=600),
+        frag("c2", 1, 300, 301, 600, gene="dup", accession="ACC2", slen=600),
+    ]
+    assert merge_fragment_hits([], partials, mincov=80.0) == []
+
+
+def test_same_gene_name_with_different_subject_length_is_not_merged() -> None:
+    """Given partials with different s_len, When merged, Then the coverage
+    denominator is not borrowed from an unrelated record."""
+    partials = [
+        frag("c1", 1, 300, 1, 300, gene="dup", accession="ACC1", slen=600),
+        frag("c2", 1, 300, 301, 600, gene="dup", accession="ACC1", slen=1200),
+    ]
+    assert merge_fragment_hits([], partials, mincov=80.0) == []
+
+
+def test_zero_aligned_length_does_not_divide_by_zero() -> None:
+    """Given a union that clears mincov but all aligned lengths are zero, When
+    merged, Then identity degenerates to 0.0 instead of raising."""
+    partials = [
+        frag("c1", 1, 300, 1, 300, aligned=0),
+        frag("c2", 1, 300, 301, 600, aligned=0),
+    ]
+    (merged,) = merge_fragment_hits([], partials, mincov=80.0)
+    assert merged.identity_pct == 0.0
+    assert merged.aligned_len == 0

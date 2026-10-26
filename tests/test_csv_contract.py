@@ -11,6 +11,7 @@ import io
 from pathlib import Path
 
 from gapit.formats.cluster import format_cluster_tsv
+from gapit.formats.csvutil import delimited_line
 from gapit.formats.reads_tsv import format_reads_tsv
 from gapit.formats.summary import format_summary_tsv
 from gapit.formats.tsv import format_tsv
@@ -158,3 +159,26 @@ def test_typing_input_reads_its_own_quoted_csv() -> None:
 
     assert parsed.files[0].file == "in,fa"
     assert "a,b" in parsed.files[0].calls
+
+
+def test_tsv_dialect_neutralizes_embedded_delimiters() -> None:
+    """Given cells containing tab/CR/LF, When rendered as TSV, Then the row
+    keeps its column count (TSV has no quoting; delimiters become spaces)."""
+    assert delimited_line(("a\tb", "c\nd", "e\rf"), as_csv=False) == "a b\tc d\te f\n"
+
+
+def test_db_search_tsv_row_is_table_safe() -> None:
+    """Given a legacy record whose product contains a tab, When the search
+    row is rendered, Then PRODUCT stays one cell."""
+    from gapit.db_query_ops import search_tsv_row
+    from gapit.records import Record
+
+    record = Record(
+        db="db",
+        gene="g",
+        sequence="ACGT",
+        accession="A",
+        function=("class",),
+        product="p\tq",
+    )
+    assert search_tsv_row(record).split("\t")[4] == "p q"

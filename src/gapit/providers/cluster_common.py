@@ -25,7 +25,13 @@ from gapit.db_txn import staged_database
 from gapit.errors import DatabaseError
 from gapit.gbfeatures import FeaturesDocument, LocusSequence
 from gapit.proctools import note
-from gapit.providers.common import Dbtype, download_file, insecure_source_urls, url_basename
+from gapit.providers.common import (
+    Dbtype,
+    download_file,
+    insecure_source_urls,
+    security_note,
+    url_basename,
+)
 from gapit.records import Manifest
 from gapit.typing_models import (
     read_typing_document,
@@ -84,7 +90,7 @@ def fetch_cluster_provider(
         )
     insecure = insecure_source_urls(provider.source_urls)
     if insecure:
-        note(quiet, f"WARNING: plain HTTP source(s), no transport integrity: {', '.join(insecure)}")
+        security_note(f"plain HTTP source(s), no transport integrity: {', '.join(insecure)}")
     with staged_database(db_dir) as build_dir:
         if (db_dir / "gapit-manifest.json").is_file() and not force:
             raise DatabaseError(

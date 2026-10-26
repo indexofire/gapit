@@ -42,6 +42,7 @@ from gapit.db_ops import (
 )
 from gapit.dispatch import datadir_option, dispatch, quiet_option
 from gapit.errors import usage_fail
+from gapit.formats.csvutil import tsv_cell
 
 
 @click.argument(
@@ -117,8 +118,8 @@ def db_list_command(datadir: Path | None, as_json: bool) -> None:
         click.echo("NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER")
         for entry in entries:
             click.echo(
-                f"{entry.name}\t{entry.description}\t{db_list_status(entry)}"
-                f"\t{entry.dbtype}\t{entry.vendor}"
+                f"{tsv_cell(entry.name)}\t{tsv_cell(entry.description)}"
+                f"\t{db_list_status(entry)}\t{entry.dbtype}\t{tsv_cell(entry.vendor)}"
             )
 
     dispatch(run)

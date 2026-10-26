@@ -12,6 +12,7 @@ import json
 import random
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
 
@@ -505,6 +506,24 @@ def test_db_build_rejects_names_that_escape_the_datadir(tmp_path: Path) -> None:
         )
     assert list(datadir.iterdir()) == []
     assert not (tmp_path / "escape").exists()
+
+
+@pytest.mark.parametrize("name", ["bad\tname", "bad\nname", "bad\rname"])
+def test_db_build_rejects_name_table_delimiters(tmp_path: Path, name: str) -> None:
+    """Given a name with a TSV delimiter, When built, Then USAGE_ERROR fires
+    before any directory is created (db list must stay tabular)."""
+    fasta = tmp_path / "my_genes.fa"
+    fasta.write_text(PLAIN_FASTA, encoding="utf-8")
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+
+    result = build(name, str(fasta), "--datadir", str(datadir))
+
+    assert result.exit_code == 2
+    error = last_envelope(result.stderr)
+    assert error.code == "USAGE_ERROR"
+    assert error.context["name"] == name
+    assert list(datadir.iterdir()) == []
 
 
 def test_db_build_allows_dash_underscore_dot_names(tmp_path: Path) -> None:

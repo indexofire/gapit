@@ -36,6 +36,7 @@ the file path; a missing file is the INPUT_NOT_FOUND input error (the --tsv
 precedent).
 """
 
+import re
 from pathlib import Path
 from string import Formatter
 from typing import Literal
@@ -58,6 +59,13 @@ from gapit.typing_rules import TypingRule, check_rule_references
 V1_SCHEME_NAME = "default"
 
 _SCHEME_NAME_PATTERN = r"^[a-z0-9_]+$"
+_TABLE_CONTROL = re.compile(r"[\t\r\n]")
+
+
+def _check_table_safe(label: str, value: str) -> None:
+    """Typing text is rendered into TSV/Markdown; delimiters would break it."""
+    if _TABLE_CONTROL.search(value):
+        raise ValueError(f"{label} contains a table delimiter (tab/CR/LF)")
 
 
 class TypingScheme(BaseModel, frozen=True):
@@ -150,12 +158,33 @@ class TypingDocument(BaseModel, frozen=True):
         return self
 
     @model_validator(mode="after")
+    def _table_safe_text(self) -> "TypingDocument":
+        for scheme in self.schemes:
+            for label, value in (
+                ("fallback", scheme.fallback),
+                ("mixed_phenotype", scheme.mixed_phenotype),
+                ("compose", scheme.compose),
+            ):
+                if value is not None:
+                    _check_table_safe(f"scheme {scheme.name!r} {label}", value)
+            for rule in scheme.rules:
+                _check_table_safe(f"rule phenotype {rule.phenotype!r}", rule.phenotype)
+                for note in rule.notes:
+                    _check_table_safe(f"rule {rule.phenotype!r} note", note)
+        return self
+
+    @model_validator(mode="after")
     def _compose_references_siblings(self) -> "TypingDocument":
         by_name = {scheme.name: scheme for scheme in self.schemes}
         for scheme in self.schemes:
             if scheme.compose is None:
                 continue
-            for placeholder in template_placeholders(scheme.compose):
+            placeholders = template_placeholders(scheme.compose)
+            if not placeholders:
+                raise ValueError(
+                    f"compose scheme {scheme.name!r} needs at least one {{name}} placeholder"
+                )
+            for placeholder in placeholders:
                 sibling = by_name.get(placeholder)
                 if sibling is None or sibling is scheme or sibling.compose is not None:
                     raise ValueError(

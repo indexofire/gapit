@@ -19,7 +19,7 @@ from typing import Literal
 
 from gapit.db import DbHeader, make_blast_db
 from gapit.dbcodec import decode_seqid, encode_seqid
-from gapit.errors import DatabaseError
+from gapit.errors import DatabaseError, DependencyError
 from gapit.fasta import iter_fasta
 from gapit.proctools import note, run_tool
 from gapit.records import Manifest, Record, count_records, read_records, write_manifest
@@ -82,11 +82,11 @@ _TABLE_CONTROL = "\t\r\n"
 def _check_record(record: Record) -> None:
     """Generation-time validation: the record shapes that would produce a
     broken FASTA or break the 15-column table contract."""
-    if "\n" in record.product or "\r" in record.product:
+    if any(control in record.product for control in _TABLE_CONTROL):
         raise DatabaseError(
-            f"record {record.gene!r}: product contains a line break",
+            f"record {record.gene!r}: product contains a table delimiter",
             code="BUILD_INVALID",
-            context={"gene": record.gene},
+            context={"gene": record.gene, "field": "product"},
         )
     if not record.sequence:
         raise DatabaseError(
@@ -202,6 +202,18 @@ def tool_version_line(argv: list[str]) -> str:
     return stdout.splitlines()[0].strip() if stdout else ""
 
 
+def optional_tool_version_line(argv: list[str]) -> str:
+    """Like :func:`tool_version_line`, but a missing binary yields ``""``.
+
+    Gene/cluster database builds do not need minimap2; recording its version
+    must not turn reads-only tooling into a hard build dependency.
+    """
+    try:
+        return tool_version_line(argv)
+    except DependencyError:
+        return ""
+
+
 def build_database(
     db_dir: Path,
     *,
@@ -257,10 +269,10 @@ def build_database(
         typing_schema=typing_schema or None,
         license=content_license or None,
         source=source,
-        makeblastdb_version=tool_version_line(["blastn", "-version"]),
+        makeblastdb_version=tool_version_line(["makeblastdb", "-version"]),
         # Kept although no .mmi is built: environment provenance for the
         # machine that produced the artifacts (spec'd in gapit.manifest/1).
-        minimap2_version=tool_version_line(["minimap2", "--version"]),
+        minimap2_version=optional_tool_version_line(["minimap2", "--version"]),
     )
     write_manifest(manifest, db_dir / "gapit-manifest.json")
     return manifest

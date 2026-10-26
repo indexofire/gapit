@@ -424,6 +424,9 @@ summarizing two report files, one with a `tetA` hit and one with none:
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
     "metric": "%COVERAGE",
+    "metrics": [
+      "%COVERAGE"
+    ],
     "nopath": false
   },
   "genes": [
@@ -453,7 +456,8 @@ summarizing two report files, one with a `tetA` hit and one with none:
 | `schema` | string | Always `gapit.summary/1` |
 | `tool` | object | `{name, version}` of gapit |
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
-| `params.metric` | string | `%COVERAGE` or `%IDENTITY`, per the `--identity` flag |
+| `params.metric` | string | Primary metric: `%COVERAGE` or `%IDENTITY` |
+| `params.metrics` | array | Every metric selected by `-i`/`-c` (both under `-ic`) |
 | `params.nopath` | boolean | Whether row labels were basenamed |
 | `genes` | array of string | Sorted union of all gene names across inputs |
 | `rows` | array | One row per input file |

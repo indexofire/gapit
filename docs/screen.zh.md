@@ -205,7 +205,7 @@ rich 进度条 —— 转轮、当前文件基名、进度条、M/N 计数、百
 `gapit db build --typing` 构建）时，筛查是纯基因检测：每种格式的输出都是逐字节相同
 的冻结 15 列 abricate 表——typed 与 untyped 基因数据库在筛查面上无法区分。判定来自
 两阶段流水线的第二阶段：用 `--output`（或重定向）写出结果表，再对它运行
-[`gapit typing`](./typing.zh.md#两阶段判定工作流)——或者直接经管道送入，规范一行式：
+[`gapit typing`](./typing.zh.md#two-stage-workflow)——或者直接经管道送入，规范一行式：
 
 ```console
 $ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --nopath --quiet
@@ -226,7 +226,7 @@ $ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db ecoli_dec --nopath --quiet
 
 只要 stdin 不是终端，`gapit typing` 就从中读取；`gapit typing -` 是显式 stdin
 标记（挂着终端也有效——读取直到 EOF）。完整的输入契约见
-[typing 页面](./typing.zh.md#两阶段判定工作流)。
+[typing 页面](./typing.zh.md#two-stage-workflow)。
 
 同一条管道也能喂给矩阵视图。一次筛查多个 assembly 会把所有行汇入一张表（每行
 携带同一个 `DATABASE`；`FILE` 列横跨整个批次），因此
@@ -237,7 +237,7 @@ $ gapit screen -d ecoli_dec *.fna --quiet | gapit summary
 ```
 
 基因簇数据库是例外：其判定集成在筛查本身（typed 基因簇 TSV 的 `PHENOTYPE` 列，
-见[下文](#基因簇数据库-kind-cluster)）。
+见[下文](#cluster-db)）。
 
 ## 流式输出与 `--output`
 
@@ -325,7 +325,7 @@ Found 1 genes in tests/data/contigs/full.fa
 不带这个参数时整条路径都不会运行：默认输出与 abricate 逐字节一致（下文的注意事项
 仍然全部适用）。
 
-## 基因簇数据库（`kind: cluster`）
+## 基因簇数据库（`kind: cluster`） {#cluster-db}
 
 当 `--db` 指向一个基因簇数据库时（经 [`gapit db build`](./databases.md) 从 GBK/GFF
 构建，或从 kaptive 提供商抓取），`gapit screen` 会分发到**基因簇引擎**而不是

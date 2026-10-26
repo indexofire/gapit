@@ -155,6 +155,9 @@ $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv 
   "created_at": "2026-09-19T01:12:48Z",
   "params": {
     "metric": "%COVERAGE",
+    "metrics": [
+      "%COVERAGE"
+    ],
     "nopath": false
   },
   "genes": [

@@ -49,6 +49,7 @@ plugins:
             gseek engine: gseek 引擎
 
 markdown_extensions:
+  - attr_list
   - tables
   - fenced_code
   - toc:

@@ -1,5 +1,6 @@
 """Database rebuild transactions: a failed --force must not damage the old DB."""
 
+import subprocess
 import threading
 from pathlib import Path
 
@@ -182,3 +183,28 @@ def test_discovery_ignores_hidden_transaction_directories(tmp_path: Path) -> Non
         (stale / "sequences").write_text(">stale\nACGT\n", encoding="utf-8")
 
     assert [database.name for database in discover_databases(tmp_path)] == ["real"]
+
+
+def test_make_blast_db_keeps_the_old_index_when_makeblastdb_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given an existing index and a makeblastdb run that fails, When the
+    index rebuild runs, Then the old index bytes survive (the temp prefix is
+    discarded)."""
+    db_dir = tmp_path / "db"
+    db_dir.mkdir()
+    sequences = db_dir / "sequences"
+    sequences.write_text(">s\nACGT\n", encoding="utf-8")
+    old_index = db_dir / "sequences.nin"
+    old_index.write_text("OLD-INDEX", encoding="utf-8")
+
+    def fail_tool(argv: list[str]) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(argv, 1, stdout="", stderr="boom")
+
+    monkeypatch.setattr(db_module, "run_tool", fail_tool)
+    with pytest.raises(DatabaseError) as excinfo:
+        make_blast_db(sequences, "db", dbtype="nucl")
+
+    assert excinfo.value.code == "MAKEBLASTDB_FAILED"
+    assert old_index.read_text(encoding="utf-8") == "OLD-INDEX"
+    assert list(db_dir.glob(".gapit-index.*")) == []

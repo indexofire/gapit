@@ -100,7 +100,7 @@ minimap 用 15 个字符格勾画比对落在基因的什么位置：
 
 携带 `typing.json` 的基因数据库（**typed** 数据库 —— 捆绑的 `ecoli_dec` 即是示例）
 的筛查输出与 untyped 完全相同：上面冻结的 15 列 abricate 表，每种格式都逐字节一致。
-判定是两阶段流水线的第二阶段 —— [`gapit typing`](./typing.zh.md#两阶段判定工作流)
+判定是两阶段流水线的第二阶段 —— [`gapit typing`](./typing.zh.md#two-stage-workflow)
 读取筛查结果表并渲染判定（真实输出；结果表由 `screen --output` 写出）：
 
 ```console
@@ -407,6 +407,9 @@ typing 的数据库是同一个表头去掉 `PHENOTYPE`。没有位点判定的�
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
     "metric": "%COVERAGE",
+    "metrics": [
+      "%COVERAGE"
+    ],
     "nopath": false
   },
   "genes": [
@@ -436,7 +439,8 @@ typing 的数据库是同一个表头去掉 `PHENOTYPE`。没有位点判定的�
 | `schema` | string | 恒为 `gapit.summary/1` |
 | `tool` | object | gapit 的 `{name, version}` |
 | `created_at` | string | ISO-8601 UTC 时间戳，秒精度 |
-| `params.metric` | string | `%COVERAGE` 或 `%IDENTITY`，随 `--identity` 而定 |
+| `params.metric` | string | 主指标：`%COVERAGE` 或 `%IDENTITY` |
+| `params.metrics` | array | `-i`/`-c` 选中的所有指标（`-ic` 时为两者） |
 | `params.nopath` | boolean | 行标签是否被文件名化 |
 | `genes` | array of string | 所有输入基因名的排序并集 |
 | `rows` | array | 每个输入文件一行 |

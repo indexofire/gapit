@@ -203,8 +203,10 @@ Python 3.12 and is installed by the pixi `default` environment (the `py312` feat
 User documentation lives in [`docs/index.md`](docs/index.md), rendered at
 <https://indexofire.github.io/gapit/>.
 
-`SPEC.md` is the parity contract, `PLAN.md` the roadmap, `AGENTS.md` the contributor
-guide, `CHANGELOG.md` the change history.
+`SPEC.md` is the parity contract, `AGENTS.md`/`CONTRIBUTING.md` the contributor rules,
+`SECURITY.md` the trust-boundary and reporting policy, `CITATION.cff` the citation
+metadata, and `CHANGELOG.md` the change history. `PLAN.md` is kept as a historical
+roadmap (the current architecture lives in `AGENTS.md`, `SPEC.md`, and `docs/datadir.md`).
 
 ## License
 

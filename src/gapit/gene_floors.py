@@ -63,6 +63,12 @@ def read_floors(path: Path) -> GeneFloors:
         )
     try:
         return GeneFloors.model_validate_json(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError) as exc:
+        raise DatabaseError(
+            f"could not read floors document {path}: {exc}",
+            code="FLOORS_MALFORMED",
+            context={"file": str(path)},
+        ) from exc
     except ValidationError as exc:
         raise DatabaseError(
             f"malformed floors document {path}: {' '.join(str(exc).split())}",

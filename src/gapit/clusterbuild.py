@@ -26,7 +26,7 @@ from tempfile import NamedTemporaryFile
 from typing import Literal
 
 from gapit.db import make_blast_db
-from gapit.dbbuild import sha256_file, tool_version_line
+from gapit.dbbuild import optional_tool_version_line, sha256_file, tool_version_line
 from gapit.errors import DatabaseError
 from gapit.fasta import iter_fasta
 from gapit.gbfeatures import (
@@ -128,8 +128,34 @@ _TABLE_CONTROL = "\t\r\n"
 
 
 def _validate_loci(loci: Sequence[LocusSequence]) -> None:
-    """Reject table-breaking control characters before any artifact write."""
+    """Reject invalid locus tables before any artifact write.
+
+    Generated loci are keyed by id in features.json and by target name in the
+    cluster engine, so duplicate ids would silently make two records share one
+    set of alignments and typing references.
+    """
+    seen_ids: set[str] = set()
     for locus in loci:
+        if locus.features.id in seen_ids:
+            raise DatabaseError(
+                f"duplicate locus id: {locus.features.id!r}",
+                code="BUILD_INVALID",
+                context={"locus": locus.features.id, "field": "id", "reason": "duplicate"},
+            )
+        seen_ids.add(locus.features.id)
+        gene_ids = [gene.gene_id for gene in locus.features.genes]
+        duplicate_genes = sorted({gene_id for gene_id in gene_ids if gene_ids.count(gene_id) > 1})
+        if duplicate_genes:
+            raise DatabaseError(
+                f"locus {locus.features.id!r} has duplicate gene id(s):"
+                f" {', '.join(duplicate_genes)}",
+                code="BUILD_INVALID",
+                context={
+                    "locus": locus.features.id,
+                    "field": "gene_id",
+                    "reason": "duplicate",
+                },
+            )
         for field, value in (
             ("id", locus.features.id),
             ("label", locus.features.label),
@@ -178,6 +204,12 @@ def build_cluster_database(
     provenance (kaptive-style providers); both default to empty and
     serialize only when set. ``source: "bundled"`` stamps a wheel-materialized
     build (gapit.bundled); None serializes away (every other caller)."""
+    if any(control in name for control in "\t\r\n"):
+        raise DatabaseError(
+            f"database name must not contain tabs or line breaks: {name!r}",
+            code="BUILD_INVALID",
+            context={"db": name},
+        )
     _validate_loci(loci)
     sequences_path = db_dir / "sequences"
     _write_locus_fasta(loci, sequences_path)
@@ -200,8 +232,8 @@ def build_cluster_database(
         kind="cluster",
         header_format="plain",
         typing_schema=typing_schema or None,
-        makeblastdb_version=tool_version_line(["blastn", "-version"]),
-        minimap2_version=tool_version_line(["minimap2", "--version"]),
+        makeblastdb_version=tool_version_line(["makeblastdb", "-version"]),
+        minimap2_version=optional_tool_version_line(["minimap2", "--version"]),
         license=content_license or None,
         note=content_note or None,
         source=source,

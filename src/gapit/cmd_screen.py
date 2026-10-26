@@ -31,6 +31,24 @@ from gapit.screening_reads import run_screen_assemblies, run_screen_reads
 from gapit.screening_reads_positional import run_screen_reads_positional
 
 
+def _reject_reads_only_flags(
+    read_type: ReadTypeEnum | None, min_breadth: float, all_genes: bool
+) -> None:
+    """Reads-engine flags are usage errors outside reads mode, never silent."""
+    if read_type is not None:
+        usage_fail(
+            "--read-type is reads-mode only (--r1/--r2, positional FASTQ, or --aligner minimap2)"
+        )
+    if min_breadth != 90.0:
+        usage_fail(
+            "--min-breadth is reads-mode only (--r1/--r2, positional FASTQ, or --aligner minimap2)"
+        )
+    if all_genes:
+        usage_fail(
+            "--all-genes is reads-mode only (--r1/--r2, positional FASTQ, or --aligner minimap2)"
+        )
+
+
 @click.argument(
     "files",
     nargs=-1,
@@ -305,11 +323,13 @@ def screen_command(
                         debug,
                         minid=minid,
                         mincov=mincov,
+                        all_genes=all_genes,
                     )
                 )
             else:
-                # run_screen emits its output through `deliver`; echoing the
-                # return value here would duplicate every byte.
+                _reject_reads_only_flags(read_type, min_breadth, all_genes)
+                # run_screen emits its output through `deliver`; echoing
+                # the return value here would duplicate every byte.
                 run_screen(
                     file_args,
                     db,

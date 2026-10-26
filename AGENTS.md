@@ -33,6 +33,8 @@ are we?** A modern, typed, testable Python tool that:
   `parity` pixi env (prepend `.pixi/envs/parity/bin` to PATH for the differential test).
 - **Core libraries**: `click` (CLI), `pydantic` v2 (data models / JSON schema), `rich` (terminal
   output). No biopython — FASTA I/O is a small streaming parser we own.
+- **Optional engine**: `gseek` (`gapit[gseek]`, Python 3.12) behind `GAPIT_ENGINE`;
+  `legacy` remains the default and needs no gseek import.
 - **Quality gates**: `ruff` (lint + format), `basedpyright` (strict mode), `pytest`.
 
 ### Commands (pixi tasks)
@@ -55,7 +57,10 @@ Every change must leave `lint`, `typecheck`, and `test` green.
 ```
 gapit/
 ├── AGENTS.md            # this file
-├── PLAN.md              # development roadmap (phase-gated)
+├── CONTRIBUTING.md      # contributor workflow and gates
+├── SECURITY.md          # trust boundaries + vulnerability reporting
+├── CITATION.cff         # citation metadata
+├── PLAN.md              # historical development roadmap
 ├── SPEC.md              # frozen contract for the baseline surface (distilled from abricate)
 ├── pixi.toml
 ├── recipe/
@@ -72,7 +77,7 @@ gapit/
 │   ├── seqconvert.py    # native input normalization: fa/fq/gbk/embl (±gz/bz2) → FASTA
 │   ├── db.py            # database discovery, header parsing, makeblastdb wrapper
 │   ├── dbcodec.py       # gapit/v1 tagged-header codec (percent-encoded ids)
-│   ├── db_txn.py        # transactional rebuild staging (backup/restore on failure)
+│   ├── db_txn.py        # per-db write lock + staging build + rename publish
 │   ├── records.py       # records.jsonl truth store + gapit.manifest/1 provenance
 │   ├── dbbuild.py       # deterministic native-db build pipeline with self-check
 │   ├── clusterbuild.py  # cluster-db build pipeline: GBK/GFF → locus FASTA + features.json + typing copy
@@ -102,19 +107,23 @@ gapit/
 │   ├── paf.py           # PAF row parsing + interval arithmetic (minimap2 output boundary)
 │   ├── report.py        # Report model: the canonical in-memory result
 │   ├── engines.py       # shared OutputFormat / AlignerEnum (leaf module for the three engines)
+│   ├── gseek_engine.py  # optional gseek bridge (legacy/gseek/shadow) for BLAST/minimap2
+│   ├── progress.py      # stderr-bound rich batch progress bar
 │   ├── screening.py      # blastn screen use-case + the shared run_screen dispatcher
 │   ├── screening_cluster.py # cluster screen use-case: kind guards, typing wiring, rendering
 │   ├── screening_reads.py # minimap2 use-cases: --r1/--r2 reads + --aligner minimap2 assemblies
+│   ├── screening_reads_positional.py # positional FASTQ wildcard: pairing + per-sample screens
 │   ├── typing_input.py   # `gapit typing` input: screen TSV/CSV → per-FILE folded GeneCalls
 │   ├── typing_ops.py     # `gapit typing` use-case: resolve db, run the engine, render
 │   ├── reads.py          # FASTQ mode: minimap2 PAF parsing, coverage breadth/depth, presence
+│   ├── readpairs.py      # positional FASTQ filename → sample/lane inference
 │   ├── summary.py       # summary core: parse report tables into a gene matrix
 │   ├── cmd_screen.py    # `gapit screen` CLI (registered from cli.py)
 │   ├── cmd_screen_positionals.py # screen positional guard: db-name-as-file usage error
 │   ├── cmd_screen_reads_args.py # reads-mode CLI arg rules (comma split + flag rejects)
 │   ├── cmd_summary.py   # `gapit summary` CLI (registered from cli.py)
 │   ├── cmd_typing.py    # `gapit typing` CLI (registered from cli.py)
-│   ├── cmd_db.py        # `gapit db` command group (fetch | list; registers the subcommands)
+│   ├── cmd_db.py        # `gapit db` command group (fetch/path/list/build/install/search/outdated)
 │   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
 │   ├── cmd_db_build.py  # `gapit db build` CLI (custom FASTA → native db)
 │   ├── cmd_db_search.py # `gapit db search` CLI (records.jsonl lookup)
@@ -125,9 +134,10 @@ gapit/
 │   ├── errors.py        # typed errors + JSON error envelope
 │   ├── formats/
 │   │   ├── tsv.py       # abricate-compatible TSV/CSV (phenotype-free in every typing version)
-│   │   ├── csvutil.py   # one RFC 4180 CSV row at a time (streaming renderers)
+│   │   ├── csvutil.py   # CSV RFC 4180 + TSV cell sanitization (streaming renderers)
 │   │   ├── json.py      # versioned JSON (gapit.report/1 et al.)
 │   │   ├── reads_json.py # versioned JSON (gapit.reads/1, gapit.reads/2)
+│   │   ├── reads_tsv.py # streaming reads TSV/CSV table
 │   │   ├── md.py        # Markdown (human + agent readable, YAML frontmatter)
 │   │   ├── cluster.py   # gapit.cluster/1 models + JSON/TSV renderers (typed variant)
 │   │   ├── cluster2.py  # gapit.cluster/2 models + JSON/TSV renderers (multi-scheme phenotypes map)

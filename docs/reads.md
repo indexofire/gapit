@@ -37,7 +37,7 @@ shell's glob and let gapit infer the samples:
 $ gapit screen -d ecoli_dec *.gz
 ```
 
-When **every** positional file is FASTQ — a `.fastq`/`.fq` extension (optionally `.gz`), or
+When **every** positional file is FASTQ — a `.fastq`/`.fq` extension (optionally `.gz`/`.gzip`), or
 content that sniffs as FASTQ when the extension is ambiguous — the command enters reads mode
 without `--r1`/`--r2`. Files are grouped into samples by filename, after stripping the read
 extension (case-insensitive):
@@ -387,7 +387,7 @@ what identity a true allele must carry. That knowledge ships as an optional
   (every listed gene must exist in the FASTA, values in [0, 100]) and copied into the db
   directory as `floors.json`. Dropping a floors.json into an existing db directory works
   too; it is read at screening time. Details in
-  [databases.md](./databases.md#floorsjson--per-gene-identity-floors).
+  [databases.md](./databases.md#floorsjson-per-gene-identity-floors).
 
 ### Worked example: the `pic` SPATE false positive (bundled `ecoli_dec`)
 

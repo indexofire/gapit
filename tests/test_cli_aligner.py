@@ -11,6 +11,7 @@ from pydantic import TypeAdapter
 
 from gapit.cli import app
 from gapit.db import make_blast_db
+from gapit.fasta import iter_fasta
 from gapit.formats.reads_json import ReadsDocument
 
 AMR_DB_DIR = Path(__file__).parent / "data" / "db"
@@ -222,6 +223,32 @@ def test_minimap2_positional_min_breadth_applies(reads_datadir: Path) -> None:
     assert genes == {"tetX": True, "sulY": True}
 
 
+def test_minimap2_positional_all_genes_lists_partial_calls(
+    reads_datadir: Path, tmp_path: Path
+) -> None:
+    """Given a partial assembly alignment, When --all-genes is passed, Then
+    the absent/partial gene row is emitted (the flag is forwarded to the
+    minimap2 assembly use-case)."""
+    record = next(iter_fasta(READS_DB_DIR / "tinyreads" / "sequences"))
+    partial = tmp_path / "partial.fa"
+    partial.write_text(f">{record.id}\n{record.sequence[:500]}\n", encoding="utf-8")
+
+    result = screen_reads(
+        reads_datadir,
+        "--aligner",
+        "minimap2",
+        "--min-breadth",
+        "100",
+        "--all-genes",
+        str(partial),
+    )
+
+    assert result.exit_code == 0, result.stderr
+    rows = [line.split("\t") for line in result.stdout.splitlines()[1:]]
+    gene_rows = {row[1]: row for row in rows if len(row) >= 6}
+    assert gene_rows[record.id.split("~~~")[1]][5] == "no"
+
+
 def test_minimap2_positional_default_is_streaming_tsv(reads_datadir: Path) -> None:
     """Given --aligner minimap2 with NO --format, When screened, Then the
     streaming reads TSV table on stdout (tsv is the human default on every
@@ -430,3 +457,24 @@ def test_help_lists_aligner_and_no_csv() -> None:
     assert "--aligner" in help_text
     assert "Alignment engine" in help_text
     assert "--csv" not in help_text
+
+
+@pytest.mark.parametrize(
+    ("flag", "value"),
+    [
+        ("--read-type", "map-ont"),
+        ("--min-breadth", "50"),
+        ("--all-genes", None),
+    ],
+)
+def test_reads_only_flags_are_rejected_on_blastn_contigs(
+    amr_datadir: Path, flag: str, value: str | None
+) -> None:
+    """Given a blastn contig screen, When a reads-only flag is supplied, Then
+    it is a usage error rather than a silently ignored option."""
+    args = [flag] if value is None else [flag, value]
+    result = screen_amr(amr_datadir, *args, str(CONTIGS / "full.fa"))
+    assert result.exit_code == 2
+    error = envelope(result.stderr)
+    assert error["code"] == "USAGE_ERROR"
+    assert "reads-mode only" in error["message"]

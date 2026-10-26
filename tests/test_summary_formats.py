@@ -67,6 +67,7 @@ def test_json_is_gapit_summary_1(monkeypatch: pytest.MonkeyPatch) -> None:
     assert document.tool.name == "gapit"
     assert document.created_at == "2026-09-17T12:00:00Z"
     assert document.params.metric == "%COVERAGE"
+    assert document.params.metrics == ["%COVERAGE"]
     assert document.params.nopath is False
     assert document.genes == ["feature_a", "feature_b"]
     sample_a = next(row for row in document.rows if row.file == "sample_a.tsv")
@@ -86,8 +87,21 @@ def test_json_identity_param_carries_metric(monkeypatch: pytest.MonkeyPatch) -> 
         render_summary_json(build(["sample_a.tsv"], SummaryParams(identity=True)), now=PINNED_NOW)
     )
     assert document.params.metric == "%IDENTITY"
+    assert document.params.metrics == ["%IDENTITY"]
     (row,) = document.rows
     assert row.cells["feature_a"] == ["98.75", "91.00"]
+
+
+def test_json_both_metrics_are_recorded(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given -ic, When rendered as JSON, Then params lists both metrics so an
+    agent can reproduce the cell construction (identity/coverage)."""
+    monkeypatch.chdir(FIXTURES)
+    params = SummaryParams(identity=True, coverage=True)
+    document = summary_adapter.validate_json(
+        render_summary_json(build(["sample_a.tsv"], params), now=PINNED_NOW)
+    )
+    assert document.params.metric == "%IDENTITY"
+    assert document.params.metrics == ["%IDENTITY", "%COVERAGE"]
 
 
 def test_md_frontmatter_and_matrix(monkeypatch: pytest.MonkeyPatch) -> None:

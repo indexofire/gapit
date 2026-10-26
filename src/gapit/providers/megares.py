@@ -11,7 +11,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from gapit.fasta import iter_fasta
-from gapit.providers.common import Provider
+from gapit.providers.common import Provider, safe_extractall
 from gapit.records import Record
 
 NAME = "megares"
@@ -42,7 +42,7 @@ def transform(workdir: Path) -> Iterator[Record]:
     a folded note is non-empty, so over-long ids skip exactly like upstream.
     """
     with zipfile.ZipFile(workdir / ARCHIVE) as archive:
-        archive.extractall(workdir)
+        safe_extractall(archive, workdir)
     for fasta_path in sorted(workdir.rglob(_DATABASE_GLOB)):
         for fasta in iter_fasta(fasta_path):
             parts = fasta.id.split("|", 5)

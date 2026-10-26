@@ -18,6 +18,7 @@ from rich.console import Console
 from gapit.cli import app
 from gapit.db_ops import db_list_entries, db_list_table
 from gapit.providers import REGISTRY
+from gapit.records import Manifest, write_manifest
 
 DATA = Path(__file__).parent / "data" / "cluster"
 
@@ -178,3 +179,29 @@ def test_db_list_json_surfaces_a_bundled_content_license(tmp_path: Path) -> None
 
     entries = {entry.name: entry for entry in db_list_entries(tmp_path)}
     assert entries["vp_ok"].license == "MIT (database content)"
+
+
+def test_db_list_does_not_call_a_manifest_only_dir_installed(tmp_path: Path) -> None:
+    """Given a manifest without sequences, When db list runs, Then the row is
+    available, not installed (a half-built DB is not usable)."""
+    datadir = tmp_path / "datadir"
+    db_dir = datadir / "card"
+    db_dir.mkdir(parents=True)
+    write_manifest(
+        Manifest(
+            name="card",
+            source_urls=(),
+            fetched_at="2026-01-01T00:00:00Z",
+            sha256="0" * 64,
+            n_records=1,
+            dbtype="nucl",
+        ),
+        db_dir / "gapit-manifest.json",
+    )
+
+    result = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
+
+    assert result.exit_code == 0
+    by_name = {entry["name"]: entry for entry in json.loads(result.stdout)["providers"]}
+    assert by_name["card"]["installed"] is False
+    assert "records" not in by_name["card"]

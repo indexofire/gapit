@@ -43,11 +43,15 @@ def _resolve_inputs(files: list[Path] | None, fofn: Path | None) -> list[Path]:
                 code="INPUT_NOT_FOUND",
                 context={"file": str(fofn)},
             )
-        inputs = [
-            Path(line.strip())
-            for line in fofn.read_text(encoding="utf-8").splitlines()
-            if line.strip()
-        ]
+        try:
+            fofn_text = fofn.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            raise InputError(
+                f"--fofn file could not be read: {fofn}",
+                code="INPUT_NOT_FOUND",
+                context={"file": str(fofn)},
+            ) from exc
+        inputs = [Path(line.strip()) for line in fofn_text.splitlines() if line.strip()]
     elif files:
         inputs = list(files)
     else:

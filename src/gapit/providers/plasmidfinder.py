@@ -22,7 +22,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from gapit.fasta import iter_fasta
-from gapit.providers.common import Provider
+from gapit.providers.common import Provider, safe_extractall
 from gapit.records import Record
 
 NAME = "plasmidfinder"
@@ -43,7 +43,7 @@ def transform(workdir: Path) -> Iterator[Record]:
     sorted order for determinism.
     """
     with zipfile.ZipFile(workdir / ARCHIVE) as archive:
-        archive.extractall(workdir)
+        safe_extractall(archive, workdir)
     for fsa in sorted(workdir.glob("**/*.fsa")):
         for fasta in iter_fasta(fsa):
             id_match = _ID.match(fasta.id)

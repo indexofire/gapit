@@ -576,6 +576,48 @@ class TestComposeValidation:
             "fallback": "O?:K?",
         }
 
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("fallback", "A\tB"),
+            ("fallback", "A\nB"),
+            ("phenotype", "A\tB"),
+            ("notes", ["note\n"]),
+        ],
+    )
+    def test_table_delimiters_in_typing_text_are_malformed(
+        self, tmp_path: Path, field: str, value: object
+    ) -> None:
+        """Given a phenotype/fallback/note containing a TSV delimiter, When
+        read, Then TYPING_MALFORMED fires before any table output can break."""
+        scheme = scheme_document("bad")
+        if field == "fallback":
+            scheme["fallback"] = value
+        else:
+            rule: dict[str, object] = dict(WEIGHTED_GENES_RULE)
+            rule[field] = value
+            scheme["rules"] = [rule]
+        path = write_document(tmp_path, v2_document([scheme]))
+
+        with pytest.raises(DatabaseError) as excinfo:
+            read_typing_document(path)
+
+        assert excinfo.value.code == "TYPING_MALFORMED"
+        assert "table delimiter" in str(excinfo.value)
+
+    def test_compose_without_placeholders_is_malformed(self, tmp_path: Path) -> None:
+        """Given a compose template with no {name} placeholder, When read,
+        Then TYPING_MALFORMED (an empty placeholder set would crash scoring)."""
+        path = write_document(
+            tmp_path, v2_document([*self.ingredients(), self.compose_scheme("K1")])
+        )
+
+        with pytest.raises(DatabaseError) as excinfo:
+            read_typing_document(path)
+
+        assert excinfo.value.code == "TYPING_MALFORMED"
+        assert "at least one" in str(excinfo.value)
+
     def test_valid_compose_document_parses(self, tmp_path: Path) -> None:
         """Given a compose scheme over two sibling schemes, When read, Then
         the document parses with the template intact."""

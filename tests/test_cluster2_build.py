@@ -24,7 +24,7 @@ from gapit.formats.cluster2 import (
     format_cluster2_tsv,
 )
 from gapit.gbfeatures import parse_genbank_features
-from gapit.typing_models import read_typing_document
+from gapit.typing_models import TypingDocument, read_typing_document
 from gapit.typing_results import SchemeCall
 
 DATA = Path(__file__).parent / "data" / "cluster"
@@ -258,3 +258,40 @@ class TestPhenotypesCell:
             ).splitlines()[-1]
             == "sample.fa,O3/O13:KUT,O3/O13,OL3_or_O13,100.00,99.50,3,0,-,KUT,-,-,-,-,-,-"
         )
+
+
+def test_colliding_evidence_prefixes_fall_back_to_full_tokens() -> None:
+    """Given schemes o_group and o (both preferring O), When /2 columns are
+    derived, Then they use O_GROUP/O prefixes so no column name repeats."""
+    rule = {
+        "model": "weighted_genes",
+        "phenotype": "X",
+        "weights": {"g": 1.0},
+        "identity_floor": 90.0,
+    }
+    document = TypingDocument.model_validate(
+        {
+            "schemes": [
+                {
+                    "name": "o_group",
+                    "rules": [rule],
+                    "cutoff": 0.5,
+                    "ambiguity_margin": 0.1,
+                    "fallback": "OUT",
+                },
+                {
+                    "name": "o",
+                    "rules": [rule],
+                    "cutoff": 0.5,
+                    "ambiguity_margin": 0.1,
+                    "fallback": "OUT",
+                },
+            ]
+        }
+    )
+
+    columns = cluster2_columns(document)
+
+    assert len(columns) == len(set(columns))
+    assert "O_GROUP_LOCUS" in columns
+    assert "O_LOCUS" in columns

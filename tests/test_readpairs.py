@@ -208,3 +208,17 @@ def test_pair_samples_nested_markers_take_the_longest_suffix() -> None:
     samples = pair_samples([Path("s_R1_001.fq"), Path("s_R2_001.fq")], warn=warn)
     assert samples == [SampleLanes(sample="s", lanes=((Path("s_R1_001.fq"), Path("s_R2_001.fq")),))]
     assert messages == []
+
+
+def test_pair_samples_gzip_extensions_strip() -> None:
+    """Given .fastq.gzip inputs (recognized by the reads positional router),
+    When paired, Then the compression suffix strips like .gz."""
+    messages, warn = collect_warnings()
+    samples = pair_samples([Path("g_1.fastq.gzip"), Path("g_2.fastq.gzip")], warn=warn)
+    assert samples == [
+        SampleLanes(
+            sample="g",
+            lanes=((Path("g_1.fastq.gzip"), Path("g_2.fastq.gzip")),),
+        )
+    ]
+    assert messages == []
