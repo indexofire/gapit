@@ -563,7 +563,7 @@ versions. A real one, from the plasmidfinder database:
   "upstream_version": "",
   "tool": {
     "name": "gapit",
-    "version": "0.6.0"
+    "version": "0.6.1"
   },
   "makeblastdb_version": "blastn: 2.17.0+",
   "minimap2_version": "2.31-r1302"

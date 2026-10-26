@@ -13,7 +13,7 @@ Version, as one JSON line:
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.0"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.6.1"}
 ```
 
 Output schemas. Twelve documents are introspectable: `report`, `typing_result`, `reads`,
