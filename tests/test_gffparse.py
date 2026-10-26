@@ -127,3 +127,20 @@ def test_zero_start_cds_raises_typed_input_error(tmp_path: Path) -> None:
     with pytest.raises(InputError) as excinfo:
         parse_gff3_features(path)
     assert excinfo.value.code == "GENE_OUT_OF_BOUNDS"
+
+
+@pytest.mark.parametrize(("start", "end"), [("1", "0"), ("10", "5")])
+def test_gff_invalid_coordinate_ranges_are_typed(tmp_path: Path, start: str, end: str) -> None:
+    """Given end < 1 or start > end, When parsed, Then GENE_OUT_OF_BOUNDS
+    fires instead of a pydantic ValidationError."""
+    path = tmp_path / "bad.gff3"
+    path.write_text(
+        "##gff-version 3\nL1\tx\tCDS\t" + start + "\t" + end + "\t.\t+\t0\tgene=abc\n"
+        "##FASTA\n>L1\n" + "ACGT" * 20 + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(InputError) as excinfo:
+        parse_gff3_features(path)
+
+    assert excinfo.value.code == "GENE_OUT_OF_BOUNDS"

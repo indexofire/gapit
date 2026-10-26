@@ -143,7 +143,7 @@ def render_typing_md(
         f"created_at: {utc_timestamp(now)}",
         f"db: {yaml_scalar(db)}",
         "source:",
-        *(f"  - {entry}" for entry in source),
+        *(f"  - {yaml_scalar(entry)}" for entry in source),
         f"files: {len(files)}",
         "---",
         "",

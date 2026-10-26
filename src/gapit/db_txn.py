@@ -36,7 +36,7 @@ def _lock_path(db_dir: Path) -> Path:
 
 
 @contextmanager
-def _database_lock(db_dir: Path) -> Generator[None, None, None]:
+def database_lock(db_dir: Path) -> Generator[None, None, None]:
     """Hold the exclusive writer lock for ``db_dir`` (blocking).
 
     ``flock`` is released by closing the file, including on exceptions and
@@ -110,7 +110,7 @@ def staged_database(db_dir: Path) -> Generator[Path, None, None]:
     """
     parent = db_dir.parent
     parent.mkdir(parents=True, exist_ok=True)
-    with _database_lock(db_dir):
+    with database_lock(db_dir):
         staging = Path(tempfile.mkdtemp(prefix=f"{TXN_PREFIX}build.{db_dir.name}.", dir=parent))
         try:
             yield staging

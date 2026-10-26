@@ -116,6 +116,7 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     min_breadth = _number(arguments, "min_breadth", 90.0)
     min_identity = _number(arguments, "min_identity", 0.0)
     min_mapq = _integer(arguments, "min_mapq", 0)
+    all_genes = _flag(arguments, "all_genes")
     merge_fragments = _flag(arguments, "mergeFragments")
     min_gene_cov = _number(arguments, "minGeneCov", 90.0)
     min_gene_id = _number(arguments, "minGeneId", 90.0)
@@ -144,9 +145,12 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
             quiet=True,
             minid=minid,
             mincov=mincov,
+            all_genes=all_genes,
         )
     if (min_breadth, min_identity, min_mapq) != (90.0, 0.0, 0):
         usage_fail("reads-mode parameters require aligner minimap2")
+    if all_genes:
+        usage_fail("all_genes requires aligner minimap2")
     return run_screen(
         files=files,
         db_name=db_name,
@@ -200,6 +204,7 @@ def _tool_screen_reads(arguments: dict[str, Any]) -> str:
     if not 0.0 <= min_identity <= 100.0:
         usage_fail(f"min_identity must be in [0, 100]: got {min_identity}")
     min_mapq = _integer(arguments, "min_mapq", 0)
+    all_genes = _flag(arguments, "all_genes")
     # lane pairing is validated by the use-case (frozen CLI message)
     return run_screen_reads(
         r1,
@@ -213,6 +218,7 @@ def _tool_screen_reads(arguments: dict[str, Any]) -> str:
         threads=1,
         output_format=OutputFormat(output_format),
         quiet=True,
+        all_genes=all_genes,
     )
 
 

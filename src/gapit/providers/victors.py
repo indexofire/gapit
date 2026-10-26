@@ -101,8 +101,8 @@ PROVIDER = Provider(
     description="Victors virulence factors",
     vendor="University of Chicago",
     source_urls=(
-        "http://phidias.us/victors/downloads/gen_downloads.php",
-        "http://phidias.us/victors/downloads/gen_downloads_protein.php",
+        "https://phidias.us/victors/downloads/gen_downloads.php",
+        "https://phidias.us/victors/downloads/gen_downloads_protein.php",
     ),
     dbtype="nucl",
     transform=transform,

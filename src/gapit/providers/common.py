@@ -124,8 +124,8 @@ def url_basename(url: str) -> str:
 def insecure_source_urls(urls: Sequence[str]) -> tuple[str, ...]:
     """The source URLs not protected by TLS (plain ``http://``).
 
-    The catalog still has three HTTP-only upstreams; flagging them keeps the
-    integrity limitation visible in ``db fetch`` diagnostics."""
+    BacMet2 remains HTTP-only (its host did not serve HTTPS during the audit);
+    flagging it keeps the integrity limitation visible in ``db fetch`` diagnostics."""
     return tuple(url for url in urls if urlparse(url).scheme == "http")
 
 

@@ -65,10 +65,10 @@ def _gene(row: list[str], path: Path, line_no: int) -> tuple[str, GeneFeature]:
             f"{path}: CDS at line {line_no} has no gene/Name/locus_tag attribute",
             line=str(line_no),
         )
-    if start < 1:
+    if start < 1 or end < 1 or start > end:
         raise _fail(
             "GENE_OUT_OF_BOUNDS",
-            f"{path}: locus {seqid!r} gene {gene_id!r} starts before coordinate 1",
+            f"{path}: locus {seqid!r} gene {gene_id!r} has invalid coordinates {start}..{end}",
             locus=seqid,
             gene=gene_id,
         )

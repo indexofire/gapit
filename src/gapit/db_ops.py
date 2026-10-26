@@ -60,6 +60,7 @@ class DbListEntry(BaseModel, frozen=True):
     description: str
     dbtype: str
     installed: bool
+    indexed: bool = False
     records: int | None = None
     # Installed providers inherit their manifest's kind (cluster for a
     # GBK/GFF-built db shadowing a provider name); the default is gene.
@@ -205,6 +206,7 @@ def _extra_entries(root: Path, bundled: frozenset[str]) -> list[DbListEntry]:
                 description=(manifest.note or "") if manifest else "",
                 dbtype=manifest.dbtype if manifest else _detected_dbtype(database),
                 installed=True,
+                indexed=_has_blast_index(database.sequences_path),
                 records=(
                     manifest.n_records
                     if manifest
@@ -215,6 +217,14 @@ def _extra_entries(root: Path, bundled: frozenset[str]) -> list[DbListEntry]:
             )
         )
     return entries
+
+
+def _has_blast_index(sequences_path: Path) -> bool:
+    """Whether either BLAST index family exists for this sequences file."""
+    return any(
+        (sequences_path.parent / f"{sequences_path.name}{suffix}").exists()
+        for suffix in (".nin", ".pin")
+    )
 
 
 def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbListEntry]:
@@ -237,6 +247,11 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
                 description=database.metadata.description,
                 dbtype=manifest.dbtype if manifest else database.metadata.dbtype,
                 installed=manifest is not None,
+                indexed=(
+                    _has_blast_index(root / database.name / "sequences")
+                    if manifest is not None
+                    else False
+                ),
                 records=manifest.n_records if manifest else None,
                 kind=manifest.kind if manifest else database.metadata.kind,
                 license=database.metadata.license or None,
@@ -271,6 +286,9 @@ def db_list_entries(root: Path) -> list[DbListEntry]:
                 description=provider.description,
                 dbtype=provider.dbtype,
                 installed=installed,
+                indexed=(
+                    _has_blast_index(root / provider_name / "sequences") if installed else False
+                ),
                 records=manifest.n_records if manifest else None,
                 kind=manifest.kind if manifest else provider.kind,
                 license=provider.license,

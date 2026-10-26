@@ -61,6 +61,19 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Documentation:** new `docs/datadir.md` (+zh), complete database catalog rows,
   fixed anchors/links, historical `PLAN.md`, synced AGENTS tree, and new
   `CONTRIBUTING.md`/`SECURITY.md`/`CITATION.cff`.
+- **Provider transport.** VFDB and Victors moved to HTTPS after verifying their
+  endpoints; BacMet2 remains HTTP-only and keeps the always-on warning.
+- **Shared setupdb locking.** `setupdb` index rebuilds now take the same per-database
+  writer lock as fetch/build; gseek's index-policy cache is lock-protected and drops
+  stale keys for a replaced target.
+- **GFF coordinate validation.** `end < 1` and `start > end` now raise typed
+  `GENE_OUT_OF_BOUNDS` instead of a pydantic `ValidationError`.
+- **`db list` index visibility.** `gapit.dblist/1` entries carry `indexed`, so an
+  installed-but-unindexed database is distinguishable from a ready one.
+- **MCP `all_genes`.** The screen/screen_reads tools expose the reads-table flag.
+- **Typing Markdown safety.** Source paths in YAML frontmatter are quoted.
+- **Fuzz/CI hardening.** Added deterministic parser fuzz smoke tests and a weekly
+  cache-free CI canary in addition to the release gates.
 
 ### Added
 

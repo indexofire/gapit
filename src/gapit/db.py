@@ -11,7 +11,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from gapit.db_txn import TXN_PREFIX
+from gapit.db_txn import TXN_PREFIX, database_lock
 from gapit.errors import DatabaseError, DependencyError, InputError
 from gapit.fasta import iter_fasta
 from gapit.proctools import run_tool
@@ -250,12 +250,13 @@ def list_databases(datadir: Path, *, setupdb: bool, debug: bool = False) -> list
     infos: list[DatabaseInfo] = []
     for database in discover_databases(datadir):
         if setupdb:
-            make_blast_db(
-                database.sequences_path,
-                database.name,
-                dbtype=_manifest_dbtype(database.path),
-                debug=debug,
-            )
+            with database_lock(database.path):
+                make_blast_db(
+                    database.sequences_path,
+                    database.name,
+                    dbtype=_manifest_dbtype(database.path),
+                    debug=debug,
+                )
         sequences = database.sequences_path
         index_exists = any(
             (sequences.parent / f"{sequences.name}{suffix}").exists() for suffix in (".nin", ".pin")

@@ -205,3 +205,30 @@ def test_db_list_does_not_call_a_manifest_only_dir_installed(tmp_path: Path) -> 
     by_name = {entry["name"]: entry for entry in json.loads(result.stdout)["providers"]}
     assert by_name["card"]["installed"] is False
     assert "records" not in by_name["card"]
+
+
+def test_db_list_reports_installed_but_unindexed(tmp_path: Path) -> None:
+    """Given a manifest with sequences but no BLAST index, When db list runs,
+    Then installed is true but indexed is false (screen still needs setupdb)."""
+    datadir = tmp_path / "datadir"
+    db_dir = datadir / "card"
+    db_dir.mkdir(parents=True)
+    (db_dir / "sequences").write_text(">g\nACGT\n", encoding="utf-8")
+    write_manifest(
+        Manifest(
+            name="card",
+            source_urls=(),
+            fetched_at="2026-01-01T00:00:00Z",
+            sha256="0" * 64,
+            n_records=1,
+            dbtype="nucl",
+        ),
+        db_dir / "gapit-manifest.json",
+    )
+
+    result = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
+
+    assert result.exit_code == 0
+    by_name = {entry["name"]: entry for entry in json.loads(result.stdout)["providers"]}
+    assert by_name["card"]["installed"] is True
+    assert by_name["card"]["indexed"] is False

@@ -131,7 +131,8 @@ $ gapit db list --json
 | `providers[].description` | string | Short content summary |
 | `providers[].dbtype` | string | `nucl` (screened with blastn) or `prot` (screened with blastx) |
 | `providers[].kind` | string | `gene` (per-gene BLAST screening) or `cluster` (minimap2 locus screening, [screen.md](./screen.md#cluster-databases-kind-cluster)) |
-| `providers[].installed` | boolean | True when a manifest exists in the datadir |
+| `providers[].installed` | boolean | True when a manifest and readable `sequences` exist in the datadir |
+| `providers[].indexed` | boolean | True when a BLAST index (`.nin` or `.pin`) exists; `setupdb` rebuilds a missing/stale one |
 | `providers[].records` | integer | Record count, omitted when the database isn't installed |
 | `providers[].license` | string | Upstream content license, omitted unless the provider or bundled snapshot pins one (card, vfdb, ecoli_vf, kaptive, bundled content) |
 | `providers[].source` | string | `local` for a datadir-discovered database outside the catalog (`db build` / `db install`), `bundled` for a wheel-shipped database (see below); absent for registry entries |

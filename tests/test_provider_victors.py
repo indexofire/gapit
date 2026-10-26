@@ -56,8 +56,8 @@ def test_provider_metadata_matches_spec() -> None:
     assert PROVIDER.name == "victors"
     assert PROVIDER.description == "Victors virulence factors"
     assert PROVIDER.source_urls == (
-        "http://phidias.us/victors/downloads/gen_downloads.php",
-        "http://phidias.us/victors/downloads/gen_downloads_protein.php",
+        "https://phidias.us/victors/downloads/gen_downloads.php",
+        "https://phidias.us/victors/downloads/gen_downloads_protein.php",
     )
     assert PROVIDER.dbtype == "nucl"
 

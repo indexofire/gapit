@@ -17,6 +17,7 @@ import logging
 import os
 import sys
 import tempfile
+import threading
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol, TypeVar, cast
@@ -176,6 +177,7 @@ def _blast_row(record: _GseekRecord, *, protein: bool = False) -> BlastRow:
 
 
 _INDEX_POLICY: dict[tuple[Path, int, int], str] = {}
+_INDEX_POLICY_LOCK = threading.Lock()
 _MINIMAP2_NAME_LIMIT = 255
 
 
@@ -193,19 +195,22 @@ def _minimap2_index_policy(database: Database) -> str:
     except OSError:
         return "auto"
     cache_key = (path, stat.st_mtime_ns, stat.st_size)
-    cached = _INDEX_POLICY.get(cache_key)
-    if cached is not None:
-        return cached
-    policy = "auto"
-    with path.open(encoding="utf-8") as handle:
-        for line in handle:
-            if line.startswith(">"):
-                name = line[1:].split(maxsplit=1)[0]
-                if len(name) > _MINIMAP2_NAME_LIMIT:
-                    policy = "none"
-                    break
-    _INDEX_POLICY[cache_key] = policy
-    return policy
+    with _INDEX_POLICY_LOCK:
+        cached = _INDEX_POLICY.get(cache_key)
+        if cached is not None:
+            return cached
+        policy = "auto"
+        with path.open(encoding="utf-8") as handle:
+            for line in handle:
+                if line.startswith(">"):
+                    name = line[1:].split(maxsplit=1)[0]
+                    if len(name) > _MINIMAP2_NAME_LIMIT:
+                        policy = "none"
+                        break
+        for old_key in [key for key in _INDEX_POLICY if key[0] == path and key != cache_key]:
+            del _INDEX_POLICY[old_key]
+        _INDEX_POLICY[cache_key] = policy
+        return policy
 
 
 def _paf_record(record: _GseekRecord) -> PafRecord:

@@ -126,7 +126,8 @@ $ gapit db list --json
 | `providers[].description` | string | 内容简述 |
 | `providers[].dbtype` | string | `nucl`（用 blastn 筛查）或 `prot`（用 blastx 筛查） |
 | `providers[].kind` | string | `gene`（逐基因 BLAST 筛查）或 `cluster`（minimap2 位点筛查，见 [screen.md](./screen.md)） |
-| `providers[].installed` | boolean | 数据目录里存在 manifest 时为 true |
+| `providers[].installed` | boolean | 数据目录里同时存在 manifest 和可读 `sequences` 时为 true |
+| `providers[].indexed` | boolean | 存在 BLAST 索引（`.nin` 或 `.pin`）时为 true；缺失/过期时用 `setupdb` 重建 |
 | `providers[].records` | integer | 记录数，数据库未安装时省略 |
 | `providers[].license` | string | 上游内容许可证，仅提供商或内置快照声明时出现（card、vfdb、ecoli_vf、kaptive、内置内容） |
 | `providers[].source` | string | 目录之外装进数据目录的数据库（`db build` / `db install`）为 `local`，wheel 内置数据库为 `bundled`（见下）；注册表条目省略该字段 |

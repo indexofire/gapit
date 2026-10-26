@@ -41,7 +41,7 @@ def test_provider_metadata_matches_spec() -> None:
     source URLs, and dbtype match the Wave B5 spec (frozen B0 contract)."""
     assert PROVIDER.name == "vfdb"
     assert PROVIDER.description == "VFDB virulence factors (set A, nucleotide)"
-    assert PROVIDER.source_urls == ("http://www.mgc.ac.cn/VFs/Down/VFDB_setA_nt.fas.gz",)
+    assert PROVIDER.source_urls == ("https://www.mgc.ac.cn/VFs/Down/VFDB_setA_nt.fas.gz",)
     assert PROVIDER.dbtype == "nucl"
 
 
