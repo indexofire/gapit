@@ -164,7 +164,7 @@ docker run --rm -it \
   --user "$(id -u):$(id -g)" \
   -v gapit-data:/data/gapit \
   -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.1 gapit db list
+  gapit:0.6.2 gapit db list
 ```
 
 CI 中挂载或缓存 workspace 目录，并固定版本：
@@ -173,7 +173,7 @@ CI 中挂载或缓存 workspace 目录，并固定版本：
 docker run --rm \
   -v "$PWD/.gapit-db:/data/gapit" \
   -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.1 gapit screen sample.fna --db ecoli_dec
+  gapit:0.6.2 gapit screen sample.fna --db ecoli_dec
 ```
 
 可以为**只读**筛查把参考库烤进镜像：
