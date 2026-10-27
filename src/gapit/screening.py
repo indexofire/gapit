@@ -119,6 +119,7 @@ def run_screen(
     min_gene_id: float = 90.0,
     min_cluster_cov: float = 96.0,
     emit: Emit | None = None,
+    stdout_emit: bool = False,
 ) -> str:
     """Screen each input file in order and render; returns the full output
     for the caller to echo (MCP contract), and when ``emit`` is given also
@@ -212,8 +213,11 @@ def run_screen(
             if chunk:
                 chunks.append(chunk)
                 if emit is not None:
-                    with bar.suspend():
-                        emit(chunk)
+                    if stdout_emit:
+                        bar.write(chunk)
+                    else:
+                        with bar.suspend():
+                            emit(chunk)
 
         if output_format is OutputFormat.json:
             sink(render_json(list(iter_reports()), params, now=datetime.now(UTC)))

@@ -309,11 +309,11 @@ def test_live_batch_suspend_stops_and_restarts_the_bar(
             return None
 
     monkeypatch.setattr(gapit.progress, "make_progress", FakeProgress)
-    with screen_progress(["a"], quiet=False) as (bar, task_id):
+    with screen_progress(["a", "b"], quiet=False) as (bar, task_id):
         assert task_id == 1
         with bar.suspend():
             events.append("data")
-    assert events == ["add:Screening", "stop", "data", "start", "refresh"]
+    assert events == ["add:Screening", "stop", "data", "start"]
 
 
 def test_fetch_emit_callback_runs_inside_the_bar(
@@ -331,3 +331,41 @@ def test_fetch_emit_callback_runs_inside_the_bar(
     received = list(perform_fetch("all", datadir, quiet=True, emit=emitted.append))
     assert [r.db for r in emitted] == ["resfinder", "resfinder2"]
     assert emitted == received
+
+
+def test_live_batch_write_stops_the_bar_for_stdout(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Given a live bar, When data is written through write(), Then the bar
+    stops, stdout receives the bytes on a clean line, and the bar restarts."""
+    events: list[str] = []
+
+    class FakeProgress:
+        console = SimpleNamespace(is_terminal=True)
+
+        def add_task(self, description: str, *, total: int) -> int:
+            return 1
+
+        def update(self, task_id: int, *, description: str) -> None:
+            return None
+
+        def advance(self, task_id: int) -> None:
+            return None
+
+        def stop(self) -> None:
+            events.append("stop")
+
+        def start(self) -> None:
+            events.append("start")
+
+        def __enter__(self) -> "FakeProgress":
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+    monkeypatch.setattr(gapit.progress, "make_progress", FakeProgress)
+    with screen_progress(["a", "b"], quiet=False) as (bar, _task_id):
+        bar.write("row\n")
+    assert events == ["stop", "start"]
+    assert capsys.readouterr().out == "row\n"

@@ -299,6 +299,7 @@ def screen_command(
                     jobs=jobs,
                     emit=deliver,
                     all_genes=all_genes,
+                    stdout_emit=output is None,
                 )
             elif aligner is AlignerEnum.minimap2:
                 if merge_fragments:
@@ -350,6 +351,7 @@ def screen_command(
                     min_gene_id=min_gene_id,
                     min_cluster_cov=min_cluster_cov,
                     emit=deliver,
+                    stdout_emit=output is None,
                 )
 
     dispatch(run)

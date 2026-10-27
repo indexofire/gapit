@@ -61,6 +61,7 @@ def run_screen_reads_positional(
     jobs: int = 1,
     emit: Emit | None = None,
     all_genes: bool = False,
+    stdout_emit: bool = False,
 ) -> str:
     """Screen positional FASTQ file(s) as auto-paired samples: one minimap2
     run per lane, per-sample union, one files[] entry per sample (reads[]
@@ -147,8 +148,11 @@ def run_screen_reads_positional(
             if chunk:
                 chunks.append(chunk)
                 if emit is not None:
-                    with bar.suspend():
-                        emit(chunk)
+                    if stdout_emit:
+                        bar.write(chunk)
+                    else:
+                        with bar.suspend():
+                            emit(chunk)
 
         if fmt is OutputFormat.md:
             # Static frontmatter leads (knowable before sample 1), then one

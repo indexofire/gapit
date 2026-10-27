@@ -15,6 +15,7 @@ print byte-identically; when active the bar REPLACES those notes (its
 M/N + description carry them).
 """
 
+import sys
 from collections.abc import Generator, Sequence
 from contextlib import AbstractContextManager, contextmanager, nullcontext
 from typing import Final, Protocol
@@ -46,14 +47,16 @@ class BatchProgress(Protocol):
         """Mark one batch item completed."""
         ...
 
-    def suspend(self) -> AbstractContextManager[None]:
-        """Temporarily remove the live bar while data is written to stdout.
+    def write(self, text: str) -> None:
+        """Write a stdout data chunk with the live bar suspended."""
+        ...
 
-        On a shared TTY the bar and stdout share one cursor; writing a data
-        row while a Live bar is active makes the row start mid-bar. Callers
-        wrap each stdout emission in this context so the bar is cleared,
-        the row is written on a clean line, and the bar is redrawn below.
-        """
+    def notice(self, text: str) -> None:
+        """Write a stderr notice without corrupting the live bar."""
+        ...
+
+    def suspend(self) -> AbstractContextManager[None]:
+        """Suspend the live bar around an arbitrary stdout/file write."""
         ...
 
 
@@ -70,6 +73,12 @@ class IdleBatch:
 
     def advance(self) -> None:
         return None
+
+    def write(self, text: str) -> None:
+        print(text, end="", flush=True)
+
+    def notice(self, text: str) -> None:
+        print(text, file=sys.stderr)
 
     def suspend(self) -> AbstractContextManager[None]:
         return nullcontext()
@@ -89,14 +98,29 @@ class _LiveBatch:
     def advance(self) -> None:
         self._progress.advance(self._task_id)
 
+    def write(self, text: str) -> None:
+        self._progress.stop()
+        try:
+            sys.stdout.write(text)
+            sys.stdout.flush()
+        finally:
+            self._progress.start()
+
+    def notice(self, text: str) -> None:
+        self._progress.stop()
+        try:
+            print(text, file=sys.stderr)
+        finally:
+            self._progress.start()
+
     @contextmanager
     def suspend(self) -> Generator[None, None, None]:
         self._progress.stop()
         try:
             yield
         finally:
+            sys.stdout.flush()
             self._progress.start()
-            self._progress.refresh()
 
 
 _IDLE: Final = IdleBatch()
@@ -116,6 +140,7 @@ def make_progress() -> Progress:
         console=STATUS_CONSOLE,
         redirect_stdout=False,
         redirect_stderr=False,
+        transient=True,
     )
 
 
@@ -133,7 +158,7 @@ def screen_progress(
     ``description`` with total ``len(items)`` and call sites REPLACE their
     per-file notes with bar updates.
     """
-    progress = None if quiet else make_progress()
+    progress = None if quiet or len(items) <= 1 else make_progress()
     if progress is not None and progress.console.is_terminal:
         with progress:
             task_id = progress.add_task(description, total=len(items))
