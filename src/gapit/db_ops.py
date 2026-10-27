@@ -7,7 +7,7 @@ the gapit.dblist/1 database listing. The CLI commands
 callers — this module owns the behavior and imports no CLI plumbing.
 """
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
@@ -112,6 +112,7 @@ def perform_fetch(
     force: bool = False,
     quiet: bool = True,
     debug: bool = False,
+    emit: Callable[[ProviderReceipt], None] | None = None,
 ) -> Iterator[ProviderReceipt]:
     """Fetch database(s) into <datadir>/NAME — the shared CLI + MCP
     path. NAME ``all`` installs every database in DEFAULT_DBS order; each
@@ -163,6 +164,9 @@ def perform_fetch(
                 bar.describe(provider_name)
             receipt = fetch_one(provider_name)
             bar.advance()
+            if emit is not None:
+                with bar.suspend():
+                    emit(receipt)
             yield receipt
 
 

@@ -199,8 +199,10 @@ progress bar on **stderr** — spinner, the current file's basename, bar, M/N co
 elapsed time — replacing the per-file `Processing:`/`Found N genes` notes while it runs (the
 `--jobs × --threads` oversubscription note still prints). Piped or redirected stderr and
 `--quiet` keep the plain notes byte-identically — progress bars in logs are noise. The bar
-lives entirely on stderr: stdout bytes are identical with it on or off. The positional-FASTQ
-wildcard batch ([./reads.md](./reads.md)) and `gapit db fetch all` carry the same bar.
+lives entirely on stderr: stdout bytes are identical with it on or off. Before each
+stdout chunk the bar is suspended, so rows start on a clean line and the bar redraws below
+them instead of mixing with the data. The positional-FASTQ wildcard batch
+([./reads.md](./reads.md)) and `gapit db fetch all` carry the same bar.
 
 ### Typed gene databases: designation is a second command
 

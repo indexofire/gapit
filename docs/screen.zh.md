@@ -196,8 +196,9 @@ rich 进度条 —— 转轮、当前文件基名、进度条、M/N 计数、百
 期间取代逐文件的 `Processing:`/`Found N genes` 提示（`--jobs × --threads` 超订用提示
 仍然打印）。stderr 被管道或重定向、以及 `--quiet` 时，保持与今天逐字节相同的纯文本
 提示 —— 日志里的进度条只是噪音。进度条完全生存在 stderr 一侧：开与关的 stdout 字节
-完全一致。位置参数 FASTQ 通配符批量（[./reads.zh.md](./reads.zh.md)）与
-`gapit db fetch all` 使用同一条进度条。
+完全一致。每次写 stdout 数据块前会暂停进度条，因此数据行从干净的新行开始，进度条在
+其下方重绘，而不是与数据混在同一行。位置参数 FASTQ 通配符批量
+（[./reads.zh.md](./reads.zh.md)）与 `gapit db fetch all` 使用同一条进度条。
 
 ### typed 基因数据库：判定是第二条命令
 

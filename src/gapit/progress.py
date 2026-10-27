@@ -16,7 +16,7 @@ M/N + description carry them).
 """
 
 from collections.abc import Generator, Sequence
-from contextlib import contextmanager
+from contextlib import AbstractContextManager, contextmanager, nullcontext
 from typing import Final, Protocol
 
 from rich.console import Console
@@ -46,6 +46,16 @@ class BatchProgress(Protocol):
         """Mark one batch item completed."""
         ...
 
+    def suspend(self) -> AbstractContextManager[None]:
+        """Temporarily remove the live bar while data is written to stdout.
+
+        On a shared TTY the bar and stdout share one cursor; writing a data
+        row while a Live bar is active makes the row start mid-bar. Callers
+        wrap each stdout emission in this context so the bar is cleared,
+        the row is written on a clean line, and the bar is redrawn below.
+        """
+        ...
+
 
 class IdleBatch:
     """No-op shim used when the bar is disabled (quiet or non-TTY stderr).
@@ -61,6 +71,9 @@ class IdleBatch:
     def advance(self) -> None:
         return None
 
+    def suspend(self) -> AbstractContextManager[None]:
+        return nullcontext()
+
 
 class _LiveBatch:
     """Adapter pinning a rich Progress to its one batch task."""
@@ -75,6 +88,15 @@ class _LiveBatch:
 
     def advance(self) -> None:
         self._progress.advance(self._task_id)
+
+    @contextmanager
+    def suspend(self) -> Generator[None, None, None]:
+        self._progress.stop()
+        try:
+            yield
+        finally:
+            self._progress.start()
+            self._progress.refresh()
 
 
 _IDLE: Final = IdleBatch()

@@ -12,6 +12,7 @@ import shutil
 import sys
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from rich.console import Console
@@ -269,3 +270,64 @@ def test_fetch_bar_advances_per_db_and_keeps_receipts(
     assert [receipt.db for receipt in bar_receipts] == ["resfinder", "resfinder2"]
     bar_text = sink.export_text(clear=False)
     assert "Fetching" in bar_text and "2/2" in bar_text
+
+
+def test_live_batch_suspend_stops_and_restarts_the_bar(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Given a live bar, When stdout data is emitted under suspend(), Then
+    the bar is stopped, the write happens on a clean line, and the bar is
+    restarted and refreshed."""
+    events: list[str] = []
+
+    class FakeProgress:
+        console = SimpleNamespace(is_terminal=True)
+
+        def add_task(self, description: str, *, total: int) -> int:
+            events.append(f"add:{description}")
+            return 1
+
+        def update(self, task_id: int, *, description: str) -> None:
+            events.append(f"describe:{description}")
+
+        def advance(self, task_id: int) -> None:
+            events.append("advance")
+
+        def stop(self) -> None:
+            events.append("stop")
+
+        def start(self) -> None:
+            events.append("start")
+
+        def refresh(self) -> None:
+            events.append("refresh")
+
+        def __enter__(self) -> "FakeProgress":
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+    monkeypatch.setattr(gapit.progress, "make_progress", FakeProgress)
+    with screen_progress(["a"], quiet=False) as (bar, task_id):
+        assert task_id == 1
+        with bar.suspend():
+            events.append("data")
+    assert events == ["add:Screening", "stop", "data", "start", "refresh"]
+
+
+def test_fetch_emit_callback_runs_inside_the_bar(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given perform_fetch(emit=...), When receipt lines are emitted, Then the
+    same receipts are yielded and the callback sees every database."""
+    provider = REGISTRY["resfinder"]
+    local = replace(provider, source_urls=(RESFINDER_ZIP.as_uri(),))
+    monkeypatch.setattr("gapit.db_ops.REGISTRY", {"resfinder": local, "resfinder2": local})
+    monkeypatch.setattr("gapit.db_ops.DEFAULT_DBS", ("resfinder", "resfinder2"))
+    datadir = tmp_path / "dd"
+    datadir.mkdir()
+    emitted: list[ProviderReceipt] = []
+    received = list(perform_fetch("all", datadir, quiet=True, emit=emitted.append))
+    assert [r.db for r in emitted] == ["resfinder", "resfinder2"]
+    assert emitted == received

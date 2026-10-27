@@ -147,7 +147,8 @@ def run_screen_reads_positional(
             if chunk:
                 chunks.append(chunk)
                 if emit is not None:
-                    emit(chunk)
+                    with bar.suspend():
+                        emit(chunk)
 
         if fmt is OutputFormat.md:
             # Static frontmatter leads (knowable before sample 1), then one

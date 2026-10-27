@@ -212,7 +212,8 @@ def run_screen(
             if chunk:
                 chunks.append(chunk)
                 if emit is not None:
-                    emit(chunk)
+                    with bar.suspend():
+                        emit(chunk)
 
         if output_format is OutputFormat.json:
             sink(render_json(list(iter_reports()), params, now=datetime.now(UTC)))

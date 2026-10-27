@@ -73,8 +73,15 @@ def db_fetch_command(
         # invocation with no NAME reaches this guard.
         if name is None:
             usage_fail("db fetch requires a database NAME or 'all' (see: gapit db list)")
-        for receipt in perform_fetch(name, datadir, force=force, quiet=quiet, debug=debug):
-            click.echo(receipt.model_dump_json())
+        for _receipt in perform_fetch(
+            name,
+            datadir,
+            force=force,
+            quiet=quiet,
+            debug=debug,
+            emit=lambda receipt: click.echo(receipt.model_dump_json()),
+        ):
+            pass
 
     dispatch(run)
 
