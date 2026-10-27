@@ -5,14 +5,17 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.4] - 2026-10-27
 
 ### Fixed
 
-- **Batch progress vs stdout data.** The rich progress bar now suspends before
-  each stdout chunk is emitted (screen batches, positional FASTQ samples, and
-  `db fetch` receipts) and redraws below it. On a shared TTY data rows no longer
-  start inside the bar line; stdout bytes are unchanged when output is piped.
+- **Batch progress vs stdout data.** The progress bar now uses the gside/gmlst
+  hand-off: `transient=True`, stdout chunks go through `BatchProgress.write`
+  (stop -> `sys.stdout.write` + flush -> start), and stderr notices have a
+  `notice()` hand-off. The bar is inactive for a single input. On a shared TTY
+  data rows no longer start inside the bar line; stdout bytes are unchanged when
+  output is piped. Applies to contig batches and positional FASTQ samples;
+  `db fetch` receipts use the same suspend/restore path.
 
 ## [0.6.3] - 2026-10-26
 

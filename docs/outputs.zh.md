@@ -130,7 +130,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.3"
+    "version": "0.6.4"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -220,7 +220,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 ```json
 {
   "schema": "gapit.typing_result/1",
-  "tool": {"name": "gapit", "version": "0.6.3"},
+  "tool": {"name": "gapit", "version": "0.6.4"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
   "db": "ecoli_dec",
@@ -403,7 +403,7 @@ typing 的数据库是同一个表头去掉 `PHENOTYPE`。没有位点判定的�
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.3"
+    "version": "0.6.4"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -526,7 +526,7 @@ agent 只凭二进制就能发现整个契约。
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.3"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.6.4"}
 ```
 
 `gapit schema <name>` 打印每个文档的 JSON Schema。十二个名字：`report`、

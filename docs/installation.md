@@ -48,9 +48,9 @@ gapit --version
 
 ```console
 $ gapit --version
-gapit 0.6.3
+gapit 0.6.4
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.3"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.6.4"}
 ```
 
 ## Optional gseek engine
