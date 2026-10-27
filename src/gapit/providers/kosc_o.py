@@ -48,12 +48,20 @@ PROVIDER = ClusterProvider(
                     " pneumoniae species complex. Microb Genom 2022;8(3):000800."
                 ),
                 doi="10.1099/mgen.0.000800",
+                note="The method and database scheme; the K. oxytoca complex loci ship"
+                " with the Kaptive v3 database set.",
+            ),
+            DbReference(
+                citation="klebgenomics/KoSC-surface-antigen-loci",
+                url="https://github.com/klebgenomics/KoSC-surface-antigen-loci",
+                note="The GenBank file actually fetched.",
             ),
         ),
         caveats=(
-            "O locus (OC) types are independent of K types; report both or neither.",
-            "The panel targets the K. oxytoca species complex — other Klebsiella species"
-            " give uncalibrated best-locus calls.",
+            "The panel covers the K. oxytoca species complex specifically; screening other"
+            " Klebsiella species against it produces misleading best-locus calls.",
+            "Locus calls are not serotype calls until calibrated against antisera for the"
+            " same population.",
         ),
     ),
 )

@@ -41,18 +41,27 @@ PROVIDER = ClusterProvider(
         references=(
             DbReference(
                 citation=(
-                    "Wyres KL, Wick RR, Gorrie C, Jenney A, Follador R, Thomson NR, Holt KE."
-                    " Identification of Klebsiella capsule synthesis loci from whole genome"
-                    " data. Microb Genom 2016;2(12):e000102."
+                    "Cahill SM, Hall RM, Kenyon JJ. An update to the database for"
+                    " Acinetobacter baumannii capsular polysaccharide locus typing extends"
+                    " the extensive and diverse repertoire of genes found at and outside the"
+                    " K locus. Microb Genom 2022;8(10)."
                 ),
-                doi="10.1099/mgen.0.000102",
+                doi="10.1099/mgen.0.000878",
+                note="The A. baumannii surface-polysaccharide locus database this provider"
+                " tracks (Kenyon lab), including the OC locus set.",
+            ),
+            DbReference(
+                citation="johannajkenyon/Abaumannii_surface_polysaccharide_loci",
+                url=("https://github.com/johannajkenyon/Abaumannii_surface_polysaccharide_loci"),
+                note="The GenBank file actually fetched.",
             ),
         ),
         caveats=(
-            "The OC locus determines the O antigen; OC types and K types are independent"
-            " determinants, so report both.",
-            "As with any locus-based call, recombination inside the locus can decouple the"
-            " genotype from the expressed antigen.",
+            "Kaptive-style locus matching is not agglutination: a locus call names the"
+            " biosynthetic locus, while phase variation or mutations inside it can change"
+            " the expressed antigen without changing the locus type.",
+            "Novel or recombinant loci below the 95/95 floors fall back to the untypeable"
+            " call rather than being forced to the nearest type.",
         ),
     ),
 )

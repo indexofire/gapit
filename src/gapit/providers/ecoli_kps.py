@@ -41,12 +41,20 @@ PROVIDER = ClusterProvider(
         references=(
             DbReference(
                 citation=(
+                    "rgladstone/EC-K-typing: E. coli group 2 and group 3 capsule locus database."
+                ),
+                url="https://github.com/rgladstone/EC-K-typing",
+                note="The curated locus set this provider fetches (Gladstone lab).",
+            ),
+            DbReference(
+                citation=(
                     "Wyres KL, Wick RR, Gorrie C, Jenney A, Follador R, Thomson NR, Holt KE."
                     " Identification of Klebsiella capsule synthesis loci from whole genome"
                     " data. Microb Genom 2016;2(12):e000102."
                 ),
                 doi="10.1099/mgen.0.000102",
-                note="Kaptive method; this provider tracks the EC-K-typing group 2+3 locus set.",
+                note="The Kaptive method (published on Klebsiella) that this provider's"
+                " locus matching follows.",
             ),
         ),
         caveats=(

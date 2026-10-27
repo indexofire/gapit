@@ -56,7 +56,7 @@ shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0�
 注意事项：
 
 - screen 参数使用 snake_case（`merge_fragments`、`min_gene_cov`、`min_gene_id`、
-  `min_cluster_cov`）；0.6.4 之前的 camelCase 拼写仍作为兼容别名接受，新客户端
+  `min_cluster_cov`）；0.6.5 之前的 camelCase 拼写仍作为兼容别名接受，新客户端
   应使用 snake_case。
 - 文件路径相对服务器的工作目录解析；绝对路径最稳妥。
 - 数据目录来自 `--datadir`（可用时），然后 `$GAPIT_DATADIR`，然后
@@ -98,7 +98,7 @@ EOF
 响应第 1 行，原样：
 
 ```text
-{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.6.4"}}}
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.6.5"}}}
 ```
 
 响应第 2 行（真实输出，中段省略；每个工具携带完整的 `inputSchema`）：
@@ -119,7 +119,7 @@ EOF
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.6.4"},
+  "tool": {"name": "gapit", "version": "0.6.5"},
   "created_at": "2026-09-19T01:15:44Z",
   "params": {"db": "tinyamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [
@@ -173,7 +173,7 @@ EOF
 ```json
 {
   "schema": "gapit.reads/1",
-  "tool": {"name": "gapit", "version": "0.6.4"},
+  "tool": {"name": "gapit", "version": "0.6.5"},
   "created_at": "2026-09-22T00:07:35Z",
   "params": {
     "db": "tinyreads",
@@ -246,7 +246,7 @@ export GAPIT_DATADIR=/tmp/gapit-mcp-demo/datadir
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.6.4"},
+  "tool": {"name": "gapit", "version": "0.6.5"},
   "created_at": "2026-09-20T13:38:39Z",
   "params": {"db": "myamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [

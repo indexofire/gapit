@@ -668,7 +668,7 @@ manifest，来自 plasmidfinder 数据库：
   "upstream_version": "",
   "tool": {
     "name": "gapit",
-    "version": "0.6.4"
+    "version": "0.6.5"
   },
   "makeblastdb_version": "blastn: 2.17.0+",
   "minimap2_version": "2.31-r1302"

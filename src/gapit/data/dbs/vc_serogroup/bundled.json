@@ -14,8 +14,9 @@
         "note": "The wbeT methyltransferase determinant that switches O1 between Ogawa and Inaba."
       },
       {
-        "citation": "Sozhamannan S, Deng YK, Li M, Sulakvelidze A, Kaper JB, Johnson JA, et al. Cloning and sequencing of the genes downstream of the wbf gene cluster of Vibrio cholerae serogroup O139 and analysis of the junction genes in other serogroups. Infect Immun 1999;67:6215.",
-        "note": "The gmhD/rjg junction exchange behind the wbfZ trap: wb* cassettes move between serogroups, so a single-gene O139 assay can misfire."
+        "citation": "Sozhamannan S, Deng YK, Li M, Sulakvelidze A, Kaper JB, Johnson JA, et al. Cloning and sequencing of the genes downstream of the wbf gene cluster of Vibrio cholerae serogroup O139 and analysis of the junction genes in other serogroups. Infect Immun 1999;67(10):5033-5040.",
+        "note": "The gmhD/rjg junction exchange behind the wbfZ trap: wb* cassettes move between serogroups, so a single-gene O139 assay can misfire.",
+        "doi": "10.1128/iai.67.10.5033-5040.1999"
       }
     ],
     "caveats": [

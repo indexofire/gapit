@@ -48,6 +48,13 @@ PROVIDER = ClusterProvider(
                     " pneumoniae species complex. Microb Genom 2022;8(3):000800."
                 ),
                 doi="10.1099/mgen.0.000800",
+                note="The method and database scheme; the K. oxytoca complex loci ship"
+                " with the Kaptive v3 database set.",
+            ),
+            DbReference(
+                citation="klebgenomics/KoSC-surface-antigen-loci",
+                url="https://github.com/klebgenomics/KoSC-surface-antigen-loci",
+                note="The GenBank file actually fetched.",
             ),
         ),
         caveats=(

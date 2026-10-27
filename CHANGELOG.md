@@ -5,7 +5,7 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.5] - 2026-10-27
 
 ### Added
 
@@ -58,6 +58,16 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   genus initial plus the first two species letters (`cje_cps`, `eco_vf`), and
   genus-level databases with the first three genus letters (`shi_serotype`).
   Published names stay stable; `db rename` is the migration path.
+
+### Fixed
+
+- **Database literature corrected against Crossref.** Every DOI shipped by
+  `db info` now resolves to the paper it claims: the Sozhamannan 1999 citation
+  said `Infect Immun 67:6215` (actually 67(10):5033-5040), and the
+  Acinetobacter K/OC and E. coli K-locus providers cited the Klebsiella Kaptive
+  paper as if it were their locus source — they now cite the A. baumannii CPS
+  locus database update (Cahill 2022) and the EC-K-typing repository, with
+  Kaptive kept only as the method.
 
 ## [0.6.4] - 2026-10-27
 

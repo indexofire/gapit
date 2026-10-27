@@ -304,7 +304,7 @@ and the split /1 calls (`O3/O13`, `K6`) side by side.
 - `serogroup` — `cluster_match` O1 / O139 with fallback `non-O1/non-O139`. The O139 rule's
   note records the **wbfZ trap**: the `wb*` cassette is exchanged through the conserved
   `gmhD`/`rjg` junctions, so environmental serogroups can carry O139-like cassettes and trip
-  single-gene `wbfZ` assays (Sozhamannan et al. 1999, Infect Immun 67:6215) — the rule keys
+  single-gene `wbfZ` assays (Sozhamannan et al. 1999, Infect Immun 67(10):5033-5040) — the rule keys
   on the whole `wbm` locus instead.
 - `subserotype` — Ogawa/Inaba through the wbeT allele probe: **ogawa** = `weighted_genes`
   on `wbeT` at `identity_floor` 99.9 (the determinant is single mutations in the wbeT

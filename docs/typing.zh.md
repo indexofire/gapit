@@ -281,7 +281,7 @@ K_COVERAGE ...`）。历史 `/1` 安装——用同一 GBK
 - `serogroup` —— `cluster_match` 的 O1 / O139，fallback `non-O1/non-O139`。O139 规则
   的注记记录 **wbfZ 陷阱**：`wb*` 盒通过保守的 `gmhD`/`rjg` 交换接合点重组，环境血清
   群可能携带 O139 样盒从而使单基因 `wbfZ` 检测误报（Sozhamannan 等 1999，Infect
-  Immun 67:6215）——该规则改为以整个 `wbm` 位点为键。
+  Immun 67(10):5033-5040）——该规则改为以整个 `wbm` 位点为键。
 - `subserotype` —— 通过 wbeT 等位基因探针区分 Ogawa/Inaba：**ogawa** = `wbeT` 上的
   `weighted_genes`，`identity_floor` 99.9（该决定因素是 wbeT 甲基转移酶中的单突变；
   Stroeher 等 1992，PNAS 89:2566；BMC Microbiol 2013, 13:173）；**inaba** = `wbeV`
