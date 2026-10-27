@@ -24,7 +24,7 @@ from gapit.errors import DatabaseError, InputError, ensure_input_file, usage_fai
 from gapit.formats.json import render_json
 from gapit.formats.md import md_report_chunk, md_report_preamble
 from gapit.formats.tsv import tsv_file_chunk, tsv_preamble
-from gapit.progress import screen_progress
+from gapit.progress import screen_progress, terminal_rule
 from gapit.report import Report, ScreeningParams
 from gapit.screening_cluster import (
     reject_cluster_engine_flags,
@@ -163,6 +163,7 @@ def run_screen(
             quiet=quiet,
             debug=debug,
             emit=emit,
+            stdout_emit=stdout_emit,
         )
     reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
     params = ScreeningParams(
@@ -231,6 +232,15 @@ def run_screen(
         else:
             as_csv = output_format is OutputFormat.csv
             sink(tsv_preamble(csv=as_csv, noheader=noheader))
+            separator = terminal_rule() if stdout_emit and not as_csv else ""
+            if separator and not noheader:
+                sink(separator)
+            first = True
             for report in iter_reports():
+                if not first and separator:
+                    sink(separator)
+                first = False
                 sink(tsv_file_chunk(report, csv=as_csv, nopath=nopath))
+            if separator:
+                sink(separator)
     return "".join(chunks)

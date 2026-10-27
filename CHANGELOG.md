@@ -5,6 +5,16 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Interactive TSV sample rules.** Terminal TSV screening draws a full-width
+  `─` rule below the header, between sample blocks, and after the final sample.
+  `--noheader` suppresses only the header rule. CSV/JSON/Markdown, piped output,
+  and `--output FILE` stay unchanged; rules are emitted through the progress
+  bar hand-off so they never corrupt the live bar.
+
 ## [0.6.4] - 2026-10-27
 
 ### Fixed

@@ -201,7 +201,11 @@ elapsed time — replacing the per-file `Processing:`/`Found N genes` notes whil
 `--quiet` keep the plain notes byte-identically — progress bars in logs are noise. The bar
 lives entirely on stderr: stdout bytes are identical with it on or off. Before each
 stdout chunk the bar is suspended, so rows start on a clean line and the bar redraws below
-them instead of mixing with the data. The positional-FASTQ wildcard batch
+them instead of mixing with the data. On an interactive **stdout**, a TSV stream also uses
+full-width `─` rules as visual separators: one directly below the header, one between sample
+blocks, and one after the last sample (`--noheader` suppresses the header rule only). CSV,
+JSON, Markdown, piped output, and `--output FILE` never contain a rule: machine-readable
+bytes stay unchanged. The positional-FASTQ wildcard batch
 ([./reads.md](./reads.md)) and `gapit db fetch all` carry the same bar.
 
 ### Typed gene databases: designation is a second command

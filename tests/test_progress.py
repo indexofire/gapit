@@ -7,6 +7,7 @@ with the per-file notes suppressed.
 """
 
 import io
+import os
 import re
 import shutil
 import sys
@@ -53,6 +54,10 @@ def reads_datadir(tmp_path: Path) -> Path:
     target = tmp_path / "datadir"
     shutil.copytree(READS_DB_DIR, target)
     return target
+
+
+def _fixed_terminal_size(_fallback: tuple[int, int]) -> os.terminal_size:
+    return os.terminal_size((60, 20))
 
 
 def tty_console() -> Console:
@@ -369,3 +374,157 @@ def test_live_batch_write_stops_the_bar_for_stdout(
         bar.write("row\n")
     assert events == ["stop", "start"]
     assert capsys.readouterr().out == "row\n"
+
+
+def test_terminal_rule_is_tty_only(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given a pipe, When terminal_rule is requested, Then it is empty; on a
+    TTY it is one full-width line, so redirected output stays unchanged."""
+    monkeypatch.setattr(
+        gapit.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: False))
+    )
+    assert gapit.progress.terminal_rule() == ""
+
+    monkeypatch.setattr(
+        gapit.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: True))
+    )
+    monkeypatch.setattr(
+        gapit.progress.shutil,
+        "get_terminal_size",
+        _fixed_terminal_size,
+    )
+    assert gapit.progress.terminal_rule() == "─" * 60 + "\n"
+
+
+def test_screen_separates_samples_only_on_interactive_tsv(
+    datadir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given two contigs on an interactive TSV stream, When screened, Then a
+    horizontal rule follows the header, separates the file blocks, and closes
+    the table — but never appears in CSV or piped output."""
+    monkeypatch.setattr(
+        gapit.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: True))
+    )
+    monkeypatch.setattr(
+        gapit.progress.shutil,
+        "get_terminal_size",
+        _fixed_terminal_size,
+    )
+    rule = "─" * 60 + "\n"
+    files = [CONTIGS / "full.fa", CONTIGS / "gap.fa"]
+
+    joined = run_screen(
+        files,
+        "tinyamr",
+        datadir,
+        80.0,
+        80.0,
+        1,
+        1,
+        fofn=None,
+        quiet=True,
+        noheader=False,
+        nopath=True,
+        debug=False,
+        output_format=OutputFormat.tsv,
+        stdout_emit=True,
+    )
+    assert joined.count(rule) == 3
+    header_rule = joined.index(rule)
+    between_rule = joined.index(rule, header_rule + 1)
+    trailing_rule = joined.rindex(rule)
+    assert joined.startswith("#FILE")
+    assert header_rule < joined.index("full.fa") < between_rule < joined.index("gap.fa")
+    assert trailing_rule > joined.index("gap.fa")
+    assert joined.endswith(rule)
+
+    csv_out = run_screen(
+        files,
+        "tinyamr",
+        datadir,
+        80.0,
+        80.0,
+        1,
+        1,
+        fofn=None,
+        quiet=True,
+        noheader=False,
+        nopath=True,
+        debug=False,
+        output_format=OutputFormat.csv,
+        stdout_emit=True,
+    )
+    assert rule not in csv_out
+
+    piped = run_screen(
+        files,
+        "tinyamr",
+        datadir,
+        80.0,
+        80.0,
+        1,
+        1,
+        fofn=None,
+        quiet=True,
+        noheader=False,
+        nopath=True,
+        debug=False,
+        output_format=OutputFormat.tsv,
+    )
+    assert rule not in piped
+
+
+def test_screen_terminal_rules_for_a_single_sample_and_noheader(
+    datadir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given one interactive TSV sample, Then only the header rule and the
+    trailing rule appear; --noheader drops the header rule but keeps the
+    trailing one."""
+    monkeypatch.setattr(
+        gapit.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: True))
+    )
+    monkeypatch.setattr(
+        gapit.progress.shutil,
+        "get_terminal_size",
+        _fixed_terminal_size,
+    )
+    rule = "─" * 60 + "\n"
+
+    joined = run_screen(
+        [CONTIGS / "full.fa"],
+        "tinyamr",
+        datadir,
+        80.0,
+        80.0,
+        1,
+        1,
+        fofn=None,
+        quiet=True,
+        noheader=False,
+        nopath=True,
+        debug=False,
+        output_format=OutputFormat.tsv,
+        stdout_emit=True,
+    )
+    assert joined.count(rule) == 2
+    assert joined.startswith("#FILE")
+    assert joined.endswith(rule)
+
+    noheader = run_screen(
+        [CONTIGS / "full.fa"],
+        "tinyamr",
+        datadir,
+        80.0,
+        80.0,
+        1,
+        1,
+        fofn=None,
+        quiet=True,
+        noheader=True,
+        nopath=True,
+        debug=False,
+        output_format=OutputFormat.tsv,
+        stdout_emit=True,
+    )
+    assert noheader.count(rule) == 1
+    assert not noheader.startswith(rule)
+    assert noheader.endswith(rule)

@@ -40,6 +40,7 @@ from gapit.formats.cluster_md import (
     cluster_md_head,
 )
 from gapit.gbfeatures import FeaturesDocument
+from gapit.progress import terminal_rule
 from gapit.typing_cluster2 import evaluate_cluster2
 from gapit.typing_engine import evaluate_typing
 from gapit.typing_models import TypingDocument, uses_cluster_v2, validate_references
@@ -139,6 +140,7 @@ def run_cluster_screen(
     quiet: bool,
     debug: bool = False,
     emit: Emit | None = None,
+    stdout_emit: bool = False,
 ) -> str:
     """Cluster-engine orchestration beside the gene path: screen each input
     file in order and render (json/md/tsv via formats.cluster*). The db's
@@ -196,14 +198,32 @@ def run_cluster_screen(
         csv = output_format is OutputFormat.csv
         if v2_document is not None:
             sink(cluster2_tsv_preamble(csv=csv, noheader=noheader, document=v2_document))
+            separator = terminal_rule() if stdout_emit and not csv else ""
+            if separator and not noheader:
+                sink(separator)
+            first = True
             for path in files:
+                if not first and separator:
+                    sink(separator)
+                first = False
                 sink(
                     cluster2_tsv_file_chunk(
                         screen_one(path), csv=csv, nopath=nopath, document=v2_document
                     )
                 )
+            if separator:
+                sink(separator)
         else:
             sink(cluster_tsv_preamble(csv=csv, noheader=noheader, typed=typed))
+            separator = terminal_rule() if stdout_emit and not csv else ""
+            if separator and not noheader:
+                sink(separator)
+            first = True
             for path in files:
+                if not first and separator:
+                    sink(separator)
+                first = False
                 sink(cluster_tsv_file_chunk(screen_one(path), csv=csv, nopath=nopath, typed=typed))
+            if separator:
+                sink(separator)
     return "".join(chunks)

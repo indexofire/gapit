@@ -32,7 +32,7 @@ from gapit.errors import ensure_input_file, usage_fail
 from gapit.formats.md import reads_md_chunk, reads_md_preamble
 from gapit.formats.reads_json import render_reads2_json, render_reads_json
 from gapit.formats.reads_tsv import reads_tsv_chunk, reads_tsv_preamble
-from gapit.progress import screen_progress
+from gapit.progress import screen_progress, terminal_rule
 from gapit.readpairs import SampleLanes, pair_samples
 from gapit.reads import ReadsParams, ReadsReport, ReadTypeEnum, screen_reads
 from gapit.screening import OutputFormat, find_database
@@ -169,12 +169,21 @@ def run_screen_reads_positional(
             # terminal (rightsholder UX), instead of the header printing
             # before any sample has started.
             csv = fmt is OutputFormat.csv
+            separator = terminal_rule() if stdout_emit and not csv else ""
             header_pending = True
+            first = True
             for report in iter_reports():
                 if header_pending:
                     sink(reads_tsv_preamble(reads2=reads2, csv=csv))
+                    if separator:
+                        sink(separator)
                     header_pending = False
+                if not first and separator:
+                    sink(separator)
+                first = False
                 sink(reads_tsv_chunk(report, reads2=reads2, csv=csv, all_genes=all_genes))
+            if separator:
+                sink(separator)
             if header_pending and not chunks:
                 sink(reads_tsv_preamble(reads2=reads2, csv=csv))
         else:

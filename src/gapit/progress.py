@@ -15,6 +15,7 @@ print byte-identically; when active the bar REPLACES those notes (its
 M/N + description carry them).
 """
 
+import shutil
 import sys
 from collections.abc import Generator, Sequence
 from contextlib import AbstractContextManager, contextmanager, nullcontext
@@ -124,6 +125,18 @@ class _LiveBatch:
 
 
 _IDLE: Final = IdleBatch()
+
+
+def terminal_rule() -> str:
+    """A full-width horizontal rule for interactive sample separation.
+
+    Returns "" unless stdout is a TTY, so redirected/collector output stays
+    machine-readable and byte-identical to the non-interactive contract.
+    """
+    if not sys.stdout.isatty():
+        return ""
+    columns = shutil.get_terminal_size((80, 20)).columns
+    return "─" * max(20, columns) + "\n"
 
 
 def make_progress() -> Progress:
