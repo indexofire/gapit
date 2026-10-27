@@ -6,5 +6,42 @@
   "kind": "gene",
   "snapshotted": "2026-10-27",
   "license": "CC0 (paper) + public domain (NCBI/GenBank accessions)",
-  "note": "36 CPS amplicon targets + lpxA control; extracted from the GenBank accessions listed in Poly et al. 2015, PLoS ONE 10(12):e0144349 (Table 3). The cje_cps typing asset follows the paper's Table 4 patterns, with HS4/HS16/HS64 complex rules and actual amplicon-presence floors; see docs/databases.md."
+  "note": "36 CPS amplicon targets + lpxA control; extracted from the GenBank accessions listed in Poly et al. 2015, PLoS ONE 10(12):e0144349 (Table 3). The cje_cps typing asset follows the paper's Table 4 patterns, with HS4/HS16/HS64 complex rules and actual amplicon-presence floors; see docs/databases.md.",
+  "guidance": {
+    "references": [
+      {
+        "citation": "Poly F, Serichantalergs O, Kuroiwa J, Pootong P, Mason C, Guerry P, Parker CT. Updated Campylobacter jejuni Capsule PCR Multiplex Typing System and Its Application to Clinical Isolates from South and Southeast Asia. PLoS ONE 2015;10(12):e0144349.",
+        "doi": "10.1371/journal.pone.0144349",
+        "url": "https://doi.org/10.1371/journal.pone.0144349",
+        "note": "Source of the 36 primer pairs and their expected amplicon sizes (Table 3) and of the expected banding patterns (Table 4); the article is CC0, so its content is redistributable."
+      },
+      {
+        "citation": "Klena JD, Parker CT, Knibb K, Ibbitt JC, Devane PM, Horn ST, et al. Differentiation of Campylobacter coli, Campylobacter jejuni, Campylobacter lari, and Campylobacter upsaliensis by a multiplex PCR developed from the nucleotide sequence of the lipid A gene lpxA. J Clin Microbiol 2004;42(12):5549-57.",
+        "note": "Source of the lpxA positive-control primer set used as the panel's species gate."
+      },
+      {
+        "citation": "Penner JL, Hennessy JN. Passive hemagglutination technique for serotyping Campylobacter fetus subsp. jejuni on the basis of soluble heat-stable antigens. J Clin Microbiol 1980;12(6):732-7.",
+        "note": "The passive haemagglutination scheme whose heat-stable (Penner) types the capsule types are named after."
+      },
+      {
+        "citation": "Pike BL, Guerry P, Poly F. Global Distribution of Penner Serotypes: A Systematic Review. PLoS ONE 2013;8(6):e67375.",
+        "doi": "10.1371/journal.pone.0067375",
+        "note": "Distribution of the Penner serotypes and their complexes; background for why 47 serotypes collapse into 35 capsule types."
+      }
+    ],
+    "usage": [
+      "gapit screen isolate.fa --db cje_cps --output cps.tsv   # stage 1: detect CPS amplicons",
+      "gapit typing cps.tsv                                   # stage 2: penner_cps call",
+      "gapit screen isolate.fa --db cje_cps --format json      # single-shot agent-readable output"
+    ],
+    "caveats": [
+      "47 Penner serotypes collapse into 35 capsule types: the panel calls types and complexes, not individual serotypes. HS4 complex (HS4/13/43/50/62/65), HS6/7, HS8/17, HS23/36, HS33/35 and HS5/31 share their CPS locus; resolving inside a complex needs antisera or cgMLST.",
+      "Shared amplicons are biology, not BLAST noise: the HS45 band also appears in the HS5/31, HS32 and HS60 loci, the HS15 band in HS58, and only the HS52 band separates HS16 from HS64. The scheme declares those as full multi-band exact_set profiles; a lone HS45 call means 'HS45-like amplicon', not the HS45 serotype.",
+      "lpxA is the panel's positive-control gate, not a speciation test: the gate opens on any screen row that survives --minid/--mincov (80/80 by default), so a C. coli template can open it. Klena 2004 discriminated the four species with a multiplex in which lpxA is one component; here it only says the assay worked and the template is Campylobacter-like.",
+      "Short amplicons are E-value bound, not --minid bound: HS2 is 62 bp and blastn stops detecting it below roughly 93.5% identity because of the frozen -evalue 1E-20 baseline. The scheme's 95% identity floor sits above that, so no reachable allele is lost, but a divergent HS2 allele falls back to 'untypeable' instead of being called. Raising --minid cannot recover it.",
+      "The HS1 primer pair amplifies 607 bp in the panel's reference locus (BX545859.1) where the paper reports 610 bp; the record is the actual reference slice and this note is the documented difference.",
+      "A positive capsule call is not a species identification and not a substitute for Penner antisera or whole-genome serotyping: C. coli can carry C. jejuni-type CPS loci by horizontal transfer, and capsule typing answers a different question than virulence gene screening.",
+      "Untypeable isolates are not necessarily errors: the paper found 12.5-12.8% untypeable isolates in Nepal and Cambodia and attributed them to undefined local capsule types outside the published panel."
+    ]
+  }
 }

@@ -149,6 +149,68 @@ $ gapit db list --json
 `gapit.dblist/1` 文档。（早期独立的列表命令及其 schema 已移除；这个入口刻意放弃了
 abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 
+## 查看单个数据库的详情
+
+`gapit db list` 回答"有哪些数据库、装了没有"；`gapit db info NAME` 回答"这个库是什么、
+内容从哪来、该怎么用、在哪些地方会误导"。它只对四个既有来源做读取——提供商目录、
+wheel 里的 `bundled.json`、已安装的 manifest，以及数据库目录下可选的 `info.json`
+边车文件——因此无需重复声明任何信息：
+
+```console
+$ gapit db info cje_cps
+NAME	cje_cps
+DESCRIPTION	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel
+VENDOR	gapit-curated (Poly 2015; CC0 + NCBI public domain)
+KIND	gene
+DBTYPE	nucl
+STATUS	installed
+RECORDS	37
+DESTINATION	/home/you/.local/share/gapit/db/cje_cps
+SNAPSHOT	2026-10-27
+TYPING_SCHEMA	gapit.typing/2
+TOOL	gapit 0.6.4
+SOURCE_URL	local
+REFERENCE	Poly F, Serichantalergs O, Kuroiwa J, ... PLoS ONE 2015;10(12):e0144349.
+REFERENCE_DOI	10.1371/journal.pone.0144349
+REFERENCE_NOTE	Source of the 36 primer pairs and their expected amplicon sizes (Table 3) ...
+REFERENCE	Klena JD, Parker CT, Knibb K, ... J Clin Microbiol 2004;42(12):5549-57.
+REFERENCE_NOTE	Source of the lpxA positive-control primer set used as the panel's species gate.
+CAVEAT	47 Penner serotypes collapse into 35 capsule types: ...
+CAVEAT	Short amplicons are E-value bound, not --minid bound: ...
+USAGE	gapit screen isolate.fa --db cje_cps --output cps.tsv   # stage 1: detect CPS amplicons
+USAGE	gapit typing cps.tsv                                   # stage 2: penner_cps call
+```
+
+输出是稳定的两列 `FIELD<TAB>VALUE` 流：列表型字段（`REFERENCE`、`CAVEAT`、`USAGE`、
+`SOURCE_URL`）重复键名，且每条文献的 `REFERENCE_DOI`/`REFERENCE_URL`/`REFERENCE_NOTE`
+紧跟它自己的 `REFERENCE` 行。来源没有的字段直接省略，因此形态是诚实的：尚未物化的
+内置库没有 `TOOL`/`RECORDS` 行，未下载的提供商既无构建来源也无记录数。
+
+`--json` 输出 `gapit.dbinfo/1` 文档（`gapit schema dbinfo`），供智能体消费：
+
+```console
+$ gapit db info vc_serogroup --json | head -1
+{"schema":"gapit.dbinfo/1","name":"vc_serogroup","description":"Vibrio cholerae O1/O139 ...
+```
+
+`STATUS` 与 `db list` 一致——`installed`（磁盘上有 manifest）、`bundled`（随 wheel
+发布，首次使用时物化）或 `available`（抓取时下载）。未知名称退出码 4
+`DATABASE_NOT_FOUND`；边车文件损坏退出码 4 `DBINFO_MALFORMED`。
+
+**自带文献资料。** `db build` 产物可以在自己的目录下放一个
+`<datadir>/<NAME>/info.json`，字段同样是三个可选列表：
+
+```json
+{
+  "references": [{"citation": "Smith 2026, in-house panel (unpublished)"}],
+  "caveats": ["unpublished markers: confirm before reporting"],
+  "usage": ["gapit screen x.fa --db labgenes"]
+}
+```
+
+边车文件优先于内置库声明的指引，所以数据目录里的副本可以收紧或替换 wheel 的说明，
+而不必重建任何东西。
+
 ## 内置数据库（即装即用）
 
 大多数数据库在 `db fetch` 时才从上游下载，因为许可证禁止再分发（见"提供商"一节）。
@@ -247,6 +309,11 @@ isolate.fa	penner_cps	HS4 complex (HS4/13/43/50/62/65)	HS4A;lpxA	high	1.0000	HS1
 
 回退值 `untypeable (atypical CPS profile or non-jejuni)`。覆盖下限 90、一致性下限
 95（HS5/31 规则的一致性下限为 90，因为该位点中的 HS45 带本身就是个分化扩增子）。
+
+`gapit db info cje_cps` 携带该面板的四条文献（Poly 2015 面板本身、Klena 2004 的
+`lpxA` 对照、Penner 1980 血清分型方案、Pike 2013 血清型分布）和七条解读注意事项——
+复合型折叠、共享扩增子带型、`lpxA` 不等于种鉴定、62 bp HS2 的 E-value 下限、
+HS1 的 607 与 610 bp 差异、水平转移风险，以及论文自身的未定型率观察。
 
 ### 李斯特菌血清群分型（`lm_doumith`）
 

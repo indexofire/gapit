@@ -85,6 +85,8 @@ gapit/
 │   ├── cluster_math.py  # cs-walk → union coverage/identity math + verdicts (pure functions)
 │   ├── db_ops.py        # db use-cases: fetch + list (shared CLI + MCP; no typer)
 │   ├── db_rename_ops.py # db use-case: rename an installed database (gene rebuild / cluster re-stamp)
+│   ├── db_info_ops.py   # db use-case: provenance/literature/caveats document (gapit.dbinfo/1)
+│   ├── db_info_models.py # leaf models shared by bundled.json and db info (references/guidance)
 │   ├── db_query_ops.py  # db use-cases: search + outdated over installed DBs (shared CLI + MCP)
 │   ├── db_build_ops.py  # db use-case: custom FASTA+TSV → gene db, GBK/GFF → cluster db (shared CLI + MCP)
 │   ├── db_build_meta.py # `db build --tsv` metadata sidecar: parse + merge (shared by the build use-case)
@@ -127,6 +129,7 @@ gapit/
 │   ├── cmd_db.py        # `gapit db` command group (fetch/path/list/build/install/search/outdated)
 │   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
 │   ├── cmd_db_rename.py # `gapit db rename` CLI (naming-convention migration)
+│   ├── cmd_db_info.py   # `gapit db info` CLI (provenance + guidance)
 │   ├── cmd_db_build.py  # `gapit db build` CLI (custom FASTA → native db)
 │   ├── cmd_db_search.py # `gapit db search` CLI (records.jsonl lookup)
 │   ├── cmd_db_outdated.py # `gapit db outdated` CLI (staleness report)
@@ -180,7 +183,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 
 - **Formats**: `--format tsv|csv|json|md` (default `tsv` for abricate compatibility).
 - **JSON**: top-level `"schema": "gapit.report/1"`; schema introspectable via
-  `gapit schema report | reads | reads2 | summary | cluster | cluster2 | dblist | dboutdated | datadir | error | version` (plus
+  `gapit schema report | reads | reads2 | summary | cluster | cluster2 | dblist | dbinfo | dboutdated | datadir | error | version` (plus
   `cluster | cluster2 | features | typing | typing_result | floors`). Keys are snake_case,
   units explicit (`identity_pct`, `coverage_pct`). Semver the schema; never rename or
   retype a field in a minor bump.
@@ -194,7 +197,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   byte-identically), then `gapit typing result.tsv [-D|-f|-o|-q]` designates from the screen
   table (`gapit.typing_result/1`; cluster dbs refuse — their typing rides the screen).
   No typing MCP tool yet (future work).
-- **DB acquisition** `[gapit-extension]`: `gapit db fetch|path|list|search|outdated|build|install|rename` —
+- **DB acquisition** `[gapit-extension]`: `gapit db fetch|path|list|info|search|outdated|build|install|rename` —
   database fetch from the provider catalog (every provider downloads from upstream at fetch
   time — nothing catalog-side is bundled inside the wheel beyond the sanctioned exceptions,
   a license-compliance requirement: CARD/VFDB terms are non-commercial and Kaptive is GPL,
@@ -209,7 +212,9 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   pipeline), with `db fetch <name>` the fresh-upstream refresh path for the
   provider-backed bundled names (ecoh, ncbi, resfinder); what may
   ride the wheel is governed by the §6 policy),
-  database listing,
+  database listing, per-database `db info NAME` (provenance + literature
+  references + usage + caveats, merging the provider catalog, `bundled.json`,
+  the manifest, and an optional `info.json` sidecar; `gapit.dbinfo/1`),
   records.jsonl gene search, staleness
   report, custom FASTA→native-db build, GBK/GFF→cluster-db build (`--typing` installs a
   validated `gapit.typing/1` or `/2` spec on either kind), the seven download-on-fetch

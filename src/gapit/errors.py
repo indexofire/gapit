@@ -38,6 +38,7 @@ ERROR_CODES: frozenset[str] = frozenset(
         "DATADIR_NOT_FOUND",
         "DB_ALREADY_EXISTS",
         "DB_INCOMPLETE",
+        "DBINFO_MALFORMED",
         "DB_LOCK_FAILED",
         "DOWNLOAD_FAILED",
         "DOWNLOAD_TOO_LARGE",

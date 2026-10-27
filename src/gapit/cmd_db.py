@@ -11,6 +11,9 @@
   One JSON receipt line per database on stdout (use-case:
   :mod:`gapit.db_ops`). Bare ``db fetch`` prints help; a download is never
   implied by an omitted NAME.
+- ``db info NAME``: one database's provenance, literature references, intended
+  usage, and interpretation caveats (use-case: :mod:`gapit.db_info_ops`,
+  command: :mod:`gapit.cmd_db_info`).
 - ``db list``: show every known database with its NAME, DESCRIPTION, and
   installed state (PROVIDER last; rich table on a TTY, byte-stable TSV
   otherwise; use-case: :mod:`gapit.db_ops`).
@@ -33,6 +36,7 @@ from rich.console import Console
 
 from gapit import config
 from gapit.cmd_db_build import db_build_command
+from gapit.cmd_db_info import db_info_command
 from gapit.cmd_db_install import db_install_command
 from gapit.cmd_db_outdated import db_outdated_command
 from gapit.cmd_db_rename import db_rename_command
@@ -146,7 +150,10 @@ def register_db_command(app: click.Group) -> None:
     """
     db_app = click.Group(
         "db",
-        help="Database acquisition and maintenance (database fetch, verified local install).",
+        help=(
+            "Database acquisition and maintenance: fetch, build, verified local install,"
+            " listing, per-database info, rename, search, staleness."
+        ),
         no_args_is_help=True,
     )
     db_app.command("install", no_args_is_help=True)(db_install_command)
@@ -154,6 +161,7 @@ def register_db_command(app: click.Group) -> None:
     db_app.command("fetch", no_args_is_help=True)(db_fetch_command)
     db_app.command("path")(db_path_command)
     db_app.command("list")(db_list_command)
+    db_app.command("info", no_args_is_help=True)(db_info_command)
     db_app.command("outdated")(db_outdated_command)
     db_app.command("search", no_args_is_help=True)(db_search_command)
     db_app.command("rename", no_args_is_help=True)(db_rename_command)

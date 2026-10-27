@@ -157,6 +157,76 @@ returning the `gapit.dblist/1` document. (The former standalone listing command 
 schema were removed; abricate `--list` byte-parity is intentionally dropped for this
 surface.) See [outputs.md](./outputs.md).
 
+## Inspecting one database
+
+`gapit db list` answers "which databases exist, and are they installed";
+`gapit db info NAME` answers "what is this database, where does its content come from,
+how is it meant to be used, and where does it mislead". It is a pure read over four
+existing sources — the provider catalog, the wheel's `bundled.json`, the installed
+manifest, and an optional `info.json` sidecar in the database directory — so nothing
+has to be re-declared:
+
+```console
+$ gapit db info cje_cps
+NAME	cje_cps
+DESCRIPTION	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel
+VENDOR	gapit-curated (Poly 2015; CC0 + NCBI public domain)
+KIND	gene
+DBTYPE	nucl
+STATUS	installed
+RECORDS	37
+DESTINATION	/home/you/.local/share/gapit/db/cje_cps
+SNAPSHOT	2026-10-27
+TYPING_SCHEMA	gapit.typing/2
+TOOL	gapit 0.6.4
+FETCHED_AT	2026-10-27T04:19:06Z
+MAKEBLASTDB_VERSION	makeblastdb: 2.17.0+
+MINIMAP2_VERSION	2.31-r1302
+SOURCE_URL	local
+REFERENCE	Poly F, Serichantalergs O, Kuroiwa J, ... PLoS ONE 2015;10(12):e0144349.
+REFERENCE_DOI	10.1371/journal.pone.0144349
+REFERENCE_URL	https://doi.org/10.1371/journal.pone.0144349
+REFERENCE_NOTE	Source of the 36 primer pairs and their expected amplicon sizes (Table 3) ...
+REFERENCE	Klena JD, Parker CT, Knibb K, ... J Clin Microbiol 2004;42(12):5549-57.
+REFERENCE_NOTE	Source of the lpxA positive-control primer set used as the panel's species gate.
+CAVEAT	47 Penner serotypes collapse into 35 capsule types: ...
+CAVEAT	Short amplicons are E-value bound, not --minid bound: ...
+USAGE	gapit screen isolate.fa --db cje_cps --output cps.tsv   # stage 1: detect CPS amplicons
+USAGE	gapit typing cps.tsv                                   # stage 2: penner_cps call
+```
+
+The table is a stable two-column `FIELD<TAB>VALUE` stream: list-valued fields
+(`REFERENCE`, `CAVEAT`, `USAGE`, `SOURCE_URL`) repeat their key, and a reference's
+`REFERENCE_DOI`/`REFERENCE_URL`/`REFERENCE_NOTE` rows follow its own `REFERENCE` row.
+Fields a source does not carry are omitted, so the shape stays honest: a
+bundled-but-unmaterialized database has no `TOOL`/`RECORDS` rows, and an uninstalled
+provider has neither build provenance nor a record count.
+
+`--json` emits the `gapit.dbinfo/1` document (`gapit schema dbinfo`) for agents:
+
+```console
+$ gapit db info vc_serogroup --json | head -3
+{"schema":"gapit.dbinfo/1","name":"vc_serogroup","description":"Vibrio cholerae O1/O139 ...
+```
+
+`STATUS` mirrors `db list` — `installed`, `bundled` (ships in the wheel, materializes on
+first use), or `available` (fetch-time download). An unknown name is exit 4
+`DATABASE_NOT_FOUND`; a broken sidecar is exit 4 `DBINFO_MALFORMED`.
+
+**Bringing your own literature.** A `db build` product can carry its own
+`<datadir>/<NAME>/info.json` with the same three optional lists:
+
+```json
+{
+  "references": [{"citation": "Smith 2026, in-house panel (unpublished)"}],
+  "caveats": ["unpublished markers: confirm before reporting"],
+  "usage": ["gapit screen x.fa --db labgenes"]
+}
+```
+
+The sidecar wins over a bundled panel's declared guidance, so a datadir copy can
+tighten or replace the wheel's notes without rebuilding anything.
+
 ## Bundled databases (install-time ready)
 
 Most databases download from upstream at `db fetch` time because their licenses forbid
@@ -274,6 +344,13 @@ What the panel can and cannot resolve is encoded in the rules, not hidden:
 Fallback `untypeable (atypical CPS profile or non-jejuni)`. Coverage floor 90, identity
 floor 95 (the HS5/31 rule sits at 90 because the HS45 band in that locus is a divergent
 amplicon).
+
+`gapit db info cje_cps` carries the panel's four literature references (Poly 2015 for the
+panel, Klena 2004 for the `lpxA` control, Penner 1980 for the scheme, Pike 2013 for the
+serotype distribution) and the seven interpretation caveats — the complex collapse, the
+shared-amplicon profiles, the `lpxA`-is-not-speciation warning, the 62 bp HS2 E-value
+bound, the HS1 607-vs-610 bp difference, the HGT caveat, and the paper's own
+untypeable-rate observation.
 
 ### Listeria serogrouping (`lm_doumith`)
 

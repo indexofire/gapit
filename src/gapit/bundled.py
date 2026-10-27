@@ -42,6 +42,7 @@ from pydantic import BaseModel
 from gapit import config
 from gapit.bundled_cluster import materialize_cluster_bundle
 from gapit.db_build_ops import perform_build
+from gapit.db_info_models import DbGuidance
 from gapit.errors import DatabaseError
 from gapit.fasta import iter_fasta
 from gapit.proctools import note
@@ -58,7 +59,9 @@ class BundledMetadata(BaseModel, frozen=True):
     bundles additionally require ``features.json``). ``license`` and
     ``note`` carry content provenance into the materialized manifest
     (cluster bundles); they default to empty so the gene bundles'
-    metadata stays minimal.
+    metadata stays minimal. ``guidance`` is what `gapit db info` reports:
+    the literature references, the intended usage recipe, and the caveats
+    a caller must not skip.
     """
 
     name: str
@@ -69,6 +72,7 @@ class BundledMetadata(BaseModel, frozen=True):
     snapshotted: str
     license: str = ""
     note: str = ""
+    guidance: DbGuidance = DbGuidance()
 
 
 class BundledDatabase(BaseModel, frozen=True):

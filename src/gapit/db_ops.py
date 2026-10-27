@@ -58,13 +58,13 @@ class DbListEntry(BaseModel, frozen=True):
     # Upstream maintainer organisation; distinct from name (the --db value).
     vendor: str
     description: str
-    dbtype: str
+    dbtype: Literal["nucl", "prot"]
     installed: bool
     indexed: bool = False
     records: int | None = None
     # Installed providers inherit their manifest's kind (cluster for a
     # GBK/GFF-built db shadowing a provider name); the default is gene.
-    kind: str = "gene"
+    kind: Literal["gene", "cluster"] = "gene"
     # Upstream content license when the provider pins one (card, vfdb,
     # ecoli_vf, kaptive); omitted otherwise.
     license: str | None = None
@@ -178,14 +178,18 @@ def datadir_json(cli_value: Path | None) -> str:
     )
 
 
-def _detected_dbtype(database: Database) -> str:
+def _detected_dbtype(database: Database) -> Literal["nucl", "prot"]:
     """dbtype for a manifest-less database directory: BLAST index suffix
     first (``.nin`` nucl / ``.pin`` prot), else abricate's ``mol_type``
     heuristic over the sequence letters (the make_blast_db fallback)."""
     sequences = database.sequences_path
-    for suffix, dbtype in ((".nin", "nucl"), (".pin", "prot")):
+    index_types: tuple[tuple[str, Literal["nucl", "prot"]], ...] = (
+        (".nin", "nucl"),
+        (".pin", "prot"),
+    )
+    for suffix, detected in index_types:
         if sequences.with_name(f"{sequences.name}{suffix}").exists():
-            return dbtype
+            return detected
     letters = "".join(record.sequence for record in iter_fasta(sequences))
     return mol_type(letters)
 
