@@ -1,5 +1,6 @@
 """Error envelope tests: every typed failure renders gapit.error/1 on stderr."""
 
+import ast
 import json
 import shutil
 from pathlib import Path
@@ -10,7 +11,7 @@ from pydantic import TypeAdapter
 
 from gapit.cli import app
 from gapit.db import make_blast_db
-from gapit.errors import ErrorEnvelope, InputError, ensure_input_file, render_error
+from gapit.errors import ERROR_CODES, ErrorEnvelope, InputError, ensure_input_file, render_error
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
@@ -153,3 +154,42 @@ def test_missing_required_option_renders_usage_envelope() -> None:
     envelope = last_envelope(result.stderr)
     assert envelope.code == "USAGE_ERROR"
     assert "--db" in envelope.message
+
+
+def test_error_schema_exposes_the_registered_code_enum() -> None:
+    """Given gapit.error/1, When introspected, Then code carries the full
+    machine-readable error-code enum (no doc-only list)."""
+    schema = ErrorEnvelope.model_json_schema(by_alias=True)
+    assert set(schema["properties"]["code"]["enum"]) == set(ERROR_CODES)
+
+
+def test_every_raise_site_uses_a_registered_code() -> None:
+    """Given every typed raise helper/call in src/gapit, When scanned, Then
+    its code is in ERROR_CODES (so the public enum cannot drift)."""
+    source = Path(__file__).parents[1] / "src" / "gapit"
+    names = {"_fail", "GapitError", "DatabaseError", "InputError", "UsageError", "DependencyError"}
+    found: set[str] = set()
+    for path in source.rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            function = node.func
+            name = (
+                function.id
+                if isinstance(function, ast.Name)
+                else function.attr
+                if isinstance(function, ast.Attribute)
+                else ""
+            )
+            if name in names and node.args and isinstance(node.args[0], ast.Constant):
+                value = node.args[0].value
+                if isinstance(value, str) and value.isupper():
+                    found.add(value)
+            for keyword in node.keywords:
+                if keyword.arg != "code" or not isinstance(keyword.value, ast.Constant):
+                    continue
+                value = keyword.value.value
+                if isinstance(value, str):
+                    found.add(value)
+    assert found <= ERROR_CODES, f"unregistered error codes: {sorted(found - ERROR_CODES)}"

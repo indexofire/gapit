@@ -186,6 +186,7 @@ Real document, same run as the TSV above:
 | `params.minid` | number | Minimum identity threshold |
 | `params.mincov` | number | Minimum coverage threshold |
 | `params.threads` | integer | BLAST thread count |
+| `params.merge_fragments` | boolean | Present (true) only for `--merge-fragments` runs |
 | `files` | array | One entry per input file, zero-hit files included |
 | `files[].file` | string | Input path as given |
 | `files[].hits` | array | Surviving hits, empty list when none |
@@ -495,7 +496,7 @@ Any failure prints one line of JSON to stderr:
 | Field | Type | Meaning |
 |---|---|---|
 | `schema` | string | Always `gapit.error/1` |
-| `code` | string | Machine-stable error code, SCREAMING_SNAKE_CASE |
+| `code` | string | Machine-stable error code, SCREAMING_SNAKE_CASE; the enum is exposed by `gapit schema error` |
 | `message` | string | Human-readable description |
 | `context` | object | String-valued details (file paths, digests, db names) |
 

@@ -166,7 +166,7 @@ surfaces each provider's content license where one is pinned.
 gapit ships an MCP (Model Context Protocol) stdio server so agent runtimes can
 screen assemblies without parsing CLI output: `gapit mcp` or the `gapit-mcp`
 console script speaks newline-delimited JSON-RPC 2.0 on stdin/stdout (no extra
-dependencies — the protocol is hand-rolled). It exposes nine tools:
+dependencies — the protocol is hand-rolled). It exposes ten tools:
 `screen` (gapit.report/1 by default; `aligner minimap2` for a fast assembly
 survey), `screen_reads` (FASTQ via minimap2, gapit.reads/1), `summary`
 (gapit.summary/1), `schema`, `db_list`, plus the database tools `db_fetch`,

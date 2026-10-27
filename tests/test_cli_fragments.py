@@ -20,6 +20,7 @@ GOLDEN = Path(__file__).parent / "golden"
 FILES = ("split4060.fa", "split5050.fa", "split3040.fa")
 PINNED_NOW = datetime(2026, 9, 17, 12, 0, 0, tzinfo=UTC)
 PARAMS = ScreeningParams(db="fragdb")
+MERGE_PARAMS = PARAMS.model_copy(update={"merge_fragments": True})
 
 runner = CliRunner()
 
@@ -38,7 +39,7 @@ def merged_reports(database: Database) -> list[Report]:
     """Merge-mode reports for the three fixtures, bare filenames like the
     goldens (Report.file is the only field rewritten)."""
     reports = [
-        screen_file(FIXTURES / name, database, PARAMS, dbtype="nucl", merge_fragments=True)
+        screen_file(FIXTURES / name, database, MERGE_PARAMS, dbtype="nucl", merge_fragments=True)
         for name in FILES
     ]
     return [
@@ -77,7 +78,7 @@ def test_golden_json_merge_mode(tmp_path: Path) -> None:
     """Given the same run rendered as JSON with a pinned now, When compared,
     Then byte-identical to the golden: merged rows carry ``merged: true`` and
     the additive ``fragments`` array, plain rows carry neither."""
-    output = render_json(merged_reports(fragdb(tmp_path)), PARAMS, now=PINNED_NOW)
+    output = render_json(merged_reports(fragdb(tmp_path)), MERGE_PARAMS, now=PINNED_NOW)
     assert output == (GOLDEN / "fragments_merge.json").read_text(encoding="utf-8")
     document = json.loads(output)
     hit = document["files"][0]["hits"][0]
@@ -151,7 +152,9 @@ def test_cli_json_carries_fragments(tmp_path: Path) -> None:
         database, "--merge-fragments", "--format", "json", str(FIXTURES / "split4060.fa")
     )
     assert result.exit_code == 0
-    hit = json.loads(result.stdout)["files"][0]["hits"][0]
+    document = json.loads(result.stdout)
+    assert document["params"]["merge_fragments"] is True
+    hit = document["files"][0]["hits"][0]
     assert hit["merged"] is True
     assert [frag["contig"] for frag in hit["fragments"]] == ["contigA", "contigB"]
     assert hit["fragments"][0]["identity_pct"] == 98.75

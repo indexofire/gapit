@@ -30,8 +30,8 @@ the module CLI as `{"command": "gapit", "args": ["mcp"]}`.
 
 ## Tools
 
-Nine tools: four analysis tools (`screen`, `screen_reads`, `summary`, `schema`)
-and five database tools (`db_list`, `db_fetch`, `db_build`, `db_search`,
+Ten tools: four analysis tools (`screen`, `screen_reads`, `summary`, `schema`)
+and six database tools (`db_list`, `db_path`, `db_fetch`, `db_build`, `db_search`,
 `db_outdated`) that mirror `gapit db ...` exactly. `db_list`/`db_search`/
 `db_outdated` are read-only (`db_list` may create an empty datadir on first
 use); `db_fetch`/`db_build` mutate the datadir. Argument lists below are
@@ -39,11 +39,12 @@ transcribed from the live `tools/list` `inputSchema` objects.
 
 | Tool | Arguments | Returns |
 |---|---|---|
-| `screen` | `files` (array of strings, required), `db` (string, required — no default), `minid` (number), `mincov` (number), `format` (string: `json` \| `tsv` \| `csv` \| `md`, default `json`), `aligner` (string: `blastn` \| `minimap2`, default `blastn`), `mergeFragments` (boolean, default `false`; blastn only — cross-contig fragment merging), `min_breadth` (number 0–100, default `90`; minimap2 only), `min_identity` (number 0–100, default `0`; minimap2 only), `min_mapq` (integer ≥ 0, default `0`; minimap2 only), `all_genes` (boolean; minimap2 only), `minGeneCov` (number 0–100, default `90`; cluster dbs only), `minGeneId` (number 0–100, default `90`; cluster dbs only), `minClusterCov` (number 0–100, default `96`; cluster dbs only), `datadir` (string) | Report text: `gapit.report/1` JSON by default, TSV/CSV/Markdown per `format`; `aligner minimap2` runs the reads engine and emits `gapit.reads/1`. A cluster-kind `db` emits `gapit.cluster/1`: best-locus call, per-gene verdicts, and — when the database carries a single-scheme `typing.json` — the phenotype call with its `phenotype_detail` score breakdown; a multi-scheme `typing.json` emits `gapit.cluster/2` with a `phenotypes` map of every scheme's call |
+| `screen` | `files` (array of strings, required), `db` (string, required — no default), `minid` (number), `mincov` (number), `format` (string: `json` \| `tsv` \| `csv` \| `md`, default `json`), `aligner` (string: `blastn` \| `minimap2`, default `blastn`), `merge_fragments` (boolean, default `false`; blastn only — cross-contig fragment merging), `min_breadth` (number 0–100, default `90`; minimap2 only), `min_identity` (number 0–100, default `0`; minimap2 only), `min_mapq` (integer ≥ 0, default `0`; minimap2 only), `all_genes` (boolean; minimap2 only), `min_gene_cov` (number 0–100, default `90`; cluster dbs only), `min_gene_id` (number 0–100, default `90`; cluster dbs only), `min_cluster_cov` (number 0–100, default `96`; cluster dbs only), `datadir` (string) | Report text: `gapit.report/1` JSON by default, TSV/CSV/Markdown per `format`; `aligner minimap2` runs the reads engine and emits `gapit.reads/1`. A cluster-kind `db` emits `gapit.cluster/1`: best-locus call, per-gene verdicts, and — when the database carries a single-scheme `typing.json` — the phenotype call with its `phenotype_detail` score breakdown; a multi-scheme `typing.json` emits `gapit.cluster/2` with a `phenotypes` map of every scheme's call |
 | `screen_reads` | `r1` (array of strings, required — one path per lane), `r2` (array of strings, same count as `r1`), `read_type` (string: `sr` \| `map-ont` \| `map-hifi`, default `sr`), `min_breadth` (number 0–100, default `90`), `min_identity` (number 0–100, default `0`), `min_mapq` (integer ≥ 0, default `0`), `all_genes` (boolean), `format` (string: `json` \| `tsv` \| `csv` \| `md`, default `json`), `db` (string, required — no default), `datadir` (string) | `gapit.reads/1` JSON by default or TSV/CSV/Markdown per `format`; `min_identity`/`min_mapq` > 0 switches to `gapit.reads/2` |
 | `summary` | `files` (array of report table paths, required), `identity` (boolean), `nopath` (boolean) | `gapit.summary/1` JSON |
 | `schema` | `name` (string, required, one of `cluster`, `error`, `features`, `floors`, `reads`, `reads2`, `report`, `summary`, `typing`, `typing_result`, `version`) | The JSON Schema of that output document |
-| `db_list` | `datadir` (string) | `gapit.dblist/1`: database names, install state, record counts |
+| `db_list` | `datadir` (string) | `gapit.dblist/1`: database names, install state, record counts, indexed flag |
+| `db_path` | `datadir` (string) | `gapit.datadir/1`: resolved datadir, existence, and source |
 | `db_fetch` | `name` (string, required — a database NAME, or `all` for the card+vfdb default set), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line per database (`db`, `records`, `dbtype`, `destination`). Every database downloads from its upstream provider, so installs need network and can take minutes |
 | `db_build` | `name` (string, required), `fasta` (string, required — a LOCAL filesystem path), `tsv` (string), `dbtype` (string: `nucl` \| `prot`), `description` (string), `kind` (string: `gene` \| `cluster`), `typing` (string), `floors` (string), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line (`db`, `records`, `dbtype`, `destination`) |
 | `db_search` | `term` (string, required), `db` (string), `field` (string: `gene` \| `accession` \| `function` \| `product` \| `any`, default `any`), `exact` (boolean, default `false`), `limit` (integer ≥ 0, default `100`; `0` = unlimited), `datadir` (string) | TSV hit rows with columns `DB`, `GENE`, `ACCESSION`, `FUNCTION`, `PRODUCT`, `LENGTH` |
@@ -57,6 +58,9 @@ reads-engine parameters); `minid`/`mincov` are ignored by `minimap2`.
 
 Notes:
 
+- Screen parameters use snake_case (`merge_fragments`, `min_gene_cov`,
+  `min_gene_id`, `min_cluster_cov`). The pre-0.6.3 camelCase spellings are still
+  accepted as aliases for compatibility, but new clients should use snake_case.
 - File paths resolve relative to the server's working directory; absolute
   paths are safest.
 - The datadir comes from `--datadir` (where available), then `$GAPIT_DATADIR`, then

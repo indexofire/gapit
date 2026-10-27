@@ -501,7 +501,7 @@ class TestMcp:
     ) -> None:
         """Given the MCP screen tool and a cluster-kind db, When called with
         assembly files, Then it returns the gapit.cluster/1 document with the
-        best-locus call; minGeneId overrides flow through."""
+        best-locus call; min_gene_id overrides flow through."""
         sample = _write_samples(cluster_db, tmp_path)["mutated"]
         is_error, text = self._call(
             "screen", {"files": [str(sample)], "db": DB, "datadir": str(cluster_db)}
@@ -513,7 +513,7 @@ class TestMcp:
 
         stricter, stricter_text = self._call(
             "screen",
-            {"files": [str(sample)], "db": DB, "datadir": str(cluster_db), "minGeneId": 96},
+            {"files": [str(sample)], "db": DB, "datadir": str(cluster_db), "min_gene_id": 96},
         )
         assert not stricter
         entry = json.loads(stricter_text)["files"][0]

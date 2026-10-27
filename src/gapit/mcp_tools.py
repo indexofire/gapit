@@ -13,7 +13,7 @@ from typing import Any
 
 from gapit import config
 from gapit.db_build_ops import perform_build
-from gapit.db_ops import db_list_json, perform_fetch
+from gapit.db_ops import datadir_json, db_list_json, perform_fetch
 from gapit.db_query_ops import (
     DEFAULT_LIMIT,
     DEFAULT_STALE_DAYS,
@@ -97,7 +97,25 @@ def _flag(arguments: dict[str, Any], key: str) -> bool:
     return value
 
 
+_LEGACY_SCREEN_KEYS = {
+    "mergeFragments": "merge_fragments",
+    "minGeneCov": "min_gene_cov",
+    "minGeneId": "min_gene_id",
+    "minClusterCov": "min_cluster_cov",
+}
+
+
+def _canonical_screen_arguments(arguments: dict[str, Any]) -> dict[str, Any]:
+    """Accept the pre-0.6.3 camelCase names while exposing snake_case."""
+    normalized = dict(arguments)
+    for legacy, canonical in _LEGACY_SCREEN_KEYS.items():
+        if canonical not in normalized and legacy in normalized:
+            normalized[canonical] = normalized[legacy]
+    return normalized
+
+
 def _tool_screen(arguments: dict[str, Any]) -> str:
+    arguments = _canonical_screen_arguments(arguments)
     files = _paths(arguments, "files")
     if not files:
         usage_fail("no input files given (files is required)")
@@ -117,13 +135,13 @@ def _tool_screen(arguments: dict[str, Any]) -> str:
     min_identity = _number(arguments, "min_identity", 0.0)
     min_mapq = _integer(arguments, "min_mapq", 0)
     all_genes = _flag(arguments, "all_genes")
-    merge_fragments = _flag(arguments, "mergeFragments")
-    min_gene_cov = _number(arguments, "minGeneCov", 90.0)
-    min_gene_id = _number(arguments, "minGeneId", 90.0)
-    min_cluster_cov = _number(arguments, "minClusterCov", 96.0)
+    merge_fragments = _flag(arguments, "merge_fragments")
+    min_gene_cov = _number(arguments, "min_gene_cov", 90.0)
+    min_gene_id = _number(arguments, "min_gene_id", 90.0)
+    min_cluster_cov = _number(arguments, "min_cluster_cov", 96.0)
     if aligner is AlignerEnum.minimap2:
         if merge_fragments:
-            usage_fail("mergeFragments requires aligner blastn")
+            usage_fail("merge_fragments requires aligner blastn")
         # Non-default minid/mincov are rejected by the use-case too
         # (blastn-only thresholds), and the cluster thresholds are
         # cluster-db-only flags.
@@ -247,6 +265,10 @@ def _tool_db_list(arguments: dict[str, Any]) -> str:
     return db_list_json(config.ensure_datadir(_optional_path(arguments, "datadir")))
 
 
+def _tool_db_path(arguments: dict[str, Any]) -> str:
+    return datadir_json(_optional_path(arguments, "datadir"))
+
+
 def _tool_db_fetch(arguments: dict[str, Any]) -> str:
     receipts = perform_fetch(
         _required_string(arguments, "name"),
@@ -307,6 +329,7 @@ TOOL_HANDLERS: dict[str, Callable[[dict[str, Any]], str]] = {
     "summary": _tool_summary,
     "schema": _tool_schema,
     "db_list": _tool_db_list,
+    "db_path": _tool_db_path,
     "db_fetch": _tool_db_fetch,
     "db_build": _tool_db_build,
     "db_search": _tool_db_search,

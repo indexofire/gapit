@@ -70,6 +70,7 @@ class ParamsDocument(BaseModel, frozen=True):
     minid: float
     mincov: float
     threads: int
+    merge_fragments: bool | None = None
 
 
 class ToolDocument(BaseModel, frozen=True):
@@ -145,7 +146,11 @@ def render_json(reports: Iterable[Report], params: ScreeningParams, *, now: date
     document = ReportDocument(
         created_at=utc_timestamp(now),
         params=ParamsDocument(
-            db=params.db, minid=params.minid, mincov=params.mincov, threads=params.threads
+            db=params.db,
+            minid=params.minid,
+            mincov=params.mincov,
+            threads=params.threads,
+            merge_fragments=True if params.merge_fragments else None,
         ),
         files=[
             FileDocument(

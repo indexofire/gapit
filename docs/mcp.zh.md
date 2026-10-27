@@ -28,8 +28,8 @@ shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0�
 
 ## 工具
 
-九个工具：四个分析工具（`screen`、`screen_reads`、`summary`、`schema`）和五个
-数据库工具（`db_list`、`db_fetch`、`db_build`、`db_search`、`db_outdated`），与
+十个工具：四个分析工具（`screen`、`screen_reads`、`summary`、`schema`）和六个
+数据库工具（`db_list`、`db_path`、`db_fetch`、`db_build`、`db_search`、`db_outdated`），与
 `gapit db ...` 完全对应。`db_list`/`db_search`/`db_outdated` 是只读的
 （`db_list` 首次使用可能创建空 datadir）；`db_fetch`/`db_build` 会修改 datadir。
 下表参数列表转写自线上的
@@ -37,11 +37,12 @@ shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0�
 
 | 工具 | 参数 | 返回 |
 |---|---|---|
-| `screen` | `files`（字符串数组，必填）、`db`（string，必填 —— 无默认值）、`minid`（number）、`mincov`（number）、`format`（string：`json` \| `tsv` \| `csv` \| `md`，默认 `json`）、`aligner`（string：`blastn` \| `minimap2`，默认 `blastn`）、`mergeFragments`（boolean，默认 `false`；仅 blastn：跨 contig 片段合并）、`min_breadth`（number 0-100，默认 `90`；仅 minimap2）、`min_identity`（number 0-100，默认 `0`；仅 minimap2）、`min_mapq`（integer ≥ 0，默认 `0`；仅 minimap2）、`all_genes`（boolean；仅 minimap2）、`minGeneCov`（number 0-100，默认 `90`；仅 cluster 数据库）、`minGeneId`（number 0-100，默认 `90`；仅 cluster 数据库）、`minClusterCov`（number 0-100，默认 `96`；仅 cluster 数据库）、`datadir`（string） | 报告文本：默认 `gapit.report/1` JSON，按 `format` 也可为 TSV、CSV 或 Markdown；`aligner minimap2` 跑 reads 引擎并输出 `gapit.reads/1`。cluster 类型的 `db` 输出 `gapit.cluster/1`：最佳位点判定、逐基因判定，数据库携带单 scheme `typing.json` 时还有带 `phenotype_detail` 分数分解的表型判定；多 scheme `typing.json` 则输出 `gapit.cluster/2`，携带每个 scheme 判定的 `phenotypes` 映射 |
+| `screen` | `files`（字符串数组，必填）、`db`（string，必填 —— 无默认值）、`minid`（number）、`mincov`（number）、`format`（string：`json` \| `tsv` \| `csv` \| `md`，默认 `json`）、`aligner`（string：`blastn` \| `minimap2`，默认 `blastn`）、`merge_fragments`（boolean，默认 `false`；仅 blastn：跨 contig 片段合并）、`min_breadth`（number 0-100，默认 `90`；仅 minimap2）、`min_identity`（number 0-100，默认 `0`；仅 minimap2）、`min_mapq`（integer ≥ 0，默认 `0`；仅 minimap2）、`all_genes`（boolean；仅 minimap2）、`min_gene_cov`（number 0-100，默认 `90`；仅 cluster 数据库）、`min_gene_id`（number 0-100，默认 `90`；仅 cluster 数据库）、`min_cluster_cov`（number 0-100，默认 `96`；仅 cluster 数据库）、`datadir`（string） | 报告文本：默认 `gapit.report/1` JSON，按 `format` 也可为 TSV、CSV 或 Markdown；`aligner minimap2` 跑 reads 引擎并输出 `gapit.reads/1`。cluster 类型的 `db` 输出 `gapit.cluster/1`：最佳位点判定、逐基因判定，数据库携带单 scheme `typing.json` 时还有带 `phenotype_detail` 分数分解的表型判定；多 scheme `typing.json` 则输出 `gapit.cluster/2`，携带每个 scheme 判定的 `phenotypes` 映射 |
 | `screen_reads` | `r1`（字符串数组，必填，每条 lane 一个路径）、`r2`（字符串数组，数量与 `r1` 相同）、`read_type`（string：`sr` \| `map-ont` \| `map-hifi`，默认 `sr`）、`min_breadth`（number 0-100，默认 `90`）、`min_identity`（number 0-100，默认 `0`）、`min_mapq`（integer ≥ 0，默认 `0`）、`all_genes`（boolean）、`format`（string：`json` \| `tsv` \| `csv` \| `md`，默认 `json`）、`db`（string，必填 —— 无默认值）、`datadir`（string） | 默认 `gapit.reads/1` JSON，按 `format` 可为 TSV、CSV 或 Markdown；`min_identity`/`min_mapq` > 0 切换为 `gapit.reads/2` |
 | `summary` | `files`（报告表路径数组，必填）、`identity`（boolean）、`nopath`（boolean） | `gapit.summary/1` JSON |
 | `schema` | `name`（string，必填，取值 `cluster`、`error`、`features`、`floors`、`reads`、`reads2`、`report`、`summary`、`typing`、`typing_result`、`version` 之一） | 该输出文档的 JSON Schema |
-| `db_list` | `datadir`（string） | `gapit.dblist/1`：数据库名、安装状态、记录数 |
+| `db_list` | `datadir`（string） | `gapit.dblist/1`：数据库名、安装状态、记录数、索引状态 |
+| `db_path` | `datadir`（string） | `gapit.datadir/1`：解析后的数据目录、是否存在、来源 |
 | `db_fetch` | `name`（string，必填——数据库名，或 `all` 表示 card+vfdb 默认集合）、`datadir`（string）、`force`（boolean，默认 `false`） | 每个数据库一行 JSON 回执（`db`、`records`、`dbtype`、`destination`）。每个数据库都从其上游提供商下载，安装需要网络且可能耗时数分钟 |
 | `db_build` | `name`（string，必填）、`fasta`（string，必填，本地文件系统路径）、`tsv`（string）、`dbtype`（string：`nucl` \| `prot`）、`description`（string）、`kind`（string：`gene` \| `cluster`）、`typing`（string）、`floors`（string）、`datadir`（string）、`force`（boolean，默认 `false`） | 一行 JSON 回执（`db`、`records`、`dbtype`、`destination`） |
 | `db_search` | `term`（string，必填）、`db`（string）、`field`（string：`gene` \| `accession` \| `function` \| `product` \| `any`，默认 `any`）、`exact`（boolean，默认 `false`）、`limit`（integer ≥ 0，默认 `100`；`0` = 不限）、`datadir`（string） | TSV 命中行，列为 `DB`、`GENE`、`ACCESSION`、`FUNCTION`、`PRODUCT`、`LENGTH` |
@@ -54,6 +55,9 @@ shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0�
 
 注意事项：
 
+- screen 参数使用 snake_case（`merge_fragments`、`min_gene_cov`、`min_gene_id`、
+  `min_cluster_cov`）；0.6.3 之前的 camelCase 拼写仍作为兼容别名接受，新客户端
+  应使用 snake_case。
 - 文件路径相对服务器的工作目录解析；绝对路径最稳妥。
 - 数据目录来自 `--datadir`（可用时），然后 `$GAPIT_DATADIR`，然后
   `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db`（见 `./datadir.md`）。

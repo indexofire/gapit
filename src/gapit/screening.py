@@ -164,7 +164,13 @@ def run_screen(
             emit=emit,
         )
     reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
-    params = ScreeningParams(db=db_name, minid=minid, mincov=mincov, threads=threads)
+    params = ScreeningParams(
+        db=db_name,
+        minid=minid,
+        mincov=mincov,
+        threads=threads,
+        merge_fragments=merge_fragments,
+    )
     ensure_blast()
     dbtype = db.blast_db_info(database.sequences_path).dbtype
     cpu_count = os.cpu_count()

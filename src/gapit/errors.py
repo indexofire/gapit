@@ -7,9 +7,84 @@ stderr via ``render_error``.
 """
 
 from pathlib import Path
-from typing import Literal, NoReturn
+from typing import Literal, NoReturn, cast
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, JsonValue
+
+# Public error-code vocabulary. Keep in sync with every raise site; the test
+# suite AST-scans the source so a new code cannot be added without registering
+# it here.
+ERROR_CODES: frozenset[str] = frozenset(
+    {
+        "ARCHIVE_INVALID",
+        "ARCHIVE_TOO_LARGE",
+        "BLASTDBCMD_PARSE_FAILED",
+        "BLAST_FAILED",
+        "BLAST_PARSE_FAILED",
+        "BLAST_VERSION_CHECK_FAILED",
+        "BLAST_VERSION_TOO_OLD",
+        "BUILD_INVALID",
+        "BUILD_SELF_CHECK_FAILED",
+        "BUNDLED_MALFORMED",
+        "BUNDLED_NOT_FOUND",
+        "CHECKSUM_MISMATCH",
+        "CS_MISSING",
+        "CS_PARSE_FAILED",
+        "DATABASE_MISMATCH",
+        "DATABASE_NOT_FOUND",
+        "DATABASE_NOT_INDEXED",
+        "DATADIR_CREATE_FAILED",
+        "DATADIR_EMPTY",
+        "DATADIR_NOT_FOUND",
+        "DB_ALREADY_EXISTS",
+        "DB_INCOMPLETE",
+        "DB_LOCK_FAILED",
+        "DOWNLOAD_FAILED",
+        "DOWNLOAD_TOO_LARGE",
+        "FEATURES_MALFORMED",
+        "FEATURES_MISSING",
+        "FILE_IO_ERROR",
+        "FLOORS_MALFORMED",
+        "FLOORS_UNKNOWN_GENE",
+        "GENE_OUT_OF_BOUNDS",
+        "GENE_WITHOUT_NAME",
+        "GFF_WITHOUT_FASTA",
+        "GSEEK_FAILED",
+        "GSEEK_RECORD_INVALID",
+        "HEADER_MALFORMED",
+        "INPUT_NOT_FOUND",
+        "INVALID_ENGINE",
+        "INVALID_FASTA",
+        "INVALID_GENBANK",
+        "INVALID_GFF",
+        "INVALID_INPUT",
+        "INVALID_READS_FORMAT",
+        "LOCUS_WITHOUT_GENES",
+        "MAKEBLASTDB_FAILED",
+        "MANIFEST_MALFORMED",
+        "METADATA_MALFORMED",
+        "MINIMAP2_FAILED",
+        "MISSING_DEPENDENCY",
+        "PAF_PARSE_FAILED",
+        "PROVIDER_EMPTY",
+        "PROVIDER_INVALID",
+        "PROVIDER_MALFORMED",
+        "RECORDS_MALFORMED",
+        "SCREEN_TABLE_MALFORMED",
+        "SUMMARY_MALFORMED",
+        "TYPING_CLUSTER_DB",
+        "TYPING_MALFORMED",
+        "TYPING_NO_DATA",
+        "TYPING_NO_SCHEME",
+        "TYPING_UNKNOWN_GENE",
+        "UNEXPECTED",
+        "UNSUPPORTED_LOCATION",
+        "USAGE_ERROR",
+    }
+)
+
+# list is invariant; values are plain strings at this JSON-schema boundary.
+ERROR_CODE_ENUM = cast(list[JsonValue], sorted(ERROR_CODES))
 
 
 class GapitError(Exception):
@@ -70,7 +145,7 @@ class ErrorEnvelope(BaseModel, frozen=True):
     model_config = ConfigDict(populate_by_name=True)
 
     schema_name: Literal["gapit.error/1"] = Field(default="gapit.error/1", alias="schema")
-    code: str
+    code: str = Field(json_schema_extra={"enum": ERROR_CODE_ENUM})
     message: str
     context: dict[str, str]
 

@@ -308,8 +308,8 @@ databases; an unparseable `fetched_at` is `MANIFEST_MALFORMED` (exit 5). For bun
 databases the report is manifest-based as everywhere else: a materialized bundle ages
 from its materialization time, and no bundled-vs-upstream comparison happens in v1
 (see [Bundled databases](#bundled-databases-install-time-ready) — future work). For
-agents, `--json` emits a `gapit.dboutdated/1` document (a CLI listing like `gapit.dblist/1`, not registered with
-`gapit schema`):
+agents, `--json` emits a `gapit.dboutdated/1` document (introspectable via
+`gapit schema dboutdated`):
 
 ```console
 $ gapit db outdated --days 3 --json
@@ -589,7 +589,8 @@ versions. A real one, from the plasmidfinder database:
 | `minimap2_version` | string | minimap2 version in the build environment (reads mode indexes in memory; no `.mmi` is built) |
 
 `records.jsonl` and the manifest are file contracts. They never appear on stdout and are
-not registered with `gapit schema`.
+not registered with `gapit schema` (the stdio/listing documents `dblist`, `dboutdated`,
+and `datadir` are).
 
 ### floors.json — per-gene identity floors
 

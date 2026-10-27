@@ -38,7 +38,7 @@ TOOLS: list[dict[str, object]] = [
         " when the db carries a single-scheme typing.json, or"
         " gapit.cluster/2 with a phenotypes map of every scheme's call"
         " when the typing.json holds more than one scheme, and the"
-        " minGeneCov/minGeneId/minClusterCov thresholds).",
+        " min_gene_cov/min_gene_id/min_cluster_cov thresholds).",
         dict(
             files=_FILES,
             db=_STR,
@@ -46,14 +46,14 @@ TOOLS: list[dict[str, object]] = [
             mincov={"type": "number"},
             format={"type": "string", "enum": ["json", "tsv", "csv", "md"], "default": "json"},
             aligner={"type": "string", "enum": ["blastn", "minimap2"], "default": "blastn"},
-            mergeFragments=_FLAG,
+            merge_fragments=_FLAG,
             min_breadth={"type": "number", "minimum": 0, "maximum": 100, "default": 90},
             min_identity={"type": "number", "minimum": 0, "maximum": 100, "default": 0},
             min_mapq={"type": "integer", "minimum": 0, "default": 0},
             all_genes=_FLAG,
-            minGeneCov={"type": "number", "minimum": 0, "maximum": 100, "default": 90},
-            minGeneId={"type": "number", "minimum": 0, "maximum": 100, "default": 90},
-            minClusterCov={"type": "number", "minimum": 0, "maximum": 100, "default": 96},
+            min_gene_cov={"type": "number", "minimum": 0, "maximum": 100, "default": 90},
+            min_gene_id={"type": "number", "minimum": 0, "maximum": 100, "default": 90},
+            min_cluster_cov={"type": "number", "minimum": 0, "maximum": 100, "default": 96},
             datadir=_STR,
         ),
         ["files", "db"],
@@ -92,6 +92,11 @@ TOOLS: list[dict[str, object]] = [
     _tool_entry(
         "db_list",
         "List known databases with NAME, upstream PROVIDER, and install state (gapit.dblist/1).",
+        dict(datadir=_STR),
+    ),
+    _tool_entry(
+        "db_path",
+        "Resolve the effective datadir and its source without creating it (gapit.datadir/1).",
         dict(datadir=_STR),
     ),
     _tool_entry(

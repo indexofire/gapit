@@ -178,7 +178,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 
 - **Formats**: `--format tsv|csv|json|md` (default `tsv` for abricate compatibility).
 - **JSON**: top-level `"schema": "gapit.report/1"`; schema introspectable via
-  `gapit schema report | reads | reads2 | summary | list | error | version` (plus
+  `gapit schema report | reads | reads2 | summary | cluster | cluster2 | dblist | dboutdated | datadir | error | version` (plus
   `cluster | cluster2 | features | typing | typing_result | floors`). Keys are snake_case,
   units explicit (`identity_pct`, `coverage_pct`). Semver the schema; never rename or
   retype a field in a minor bump.
@@ -220,7 +220,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   `gapit db path [--json]` introspects it without creating, while `db list`/`setupdb`
   bootstrap a missing root. See `docs/datadir.md` for the database anatomy, sharing and
   Docker policy.
-- **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing nine tools:
+- **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing ten tools:
   read-only `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via
   minimap2), `summary`, `schema`, `db_search`, `db_outdated`, plus `db_list` (may create the
   empty datadir on first use), and the datadir-mutating `db_fetch` (installs databases from

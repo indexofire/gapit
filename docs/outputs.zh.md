@@ -175,6 +175,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 | `params.minid` | number | 最小一致性阈值 |
 | `params.mincov` | number | 最小覆盖度阈值 |
 | `params.threads` | integer | BLAST 线程数 |
+| `params.merge_fragments` | boolean | 仅 `--merge-fragments` 运行时出现（true） |
 | `files` | array | 每个输入文件一项，含零命中文件 |
 | `files[].file` | string | 按原样的输入路径 |
 | `files[].hits` | array | 幸存命中，无命中时为空列表 |
@@ -477,7 +478,7 @@ frontmatter 在第一个文件之前即可知，因此 md 与 tsv 行一样逐�
 | 字段 | 类型 | 含义 |
 |---|---|---|
 | `schema` | string | 恒为 `gapit.error/1` |
-| `code` | string | 机器稳定的错误码，SCREAMING_SNAKE_CASE |
+| `code` | string | 机器稳定的错误码，SCREAMING_SNAKE_CASE；枚举由 `gapit schema error` 暴露 |
 | `message` | string | 人类可读的描述 |
 | `context` | object | 字符串值的细节（文件路径、摘要、数据库名） |
 

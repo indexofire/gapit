@@ -156,8 +156,8 @@ class DbOutdatedEntry(BaseModel, frozen=True):
 class DbOutdatedDocument(BaseModel, frozen=True):
     """gapit.dboutdated/1 — `gapit db outdated --json` output.
 
-    A CLI listing, deliberately local to this module: NOT registered in
-    `gapit schema` (mirrors the gapit.dblist/1 precedent).
+    Registered as ``gapit schema dboutdated`` (mirrors the gapit.dblist/1
+    registration).
     """
 
     model_config = ConfigDict(populate_by_name=True)

@@ -5,6 +5,26 @@ All notable changes to gapit are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2026-10-26
+
+### Added
+
+- **Complete agent JSON surface.** `gapit.report/1` params now record
+  `merge_fragments`; `gapit.dblist/1`, `gapit.dboutdated/1`, and
+  `gapit.datadir/1` are registered in `gapit schema`; `gapit.error/1` exposes the
+  full machine-readable error-code enum.
+- **MCP `db_path`.** The stdio server exposes the resolved datadir document, and
+  `screen` now uses canonical snake_case parameters (`merge_fragments`,
+  `min_gene_cov`, `min_gene_id`, `min_cluster_cov`). Legacy camelCase names remain
+  accepted as aliases.
+
+### Changed
+
+- **0.6.3 is the provenance-clean republish.** 0.6.2 was uploaded manually and
+  therefore has no PyPI provenance attestation; 0.6.3 is published by the GitHub
+  Actions release workflow through PyPI Trusted Publishing. The historical 0.6.2
+  release should be yanked/deleted in the PyPI UI.
+
 ## [0.6.2] - 2026-10-26
 
 ### Changed

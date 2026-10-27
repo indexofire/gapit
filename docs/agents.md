@@ -16,9 +16,10 @@ $ gapit --version --json
 {"schema":"gapit.version/1","name":"gapit","version":"0.6.2"}
 ```
 
-Output schemas. Twelve documents are introspectable: `report`, `typing_result`, `reads`,
-`reads2`, `cluster`, `cluster2`, `summary`, `error`, `version`, plus the database-side
-documents `features`, `typing`, and `floors`. Each prints its full JSON Schema:
+Output schemas. Fifteen documents are introspectable: `report`, `typing_result`,
+`reads`, `reads2`, `cluster`, `cluster2`, `summary`, `error`, `version`, `dblist`,
+`dboutdated`, `datadir`, plus the database-side documents `features`, `typing`, and
+`floors`. Each prints its full JSON Schema:
 
 ```console
 $ gapit schema report          # gapit.report/1 (contig screening)
@@ -30,6 +31,9 @@ $ gapit schema cluster2        # gapit.cluster/2 (multi-scheme cluster screening
 $ gapit schema summary         # gapit.summary/1
 $ gapit schema error           # gapit.error/1
 $ gapit schema version         # gapit.version/1
+$ gapit schema dblist          # gapit.dblist/1 (database catalog)
+$ gapit schema dboutdated      # gapit.dboutdated/1 (staleness report)
+$ gapit schema datadir         # gapit.datadir/1 (resolved path/source)
 $ gapit schema features        # gapit.features/1 (cluster db feature table)
 $ gapit schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
 $ gapit schema floors          # gapit.floors/1 (per-gene identity floors, reads mode)

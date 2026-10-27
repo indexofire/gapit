@@ -9,7 +9,8 @@
     "db": "fragdb",
     "minid": 80.0,
     "mincov": 80.0,
-    "threads": 1
+    "threads": 1,
+    "merge_fragments": true
   },
   "files": [
     {

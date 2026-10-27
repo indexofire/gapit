@@ -421,8 +421,9 @@ path and is not exercised by the offline suite.
   table (NAME = the `--db` value, PROVIDER = upstream maintainer org; `installed (N)`
   iff `<datadir>/<name>/gapit-manifest.json` exists, else `available`),
   or `gapit.dblist/1` JSON (`providers[]`: `name`, `vendor`, `description`, `dbtype`,
-  `installed`, `records` omitted when unset). Module-local schema, deliberately NOT in
-  `gapit schema`. A missing datadir is bootstrapped (created) before listing, so a fresh
+  `installed`, `indexed`, `records` omitted when unset). Registered as
+  `gapit schema dblist`; `gapit schema dboutdated`/`datadir` expose the sibling
+  listings. A missing datadir is bootstrapped (created) before listing, so a fresh
   installation can inspect the catalog; `setupdb` bootstraps it too.
 - `gapit db install SOURCE --sha256 HASH --output TARGET` — verified LOCAL-FILE install
   only (no network, no providers, no archives): streaming SHA256, atomic replace after the

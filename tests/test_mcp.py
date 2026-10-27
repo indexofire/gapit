@@ -102,9 +102,9 @@ def test_notifications_get_no_response() -> None:
     assert responses[0]["id"] == 1
 
 
-def test_tools_list_advertises_nine_tools_with_schemas() -> None:
+def test_tools_list_advertises_ten_tools_with_schemas() -> None:
     """Given tools/list, When served, Then exactly screen/screen_reads/
-    summary/schema/db_list/db_fetch/db_build/db_search/db_outdated, each with
+    summary/schema/db_list/db_path/db_fetch/db_build/db_search/db_outdated, each with
     an object inputSchema carrying properties + required."""
     (response,) = exchange({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
     tools = response["result"]["tools"]
@@ -113,6 +113,7 @@ def test_tools_list_advertises_nine_tools_with_schemas() -> None:
         "db_fetch",
         "db_list",
         "db_outdated",
+        "db_path",
         "db_search",
         "schema",
         "screen",
@@ -220,7 +221,7 @@ def test_screen_call_honors_datadir_argument_without_env(
 def test_screen_call_merge_fragments_returns_merged_hit(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given tools/call screen with mergeFragments=true on the fragment
+    """Given tools/call screen with merge_fragments=true on the fragment
     fixture, When served, Then the merged gene is reported with its fragments
     array (absent from the same call without the flag)."""
     datadir = tmp_path / "datadir"
@@ -229,7 +230,7 @@ def test_screen_call_merge_fragments_returns_merged_hit(
     monkeypatch.setenv("GAPIT_DATADIR", str(datadir))
     fixture = str(Path(__file__).parent / "data" / "fragments" / "split4060.fa")
     (response,) = exchange(
-        tool_call("screen", {"files": [fixture], "db": "fragdb", "mergeFragments": True})
+        tool_call("screen", {"files": [fixture], "db": "fragdb", "merge_fragments": True})
     )
     assert response["result"]["isError"] is False
     (hit,) = json.loads(response["result"]["content"][0]["text"])["files"][0]["hits"]
@@ -240,12 +241,12 @@ def test_screen_call_merge_fragments_returns_merged_hit(
 
 
 def test_screen_call_merge_fragments_requires_blastn_aligner() -> None:
-    """Given mergeFragments=true with aligner minimap2, When served, Then a
+    """Given merge_fragments=true with aligner minimap2, When served, Then a
     usage error envelope (blastn-only parameter)."""
     (response,) = exchange(
         tool_call(
             "screen",
-            {"files": ["x.fa"], "db": "tinyamr", "mergeFragments": True, "aligner": "minimap2"},
+            {"files": ["x.fa"], "db": "tinyamr", "merge_fragments": True, "aligner": "minimap2"},
         )
     )
     assert response["result"]["isError"] is True
@@ -304,7 +305,7 @@ def test_malformed_line_is_ignored_and_loop_continues() -> None:
         {"jsonrpc": "2.0", "id": 3, "method": "tools/list"},
     )
     assert len(responses) == 1
-    assert len(responses[0]["result"]["tools"]) == 9
+    assert len(responses[0]["result"]["tools"]) == 10
 
 
 def test_eof_terminates_cleanly() -> None:
@@ -329,4 +330,16 @@ def test_cli_mcp_subcommand_streams_protocol_lines() -> None:
     responses = [json.loads(line) for line in result.stdout.splitlines()]
     assert [response["id"] for response in responses] == [1, 2]
     assert responses[0]["result"]["serverInfo"]["name"] == "gapit"
-    assert len(responses[1]["result"]["tools"]) == 9
+    assert len(responses[1]["result"]["tools"]) == 10
+
+
+def test_db_path_tool_returns_the_datadir_document(tmp_path: Path) -> None:
+    """Given db_path, When served, Then it returns gapit.datadir/1 with the
+    requested datadir and source=cli."""
+    datadir = tmp_path / "db"
+    (response,) = exchange(tool_call("db_path", {"datadir": str(datadir)}))
+    text = response["result"]["content"][0]["text"]
+    document = json.loads(text)
+    assert document["schema"] == "gapit.datadir/1"
+    assert document["datadir"] == str(datadir.resolve())
+    assert document["source"] == "cli"

@@ -12,6 +12,9 @@ class ScreeningParams(BaseModel, frozen=True):
     minid: float = Field(default=80.0, gt=0.0, le=100.0)
     mincov: float = Field(default=80.0, ge=0.0, le=100.0)
     threads: int = Field(default=1, ge=1)
+    # Additive opt-in flag; serialized only when true so default reports stay
+    # byte-identical to the pre-merge-fragments contract.
+    merge_fragments: bool = False
 
 
 class Report(BaseModel, frozen=True):

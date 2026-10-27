@@ -143,7 +143,8 @@ register_mcp_command(app)
     "name",
     help=(
         "Document to introspect: report, reads, reads2, cluster, cluster2,"
-        " summary, error, version, features, typing, typing_result, or floors."
+        " summary, error, version, dblist, dboutdated, datadir, features,"
+        " typing, typing_result, or floors."
     ),
 )
 def schema(name: str) -> None:

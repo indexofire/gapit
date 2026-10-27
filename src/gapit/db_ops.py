@@ -95,8 +95,8 @@ class DatadirDocument(BaseModel, frozen=True):
 class DbListDocument(BaseModel, frozen=True):
     """gapit.dblist/1 — `gapit db list --json` output.
 
-    A CLI listing, deliberately local to this module: NOT registered in
-    `gapit schema` (the public schema surface stays unchanged this wave).
+    Registered as ``gapit schema dblist``; the schema is additive so agents can
+    introspect the database catalog without a live datadir.
     """
 
     model_config = ConfigDict(populate_by_name=True)

@@ -281,8 +281,7 @@ card	2020-01-01T00:00:00Z	2454.55	stale
 目录；无法解析的 `fetched_at` 是 `MANIFEST_MALFORMED`（退出码 5）。内置数据库的
 报告与其他库一样以 manifest 为准：已物化的内置库从物化时刻起算年龄，v1 不做
 内置-vs-上游比较（见"内置数据库（即装即用）"一节 —— 属未来工作）。面向 agent，
-`--json` 输出 `gapit.dboutdated/1` 文档（形如 `gapit.dblist/1` 的 CLI 列表，未注册
-到 `gapit schema`）：
+`--json` 输出 `gapit.dboutdated/1` 文档（可用 `gapit schema dboutdated` 内省）：
 
 ```console
 $ gapit db outdated --days 3 --json
@@ -552,7 +551,7 @@ manifest，来自 plasmidfinder 数据库：
 | `minimap2_version` | string | 构建环境中的 minimap2 版本（reads 模式在内存中建索引，不生成 `.mmi`） |
 
 `records.jsonl` 和 manifest 是文件契约。它们从不出现在 stdout，也未注册到
-`gapit schema`。
+`gapit schema`（stdio/列表文档 `dblist`、`dboutdated`、`datadir` 已注册）。
 
 ### floors.json — 按基因设置一致性下限 {#floorsjson}
 

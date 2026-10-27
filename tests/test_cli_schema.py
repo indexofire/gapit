@@ -68,3 +68,16 @@ def test_schema_cluster_omits_internal_winner_field() -> None:
     payload = json.loads(result.stdout)
     detail = payload["$defs"]["PhenotypeDetail"]
     assert "winner" not in detail["properties"]
+
+
+def test_schema_registers_database_listing_documents() -> None:
+    """The database listing documents are first-class agent contracts now."""
+    for name, schema in (
+        ("dblist", "gapit.dblist/1"),
+        ("dboutdated", "gapit.dboutdated/1"),
+        ("datadir", "gapit.datadir/1"),
+    ):
+        result = runner.invoke(app, ["schema", name])
+        assert result.exit_code == 0, name
+        payload = json.loads(result.stdout)
+        assert payload["properties"]["schema"]["const"] == schema

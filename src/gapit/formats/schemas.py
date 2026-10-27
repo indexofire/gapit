@@ -9,6 +9,8 @@ public surface (``gapit schema`` unknown-name message iterates it).
 
 from pydantic import BaseModel
 
+from gapit.db_ops import DatadirDocument, DbListDocument
+from gapit.db_query_ops import DbOutdatedDocument
 from gapit.errors import ErrorEnvelope
 from gapit.formats.cluster import ClusterDocument
 from gapit.formats.cluster2 import Cluster2Document
@@ -29,6 +31,9 @@ SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "summary": SummaryDocument,
     "error": ErrorEnvelope,
     "version": VersionDocument,
+    "dblist": DbListDocument,
+    "dboutdated": DbOutdatedDocument,
+    "datadir": DatadirDocument,
     "features": FeaturesDocument,
     "typing": TypingDocument,
     "typing_result": TypingResultDocument,
