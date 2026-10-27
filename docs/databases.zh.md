@@ -845,8 +845,24 @@ gapit: BLAST index built (nucl)
 {"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
 ```
 
-`records.jsonl` 是可编辑的事实来源：编辑它（或 FASTA）后用 `--force` 重建，每个下
-游产物都会再生。
+`records.jsonl` 是可编辑的事实来源：编辑它后重建，每个下游产物都会再生。
+`gapit db rebuild` 就是这条路，不需要源 FASTA：
+
+```console
+$ vim ~/.local/share/gapit/db/mypanel/records.jsonl   # 策展：改名、合并、改 product
+$ gapit db rebuild mypanel
+gapit: rebuilding mypanel from records.jsonl
+gapit: self-check passed for mypanel
+gapit: BLAST index built (nucl)
+{"db":"mypanel","records":4,"kind":"gene","destination":".../mypanel"}
+```
+
+重建会重新投影 `sequences`、跑自检、重建 BLAST 索引、重写清单——保留清单里的来源信息
+（`fetched_at`、source URL、许可、`typing_schema`、`source`），并把
+`typing.json`/`floors.json`/`info.json` 边车文件原样带过去。整个过程走暂存目录：记录
+损坏或 typing 规则引用失效时，已安装的数据库保持不变。基因簇数据库以
+`DB_REBUILD_CLUSTER` 拒绝：它们的位点 FASTA 与 `features.json` 由源 GBK/GFF 生成，
+应改用 `db build` 从源文件重建。
 
 ### 重命名已安装的数据库
 

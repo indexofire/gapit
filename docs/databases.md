@@ -913,8 +913,26 @@ gapit: BLAST index built (nucl)
 {"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
 ```
 
-Because `records.jsonl` is the editable truth, editing it (or the FASTA) and
-rebuilding with `--force` regenerates every downstream artifact.
+Because `records.jsonl` is the editable truth, editing it and rebuilding regenerates every
+downstream artifact. `gapit db rebuild` is that path — no source FASTA needed:
+
+```console
+$ vim ~/.local/share/gapit/db/mypanel/records.jsonl   # curate: rename, merge, fix a product
+$ gapit db rebuild mypanel
+gapit: rebuilding mypanel from records.jsonl
+gapit: generated .../mypanel/sequences
+gapit: self-check passed for mypanel
+gapit: BLAST index built (nucl)
+{"db":"mypanel","records":4,"kind":"gene","destination":".../mypanel"}
+```
+
+The rebuild re-projects `sequences`, re-runs the self-check, rebuilds the BLAST index, and
+re-stamps the manifest — preserving its provenance (`fetched_at`, source URLs, licence,
+`typing_schema`, `source`) and carrying the `typing.json`/`floors.json`/`info.json`
+sidecars across verbatim. It is staged, so a malformed record or a typing rule that no
+longer resolves leaves the installed database untouched. Cluster databases are refused
+with `DB_REBUILD_CLUSTER`: their locus FASTA and `features.json` are generated from a
+source GBK/GFF, so they are rebuilt with `db build` from that source instead.
 
 ### Renaming an installed database
 

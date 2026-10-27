@@ -29,21 +29,15 @@ from pydantic import BaseModel
 
 from gapit import config
 from gapit.db import make_blast_db, validate_database_name
+from gapit.db_rebuild_ops import SIDECARS, project_gene_records
 from gapit.db_txn import staged_database
-from gapit.dbbuild import build_database, optional_tool_version_line, sha256_file, tool_version_line
+from gapit.dbbuild import optional_tool_version_line, sha256_file, tool_version_line
 from gapit.errors import DatabaseError
 from gapit.proctools import note
-from gapit.records import (
-    Manifest,
-    count_records,
-    read_manifest,
-    read_records,
-    write_manifest,
-    write_records,
-)
+from gapit.records import Manifest, read_manifest, write_manifest
 
 # Sidecars a database may carry; all of them reference ids, never the db name.
-_SIDECARS = ("typing.json", "floors.json", "features.json")
+_SIDECARS = (*SIDECARS, "features.json")
 
 
 class RenameReceipt(BaseModel, frozen=True):
@@ -65,28 +59,7 @@ def _copy_sidecars(source: Path, target: Path) -> None:
 
 def _rename_gene(source: Path, target: Path, manifest: Manifest, quiet: bool) -> int:
     """Re-point every gene record at the new name and rebuild the artifacts."""
-    name = manifest.name
-    with staged_database(target) as build_dir:
-        records = [
-            record.model_copy(update={"db": name})
-            for record in read_records(source / "records.jsonl")
-        ]
-        write_records(records, build_dir / "records.jsonl")
-        _copy_sidecars(source, build_dir)
-        build_database(
-            build_dir,
-            name=name,
-            dbtype=manifest.dbtype,
-            source_urls=manifest.source_urls,
-            fetched_at=manifest.fetched_at,
-            upstream_version=manifest.upstream_version,
-            content_license=manifest.license or "",
-            content_note=manifest.note or "",
-            typing_schema=manifest.typing_schema or "",
-            source=manifest.source,
-            quiet=quiet,
-        )
-        return count_records(build_dir / "records.jsonl")
+    return project_gene_records(source, target, manifest, name=manifest.name, quiet=quiet)
 
 
 def _rename_cluster(source: Path, target: Path, manifest: Manifest, quiet: bool) -> int:

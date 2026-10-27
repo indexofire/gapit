@@ -186,3 +186,19 @@ def test_rename_rejects_bad_names_and_self_renames(datadir: Path) -> None:
     same = runner.invoke(app, ["db", "rename", "tinyamr", "tinyamr", "--datadir", str(datadir)])
     assert same.exit_code == 4
     assert (datadir / "tinyamr" / "sequences").is_file()
+
+
+def test_rename_preserves_the_info_sidecar(datadir: Path) -> None:
+    """Given a gene database with an info.json sidecar, When it is renamed,
+    Then the sidecar travels to the new name (the rebuild copies sidecars)."""
+    import json
+
+    _gene_db_from_bundle("lm_doumith", datadir, "old_lm")
+    sidecar = datadir / "old_lm" / "info.json"
+    sidecar.write_text(json.dumps({"caveats": ["keep me"]}), encoding="utf-8")
+
+    result = runner.invoke(app, ["db", "rename", "old_lm", "lm_panel", "--datadir", str(datadir)])
+
+    assert result.exit_code == 0, result.stderr
+    moved = json.loads((datadir / "lm_panel" / "info.json").read_text(encoding="utf-8"))
+    assert moved["caveats"] == ["keep me"]
