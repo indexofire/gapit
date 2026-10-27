@@ -129,7 +129,8 @@ gapit/
 │   ├── cmd_db.py        # `gapit db` command group (fetch/path/list/build/install/search/outdated)
 │   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
 │   ├── cmd_db_rename.py # `gapit db rename` CLI (naming-convention migration)
-│   ├── cmd_db_info.py   # `gapit db info` CLI (provenance + guidance)
+│   ├── cmd_db_info.py   # `gapit db info -d NAME` CLI (manual page / TSV / JSON)
+│   ├── db_info_manual.py # `db info` man-style renderer (plain text, terminal width)
 │   ├── cmd_db_build.py  # `gapit db build` CLI (custom FASTA → native db)
 │   ├── cmd_db_search.py # `gapit db search` CLI (records.jsonl lookup)
 │   ├── cmd_db_outdated.py # `gapit db outdated` CLI (staleness report)
@@ -212,7 +213,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   pipeline), with `db fetch <name>` the fresh-upstream refresh path for the
   provider-backed bundled names (ecoh, ncbi, resfinder); what may
   ride the wheel is governed by the §6 policy),
-  database listing, per-database `db info NAME` (provenance + literature
+  database listing, per-database `db info -d NAME` (provenance + literature
   references + usage + caveats, merging the provider catalog, `bundled.json`,
   the manifest, and an optional `info.json` sidecar; `gapit.dbinfo/1`),
   records.jsonl gene search, staleness

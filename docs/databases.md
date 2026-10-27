@@ -160,52 +160,64 @@ surface.) See [outputs.md](./outputs.md).
 ## Inspecting one database
 
 `gapit db list` answers "which databases exist, and are they installed";
-`gapit db info NAME` answers "what is this database, where does its content come from,
+`gapit db info -d NAME` answers "what is this database, where does its content come from,
 how is it meant to be used, and where does it mislead". It is a pure read over four
 existing sources — the provider catalog, the wheel's `bundled.json`, the installed
 manifest, and an optional `info.json` sidecar in the database directory — so nothing
-has to be re-declared:
+has to be re-declared.
+
+On a terminal it prints a man-style page (plain text, no colour, wrapped to the terminal
+width; `less` can page it):
 
 ```console
-$ gapit db info cje_cps
+$ gapit db info -d cje_cps | head -20
+CJE_CPS(1)                   gapit database manual                    CJE_CPS(1)
+
+NAME
+       cje_cps — Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel
+
+SYNOPSIS
+       $ gapit screen -d cje_cps [FILE]... -o RESULT.tsv
+       $ gapit typing RESULT.tsv
+       $ gapit db info -d cje_cps
+
+DESCRIPTION
+       36 CPS amplicon targets + lpxA control; extracted from the GenBank
+       accessions listed in Poly et al. 2015, PLoS ONE 10(12):e0144349 (Table
+       3). The cje_cps typing asset follows the paper's Table 4 patterns, with
+       HS4/HS16/HS64 complex rules and actual amplicon-presence floors; see
+       docs/databases.md.
+
+STATUS
+       installed · 37 records · gene database · nucl
+```
+
+The sections are `NAME`, `SYNOPSIS`, `DESCRIPTION`, `STATUS`, `PROVENANCE` (vendor,
+licence, snapshot, typing schema, build provenance, source URLs, location),
+`REFERENCES` (numbered, with `doi:`/`url:` and the reason each source matters),
+`CAVEATS` (bulleted interpretation limits), `USAGE` (the commands that constitute the
+intended workflow, never wrapped mid-flag), and `SEE ALSO`. Sections a database has
+nothing to say in are omitted rather than printed empty, so an uninstalled catalog
+provider shows no `PROVENANCE` build rows and no `REFERENCES`.
+
+**Piped output stays machine-readable.** When stdout is not a terminal — or when
+`--tsv` is passed — the same facts render as a stable two-column `FIELD<TAB>VALUE`
+stream: list-valued fields (`REFERENCE`, `CAVEAT`, `USAGE`, `SOURCE_URL`) repeat their
+key, and a reference's `REFERENCE_DOI`/`REFERENCE_URL`/`REFERENCE_NOTE` rows follow its
+own `REFERENCE` row.
+
+```console
+$ gapit db info -d cje_cps --tsv | head -4
 NAME	cje_cps
 DESCRIPTION	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel
 VENDOR	gapit-curated (Poly 2015; CC0 + NCBI public domain)
 KIND	gene
-DBTYPE	nucl
-STATUS	installed
-RECORDS	37
-DESTINATION	/home/you/.local/share/gapit/db/cje_cps
-SNAPSHOT	2026-10-27
-TYPING_SCHEMA	gapit.typing/2
-TOOL	gapit 0.6.4
-FETCHED_AT	2026-10-27T04:19:06Z
-MAKEBLASTDB_VERSION	makeblastdb: 2.17.0+
-MINIMAP2_VERSION	2.31-r1302
-SOURCE_URL	local
-REFERENCE	Poly F, Serichantalergs O, Kuroiwa J, ... PLoS ONE 2015;10(12):e0144349.
-REFERENCE_DOI	10.1371/journal.pone.0144349
-REFERENCE_URL	https://doi.org/10.1371/journal.pone.0144349
-REFERENCE_NOTE	Source of the 36 primer pairs and their expected amplicon sizes (Table 3) ...
-REFERENCE	Klena JD, Parker CT, Knibb K, ... J Clin Microbiol 2004;42(12):5549-57.
-REFERENCE_NOTE	Source of the lpxA positive-control primer set used as the panel's species gate.
-CAVEAT	47 Penner serotypes collapse into 35 capsule types: ...
-CAVEAT	Short amplicons are E-value bound, not --minid bound: ...
-USAGE	gapit screen isolate.fa --db cje_cps --output cps.tsv   # stage 1: detect CPS amplicons
-USAGE	gapit typing cps.tsv                                   # stage 2: penner_cps call
 ```
-
-The table is a stable two-column `FIELD<TAB>VALUE` stream: list-valued fields
-(`REFERENCE`, `CAVEAT`, `USAGE`, `SOURCE_URL`) repeat their key, and a reference's
-`REFERENCE_DOI`/`REFERENCE_URL`/`REFERENCE_NOTE` rows follow its own `REFERENCE` row.
-Fields a source does not carry are omitted, so the shape stays honest: a
-bundled-but-unmaterialized database has no `TOOL`/`RECORDS` rows, and an uninstalled
-provider has neither build provenance nor a record count.
 
 `--json` emits the `gapit.dbinfo/1` document (`gapit schema dbinfo`) for agents:
 
 ```console
-$ gapit db info vc_serogroup --json | head -3
+$ gapit db info -d vc_serogroup --json | head -1
 {"schema":"gapit.dbinfo/1","name":"vc_serogroup","description":"Vibrio cholerae O1/O139 ...
 ```
 
@@ -345,7 +357,7 @@ Fallback `untypeable (atypical CPS profile or non-jejuni)`. Coverage floor 90, i
 floor 95 (the HS5/31 rule sits at 90 because the HS45 band in that locus is a divergent
 amplicon).
 
-`gapit db info cje_cps` carries the panel's four literature references (Poly 2015 for the
+`gapit db info -d cje_cps` carries the panel's four literature references (Poly 2015 for the
 panel, Klena 2004 for the `lpxA` control, Penner 1980 for the scheme, Pike 2013 for the
 serotype distribution) and the seven interpretation caveats — the complex collapse, the
 shared-amplicon profiles, the `lpxA`-is-not-speciation warning, the 62 bp HS2 E-value

@@ -160,11 +160,16 @@ def collect_db_info(name: str, datadir: Path | None) -> DbInfoDocument:
         status=status,
         records=manifest.n_records if manifest else None,
         destination=str(directory) if manifest else None,
-        license=manifest.license if manifest else entry.license,
+        # A materialized bundled panel keeps the wheel-declared licence (the
+        # gene build does not carry one into the manifest).
+        license=(manifest.license if manifest and manifest.license else entry.license),
         snapshot=bundled.metadata.snapshotted if bundled else None,
         typing_schema=manifest.typing_schema if manifest else None,
         source_urls=manifest.source_urls if manifest else (),
-        note=manifest.note if manifest else (bundled.metadata.note if bundled else None),
+        note=(
+            (manifest.note if manifest and manifest.note else None)
+            or (bundled.metadata.note if bundled else None)
+        ),
         build=_build_info(manifest) if manifest else None,
         references=guidance.references,
         caveats=guidance.caveats,

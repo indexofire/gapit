@@ -16,13 +16,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   capsule types the paper resolves — complexes called as complexes, shared
   amplicon profiles declared as rules, every caveat carried as a note. Real
   public-domain content, so it ships in the wheel like `lm_doumith`.
-- **`gapit db info NAME`.** One database's provenance in one place: identity,
+- **`gapit db info -d NAME`.** One database's provenance in one place: identity,
   install status, licence, snapshot date, build provenance, the literature its
   content came from, the intended usage recipe, and the caveats its
   interpretation depends on. It merges the provider catalog, the wheel's
   `bundled.json`, the installed manifest, and an optional `info.json` sidecar
   (so a `db build` product can carry its own references), and emits
-  `gapit.dbinfo/1` under `--json`. `cje_cps` ships its full record: four
+  `gapit.dbinfo/1` under `--json`. On a terminal it prints a man-style page
+  (NAME / SYNOPSIS / DESCRIPTION / STATUS / PROVENANCE / REFERENCES / CAVEATS /
+  USAGE / SEE ALSO, plain text wrapped to the terminal width); piped output or
+  `--tsv` keeps the stable `FIELD<TAB>VALUE` table. `cje_cps` ships its full
+  record: four
   references (Poly 2015, Klena 2004, Penner 1980, Pike 2013) and seven
   interpretation caveats.
 - **`gapit db rename OLD NEW`.** Re-home an installed database under a new

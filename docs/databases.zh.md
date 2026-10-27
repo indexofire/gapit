@@ -151,45 +151,61 @@ abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 
 ## 查看单个数据库的详情
 
-`gapit db list` 回答"有哪些数据库、装了没有"；`gapit db info NAME` 回答"这个库是什么、
-内容从哪来、该怎么用、在哪些地方会误导"。它只对四个既有来源做读取——提供商目录、
+`gapit db list` 回答"有哪些数据库、装了没有"；`gapit db info -d NAME` 回答"这个库是
+什么、内容从哪来、该怎么用、在哪些地方会误导"。它只对四个既有来源做读取——提供商目录、
 wheel 里的 `bundled.json`、已安装的 manifest，以及数据库目录下可选的 `info.json`
-边车文件——因此无需重复声明任何信息：
+边车文件——因此无需重复声明任何信息。
+
+在终端上它输出 man 手册风格的页面（纯文本、无颜色、按终端宽度换行；可交给 `less`
+分页）：
 
 ```console
-$ gapit db info cje_cps
+$ gapit db info -d cje_cps | head -20
+CJE_CPS(1)                   gapit database manual                    CJE_CPS(1)
+
+NAME
+       cje_cps — Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel
+
+SYNOPSIS
+       $ gapit screen -d cje_cps [FILE]... -o RESULT.tsv
+       $ gapit typing RESULT.tsv
+       $ gapit db info -d cje_cps
+
+DESCRIPTION
+       36 CPS amplicon targets + lpxA control; extracted from the GenBank
+       accessions listed in Poly et al. 2015, PLoS ONE 10(12):e0144349 (Table
+       3). The cje_cps typing asset follows the paper's Table 4 patterns, with
+       HS4/HS16/HS64 complex rules and actual amplicon-presence floors; see
+       docs/databases.md.
+
+STATUS
+       installed · 37 records · gene database · nucl
+```
+
+章节依次为 `NAME`、`SYNOPSIS`、`DESCRIPTION`、`STATUS`、`PROVENANCE`（维护方、许可、
+快照日期、typing schema、构建来源、source URL、磁盘位置）、`REFERENCES`（编号排列，
+带 `doi:`/`url:` 与"为什么需要引用它"）、`CAVEATS`（项目符号列出的解读限制）、
+`USAGE`（构成正确工作流的命令，绝不在参数中间断行）、`SEE ALSO`。没有内容的章节直接
+省略而不是打印空标题，所以未安装的目录条目不会出现 `PROVENANCE` 的构建行，也没有
+`REFERENCES`。
+
+**管道输出保持机器可读。** 当 stdout 不是终端时——或显式传 `--tsv`——同样的事实渲染为
+稳定的两列 `FIELD<TAB>VALUE` 流：列表型字段（`REFERENCE`、`CAVEAT`、`USAGE`、
+`SOURCE_URL`）重复键名，且每条文献的 `REFERENCE_DOI`/`REFERENCE_URL`/`REFERENCE_NOTE`
+紧跟它自己的 `REFERENCE` 行。
+
+```console
+$ gapit db info -d cje_cps --tsv | head -4
 NAME	cje_cps
 DESCRIPTION	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel
 VENDOR	gapit-curated (Poly 2015; CC0 + NCBI public domain)
 KIND	gene
-DBTYPE	nucl
-STATUS	installed
-RECORDS	37
-DESTINATION	/home/you/.local/share/gapit/db/cje_cps
-SNAPSHOT	2026-10-27
-TYPING_SCHEMA	gapit.typing/2
-TOOL	gapit 0.6.4
-SOURCE_URL	local
-REFERENCE	Poly F, Serichantalergs O, Kuroiwa J, ... PLoS ONE 2015;10(12):e0144349.
-REFERENCE_DOI	10.1371/journal.pone.0144349
-REFERENCE_NOTE	Source of the 36 primer pairs and their expected amplicon sizes (Table 3) ...
-REFERENCE	Klena JD, Parker CT, Knibb K, ... J Clin Microbiol 2004;42(12):5549-57.
-REFERENCE_NOTE	Source of the lpxA positive-control primer set used as the panel's species gate.
-CAVEAT	47 Penner serotypes collapse into 35 capsule types: ...
-CAVEAT	Short amplicons are E-value bound, not --minid bound: ...
-USAGE	gapit screen isolate.fa --db cje_cps --output cps.tsv   # stage 1: detect CPS amplicons
-USAGE	gapit typing cps.tsv                                   # stage 2: penner_cps call
 ```
-
-输出是稳定的两列 `FIELD<TAB>VALUE` 流：列表型字段（`REFERENCE`、`CAVEAT`、`USAGE`、
-`SOURCE_URL`）重复键名，且每条文献的 `REFERENCE_DOI`/`REFERENCE_URL`/`REFERENCE_NOTE`
-紧跟它自己的 `REFERENCE` 行。来源没有的字段直接省略，因此形态是诚实的：尚未物化的
-内置库没有 `TOOL`/`RECORDS` 行，未下载的提供商既无构建来源也无记录数。
 
 `--json` 输出 `gapit.dbinfo/1` 文档（`gapit schema dbinfo`），供智能体消费：
 
 ```console
-$ gapit db info vc_serogroup --json | head -1
+$ gapit db info -d vc_serogroup --json | head -1
 {"schema":"gapit.dbinfo/1","name":"vc_serogroup","description":"Vibrio cholerae O1/O139 ...
 ```
 
@@ -310,7 +326,7 @@ isolate.fa	penner_cps	HS4 complex (HS4/13/43/50/62/65)	HS4A;lpxA	high	1.0000	HS1
 回退值 `untypeable (atypical CPS profile or non-jejuni)`。覆盖下限 90、一致性下限
 95（HS5/31 规则的一致性下限为 90，因为该位点中的 HS45 带本身就是个分化扩增子）。
 
-`gapit db info cje_cps` 携带该面板的四条文献（Poly 2015 面板本身、Klena 2004 的
+`gapit db info -d cje_cps` 携带该面板的四条文献（Poly 2015 面板本身、Klena 2004 的
 `lpxA` 对照、Penner 1980 血清分型方案、Pike 2013 血清型分布）和七条解读注意事项——
 复合型折叠、共享扩增子带型、`lpxA` 不等于种鉴定、62 bp HS2 的 E-value 下限、
 HS1 的 607 与 610 bp 差异、水平转移风险，以及论文自身的未定型率观察。
