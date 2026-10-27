@@ -1,0 +1,10 @@
+{
+  "name": "cje_cps",
+  "description": "Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel",
+  "vendor": "gapit-curated (Poly 2015; CC0 + NCBI public domain)",
+  "dbtype": "nucl",
+  "kind": "gene",
+  "snapshotted": "2026-10-27",
+  "license": "CC0 (paper) + public domain (NCBI/GenBank accessions)",
+  "note": "36 CPS amplicon targets + lpxA control; extracted from the GenBank accessions listed in Poly et al. 2015, PLoS ONE 10(12):e0144349 (Table 3). The cje_cps typing asset follows the paper's Table 4 patterns, with HS4/HS16/HS64 complex rules and actual amplicon-presence floors; see docs/databases.md."
+}

@@ -317,6 +317,8 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
         "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER\n"
         f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\tSynthetica\n"
         f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\tExample Org\n"
+        "cje_cps\tCampylobacter jejuni Penner capsule (CPS) multiplex PCR panel\tbundled"
+        "\tnucl\tgapit-curated (Poly 2015; CC0 + NCBI public domain)\n"
         "ecoh\tE. coli O and H antigens (srst2 EcOH)\tbundled\tnucl\tHolt lab (srst2)\n"
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
         "\tbundled\tnucl\tgapit-curated (public-domain sources)\n"

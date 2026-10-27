@@ -63,7 +63,7 @@ gapit screen --r1 ont_reads.fastq.gz --db ncbi --read-type map-ont --format json
 # Summarize report tables into a gene presence/absence matrix
 gapit summary *.tsv
 
-# Databases: seven ship in-wheel and work instantly; the rest download from upstream on fetch
+# Databases: eight ship in-wheel and work instantly; the rest download from upstream on fetch
 gapit db fetch all         # default set (card, vfdb)
 gapit db fetch ncbi
 gapit db list
@@ -84,13 +84,13 @@ A database is a directory under the datadir, resolved from `--datadir`, then
 `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`
 (use `gapit db path` to inspect it). On a fresh install
 `gapit db list` bootstraps the datadir and lists the catalog (bundled rows ready for
-first use); `gapit setupdb` creates it and materializes all seven bundled databases.
+first use); `gapit setupdb` creates it and materializes all eight bundled databases.
 Twenty-three databases are
 built into the catalog — twelve gene providers, seven kaptive cluster providers, and
-seven bundled snapshots (`ecoh`, `ecoli_dec`, `lm_doumith`, `ncbi`, `resfinder`,
+eight bundled snapshots (`cje_cps`, `ecoh`, `ecoli_dec`, `lm_doumith`, `ncbi`, `resfinder`,
 `vc_serogroup`, `vp_ok`; `ecoh`/`ncbi`/`resfinder` are also provider names). Every
 provider builds on `gapit db fetch`,
-which downloads from upstream — and seven content-provenance-audited ones also ship inside
+which downloads from upstream — and eight content-provenance-audited ones also ship inside
 the package (`ecoli_dec`, `lm_doumith`, and `vc_serogroup` plus the `ncbi`, `resfinder`,
 `ecoh` snapshots — public domain / Apache-2.0 /
 BSD-3-Clause / MIT — and the MIT typed-cluster snapshot `vp_ok`), materialized into the
@@ -212,6 +212,6 @@ roadmap (the current architecture lives in `AGENTS.md`, `SPEC.md`, and `docs/dat
 
 gapit is MIT-licensed. It is a behavioral reimplementation of abricate (GPL-2.0) and
 copies no Perl code; abricate itself remains GPL-2.0. The only database content inside
-the package is the seven audited, permissively licensed bundles under `src/gapit/data/dbs/`
+the package is the eight audited, permissively licensed bundles under `src/gapit/data/dbs/`
 (public domain / Apache-2.0 / BSD-3-Clause / MIT); every other provider downloads from
 upstream at fetch time, under its own license (SPEC.md §9).

@@ -1,10 +1,10 @@
 """Bundled databases: discovery, materialization, and the DEC matrix.
 
-The wheel ships six license-clean bundles — the typed ecoli_dec and
-lm_doumith panels, three provider snapshots (ecoh, ncbi, resfinder;
-public domain / Apache-2.0 / BSD-3-Clause), and the
-typed vp_ok cluster snapshot (MIT, a pure built-in — no provider behind
-it). These tests pin the install-time-ready
+The wheel ships eight license-clean bundles — the typed ecoli_dec,
+lm_doumith, vc_serogroup, and cje_cps panels, three provider snapshots
+(ecoh, ncbi, resfinder; public domain / Apache-2.0 / BSD-3-Clause), and
+the typed vp_ok cluster snapshot (MIT, a pure built-in — no provider
+behind it). These tests pin the install-time-ready
 contract — discovery from the package data dir, auto-materialization on
 first screen (idempotent, quiet-respecting, fresh-datadir bootstrapping,
 kind-aware: gene bundles replay the gene pipeline, the cluster bundle the
@@ -133,12 +133,13 @@ def screen_db(sample: Path, datadir: Path, name: str, *extra: str) -> Result:
 
 def test_bundled_discovery_finds_all_bundled() -> None:
     """Given the wheel's data dir, When bundled databases are discovered,
-    Then exactly the seven license-clean bundles ship in name order — six
+    Then exactly the eight license-clean bundles ship in name order — seven
     gene-kind plus the vp_ok cluster-kind — each metadata parses
-    (vendor/dbtype/kind/snapshot date), ecoli_dec and lm_doumith carry
+    (vendor/dbtype/kind/snapshot date), ecoli_dec/lm_doumith/cje_cps carry
     their typing documents, and vp_ok carries typing, features table, and
     content license while the provider snapshots carry none of them."""
     assert bundled_names() == [
+        "cje_cps",
         "ecoh",
         "ecoli_dec",
         "lm_doumith",
@@ -148,6 +149,13 @@ def test_bundled_discovery_finds_all_bundled() -> None:
         "vp_ok",
     ]
     by_name = {database.name: database for database in bundled_databases()}
+    cje_cps = by_name["cje_cps"]
+    assert cje_cps.metadata.vendor.startswith("gapit-curated (Poly 2015")
+    assert cje_cps.metadata.dbtype == "nucl"
+    assert cje_cps.metadata.kind == "gene"
+    assert cje_cps.metadata.snapshotted == "2026-10-27"
+    assert cje_cps.typing_path is not None
+    assert cje_cps.floors_path is None
     ecoli_dec = by_name["ecoli_dec"]
     assert ecoli_dec.metadata.vendor == "gapit-curated (public-domain sources)"
     assert ecoli_dec.metadata.dbtype == "nucl"
@@ -190,9 +198,15 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     """Given every bundled panel, When every header is inspected, Then no VF
     tag, VFDB marker, or ARO accession appears anywhere — the DEC lesson
     from the license audit (2 VFDB records hid past header-spotting) is
-    locked mechanically across all six bundles (record counts pinned;
+    locked mechanically across all eight bundles (record counts pinned;
     the vp_ok cluster snapshot's bare locus ids are trivially clean)."""
-    typed_counts = {"ecoli_dec": 16, "lm_doumith": 5, "vc_serogroup": 3, "vp_ok": VP_OK_LOCI}
+    typed_counts = {
+        "cje_cps": 37,
+        "ecoli_dec": 16,
+        "lm_doumith": 5,
+        "vc_serogroup": 3,
+        "vp_ok": VP_OK_LOCI,
+    }
     for bundled in bundled_databases():
         text = bundled.sequences_path.read_text(encoding="utf-8")
         headers = [line for line in text.splitlines() if line.startswith(">")]

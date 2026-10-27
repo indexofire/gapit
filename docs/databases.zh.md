@@ -5,6 +5,19 @@ gapit 数据库是一个参考基因目录，你用 contigs 和 reads 去筛查�
 共享、conda/Docker 规范和数据库结构见[数据目录](./datadir.md)。筛查如何使用
 它们见 [screen.md](./screen.md)。
 
+## 数据库命名
+
+新数据库名由物种短码加内容后缀组成：
+
+| 范围 | 规则 | 示例 |
+|---|---|---|
+| 种 | 属名首字母 + 种名前 2 个字母 | `cje_cps`（*C. jejuni* 荚膜）、`eco_vf`（*E. coli* 毒力）、`vch_serogroup`（*V. cholerae* 血清群）、`vpa_ok`（*V. parahaemolyticus* O:K） |
+| 属 | 属名前 3 个字母 | `shi_serotype`（*Shigella*）、`cam_cps`（*Campylobacter* 属级荚膜） |
+
+使用小写 ASCII、下划线和内容后缀（`_cps`、`_vf`、`_serogroup`、`_ok`、`_dec`）。
+已发布的旧名（`cam`、`ecoh`、`ecoli_dec`、`lm_doumith`、`vc_serogroup`、`vp_ok` 等）
+是兼容性标识，不按此规则改名。
+
 ## 数据库存放在哪里
 
 每个数据库位于一个**数据目录**（datadir）下，一个数据库一个子目录。gapit 按以下顺
@@ -139,12 +152,13 @@ abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 ## 内置数据库（即装即用）
 
 大多数数据库在 `db fetch` 时才从上游下载，因为许可证禁止再分发（见"提供商"一节）。
-少数**内置**数据库随 gapit wheel 一起发布 —— 共七个，其内容经过逐条记录的来源
+少数**内置**数据库随 gapit wheel 一起发布 —— 共八个，其内容经过逐条记录的来源
 审计（公共领域来源，或 Apache-2.0 / BSD-3-Clause / MIT 宽松许可面板；GPL 与
 非商业许可内容绝不随 wheel 分发）。无需下载、无需确认：内置数据库开箱即用。
 
 | 名称 | 内容 | 快照日期 | 分型 |
 |---|---|---|---|
+| `cje_cps` | 空肠弯曲菌 Penner 荚膜多重 PCR 面板（37 条记录：36 条 CPS 扩增子 + `lpxA` 对照） | 2026-10-27 | `gapit.typing/2`（方案 `penner_cps`） |
 | `ecoh` | 大肠杆菌 O/H 抗原基因（597 条记录，srst2 EcOH） | 2026-10-02 | — |
 | `ecoli_dec` | 致腹泻大肠杆菌标志基因面板（16 条记录，GB 4789.6 + 风险监测判定） | 2026-10-02 | `gapit.typing/2`（`gb4789_6`、`risk_monitoring` 双方案） |
 | `lm_doumith` | 单核细胞增生李斯特菌血清群分型（5 条记录，Doumith 2004 标记） | 2026-10-03 | `gapit.typing/2`（方案 `doumith_serogroup`） |
@@ -165,8 +179,10 @@ NCBI AMRFinderPlus 内容属公共领域（美国政府作品），CGE ResFinder
 Apache-2.0，srst2 的 EcOH 为 BSD-3-Clause —— 三者均允许随 MIT 许可的 wheel 再分发。`vp_ok` 基因簇快照是 MIT 许可的
 vpautils 内容（实验室逐位点精选、Bakta 注释，经
 [indexofire/vpautils](https://github.com/indexofire/vpautils)）；以一次完整
-gapit.typing/2 构建产出的已解析 `sequences` + `features.json` 形式入轮。回归测试
-锁定了七个内置库的头部不出现任何 `VF*` / `VFDB` / `ARO:` 标签。
+gapit.typing/2 构建产出的已解析 `sequences` + `features.json` 形式入轮。`cje_cps`
+面板取自原论文列出的 GenBank 收录号（公共领域 INSDC 记录；论文本身为 CC0），因此
+同样通过审计。回归测试锁定了八个内置库的头部不出现任何 `VF*` / `VFDB` / `ARO:`
+标签。
 
 **快照是一个时间点。** 每个快照的 `sequences` 文件与快照当日上游内容产出的结果
 逐字节一致（resfinder 由回归测试对着一份固定的上游
@@ -195,6 +211,42 @@ FASTA 与
 第一次筛查都会自动创建缺失的数据目录；`gapit setupdb` 在建索引的同时物化全部内置库；
 manifest 一旦存在，重跑都是无操作。`db list` 在物化前显示 `bundled`、物化后显示
 `installed (16)` —— 四个列表入口（TSV、rich 表格、`--json`、MCP `db_list`）一致。
+
+### 空肠弯曲菌 Penner 荚膜分型（`cje_cps`）
+
+`cje_cps` 是空肠弯曲菌（*Campylobacter jejuni*）荚膜（Penner）面板：Poly 等 2015
+（PLoS ONE 10(12):e0144349，Table 3）更新版多重 PCR 的 36 个荚膜位点扩增子，外加
+`lpxA` 物种对照。每条记录就是该引物对**实际扩增出的序列**（PCR 产物本身），从论文
+为该引物组标明的 GenBank 收录中提取（`acc` 字段带收录号与切片坐标）。47 个 Penner
+血清型折叠为 35 个荚膜型，因此面板针对的是"型/复合型"，而不是单个血清型。
+
+判定是基因数据库上的两阶段流程（`gapit.typing/2`，方案 `penner_cps`，`lpxA` 作为
+`control_gene`）：
+
+```console
+$ gapit screen isolate.fa --db cje_cps --output cj.tsv --quiet
+$ gapit typing cj.tsv --quiet
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+isolate.fa	penner_cps	HS4 complex (HS4/13/43/50/62/65)	HS4A;lpxA	high	1.0000	HS16 (0.0000)	...
+```
+
+面板能判什么、不能判什么，都写在规则里而不是藏在文档外：
+
+- **复合型给出单一判定** —— `HS4 complex`（4/13/43/50/62/65）、`HS6/7`、`HS8/17`、
+  `HS23/36`、`HS33/35`、`HS5/31` 在核苷酸层面共享荚膜位点，判定因此给复合型名。
+  复合型内部的单个血清型需要抗血清或 cgMLST。
+- **共享扩增子是"带型"而非噪声** —— HS5/31 同时扩出 HS45 带，HS58 共享 HS15 带，
+  HS32/HS60 也会出现 HS45 带，HS16/HS64 仅靠 HS52 带区分。这些多带型被声明为完整的
+  `exact_set` 规则（HS16 = `HS4A+HS4B+HS52`、HS64 = `HS4A+HS4B`、
+  HS5/31 = `HS5/31+HS45`、HS58 = `HS15+HS58`、HS32 = `HS32+HS45`、
+  HS60 = `HS45+HS60`），每条都带着论文的注意事项。
+- **`lpxA` 是前置门** —— 没有阳性 `lpxA` 判定时，方案直接给回退值并注明
+  `control gene absent`，因为这套多重 PCR 只在空肠弯曲菌模板上才有意义。
+- **一处已记录的片段长度差异** —— HS1 引物对在参考位点（BX545859.1）中扩增 607 bp，
+  而论文标称 610 bp；记录保留参考中真实的切片，长度差异写在 bundled 注释里。
+
+回退值 `untypeable (atypical CPS profile or non-jejuni)`。覆盖下限 90、一致性下限
+95（HS5/31 规则的一致性下限为 90，因为该位点中的 HS45 带本身就是个分化扩增子）。
 
 ### 李斯特菌血清群分型（`lm_doumith`）
 
@@ -243,7 +295,7 @@ $ gapit screen RIMD.fna --db vp_ok --format json
 ```
 
 数据库内容为 **MIT**（经 vpautils，Bakta 注释），与 kaptive 提供商不同，许可上可再
-分发——已解析快照作为第七个内置库随 wheel 发布（入轮产物 8.3 MiB，在 30 MiB 预算
+分发——已解析快照作为内置库之一随 wheel 发布（入轮产物 8.3 MiB，在 30 MiB 预算
 内），首次使用即零网络物化。入轮 typing 规格按位点重新计算序列唯一关键基因
 （变异体折叠：OL4V1 → O4、KL20V1 → K20；未定型的 OLU*/KLU* 位点不设规则，回退
 OUT/KUT），并且该资产在构建与物化时对位点做校验——上游 GBK 漂移会以
@@ -343,10 +395,10 @@ $ gapit db search "tet(M)" --field gene --exact --json | head -1
 ## 提供商
 
 gapit 自带十九个提供商。每一个——包括 `card` 和 `vfdb`——都在抓取时从上游下载：
-除上文七个通过审计、宽松许可的内置库之外，包里不内置任何内容，因为多家上游许可
+除上文八个通过审计、宽松许可的内置库之外，包里不内置任何内容，因为多家上游许可
 （CARD 的 McMaster 条款、VFDB 的 CC BY-NC、
 Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发。七个 kaptive 提供商是
-**基因簇**数据库（抓取时经基因簇管线构建，见下文 Kaptive 提供商一节）；第八个
+**基因簇**数据库（抓取时经基因簇管线构建，见下文 Kaptive 提供商一节）；另一个
 基因簇数据库——带 typing 的 `vp_ok`——仅有内置库（见上文 vp_ok 一节）。
 
 | 名称 | 维护方 | 内容 | dbtype |
@@ -705,6 +757,28 @@ gapit: BLAST index built (nucl)
 
 `records.jsonl` 是可编辑的事实来源：编辑它（或 FASTA）后用 `--force` 重建，每个下
 游产物都会再生。
+
+### 重命名已安装的数据库
+
+`gapit db rename OLD NEW` 让数据库换名而不必重新下载：
+
+```console
+$ gapit db rename cam cam_vf
+gapit: renaming cam -> cam_vf (gene database)
+gapit: BLAST index built (nucl)
+{"db":"cam_vf","renamed_from":"cam","records":17,"kind":"gene","destination":".../cam_vf"}
+```
+
+基因数据库的名称写在每条 `records.jsonl` 记录和每个 `gapit/v1` 表头里，所以目录会按
+标准构建管线整体重建，只把 `db` 重新指向新名（记录、`sequences`、自检、BLAST 索引、
+清单）。基因簇数据库的名称只存在于清单里 —— 位点表头是裸 id —— 因此内容逐字节拷贝，
+只重写清单。typing/floors/features 边车文件随之迁移；两条路径都走暂存目录：失败时
+OLD 完好无损，NEW 发布成功后才删除 OLD（清单里的来源信息，包括 `fetched_at`，都会
+保留）。
+
+当某个名字早于[命名规范](#_2)时用它；它同时也是实验室自定义命名的通用出口。
+`--force` 会替换已存在的目标。没有清单的目录（abricate 风格导入）没有名字可改写，
+会以 `DATABASE_NOT_FOUND` 拒绝 —— 这类目录请用 `db build` 重建。
 
 ### 手动（abricate 风格）路径
 

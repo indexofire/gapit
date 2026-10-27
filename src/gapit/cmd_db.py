@@ -17,6 +17,10 @@
 - ``db outdated`` / ``db search``: read-only queries over the installed
   databases (use-case: :mod:`gapit.db_query_ops`; commands:
   :mod:`gapit.cmd_db_outdated`, :mod:`gapit.cmd_db_search`).
+- ``db rename OLD NEW``: re-home an installed database under a new name
+  (use-case: :mod:`gapit.db_rename_ops`, command:
+  :mod:`gapit.cmd_db_rename`) — the migration path for names that predate
+  the naming convention.
 - ``db install``: checksum-verified LOCAL-FILE installation
   (:mod:`gapit.cmd_db_install`, split off in Wave G at the 250 LOC ceiling).
 """
@@ -31,6 +35,7 @@ from gapit import config
 from gapit.cmd_db_build import db_build_command
 from gapit.cmd_db_install import db_install_command
 from gapit.cmd_db_outdated import db_outdated_command
+from gapit.cmd_db_rename import db_rename_command
 from gapit.cmd_db_search import db_search_command
 from gapit.db_ops import (
     datadir_json,
@@ -151,4 +156,5 @@ def register_db_command(app: click.Group) -> None:
     db_app.command("list")(db_list_command)
     db_app.command("outdated")(db_outdated_command)
     db_app.command("search", no_args_is_help=True)(db_search_command)
+    db_app.command("rename", no_args_is_help=True)(db_rename_command)
     app.add_command(db_app, "db")

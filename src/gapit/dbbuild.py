@@ -223,6 +223,7 @@ def build_database(
     fetched_at: str,
     upstream_version: str = "",
     content_license: str = "",
+    content_note: str = "",
     typing_schema: str = "",
     source: Literal["bundled"] | None = None,
     quiet: bool = True,
@@ -241,9 +242,9 @@ def build_database(
     5. count records and capture ``blastn -version`` / ``minimap2 --version``
     6. write ``db_dir/gapit-manifest.json`` and return the Manifest
 
-    ``content_license`` stamps the database-content license into the manifest
-    when the provider pins one (kaptive GPL, card McMaster terms, vfdb CC
-    BY-NC); empty means omitted.
+    ``content_license``/``content_note`` stamp database-content provenance into
+    the manifest when the provider pins one (kaptive GPL, card McMaster terms,
+    vfdb CC BY-NC); empty means omitted (the cluster builder's pair).
 
     No ``.mmi`` is built for either dbtype: reads mode indexes the FASTA in
     memory with the invocation preset's own parameters (minimap2 is
@@ -268,6 +269,7 @@ def build_database(
         upstream_version=upstream_version,
         typing_schema=typing_schema or None,
         license=content_license or None,
+        note=content_note or None,
         source=source,
         makeblastdb_version=tool_version_line(["makeblastdb", "-version"]),
         # Kept although no .mmi is built: environment provenance for the

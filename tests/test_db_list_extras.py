@@ -103,7 +103,7 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
     tmp_path: Path,
 ) -> None:
     """Given an empty datadir (no local extras), When `db list --json`, Then
-    the only source fields in the document are the six bundled rows
+    the only source fields in the document are the eight bundled rows
     (alphabetical, source=bundled, not installed, vendor from bundled.json)
     — registry entries stay field-free and the extension remains additive."""
     datadir = tmp_path / "datadir"
@@ -115,6 +115,7 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
     providers = json.loads(result.stdout)["providers"]
     with_source = [entry for entry in providers if "source" in entry]
     assert [(entry["name"], entry["source"]) for entry in with_source] == [
+        ("cje_cps", "bundled"),
         ("ecoh", "bundled"),
         ("ecoli_dec", "bundled"),
         ("lm_doumith", "bundled"),
@@ -127,7 +128,10 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
         assert entry["installed"] is False
         assert "records" not in entry
         assert entry["dbtype"] == "nucl"
-    assert with_source[1]["vendor"] == "gapit-curated (public-domain sources)"
+    assert (
+        next(entry for entry in with_source if entry["name"] == "ecoli_dec")["vendor"]
+        == "gapit-curated (public-domain sources)"
+    )
 
 
 def test_db_list_table_renders_local_rows(tmp_path: Path) -> None:

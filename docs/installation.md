@@ -10,7 +10,7 @@ pip install gapit
 ```
 
 The wheel bundles the Python package and the `gapit`/`gapit-mcp` console scripts, plus
-seven audited, permissively licensed database bundles that materialize into the datadir on
+eight audited, permissively licensed database bundles that materialize into the datadir on
 first use (see
 [Bundled databases](./databases.md#bundled-databases-install-time-ready)); every other
 provider downloads from upstream at fetch time, because several upstream licenses forbid
@@ -75,7 +75,7 @@ exists (it bootstraps the datadir and lists the catalog), and `gapit setupdb` cr
 datadir and materializes the bundled databases.
 Seven audited, permissively licensed databases ship inside the wheel and need no network:
 the first screen against a bundled name materializes it automatically, and `gapit setupdb`
-materializes all seven at once. Every other provider downloads from upstream when fetched
+materializes all eight at once. Every other provider downloads from upstream when fetched
 (network required), because several
 upstream licenses — CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0 — forbid
 redistribution inside an MIT-licensed package. See [Databases](./databases.md) for the

@@ -9,11 +9,30 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`cje_cps` bundled database.** The *C. jejuni* Penner capsule panel: the 36
+  amplicons of the updated multiplex PCR (Poly et al. 2015, PLoS ONE
+  e0144349, CC0) plus an `lpxA` species control, screenable as a gene database
+  and designated by the `penner_cps` scheme (`gapit.typing/2`) covering the 35
+  capsule types the paper resolves — complexes called as complexes, shared
+  amplicon profiles declared as rules, every caveat carried as a note. Real
+  public-domain content, so it ships in the wheel like `lm_doumith`.
+- **`gapit db rename OLD NEW`.** Re-home an installed database under a new
+  name: gene databases are rebuilt from their records with `db` re-pointed
+  (headers, sequences, index, manifest), cluster databases keep their locus
+  artifacts byte-identical and only re-stamp the manifest. Staged like every
+  other database write, so a failure leaves the source intact.
 - **Interactive TSV sample rules.** Terminal TSV screening draws a full-width
   `─` rule below the header, between sample blocks, and after the final sample.
   `--noheader` suppresses only the header rule. CSV/JSON/Markdown, piped output,
   and `--output FILE` stay unchanged; rules are emitted through the progress
   bar hand-off so they never corrupt the live bar.
+
+### Changed
+
+- **Database naming convention.** New species databases are named with the
+  genus initial plus the first two species letters (`cje_cps`, `eco_vf`), and
+  genus-level databases with the first three genus letters (`shi_serotype`).
+  Published names stay stable; `db rename` is the migration path.
 
 ## [0.6.4] - 2026-10-27
 

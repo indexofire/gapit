@@ -6,6 +6,20 @@ to bring your own. For the full datadir layout, sharing, conda/Docker guidance, 
 database anatomy, see [Data directory](./datadir.md). For how screening uses them, see
 [screen.md](./screen.md).
 
+## Database naming
+
+New database names describe the organism with a short code followed by a content suffix:
+
+| Scope | Rule | Examples |
+|---|---|---|
+| Species | genus initial + first two species letters | `cje_cps` (*C. jejuni* capsule), `eco_vf` (*E. coli* virulence), `vch_serogroup` (*V. cholerae* serogroup), `vpa_ok` (*V. parahaemolyticus* O:K) |
+| Genus | first three genus letters | `shi_serotype` (*Shigella*), `cam_cps` (*Campylobacter* genus-level capsule) |
+
+Use lowercase ASCII, underscores, and a content suffix (`_cps`, `_vf`, `_serogroup`,
+`_ok`, `_dec`). Existing published names (`cam`, `ecoh`, `ecoli_dec`, `lm_doumith`,
+`vc_serogroup`, `vp_ok`, ...) are legacy identifiers: they stay stable for compatibility
+and are not renamed by this convention.
+
 ## Where databases live
 
 Every database sits in a **datadir**, one subdirectory per database. gapit resolves the
@@ -59,6 +73,7 @@ plasmidfinder	CGE PlasmidFinder replicons	available	nucl	DTU CGE
 upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	FordeGenomics
 vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	USTC (VFDB)
 victors	Victors virulence factors	available	nucl	University of Chicago
+cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	gapit-curated (Poly 2015; CC0 + NCBI public domain)
 ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	Holt lab (srst2)
 ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gapit-curated (public-domain sources)
 lm_doumith	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	gapit-curated (public-domain INSDC sources)
@@ -70,7 +85,7 @@ vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nuc
 
 NAME is the database name you pass to `--db`; PROVIDER names the upstream maintainer
 organisation. STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`
-exists, with N the record count, otherwise `available`. The last seven rows are the
+exists, with N the record count, otherwise `available`. The last eight rows are the
 wheel-shipped [bundled](#bundled-databases-install-time-ready) databases, alphabetical:
 `bundled` before materialization, `installed (N)` after. Three of them (`ecoh`, `ncbi`,
 `resfinder`) are also registry providers — such names render
@@ -146,13 +161,14 @@ surface.) See [outputs.md](./outputs.md).
 
 Most databases download from upstream at `db fetch` time because their licenses forbid
 redistribution (see [Providers](#providers)). A small set of **bundled** databases ships
-inside the gapit wheel instead — seven databases whose content provenance was audited
+inside the gapit wheel instead — eight databases whose content provenance was audited
 record-by-record (public-domain sources, or Apache-2.0 / BSD-3-Clause / MIT panels;
 GPL and non-commercial content never rides the wheel). Nothing to download, nothing to
 accept: a bundled database works out of the box.
 
 | Name | Content | Snapshot | Typed |
 |---|---|---|---|
+| `cje_cps` | C. jejuni Penner capsule multiplex PCR panel (37 records: 36 CPS amplicons + `lpxA` control) | 2026-10-27 | `gapit.typing/2` (scheme `penner_cps`) |
 | `ecoh` | E. coli O and H antigens (597 records, srst2 EcOH) | 2026-10-02 | — |
 | `ecoli_dec` | Diarrheagenic E. coli marker panel (16 records, GB 4789.6 + risk-monitoring designation) | 2026-10-02 | `gapit.typing/2` (schemes `gb4789_6`, `risk_monitoring`) |
 | `lm_doumith` | Listeria monocytogenes serogrouping (5 records, Doumith 2004 markers) | 2026-10-03 | `gapit.typing/2` (scheme `doumith_serogroup`) |
@@ -177,8 +193,10 @@ redistribution inside the MIT-licensed wheel. The `vp_ok` cluster snapshot is
 MIT-licensed vpautils content (lab-curated loci, Bakta-annotated, via
 [indexofire/vpautils](https://github.com/indexofire/vpautils)); it ships as the
 resolved `sequences` + `features.json` pair a completed gapit.typing/2 build
-produces. A regression test pins that no `VF*` / `VFDB` / `ARO:` tags appear in any
-of the seven bundles' headers.
+produces. The `cje_cps` panel is assembled from the GenBank accessions the source paper
+lists (public-domain INSDC records; the paper itself is CC0), so it clears the same gate.
+A regression test pins that no `VF*` / `VFDB` / `ARO:` tags appear in any
+of the eight bundles' headers.
 
 **Snapshots are point-in-time.** Each snapshot's `sequences` file is byte-for-byte what
 the upstream content produces on the snapshot date (a regression test proves the
@@ -213,6 +231,49 @@ materializes every bundled database alongside indexing; re-running either is a n
 once the manifest exists. `db list` shows the database as `bundled` before that and
 `installed (16)` after — on all four listing surfaces (TSV, rich table, `--json`, MCP
 `db_list`).
+
+### C. jejuni Penner capsule typing (`cje_cps`)
+
+`cje_cps` is the *Campylobacter jejuni* capsule (Penner) panel: the 36 capsule-locus
+amplicons of the updated multiplex PCR in Poly et al. 2015 (PLoS ONE 10(12):e0144349,
+Table 3) plus an `lpxA` species control. Each record is the **amplicon** the published
+primer pair produces — the exact sequence the PCR would amplify — extracted from the
+GenBank accession the paper names for that primer set (the `acc` field carries the
+accession and slice). 47 Penner serotypes collapse into 35 capsule types, so the panel
+targets types and complexes rather than individual serotypes.
+
+Designation is two-stage over a gene database (`gapit.typing/2`, scheme `penner_cps`,
+`lpxA` as `control_gene`):
+
+```console
+$ gapit screen isolate.fa --db cje_cps --output cj.tsv --quiet
+$ gapit typing cj.tsv --quiet
+FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
+isolate.fa	penner_cps	HS4 complex (HS4/13/43/50/62/65)	HS4A;lpxA	high	1.0000	HS16 (0.0000)	...
+```
+
+What the panel can and cannot resolve is encoded in the rules, not hidden:
+
+- **Complexes are single calls** — `HS4 complex` (4/13/43/50/62/65), `HS6/7`, `HS8/17`,
+  `HS23/36`, `HS33/35`, `HS5/31` share their CPS locus at the nucleotide level, so the
+  call names the complex. An individual serotype inside a complex needs antisera or
+  cgMLST.
+- **Shared amplicons are profiles, not noise** — HS5/31 also amplifies the HS45 band,
+  HS58 shares the HS15 band, HS32/HS60 produce an HS45 band, and HS16/HS64 are separated
+  only by the HS52 band. Those multi-band profiles are declared as complete `exact_set`
+  rules (HS16 = `HS4A+HS4B+HS52`, HS64 = `HS4A+HS4B`, HS5/31 = `HS5/31+HS45`,
+  HS58 = `HS15+HS58`, HS32 = `HS32+HS45`, HS60 = `HS45+HS60`), each carrying the paper's
+  caveat in its notes.
+- **`lpxA` gates everything** — without a positive `lpxA` call the scheme reports the
+  fallback with the note `control gene absent`, because the multiplex only means anything
+  on a *C. jejuni* template.
+- **One documented length deviation** — the HS1 primer pair amplifies 607 bp in the
+  reference locus (BX545859.1) where the paper reports 610 bp; the record keeps the actual
+  reference slice and its bundled note states the difference.
+
+Fallback `untypeable (atypical CPS profile or non-jejuni)`. Coverage floor 90, identity
+floor 95 (the HS5/31 rule sits at 90 because the HS45 band in that locus is a divergent
+amplicon).
 
 ### Listeria serogrouping (`lm_doumith`)
 
@@ -266,7 +327,7 @@ $ gapit screen RIMD.fna --db vp_ok --format json
 
 The database content is **MIT** (Bakta-annotated, via vpautils), so unlike the
 kaptive providers it is license-clean for redistribution — a resolved snapshot ships
-inside the wheel as the seventh bundled database (8.3 MiB committed artifacts, within
+inside the wheel as one of the bundled databases (8.3 MiB committed artifacts, within
 the 30 MiB budget), and first use materializes it with zero network. The
 typing rules recompute sequence-unique key genes per locus (variants fold: OL4V1 →
 O4, KL20V1 → K20; untyped OLU*/KLU* loci get no rule and fall back to OUT/KUT), and
@@ -371,13 +432,13 @@ unknown `--db NAME` is a usage error (exit 2) listing what is installed.
 ## Providers
 
 Nineteen providers ship with gapit. Every one of them — `card` and `vfdb` included —
-downloads from its upstream source at fetch time: with the exception of the seven
+downloads from its upstream source at fetch time: with the exception of the eight
 audited, permissively licensed bundles above, nothing is bundled inside the package,
 because several upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's
 GPL-3.0) forbid redistribution inside an MIT-licensed distribution. The seven kaptive
 providers are **cluster** databases (built through the cluster pipeline at
 fetch time — see [Kaptive providers](#kaptive-providers-gpl-downloaded-on-fetch));
-the eighth cluster database, the typed `vp_ok`, is bundled-only
+the only other cluster database, the typed `vp_ok`, is bundled-only
 ([vp_ok](#vp_ok-v-parahaemolyticus-ok-mit-typed-on-install)).
 
 | Name | Maintainer | Content | dbtype |
@@ -756,6 +817,30 @@ gapit: BLAST index built (nucl)
 
 Because `records.jsonl` is the editable truth, editing it (or the FASTA) and
 rebuilding with `--force` regenerates every downstream artifact.
+
+### Renaming an installed database
+
+`gapit db rename OLD NEW` re-homes a database under a new name without a re-download:
+
+```console
+$ gapit db rename cam cam_vf
+gapit: renaming cam -> cam_vf (gene database)
+gapit: BLAST index built (nucl)
+{"db":"cam_vf","renamed_from":"cam","records":17,"kind":"gene","destination":".../cam_vf"}
+```
+
+Gene databases carry the name inside every `records.jsonl` record and every `gapit/v1`
+header, so the directory is rebuilt through the standard build pipeline with `db`
+re-pointed (records, `sequences`, self-check, BLAST index, manifest). Cluster databases
+carry the name only in the manifest — locus headers are bare ids — so their content is
+copied verbatim and the manifest re-stamped. Typing/floors/feature sidecars travel along,
+and both paths are staged: a failure leaves OLD untouched, and OLD is removed only after
+NEW is published (the manifest provenance, including `fetched_at`, is preserved).
+
+Use it when a name predates the [naming convention](#database-naming); it is also the
+generic escape hatch for a lab's own naming choices. `--force` replaces an existing
+target. Directories without a manifest (abricate-style imports) have no name to rewrite
+and are refused with `DATABASE_NOT_FOUND` — rebuild them with `db build` instead.
 
 ### The manual (abricate-style) path
 

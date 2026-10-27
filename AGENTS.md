@@ -84,6 +84,7 @@ gapit/
 │   ├── cluster.py       # cluster-screening engine core: minimap2 asm20 → per-locus/per-gene calls
 │   ├── cluster_math.py  # cs-walk → union coverage/identity math + verdicts (pure functions)
 │   ├── db_ops.py        # db use-cases: fetch + list (shared CLI + MCP; no typer)
+│   ├── db_rename_ops.py # db use-case: rename an installed database (gene rebuild / cluster re-stamp)
 │   ├── db_query_ops.py  # db use-cases: search + outdated over installed DBs (shared CLI + MCP)
 │   ├── db_build_ops.py  # db use-case: custom FASTA+TSV → gene db, GBK/GFF → cluster db (shared CLI + MCP)
 │   ├── db_build_meta.py # `db build --tsv` metadata sidecar: parse + merge (shared by the build use-case)
@@ -125,6 +126,7 @@ gapit/
 │   ├── cmd_typing.py    # `gapit typing` CLI (registered from cli.py)
 │   ├── cmd_db.py        # `gapit db` command group (fetch/path/list/build/install/search/outdated)
 │   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
+│   ├── cmd_db_rename.py # `gapit db rename` CLI (naming-convention migration)
 │   ├── cmd_db_build.py  # `gapit db build` CLI (custom FASTA → native db)
 │   ├── cmd_db_search.py # `gapit db search` CLI (records.jsonl lookup)
 │   ├── cmd_db_outdated.py # `gapit db outdated` CLI (staleness report)
@@ -192,13 +194,13 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   byte-identically), then `gapit typing result.tsv [-D|-f|-o|-q]` designates from the screen
   table (`gapit.typing_result/1`; cluster dbs refuse — their typing rides the screen).
   No typing MCP tool yet (future work).
-- **DB acquisition** `[gapit-extension]`: `gapit db fetch|path|list|search|outdated|build|install` —
+- **DB acquisition** `[gapit-extension]`: `gapit db fetch|path|list|search|outdated|build|install|rename` —
   database fetch from the provider catalog (every provider downloads from upstream at fetch
   time — nothing catalog-side is bundled inside the wheel beyond the sanctioned exceptions,
   a license-compliance requirement: CARD/VFDB terms are non-commercial and Kaptive is GPL,
-  so none of those may ride an MIT distribution; the sanctioned exceptions are the seven
+  so none of those may ride an MIT distribution; the sanctioned exceptions are the eight
   content-provenance-audited bundles under `src/gapit/data/dbs/` — the public-domain
-  `ecoli_dec`, `lm_doumith`, and `vc_serogroup` panels, three permissively licensed
+  `ecoli_dec`, `lm_doumith`, `vc_serogroup`, and `cje_cps` panels, three permissively licensed
   provider snapshots (`ncbi` public domain, `resfinder` Apache-2.0, `ecoh` BSD-3-Clause),
   and the MIT `vp_ok` typed cluster snapshot — a pure built-in in the ecoli_dec/lm_doumith pattern: no
   provider module, no `db fetch`; vpautils OAgc+CPSgc merged content, MIT
@@ -214,8 +216,17 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   kaptive cluster providers (four upstream repos, GPL content, never bundled), the
   MIT-licensed `vp_ok` typed cluster bundle (OAgc+CPSgc merged: the committed typing asset
   installs a 3-scheme `gapit.typing/2` doc so one screen renders `gapit.cluster/2` with
-  the composed `O:K` serotype, zero network from first install), and SHA256-verified
-  local-file install. Datadir precedence is `--datadir`, `$GAPIT_DATADIR`,
+  the composed `O:K` serotype, zero network from first install), SHA256-verified
+  local-file install, and `db rename OLD NEW` (rebuilds an installed database under a new
+  name — gene dbs re-header every record, cluster dbs re-stamp the manifest — then removes
+  the old directory; the migration path for names that predate the convention).
+  **Database naming**: new species databases use the genus initial
+  plus the first two letters of the species (`cje` for *C. jejuni*, `eco` for
+  *E. coli*, `vch` for *V. cholerae*); genus-level databases use the first three
+  letters of the genus (`shi` for *Shigella*, `cam` for *Campylobacter*), followed by a
+  content suffix (`cje_cps`, `shi_serotype`). Existing published names are legacy and
+  stay stable; `db rename` is the sanctioned migration path when a name must change.
+  Datadir precedence is `--datadir`, `$GAPIT_DATADIR`,
   `$XDG_DATA_HOME/gapit/db` (absolute XDG only), then `~/.local/share/gapit/db`;
   `gapit db path [--json]` introspects it without creating, while `db list`/`setupdb`
   bootstrap a missing root. See `docs/datadir.md` for the database anatomy, sharing and

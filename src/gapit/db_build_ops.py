@@ -27,7 +27,7 @@ from pydantic import BaseModel
 
 from gapit import config
 from gapit.clusterbuild import is_cluster_input, perform_cluster_build
-from gapit.db import mol_type
+from gapit.db import mol_type, validate_database_name
 from gapit.db_build_meta import merge_metadata, read_metadata, split_function
 from gapit.db_txn import staged_database
 from gapit.dbbuild import build_database, drop_exact_duplicates, validate_records
@@ -123,18 +123,7 @@ def perform_build(
 
     # Security/frozen rule: `Path(datadir) / name` REPLACES the base when name
     # is absolute (and `..` escapes it); plain names only, all else allowed.
-    if not name or name in (".", "..") or "/" in name or "\\" in name:
-        raise UsageError(
-            f"database name must be a plain name without path separators: {name!r}",
-            code="USAGE_ERROR",
-            context={"name": name},
-        )
-    if any(control in name for control in "\t\r\n"):
-        raise UsageError(
-            f"database name must not contain tabs or line breaks: {name!r}",
-            code="USAGE_ERROR",
-            context={"name": name},
-        )
+    validate_database_name(name)
     if not fasta.is_file():
         raise InputError(
             f"FASTA file not found or unreadable: {fasta}",

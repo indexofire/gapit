@@ -12,7 +12,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from gapit.db_txn import TXN_PREFIX, database_lock
-from gapit.errors import DatabaseError, DependencyError, InputError
+from gapit.errors import DatabaseError, DependencyError, InputError, UsageError
 from gapit.fasta import iter_fasta
 from gapit.proctools import run_tool
 
@@ -60,6 +60,27 @@ class DatabaseInfo(BaseModel, frozen=True):
     n_sequences: int
     dbtype: Literal["nucl", "prot"]
     date: str
+
+
+def validate_database_name(name: str) -> None:
+    """Reject a database NAME that could escape the datadir or corrupt a table.
+
+    ``Path(datadir) / name`` REPLACES the base when ``name`` is absolute (and
+    ``..`` escapes it), so only plain names are allowed; tabs/line breaks would
+    break the frozen 15-column table. Both failures are usage errors.
+    """
+    if not name or name in (".", "..") or "/" in name or "\\" in name:
+        raise UsageError(
+            f"database name must be a plain name without path separators: {name!r}",
+            code="USAGE_ERROR",
+            context={"name": name},
+        )
+    if any(control in name for control in "\t\r\n"):
+        raise UsageError(
+            f"database name must not contain tabs or line breaks: {name!r}",
+            code="USAGE_ERROR",
+            context={"name": name},
+        )
 
 
 def parse_db_header(seqid: str, default_db: str) -> DbHeader:

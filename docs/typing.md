@@ -158,8 +158,37 @@ one marker FASTA or GBK loci file each. Every document validates against the cur
 and `tests/test_typing_schemes.py` / `tests/test_typing_schemes_cluster.py` build each fixture
 database and assert the phenotype calls below. **All sequences are synthetic** — they encode
 the scheme logic, not curated content; real curation is future work per provider licensing.
-The one curated exception sits beside them: the bundled `lm_doumith` panel (real public-domain
-INSDC sequences, its own test module) described first below.
+Two curated exceptions sit beside them: the bundled `lm_doumith` panel (real public-domain
+INSDC sequences) and the bundled `cje_cps` capsule panel (amplicons extracted from public-domain
+INSDC accessions), each with its own test module and described first below.
+
+### C. jejuni penner capsule types — the bundled cje_cps panel (gene db)
+
+`cje_cps` (37 records) is the capsule half of the updated Penner multiplex PCR, Poly et al.
+2015 (PLoS ONE 10(12):e0144349, CC0): 36 amplicons — the exact PCR product of each published
+primer pair, sliced from the accession the paper names — plus `lpxA` as the species
+`control_gene`. 47 Penner serotypes collapse into 35 capsule types, so the scheme calls types
+and complexes:
+
+| Call | requires | notes |
+|---|---|---|
+| `HS4 complex (HS4/13/43/50/62/65)` | `HS4A` | the six serotypes share the locus; individual serotype needs antisera |
+| `HS4/13/64 (CG8486)` | `HS4B` | CG8486 reference; `HS4B` also appears inside HS16/HS64 |
+| `HS16` / `HS64` | `HS4A`+`HS4B`+`HS52` / `HS4A`+`HS4B` | the HS52 band is the only separator |
+| `HS5/31` | `HS5/31`+`HS45` | shared CPS locus; HS45 band is an unexpected PCR product |
+| `HS58` | `HS15`+`HS58` | HS15 band is shared with HS15 |
+| `HS32` / `HS60` | `HS32`+`HS45` / `HS45`+`HS60` | HS45 band plus the locus-specific amplicon |
+| `HS6/7`, `HS8/17`, `HS23/36`, `HS33/35` | one amplicon each | complex calls by design |
+| every other type | its own amplicon | e.g. `HS2`, `HS3`, `HS10`, `HS41`, `HS45` |
+
+Rules are `exact_set` (score 1.0 iff exactly the listed amplicons are present, with the rest
+excluded), identity floor 95 / coverage floor 90 — the HS5/31 rule sits at 90 because its HS45
+band is divergent. `lpxA` gates the scheme: without it the call is the fallback with the note
+`control gene absent`. Fallback `untypeable (atypical CPS profile or non-jejuni)`.
+
+Every caveat the paper documents lives in the winning rule's `notes` (the declared
+unexpected amplicons, the HS1 607-vs-610 bp length difference, the complex groupings), so a
+call carries its own qualification instead of requiring the paper to interpret it.
 
 ### Listeria serogroups — the bundled lm_doumith panel (gene db)
 
