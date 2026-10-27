@@ -1,4 +1,4 @@
-"""`gapit db rebuild`: re-project a gene database from its edited records.
+"""`gapit db build NAME` (no INPUT): re-project a gene database from its records.
 
 `records.jsonl` is the editable truth, so gene curation (renaming a gene,
 merging alleles under one name) is a records edit plus a rebuild. The rebuild
@@ -42,7 +42,7 @@ def _materialize(name: str, target: str, datadir: Path) -> None:
 
 def test_rebuild_republishes_an_edited_gene_name(datadir: Path) -> None:
     """Given a database whose records were edited to rename a gene, When
-    `db rebuild` runs, Then the sequences headers, the manifest count, and the
+    `db build NAME` runs, Then the sequences headers, the manifest count, and the
     BLAST index all follow the edit."""
     _materialize("lm_doumith", "lm", datadir)
     records_path = datadir / "lm" / "records.jsonl"
@@ -55,14 +55,14 @@ def test_rebuild_republishes_an_edited_gene_name(datadir: Path) -> None:
         "".join(json.dumps(record) + "\n" for record in renamed), encoding="utf-8"
     )
 
-    result = runner.invoke(app, ["db", "rebuild", "lm", "--datadir", str(datadir)])
+    result = runner.invoke(app, ["db", "build", "lm", "--datadir", str(datadir)])
 
     assert result.exit_code == 0, result.stderr
     receipt = json.loads(result.stdout)
     assert receipt == {
         "db": "lm",
         "records": 5,
-        "kind": "gene",
+        "dbtype": "nucl",
         "destination": str(datadir / "lm"),
     }
     genes = {
@@ -101,7 +101,7 @@ def test_rebuild_merges_two_alleles_under_one_gene_name(datadir: Path) -> None:
         "".join(json.dumps(record) + "\n" for record in merged), encoding="utf-8"
     )
 
-    rebuilt = runner.invoke(app, ["db", "rebuild", "alleles", "--datadir", str(datadir)])
+    rebuilt = runner.invoke(app, ["db", "build", "alleles", "--datadir", str(datadir)])
 
     assert rebuilt.exit_code == 0, rebuilt.stderr
     assert json.loads(rebuilt.stdout)["records"] == 5
@@ -124,11 +124,11 @@ def test_rebuild_merges_two_alleles_under_one_gene_name(datadir: Path) -> None:
 
 
 def test_rebuild_rejects_a_cluster_database(datadir: Path) -> None:
-    """Given a cluster database, When `db rebuild` runs, Then exit 4
-    DB_REBUILD_CLUSTER points at `db build` from the source GBK/GFF."""
+    """Given a cluster database, When `db build NAME` (no INPUT) runs, Then exit 4
+    DB_REBUILD_CLUSTER points at `db build NAME FILE` from the source GBK/GFF."""
     materialize_bundled("vp_ok", datadir, quiet=True)
 
-    result = runner.invoke(app, ["db", "rebuild", "vp_ok", "--datadir", str(datadir)])
+    result = runner.invoke(app, ["db", "build", "vp_ok", "--datadir", str(datadir)])
 
     assert result.exit_code == 4
     envelope = json.loads(result.stderr.splitlines()[-1])
@@ -137,13 +137,13 @@ def test_rebuild_rejects_a_cluster_database(datadir: Path) -> None:
 
 def test_rebuild_rejects_an_unknown_database(datadir: Path) -> None:
     """Given a name that is not installed, Then exit 4 DATABASE_NOT_FOUND."""
-    result = runner.invoke(app, ["db", "rebuild", "nope", "--datadir", str(datadir)])
+    result = runner.invoke(app, ["db", "build", "nope", "--datadir", str(datadir)])
     assert result.exit_code == 4
     assert json.loads(result.stderr.splitlines()[-1])["code"] == "DATABASE_NOT_FOUND"
 
 
 def test_a_broken_record_edit_leaves_the_database_intact(datadir: Path) -> None:
-    """Given a records file with an unparseable line, When the rebuild runs,
+    """Given a records file with an unparseable line, When the in-place rebuild runs,
     Then it fails without touching the installed artifacts (staged publish)."""
     _materialize("lm_doumith", "lm", datadir)
     before = (datadir / "lm" / "sequences").read_bytes()
@@ -152,7 +152,7 @@ def test_a_broken_record_edit_leaves_the_database_intact(datadir: Path) -> None:
         records_path.read_text(encoding="utf-8") + "{not json\n", encoding="utf-8"
     )
 
-    result = runner.invoke(app, ["db", "rebuild", "lm", "--datadir", str(datadir)])
+    result = runner.invoke(app, ["db", "build", "lm", "--datadir", str(datadir)])
 
     assert result.exit_code == 5
     assert json.loads(result.stderr.splitlines()[-1])["code"] == "RECORDS_MALFORMED"
@@ -170,7 +170,22 @@ def test_rebuild_preserves_the_info_sidecar(datadir: Path) -> None:
         encoding="utf-8",
     )
 
-    result = runner.invoke(app, ["db", "rebuild", "lm", "--datadir", str(datadir)])
+    result = runner.invoke(app, ["db", "build", "lm", "--datadir", str(datadir)])
 
     assert result.exit_code == 0, result.stderr
     assert json.loads(sidecar.read_text(encoding="utf-8"))["caveats"] == ["keep me"]
+
+
+def test_in_place_build_rejects_input_shaping_flags(datadir: Path) -> None:
+    """Given no INPUT, When a new-database flag is passed, Then the call fails
+    as a usage error naming the flags instead of silently ignoring them."""
+    _materialize("lm_doumith", "lm", datadir)
+    tsv = datadir.parent / "meta.tsv"
+    tsv.write_text("gene\taccession\n", encoding="utf-8")
+
+    result = runner.invoke(app, ["db", "build", "lm", "--tsv", str(tsv), "--datadir", str(datadir)])
+
+    assert result.exit_code == 2
+    envelope = json.loads(result.stderr.splitlines()[-1])
+    assert envelope["code"] == "USAGE_ERROR"
+    assert "--tsv" in envelope["message"]

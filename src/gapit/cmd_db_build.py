@@ -20,10 +20,12 @@ from gapit.dispatch import datadir_option, dispatch, quiet_option
 @click.argument("name", help="Target database name (created under the datadir).")
 @click.argument(
     "fasta",
+    required=False,
     type=click.Path(path_type=Path),
     help=(
         "Input FASTA (gene db) or GBK/GFF3 file (cluster db), detected by suffix"
-        " (.gz/.bz2 accepted)."
+        " (.gz/.bz2 accepted). Omit it to re-project the installed NAME from its"
+        " own records.jsonl."
     ),
 )
 @click.option(
@@ -73,7 +75,7 @@ from gapit.dispatch import datadir_option, dispatch, quiet_option
 @quiet_option()
 def db_build_command(
     name: str,
-    fasta: Path,
+    fasta: Path | None,
     tsv: Path | None,
     dbtype: Dbtype | None,
     kind: Kind | None,
@@ -84,7 +86,12 @@ def db_build_command(
     force: bool,
     quiet: bool,
 ) -> None:
-    """Build a custom gapit-native database from a FASTA/GBK/GFF3 input."""
+    """Build a custom gapit-native database, or re-project an installed one.
+
+    With an INPUT the database is built from that FASTA/GBK/GFF3. Without one,
+    the installed NAME is rebuilt in place from its own records.jsonl — the
+    curation path (edit the truth, rebuild, artifacts follow).
+    """
 
     def run() -> None:
         def warn(message: str) -> None:

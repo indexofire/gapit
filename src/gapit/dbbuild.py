@@ -12,20 +12,34 @@ is persisted: reads mode indexes the ``sequences`` FASTA in memory only
 
 import hashlib
 import os
+import shutil
 from collections.abc import Sequence
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Literal
 
 from gapit.db import DbHeader, make_blast_db
+from gapit.db_txn import staged_database
 from gapit.dbcodec import decode_seqid, encode_seqid
 from gapit.errors import DatabaseError, DependencyError
 from gapit.fasta import iter_fasta
 from gapit.proctools import note, run_tool
-from gapit.records import Manifest, Record, count_records, read_records, write_manifest
+from gapit.records import (
+    Manifest,
+    Record,
+    count_records,
+    read_records,
+    write_manifest,
+    write_records,
+)
 
 _WRAP_COLUMNS = 60
 _CHUNK_BYTES = 1 << 20
+
+# Sidecars a gene database may carry. typing/floors reference gene ids and the
+# info sidecar holds the database's own literature/caveats; none of them carry
+# the db name, so a re-projection must carry them across verbatim.
+SIDECARS = ("typing.json", "floors.json", "info.json")
 
 
 def generate_sequences(records_path: Path, sequences_path: Path) -> None:
@@ -278,3 +292,54 @@ def build_database(
     )
     write_manifest(manifest, db_dir / "gapit-manifest.json")
     return manifest
+
+
+def copy_sidecars(source: Path, target: Path) -> None:
+    """Copy the optional typing/floors/info sidecars verbatim."""
+    for sidecar in SIDECARS:
+        if (source / sidecar).is_file():
+            shutil.copyfile(source / sidecar, target / sidecar)
+
+
+def rebuild_from_records(
+    source: Path,
+    target: Path,
+    manifest: Manifest,
+    *,
+    name: str | None = None,
+    quiet: bool = True,
+) -> int:
+    """Re-project ``source/records.jsonl`` into ``target`` through the pipeline.
+
+    The curation entry point behind ``db build NAME`` (no INPUT) and the gene
+    branch of ``db rename``: records are republished **as written** (no
+    dedupe — ``records.jsonl`` is the truth, and the build-time duplicate
+    dropper cleans provider input, not a curator's file), sidecars travel
+    verbatim, and the manifest provenance is preserved. ``name`` re-points every
+    record's ``db`` field (rename); None keeps them as written (rebuild).
+
+    Staged, so a malformed record or an unresolvable typing reference leaves the
+    installed database untouched. Returns the rebuilt record count.
+    """
+    db_name = name or manifest.name
+    with staged_database(target) as build_dir:
+        records = [
+            record if name is None else record.model_copy(update={"db": db_name})
+            for record in read_records(source / "records.jsonl")
+        ]
+        write_records(records, build_dir / "records.jsonl")
+        copy_sidecars(source, build_dir)
+        build_database(
+            build_dir,
+            name=db_name,
+            dbtype=manifest.dbtype,
+            source_urls=manifest.source_urls,
+            fetched_at=manifest.fetched_at,
+            upstream_version=manifest.upstream_version,
+            content_license=manifest.license or "",
+            content_note=manifest.note or "",
+            typing_schema=manifest.typing_schema or "",
+            source=manifest.source,
+            quiet=quiet,
+        )
+        return count_records(build_dir / "records.jsonl")

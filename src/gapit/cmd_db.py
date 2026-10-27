@@ -20,9 +20,6 @@
 - ``db outdated`` / ``db search``: read-only queries over the installed
   databases (use-case: :mod:`gapit.db_query_ops`; commands:
   :mod:`gapit.cmd_db_outdated`, :mod:`gapit.cmd_db_search`).
-- ``db rebuild NAME``: regenerate a gene database's artifacts from its edited
-  ``records.jsonl`` (use-case: :mod:`gapit.db_rebuild_ops`, command:
-  :mod:`gapit.cmd_db_rebuild`) — the curation path.
 - ``db rename OLD NEW``: re-home an installed database under a new name
   (use-case: :mod:`gapit.db_rename_ops`, command:
   :mod:`gapit.cmd_db_rename`) — the migration path for names that predate
@@ -42,7 +39,6 @@ from gapit.cmd_db_build import db_build_command
 from gapit.cmd_db_info import db_info_command
 from gapit.cmd_db_install import db_install_command
 from gapit.cmd_db_outdated import db_outdated_command
-from gapit.cmd_db_rebuild import db_rebuild_command
 from gapit.cmd_db_rename import db_rename_command
 from gapit.cmd_db_search import db_search_command
 from gapit.db_ops import (
@@ -169,5 +165,4 @@ def register_db_command(app: click.Group) -> None:
     db_app.command("outdated")(db_outdated_command)
     db_app.command("search", no_args_is_help=True)(db_search_command)
     db_app.command("rename", no_args_is_help=True)(db_rename_command)
-    db_app.command("rebuild", no_args_is_help=True)(db_rebuild_command)
     app.add_command(db_app, "db")

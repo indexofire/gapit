@@ -29,9 +29,14 @@ from pydantic import BaseModel
 
 from gapit import config
 from gapit.db import make_blast_db, validate_database_name
-from gapit.db_rebuild_ops import SIDECARS, project_gene_records
 from gapit.db_txn import staged_database
-from gapit.dbbuild import optional_tool_version_line, sha256_file, tool_version_line
+from gapit.dbbuild import (
+    SIDECARS,
+    optional_tool_version_line,
+    rebuild_from_records,
+    sha256_file,
+    tool_version_line,
+)
 from gapit.errors import DatabaseError
 from gapit.proctools import note
 from gapit.records import Manifest, read_manifest, write_manifest
@@ -59,7 +64,7 @@ def _copy_sidecars(source: Path, target: Path) -> None:
 
 def _rename_gene(source: Path, target: Path, manifest: Manifest, quiet: bool) -> int:
     """Re-point every gene record at the new name and rebuild the artifacts."""
-    return project_gene_records(source, target, manifest, name=manifest.name, quiet=quiet)
+    return rebuild_from_records(source, target, manifest, name=manifest.name, quiet=quiet)
 
 
 def _rename_cluster(source: Path, target: Path, manifest: Manifest, quiet: bool) -> int:

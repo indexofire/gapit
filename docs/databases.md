@@ -914,25 +914,36 @@ gapit: BLAST index built (nucl)
 ```
 
 Because `records.jsonl` is the editable truth, editing it and rebuilding regenerates every
-downstream artifact. `gapit db rebuild` is that path — no source FASTA needed:
+downstream artifact. Omitting the input does exactly that — no source FASTA needed:
 
 ```console
-$ vim ~/.local/share/gapit/db/mypanel/records.jsonl   # curate: rename, merge, fix a product
-$ gapit db rebuild mypanel
+$ vim ~/.local/share/gapit/db/mypanel/records.jsonl   # curate: rename, merge, drop, fix
+$ gapit db build mypanel
 gapit: rebuilding mypanel from records.jsonl
 gapit: generated .../mypanel/sequences
 gapit: self-check passed for mypanel
 gapit: BLAST index built (nucl)
-{"db":"mypanel","records":4,"kind":"gene","destination":".../mypanel"}
+{"db":"mypanel","records":4,"dbtype":"nucl","destination":".../mypanel"}
 ```
 
-The rebuild re-projects `sequences`, re-runs the self-check, rebuilds the BLAST index, and
-re-stamps the manifest — preserving its provenance (`fetched_at`, source URLs, licence,
+The in-place mode re-projects `sequences`, re-runs the self-check, rebuilds the BLAST index,
+and re-stamps the manifest — preserving its provenance (`fetched_at`, source URLs, licence,
 `typing_schema`, `source`) and carrying the `typing.json`/`floors.json`/`info.json`
-sidecars across verbatim. It is staged, so a malformed record or a typing rule that no
-longer resolves leaves the installed database untouched. Cluster databases are refused
-with `DB_REBUILD_CLUSTER`: their locus FASTA and `features.json` are generated from a
-source GBK/GFF, so they are rebuilt with `db build` from that source instead.
+sidecars across verbatim. Records are republished **as written**: `records.jsonl` is the
+truth, and the build-time duplicate dropper cleans provider input, not a curator's file
+(delete the duplicate line to drop it).
+
+Two guard rails keep the two modes from being confused:
+
+- the input-shaping options (`--tsv`, `--dbtype`, `--description`, `--kind`, `--typing`,
+  `--floors`) describe a **new** database and are rejected without an input — a usage
+  error names the offending flags instead of ignoring them;
+- the rebuild is staged, so a malformed record or a typing rule that no longer resolves
+  leaves the installed database untouched.
+
+Cluster databases cannot be re-projected this way: their locus FASTA and `features.json`
+are generated from a source GBK/GFF (and their typing rules key on resolved gene ids), so
+the call fails with `DB_REBUILD_CLUSTER` — rebuild them with `gapit db build NAME FILE`.
 
 ### Renaming an installed database
 

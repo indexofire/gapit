@@ -85,7 +85,6 @@ gapit/
 │   ├── cluster_math.py  # cs-walk → union coverage/identity math + verdicts (pure functions)
 │   ├── db_ops.py        # db use-cases: fetch + list (shared CLI + MCP; no typer)
 │   ├── db_rename_ops.py # db use-case: rename an installed database (gene rebuild / cluster re-stamp)
-│   ├── db_rebuild_ops.py # db use-case: re-project a gene database from its records.jsonl
 │   ├── db_info_ops.py   # db use-case: provenance/literature/caveats document (gapit.dbinfo/1)
 │   ├── db_info_manual.py # `db info` man-style renderer (sections, wrapping, terminal width)
 │   ├── db_info_models.py # leaf models shared by bundled.json and db info (references/guidance)
@@ -131,7 +130,6 @@ gapit/
 │   ├── cmd_db.py        # `gapit db` command group (fetch/path/list/build/install/search/outdated)
 │   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
 │   ├── cmd_db_rename.py # `gapit db rename` CLI (naming-convention migration)
-│   ├── cmd_db_rebuild.py # `gapit db rebuild` CLI (records.jsonl curation)
 │   ├── cmd_db_info.py   # `gapit db info -d NAME` CLI (manual page / TSV / JSON)
 │   ├── cmd_db_build.py  # `gapit db build` CLI (custom FASTA → native db)
 │   ├── cmd_db_search.py # `gapit db search` CLI (records.jsonl lookup)
@@ -200,7 +198,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   byte-identically), then `gapit typing result.tsv [-D|-f|-o|-q]` designates from the screen
   table (`gapit.typing_result/1`; cluster dbs refuse — their typing rides the screen).
   No typing MCP tool yet (future work).
-- **DB acquisition** `[gapit-extension]`: `gapit db fetch|path|list|info|search|outdated|build|install|rename|rebuild` —
+- **DB acquisition** `[gapit-extension]`: `gapit db fetch|path|list|info|search|outdated|build|install|rename` —
   database fetch from the provider catalog (every provider downloads from upstream at fetch
   time — nothing catalog-side is bundled inside the wheel beyond the sanctioned exceptions,
   a license-compliance requirement: CARD/VFDB terms are non-commercial and Kaptive is GPL,
@@ -226,8 +224,9 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   MIT-licensed `vp_ok` typed cluster bundle (OAgc+CPSgc merged: the committed typing asset
   installs a 3-scheme `gapit.typing/2` doc so one screen renders `gapit.cluster/2` with
   the composed `O:K` serotype, zero network from first install), SHA256-verified
-  local-file install, `db rebuild NAME` (re-projects an installed gene database from its
-  edited `records.jsonl` — the curation path; info/typing/floors sidecars survive), and
+  local-file install, `db build NAME` with **no input** (re-projects an installed gene
+  database from its edited `records.jsonl` — the curation path; info/typing/floors
+  sidecars and manifest provenance survive, input-shaping flags are rejected), and
   `db rename OLD NEW` (rebuilds an installed database under a new
   name — gene dbs re-header every record, cluster dbs re-stamp the manifest — then removes
   the old directory; the migration path for names that predate the convention).

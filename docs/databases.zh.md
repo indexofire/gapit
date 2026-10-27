@@ -845,46 +845,34 @@ gapit: BLAST index built (nucl)
 {"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
 ```
 
-`records.jsonl` 是可编辑的事实来源：编辑它后重建，每个下游产物都会再生。
-`gapit db rebuild` 就是这条路，不需要源 FASTA：
+`records.jsonl` 是可编辑的事实来源：编辑它后重建，每个下游产物都会再生。省掉输入文件
+就是这条路，不需要源 FASTA：
 
 ```console
-$ vim ~/.local/share/gapit/db/mypanel/records.jsonl   # 策展：改名、合并、改 product
-$ gapit db rebuild mypanel
+$ vim ~/.local/share/gapit/db/mypanel/records.jsonl   # 策展：改名、合并、删除、修正
+$ gapit db build mypanel
 gapit: rebuilding mypanel from records.jsonl
 gapit: self-check passed for mypanel
 gapit: BLAST index built (nucl)
-{"db":"mypanel","records":4,"kind":"gene","destination":".../mypanel"}
+{"db":"mypanel","records":4,"dbtype":"nucl","destination":".../mypanel"}
 ```
 
-重建会重新投影 `sequences`、跑自检、重建 BLAST 索引、重写清单——保留清单里的来源信息
-（`fetched_at`、source URL、许可、`typing_schema`、`source`），并把
-`typing.json`/`floors.json`/`info.json` 边车文件原样带过去。整个过程走暂存目录：记录
-损坏或 typing 规则引用失效时，已安装的数据库保持不变。基因簇数据库以
-`DB_REBUILD_CLUSTER` 拒绝：它们的位点 FASTA 与 `features.json` 由源 GBK/GFF 生成，
-应改用 `db build` 从源文件重建。
+就地模式会重新投影 `sequences`、跑自检、重建 BLAST 索引、重写清单——保留清单里的来源
+信息（`fetched_at`、source URL、许可、`typing_schema`、`source`），并把
+`typing.json`/`floors.json`/`info.json` 边车文件原样带过去。记录**按原样重新发布**：
+`records.jsonl` 就是事实，构建期去重是清理提供商输入的，不动策展人的文件（要去重就
+删掉那一行）。
 
-### 重命名已安装的数据库
+两条护栏避免两种模式混淆：
 
-`gapit db rename OLD NEW` 让数据库换名而不必重新下载：
+- 塑形输入的选项（`--tsv`、`--dbtype`、`--description`、`--kind`、`--typing`、
+  `--floors`）描述的是**新**数据库，在没有输入文件时会被拒绝——用法错误会点名具体
+  选项，而不是静默忽略；
+- 重建走暂存目录：记录损坏或 typing 规则引用失效时，已安装的数据库保持不变。
 
-```console
-$ gapit db rename cam cam_vf
-gapit: renaming cam -> cam_vf (gene database)
-gapit: BLAST index built (nucl)
-{"db":"cam_vf","renamed_from":"cam","records":17,"kind":"gene","destination":".../cam_vf"}
-```
-
-基因数据库的名称写在每条 `records.jsonl` 记录和每个 `gapit/v1` 表头里，所以目录会按
-标准构建管线整体重建，只把 `db` 重新指向新名（记录、`sequences`、自检、BLAST 索引、
-清单）。基因簇数据库的名称只存在于清单里 —— 位点表头是裸 id —— 因此内容逐字节拷贝，
-只重写清单。typing/floors/features 边车文件随之迁移；两条路径都走暂存目录：失败时
-OLD 完好无损，NEW 发布成功后才删除 OLD（清单里的来源信息，包括 `fetched_at`，都会
-保留）。
-
-当某个名字早于[命名规范](#_2)时用它；它同时也是实验室自定义命名的通用出口。
-`--force` 会替换已存在的目标。没有清单的目录（abricate 风格导入）没有名字可改写，
-会以 `DATABASE_NOT_FOUND` 拒绝 —— 这类目录请用 `db build` 重建。
+基因簇数据库不能这样就地重建：它们的位点 FASTA 与 `features.json` 由源 GBK/GFF 生成
+（且 typing 规则以已解析的基因 id 为键），因此会以 `DB_REBUILD_CLUSTER` 失败——请用
+`gapit db build NAME FILE` 从源文件重建。
 
 ### 手动（abricate 风格）路径
 

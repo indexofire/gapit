@@ -16,14 +16,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   capsule types the paper resolves — complexes called as complexes, shared
   amplicon profiles declared as rules, every caveat carried as a note. Real
   public-domain content, so it ships in the wheel like `lm_doumith`.
-- **`gapit db rebuild NAME`.** Re-project an installed gene database from its
-  own `records.jsonl` — the curation path the databases guide promised but had
-  no command for: edit the truth (rename a gene, merge two alleles under one
-  name, fix a product), rebuild, and `sequences`/self-check/index/manifest
-  follow. Provenance and the typing/floors/info sidecars survive; the publish
-  is staged, so a broken edit leaves the installed database untouched. Cluster
-  databases are refused (`DB_REBUILD_CLUSTER`) — their artifacts come from a
-  source GBK/GFF.
+- **`gapit db build NAME` with no input re-projects the installed database.**
+  The curation path the databases guide promised but had no command for: edit
+  `records.jsonl` (rename a gene, merge two alleles under one name, drop a
+  mislabelled record), run `db build NAME`, and `sequences`/self-check/index/
+  manifest follow — provenance and the typing/floors/info sidecars preserved,
+  staged so a broken edit leaves the database untouched. The input-shaping flags
+  are rejected in this mode (they describe a NEW database) and cluster databases
+  refuse with `DB_REBUILD_CLUSTER`.
 - **`gapit db info -d NAME`.** One database's provenance in one place: identity,
   install status, licence, snapshot date, build provenance, the literature its
   content came from, the intended usage recipe, and the caveats its

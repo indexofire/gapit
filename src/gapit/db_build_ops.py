@@ -30,13 +30,18 @@ from gapit.clusterbuild import is_cluster_input, perform_cluster_build
 from gapit.db import mol_type, validate_database_name
 from gapit.db_build_meta import merge_metadata, read_metadata, split_function
 from gapit.db_txn import staged_database
-from gapit.dbbuild import build_database, drop_exact_duplicates, validate_records
+from gapit.dbbuild import (
+    build_database,
+    drop_exact_duplicates,
+    rebuild_from_records,
+    validate_records,
+)
 from gapit.dbcodec import decode_seqid
 from gapit.errors import DatabaseError, InputError, UsageError
 from gapit.fasta import FastaRecord, iter_fasta
 from gapit.gene_floors import FLOORS_FILENAME, read_floors, validate_floors
 from gapit.proctools import note
-from gapit.records import Record, write_records
+from gapit.records import Record, read_manifest, write_records
 from gapit.typing_gene import validate_gene_typing
 from gapit.typing_models import read_typing_document, typing_schema_of
 
@@ -56,6 +61,57 @@ class BuildReceipt(BaseModel, frozen=True):
     # at serialization) when none were, so no-dup receipts stay
     # byte-identical to the pre-field shape.
     duplicates_dropped: int | None = None
+
+
+def _reproject_installed(
+    name: str,
+    datadir: Path | None,
+    *,
+    quiet: bool,
+    input_flags: dict[str, bool],
+) -> "BuildReceipt":
+    """``db build NAME`` with no INPUT: re-project the installed gene database.
+
+    The curation path ``records.jsonl`` exists for. Guards: no input-shaping
+    flags (they describe a new database), an installed database (its manifest
+    supplies the provenance the rebuild keeps), and a gene kind — a cluster
+    database's locus FASTA and features table are generated from a source
+    GBK/GFF, so it is rebuilt with ``db build NAME FILE`` instead.
+    """
+    rejected = sorted(flag for flag, given in input_flags.items() if given)
+    if rejected:
+        raise UsageError(
+            f"{', '.join(rejected)} describe a NEW database and need an INPUT file;"
+            " rebuild-in-place takes no input-shaping options",
+            code="USAGE_ERROR",
+            context={"flags": ", ".join(rejected)},
+        )
+    root = config.resolve_datadir(datadir)
+    db_dir = root / name
+    manifest_path = db_dir / "gapit-manifest.json"
+    if not manifest_path.is_file():
+        raise DatabaseError(
+            f"database not found: {name} (give an INPUT file to build a new one)",
+            code="DATABASE_NOT_FOUND",
+            context={"db": name, "datadir": str(root)},
+        )
+    manifest = read_manifest(manifest_path)
+    if manifest.kind != "gene":
+        raise DatabaseError(
+            f"{name} is a cluster database: rebuild it from its source GBK/GFF with"
+            " `gapit db build` (its locus FASTA and features.json are generated"
+            " artifacts, not an editable truth source)",
+            code="DB_REBUILD_CLUSTER",
+            context={"db": name, "kind": manifest.kind},
+        )
+    note(quiet, f"rebuilding {name} from records.jsonl")
+    n_records = rebuild_from_records(db_dir, db_dir, manifest, quiet=quiet)
+    return BuildReceipt(
+        db=name,
+        records=n_records,
+        dbtype=manifest.dbtype,
+        destination=str(db_dir),
+    )
 
 
 def _to_record(fasta: FastaRecord, name: str, default_product: str) -> Record:
@@ -88,7 +144,7 @@ def _resolve_dbtype(flag: Dbtype | None, records: list[Record]) -> Dbtype:
 
 def perform_build(
     name: str,
-    fasta: Path,
+    fasta: Path | None,
     tsv: Path | None,
     dbtype: Dbtype | None,
     description: str,
@@ -103,8 +159,17 @@ def perform_build(
     source: Literal["bundled"] | None = None,
 ) -> BuildReceipt:
     """Run the custom-build pipeline and return the receipt — the shared CLI
-    + MCP path. Warnings go to the caller-supplied ``warn`` (CLI: stderr;
-    MCP: dropped — stderr is reserved for the protocol).
+    + MCP path.
+
+    ``fasta=None`` is the CURATION mode: the installed ``<datadir>/<name>``
+    gene database is re-projected from its own ``records.jsonl`` (edit the
+    truth, rebuild, artifacts follow), preserving the manifest provenance. The
+    input-shaping options (``tsv``/``dbtype``/``description``/``kind``/
+    ``typing``/``floors``) describe a NEW database and are rejected there;
+    ``force`` is meaningless (the target is the source) and ignored.
+
+    Warnings go to the caller-supplied ``warn`` (CLI: stderr; MCP: dropped —
+    stderr is reserved for the protocol).
 
     The input kind is detected by suffix (GBK/GFF -> cluster, else gene);
     an explicit ``kind`` must agree with the detection or the call fails as
@@ -124,6 +189,20 @@ def perform_build(
     # Security/frozen rule: `Path(datadir) / name` REPLACES the base when name
     # is absolute (and `..` escapes it); plain names only, all else allowed.
     validate_database_name(name)
+    if fasta is None:
+        return _reproject_installed(
+            name,
+            datadir,
+            quiet=quiet,
+            input_flags={
+                "--tsv": tsv is not None,
+                "--dbtype": dbtype is not None,
+                "--description": bool(description),
+                "--kind": kind is not None,
+                "--typing": typing is not None,
+                "--floors": floors is not None,
+            },
+        )
     if not fasta.is_file():
         raise InputError(
             f"FASTA file not found or unreadable: {fasta}",
