@@ -25,6 +25,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider
 from gapit.records import Record
@@ -93,4 +94,27 @@ PROVIDER = Provider(
     dbtype="nucl",
     transform=transform,
     license="CC BY-NC 4.0 (non-commercial)",
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Liu B, Zheng D, Zhou S, Chen L, Yang J. VFDB 2022: a general"
+                    " classification scheme for bacterial virulence factors."
+                    " Nucleic Acids Res 2022;50(D1):D912-D917."
+                ),
+                doi="10.1093/nar/gkab1107",
+            ),
+        ),
+        caveats=(
+            "VFDB set A/B records are virulence factor families, not pathotype markers:"
+            " presence of a VF gene says the genetic potential exists, not that it is"
+            " expressed or that the isolate is virulent.",
+            "Many VF genes are core-genome housekeeping-adjacent or horizontally mobile;"
+            " report the class (adhesin, toxin, secretion system) rather than a single hit"
+            " as a virulence verdict.",
+            "VFDB content is CC BY-NC: nothing ships in the wheel, and `db fetch vfdb`"
+            " downloads at fetch time — check the licence before redistributing results"
+            " bundles that embed the sequences.",
+        ),
+    ),
 )

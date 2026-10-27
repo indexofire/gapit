@@ -225,6 +225,15 @@ $ gapit db info -d vc_serogroup --json | head -1
 first use), or `available` (fetch-time download). An unknown name is exit 4
 `DATABASE_NOT_FOUND`; a broken sidecar is exit 4 `DBINFO_MALFORMED`.
 
+**Every catalog database is documented.** The `db info` page is not limited to the
+bundled panels: each of the nineteen providers declares its own literature reference and
+interpretation caveats in its provider module, and the bundled panels carry theirs in
+`bundled.json`, so `gapit db info -d card`, `-d resfinder`, `-d kpsc_k` and friends all
+answer with a citation and the limits you must respect (CARD model cutoffs vs gapit's
+80/80 screen, ResFinder's acquired-gene-only scope, Kaptive's locus-vs-serotype
+distinction, VFDB's CC BY-NC terms). `tests/test_db_info.py` enforces the gate: a
+database added without at least one reference, one caveat, and a usage recipe fails CI.
+
 **Bringing your own literature.** A `db build` product can carry its own
 `<datadir>/<NAME>/info.json` with the same three optional lists:
 

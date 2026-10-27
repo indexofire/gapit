@@ -18,6 +18,7 @@ kind-cluster database. No typing model: `gapit screen --db kosc_k` reports
 best-locus (KL…) calls, phenotype null. Cite Kaptive when you use results.
 """
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.providers.cluster_common import ClusterProvider
 
 NAME = "kosc_k"
@@ -37,5 +38,23 @@ PROVIDER = ClusterProvider(
         "Klebsiella_oxytoca_Species_Complex_K_locus_database.gbk "
         "(Kaptive v3 keyword kosc_k); "
         "cite Wyres et al., J Clin Microbiol 2020 (Kaptive)"
+    ),
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Lam MMC, Wick RR, Judd LM, Holt KE, Wyres KL. Kaptive 2.0: updated"
+                    " capsule and lipopolysaccharide locus typing for the Klebsiella"
+                    " pneumoniae species complex. Microb Genom 2022;8(3):000800."
+                ),
+                doi="10.1099/mgen.0.000800",
+            ),
+        ),
+        caveats=(
+            "The panel covers the K. oxytoca species complex specifically; screening other"
+            " Klebsiella species against it produces misleading best-locus calls.",
+            "Locus calls are not serotype calls until calibrated against antisera for the"
+            " same population.",
+        ),
     ),
 )

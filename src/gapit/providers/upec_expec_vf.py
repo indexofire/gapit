@@ -15,6 +15,7 @@ import csv
 from collections.abc import Iterator
 from pathlib import Path
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.errors import DatabaseError
 from gapit.providers.common import Provider
 from gapit.records import Record
@@ -82,4 +83,18 @@ PROVIDER = Provider(
     ),
     dbtype="nucl",
     transform=transform,
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=("FordeGenomics UPEC/ExPEC virulence gene panel."),
+                url="https://github.com/FordeGenomics",
+            ),
+        ),
+        caveats=(
+            "ExPEC virulence profiles overlap with commensal E. coli: no single marker"
+            " separates ExPEC from avirulent isolates, so report the profile, not a verdict.",
+            "The panel is curated for urinary/extraintestinal pathotypes; diarrheagenic"
+            " markers belong to ecoli_dec.",
+        ),
+    ),
 )

@@ -28,6 +28,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.errors import DatabaseError
 from gapit.providers.common import Dbtype, Provider
 from gapit.records import Record
@@ -152,4 +153,27 @@ PROVIDER = Provider(
     dbtype=DBTYPE,
     transform=transform,
     license="Custom (McMaster University): non-commercial use; redistribution prohibited",
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Alcock BP, Huynh W, Chalil R, Smith KW, Raphenya AR, Wlodarski MA, et al."
+                    " CARD 2023: expanded curation, support for machine learning, and resistome"
+                    " prediction at the Comprehensive Antibiotic Resistance Database."
+                    " Nucleic Acids Res 2023;51(D1):D690-D699."
+                ),
+                doi="10.1093/nar/gkac920",
+            ),
+        ),
+        caveats=(
+            "CARD models are curated protein homolog models with per-model bit-score cutoffs."
+            " gapit screens nucleotide sequences at --minid/--mincov (80/80 by default), so a"
+            " hit means 'homolog present', not 'CARD model passed its own cutoff'.",
+            "The database is a point-in-time snapshot of a continuously updated resource;"
+            " `gapit db fetch card` is the freshness path. Cite the CARD version from its"
+            " manifest/upstream release, not just the paper.",
+            "CARD content is licensed for non-commercial use with redistribution prohibited,"
+            " which is why nothing rides the wheel — every install downloads at fetch time.",
+        ),
+    ),
 )

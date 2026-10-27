@@ -5,5 +5,20 @@
   "dbtype": "nucl",
   "kind": "gene",
   "snapshotted": "2026-10-02",
-  "license": "Apache-2.0 (CGE ResFinder)"
+  "license": "Apache-2.0 (CGE ResFinder)",
+  "guidance": {
+    "references": [
+      {
+        "citation": "Bortolaia V, Kaas RS, Ruppe E, Roberts MC, Schwarz S, Cattoir V, et al. ResFinder 4.0 for predictions of phenotypes from genotypes. J Antimicrob Chemother 2020;75(12):3491-3500.",
+        "doi": "10.1093/jac/dkaa345",
+        "note": "The ResFinder database and its point-mutation/acquired-gene split; this snapshot is the acquired-gene FASTA."
+      }
+    ],
+    "caveats": [
+      "Acquired genes only: chromosomal point mutations (gyrA S83L, parC, rpoB, 23S rRNA) are a separate ResFinder module and are invisible here.",
+      "Variant families overlap heavily (blaCTX-M, aac(6')-Ib, tet variants). Report the best hit's allele, and treat near-ties as 'family' rather than claiming an exact variant.",
+      "A resistance gene is not a resistant phenotype: expression, promoter strength, copy number and permeability all decide the MIC. Pair genotype with susceptibility testing before clinical action.",
+      "The snapshot is point-in-time. `gapit db fetch resfinder` re-downloads the current CGE content (Apache-2.0), which is the freshness path."
+    ]
+  }
 }

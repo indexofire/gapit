@@ -18,6 +18,7 @@ BacMet covers biocides + metals but the 4-field id carries no class, so
 from collections.abc import Iterable
 from pathlib import Path
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider
 from gapit.records import Record
@@ -56,4 +57,25 @@ PROVIDER = Provider(
     source_urls=("http://bacmet.biomedicine.gu.se/download/BacMet2_EXP_database.fasta",),
     dbtype="prot",
     transform=transform,
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Pal C, Bengtsson-Palme J, Rensing C, Kristiansson E, Larsson DGJ."
+                    " BacMet: antibacterial biocide and metal resistance genes database."
+                    " Nucleic Acids Res 2014;42:D737-43."
+                ),
+                doi="10.1093/nar/gkt1252",
+                note="BacMet v1 paper; this snapshot carries the v2 curation (experimentally"
+                " confirmed biocide/metal resistance genes).",
+            ),
+        ),
+        caveats=(
+            "This is a PROTEIN database: gapit runs blastx, and --minid is deliberately not"
+            " applied to protein databases (the baseline contract), so hits are filtered by"
+            " coverage only.",
+            "Biocide/metal resistance is not antibiotic resistance. Cross-resistance exists"
+            " (efflux pumps) but a BacMet hit is not an AMR call.",
+        ),
+    ),
 )

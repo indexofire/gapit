@@ -17,6 +17,7 @@ kind-cluster database. No typing model: `gapit screen --db ab_k` reports
 best-locus (K…) calls, phenotype null. Cite Kaptive when you use results.
 """
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.providers.cluster_common import ClusterProvider
 
 NAME = "ab_k"
@@ -34,5 +35,25 @@ PROVIDER = ClusterProvider(
         "johannajkenyon/Abaumannii_surface_polysaccharide_loci "
         "Acinetobacter_baumannii_K.gbk (Kaptive v3 keyword ab_k); "
         "cite Wyres et al., J Clin Microbiol 2020 (Kaptive)"
+    ),
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Wyres KL, Wick RR, Gorrie C, Jenney A, Follador R, Thomson NR, Holt KE."
+                    " Identification of Klebsiella capsule synthesis loci from whole genome"
+                    " data. Microb Genom 2016;2(12):e000102."
+                ),
+                doi="10.1099/mgen.0.000102",
+                note="The Kaptive method this provider's locus matching follows.",
+            ),
+        ),
+        caveats=(
+            "K locus typing describes the capsule biosynthesis locus, not the expressed"
+            " capsule: phase variation and mutations inside the locus can change the"
+            " serotype without changing the locus type.",
+            "Kaptive-style scoring is not agglutination; novel or recombinant loci below"
+            " the 95/95 floors fall back to the untypeable call.",
+        ),
     ),
 )

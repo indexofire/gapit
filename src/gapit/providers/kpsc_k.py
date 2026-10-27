@@ -18,6 +18,7 @@ kind-cluster database (locus calls; no typing model — phenotype stays null
 until a typing.json is authored). Cite Kaptive when you use the results.
 """
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.providers.cluster_common import ClusterProvider
 
 NAME = "kpsc_k"
@@ -36,5 +37,23 @@ PROVIDER = ClusterProvider(
         "klebgenomics/KpSC_surface_antigen_loci "
         "Klebsiella_pneumoniae_Species_Complex_K.gbk (Kaptive v3 keyword kpsc_k); "
         "cite Wyres et al., J Clin Microbiol 2020 (Kaptive)"
+    ),
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Lam MMC, Wick RR, Judd LM, Holt KE, Wyres KL. Kaptive 2.0: updated"
+                    " capsule and lipopolysaccharide locus typing for the Klebsiella"
+                    " pneumoniae species complex. Microb Genom 2022;8(3):000800."
+                ),
+                doi="10.1099/mgen.0.000800",
+            ),
+        ),
+        caveats=(
+            "K locus types describe the capsule locus, and Kaptive deliberately merges"
+            " some serotypes that share locus content; the call is the locus type.",
+            "Hypervirulence is not implied by a K type, even for K1/K2: capsular serotype"
+            " and virulence plasmid carriage are separate questions.",
+        ),
     ),
 )

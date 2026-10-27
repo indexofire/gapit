@@ -25,6 +25,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.errors import DatabaseError
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider, safe_extractall
@@ -120,4 +121,23 @@ PROVIDER = Provider(
     source_urls=("https://bitbucket.org/genomicepidemiology/resfinder_db/get/HEAD.zip",),
     dbtype="nucl",
     transform=transform,
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Bortolaia V, Kaas RS, Ruppe E, Roberts MC, Schwarz S, Cattoir V, et al."
+                    " ResFinder 4.0 for predictions of phenotypes from genotypes."
+                    " J Antimicrob Chemother 2020;75(12):3491-3500."
+                ),
+                doi="10.1093/jac/dkaa345",
+            ),
+        ),
+        caveats=(
+            "Acquired genes only: chromosomal point mutations are a separate ResFinder"
+            " module and are not in this FASTA.",
+            "Variant families overlap heavily; report the best hit's allele and treat"
+            " near-ties as family-level calls.",
+            "Genotype is not MIC: expression and permeability decide the phenotype.",
+        ),
+    ),
 )

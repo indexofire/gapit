@@ -241,19 +241,26 @@ def test_manual_rendering_is_a_man_page(datadir: Path) -> None:
 
 
 def test_manual_rendering_omits_sections_it_does_not_have(datadir: Path) -> None:
-    """Given an uninstalled catalog provider (no build, no references), When
-    rendered, Then PROVENANCE/REFERENCES/CAVEATS/USAGE are absent instead of
-    printing empty headings."""
-    document = collect_db_info("card", datadir)
+    """Given a bare `db build` product (no manifest prose, no sidecar), When
+    rendered, Then only the sections it can fill appear: USAGE is synthesized
+    from the kind, while REFERENCES/CAVEATS stay absent instead of printing
+    empty headings."""
+    fasta = datadir.parent / "genes.fa"
+    fasta.write_text(GENE_FASTA, encoding="utf-8")
+    built = runner.invoke(app, ["db", "build", "labgenes", str(fasta), "--datadir", str(datadir)])
+    assert built.exit_code == 0, built.stderr
+    document = collect_db_info("labgenes", datadir)
 
     page = render_db_manual(document, width=80)
 
     assert "REFERENCES" not in page
     assert "CAVEATS" not in page
-    assert "USAGE" not in page
-    assert "STATUS" in page and "available" in page
-    # Provenance collapses to what the catalog declares: no build rows.
-    assert "PROVENANCE" in page and "Built by" not in page
+    assert "STATUS" in page and "installed" in page
+    # The usage recipe is derived, so even a bare database is runnable.
+    assert "USAGE" in page
+    assert "$ gapit screen -d labgenes [FILE]... --format json" in page
+    # No build-less provenance rows are invented.
+    assert "Built by" in page  # this one IS installed, so it has build provenance
     assert "SEE ALSO" in page
 
 
@@ -293,3 +300,49 @@ def test_tty_stdout_gets_the_manual(datadir: Path, monkeypatch: pytest.MonkeyPat
     assert result.exit_code == 0, result.stderr
     assert "CJE_CPS(1)" in result.stdout
     assert "NAME\n       cje_cps —" in result.stdout
+
+
+def test_every_catalog_and_bundled_database_carries_guidance(datadir: Path) -> None:
+    """Given the whole catalog, When each database's info is collected, Then
+    every registry provider and every bundled panel reports at least one
+    literature reference and one interpretation caveat, and a synthesized
+    usage recipe — the completeness gate that stops a database shipping
+    without documentation."""
+    from gapit.bundled import bundled_names
+    from gapit.providers import REGISTRY
+
+    missing: list[str] = []
+    for name in sorted(set(REGISTRY) | set(bundled_names())):
+        document = collect_db_info(name, datadir)
+        if not document.references or not document.caveats or not document.usage:
+            missing.append(
+                f"{name} (refs={len(document.references)}, "
+                f"caveats={len(document.caveats)}, usage={len(document.usage)})"
+            )
+    assert missing == [], f"databases without db info guidance: {missing}"
+
+
+def test_every_database_has_at_least_one_resolvable_reference(datadir: Path) -> None:
+    """Given each catalog/bundled database, When its references are inspected,
+    Then at least one carries a DOI or URL an agent can follow. Individual
+    entries may be bare citations (a national standard, an older paper without
+    a pinned DOI), but a page never points nowhere."""
+    from gapit.bundled import bundled_names
+    from gapit.providers import REGISTRY
+
+    unresolved: list[str] = []
+    for name in sorted(set(REGISTRY) | set(bundled_names())):
+        references = collect_db_info(name, datadir).references
+        if references and not any(reference.doi or reference.url for reference in references):
+            unresolved.append(name)
+    assert unresolved == [], f"databases whose references are all unfollowable: {unresolved}"
+
+
+def test_bundled_cje_cps_usage_is_declared_not_synthesized(datadir: Path) -> None:
+    """Given cje_cps, When info is collected, Then its declared two-stage
+    recipe (screen to a table, then typing) is reported verbatim rather than
+    replaced by the generic kind default."""
+    document = collect_db_info("cje_cps", datadir)
+
+    assert any("--output cps.tsv" in step for step in document.usage)
+    assert any(step.startswith("gapit typing") for step in document.usage)

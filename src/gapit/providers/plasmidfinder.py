@@ -21,6 +21,7 @@ import zipfile
 from collections.abc import Iterator
 from pathlib import Path
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider, safe_extractall
 from gapit.records import Record
@@ -66,4 +67,24 @@ PROVIDER = Provider(
     source_urls=("https://bitbucket.org/genomicepidemiology/plasmidfinder_db/get/HEAD.zip",),
     dbtype="nucl",
     transform=transform,
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Carattoli A, Zankari E, Garcia-Fernandez A, Voldby Larsen M, Lund O,"
+                    " Villa L, et al. In silico detection and typing of plasmids using"
+                    " PlasmidFinder and plasmid multilocus sequence typing."
+                    " Antimicrob Agents Chemother 2014;58(7):3895-903."
+                ),
+                doi="10.1128/AAC.02412-14",
+            ),
+        ),
+        caveats=(
+            "The panel detects plasmid REPLICONS, not plasmids: a replicon hit on a contig"
+            " does not prove the contig is a complete or mobilisable plasmid, and a plasmid"
+            " without a known replicon is invisible.",
+            "Replicon typing is not sequence typing; pMLST (the separate scheme) is what"
+            " resolves plasmid lineages.",
+        ),
+    ),
 )

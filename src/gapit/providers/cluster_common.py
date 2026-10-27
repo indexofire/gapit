@@ -15,12 +15,13 @@ first, then ``validate_references`` gates drift against the downloaded
 content BEFORE any artifact is written.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Literal
 
 from gapit.clusterbuild import build_cluster_database, parse_cluster_input, resolve_gene_ids
+from gapit.db_info_models import DbGuidance
 from gapit.db_txn import staged_database
 from gapit.errors import DatabaseError
 from gapit.gbfeatures import FeaturesDocument, LocusSequence
@@ -62,6 +63,9 @@ class ClusterProvider:
     dbtype: Dbtype = "nucl"
     kind: Literal["cluster"] = "cluster"
     typing: Path | None = None
+    # Literature references + interpretation caveats for `gapit db info`
+    # (usage is synthesized from the kind).
+    guidance: DbGuidance = field(default_factory=DbGuidance)
 
 
 def fetch_cluster_provider(

@@ -5,5 +5,21 @@
   "dbtype": "nucl",
   "kind": "gene",
   "snapshotted": "2026-10-03",
-  "license": "Public domain (INSDC sources)"
+  "license": "Public domain (INSDC sources)",
+  "guidance": {
+    "references": [
+      {
+        "citation": "Doumith M, Buchrieser C, Glaser P, Jacquet C, Martin P. Differentiation of the major Listeria monocytogenes serovars by multiplex PCR. J Clin Microbiol 2004;42(8):3819-22.",
+        "doi": "10.1128/JCM.42.8.3819-3822.2004",
+        "note": "The five-marker multiplex (prs, lmo0737, lmo1118, ORF2819, ORF2110) the doumith_serogroup scheme encodes, including the grouping of serovars."
+      }
+    ],
+    "caveats": [
+      "4b, 4d and 4e share every published molecular marker in this panel; the call is the group, and separating them needs cgMLST or antisera.",
+      "EGD-e, the reference genome for 1/2a, types as IIc because it carries lmo1118 \u2014 documented in Doumith 2004, not a tool artefact.",
+      "prs is genus-level, not L. monocytogenes-specific: other Listeria species carry it, so prs alone never proves Lm. It gates the scheme as a control gene.",
+      "Horizontal transfer of the lineage-II lmo0737 cassette produces the IVb-v pattern in otherwise-4b strains (declared before IVb so the variant wins), and rare HGT of the ORF markers can fake a IIb profile.",
+      "Serogroup is not lineage, and neither is a virulence verdict: hypovirulent and non-cytotoxic Lm can carry any of these profiles."
+    ]
+  }
 }

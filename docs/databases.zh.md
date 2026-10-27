@@ -213,6 +213,13 @@ $ gapit db info -d vc_serogroup --json | head -1
 发布，首次使用时物化）或 `available`（抓取时下载）。未知名称退出码 4
 `DATABASE_NOT_FOUND`；边车文件损坏退出码 4 `DBINFO_MALFORMED`。
 
+**目录里的每个数据库都有文档。** `db info` 页面不只覆盖内置面板：十九个提供商各自在
+provider 模块里声明自己的文献与解读注意事项，内置面板则写在 `bundled.json` 中。因此
+`gapit db info -d card`、`-d resfinder`、`-d kpsc_k` 等都能给出引文和必须遵守的边界
+（CARD 的模型阈值与 gapit 的 80/80 筛查之别、ResFinder 只含获得性基因、
+Kaptive 的"位点型≠血清型"、VFDB 的 CC BY-NC 条款）。`tests/test_db_info.py` 把这条
+设为强制门：新增数据库若缺少至少一条文献、一条注意事项和一段用法，CI 直接失败。
+
 **自带文献资料。** `db build` 产物可以在自己的目录下放一个
 `<datadir>/<NAME>/info.json`，字段同样是三个可选列表：
 

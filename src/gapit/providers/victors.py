@@ -28,6 +28,7 @@ import re
 from collections.abc import Iterable
 from pathlib import Path
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider
 from gapit.records import Record
@@ -106,4 +107,24 @@ PROVIDER = Provider(
     ),
     dbtype="nucl",
     transform=transform,
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "VICTORS: a curated virulence factor database maintained by the"
+                    " University of Chicago (Saylers lab)."
+                ),
+                url="http://www.mgc.ac.cn/VFs/",
+                note="The provider's upstream catalogue; no single canonical paper covers"
+                " the current release.",
+            ),
+        ),
+        caveats=(
+            "VICTORS records are virulence factor homologs across human and animal"
+            " pathogens; the same gene name may appear for several species, so interpret"
+            " hits together with species identification.",
+            "Curated virulence-factor databases lag the literature: absence of a hit is"
+            " weak evidence for absence of the trait.",
+        ),
+    ),
 )

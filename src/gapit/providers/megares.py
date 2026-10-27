@@ -10,6 +10,7 @@ import zipfile
 from collections.abc import Iterator
 from pathlib import Path
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider, safe_extractall
 from gapit.records import Record
@@ -68,4 +69,26 @@ PROVIDER = Provider(
     source_urls=("https://www.meglab.org/downloads/megares_v3.00.zip",),
     dbtype="nucl",
     transform=transform,
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Bonin N, Doster E, Worley H, Pinnell LJ, Bravo JE, Ferm P, et al."
+                    " MEGARes and AMR++, v3.0: an updated comprehensive database of"
+                    " antimicrobial resistance determinants and an improved software pipeline"
+                    " for classification using high-throughput sequencing."
+                    " Nucleic Acids Res 2023;51(D1):D744-D752."
+                ),
+                doi="10.1093/nar/gkac1047",
+            ),
+        ),
+        caveats=(
+            "MEGARes is a hierarchical classification (class / mechanism / group), built for"
+            " read classification with AMR++. Screening it with blastn gives presence of a"
+            " determinant, not AMR++'s abundance-weighted resistome profile.",
+            "The nucleotide panel mixes point-mutation and gene records; a mutation record"
+            " only matches when the surrounding gene is present, so absence is not evidence"
+            " of susceptibility.",
+        ),
+    ),
 )

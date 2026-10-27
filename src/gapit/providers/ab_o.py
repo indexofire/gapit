@@ -18,6 +18,7 @@ kind-cluster database. No typing model: `gapit screen --db ab_o` reports
 best-locus (OC…) calls, phenotype null. Cite Kaptive when you use results.
 """
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.providers.cluster_common import ClusterProvider
 
 NAME = "ab_o"
@@ -35,5 +36,23 @@ PROVIDER = ClusterProvider(
         "johannajkenyon/Abaumannii_surface_polysaccharide_loci "
         "Acinetobacter_baumannii_OC.gbk (Kaptive v3 keyword ab_o); "
         "cite Wyres et al., J Clin Microbiol 2020 (Kaptive)"
+    ),
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Wyres KL, Wick RR, Gorrie C, Jenney A, Follador R, Thomson NR, Holt KE."
+                    " Identification of Klebsiella capsule synthesis loci from whole genome"
+                    " data. Microb Genom 2016;2(12):e000102."
+                ),
+                doi="10.1099/mgen.0.000102",
+            ),
+        ),
+        caveats=(
+            "The OC locus determines the O antigen; OC types and K types are independent"
+            " determinants, so report both.",
+            "As with any locus-based call, recombination inside the locus can decouple the"
+            " genotype from the expressed antigen.",
+        ),
     ),
 )

@@ -20,13 +20,14 @@ import sys
 import urllib.request
 import zipfile
 from collections.abc import Callable, Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Literal
 from urllib.parse import urlparse
 
 from gapit import __version__
+from gapit.db_info_models import DbGuidance
 from gapit.db_txn import staged_database
 from gapit.dbbuild import build_database, validate_records
 from gapit.errors import DatabaseError
@@ -81,6 +82,11 @@ class Provider:
     transform: Callable[[Path], Iterable[Record]]
     license: str | None = None
     kind: Literal["gene"] = "gene"
+    # What `gapit db info` reports beyond the catalog row: the literature the
+    # content derives from and the caveats its interpretation depends on. The
+    # usage recipe is synthesized from the database kind, so providers usually
+    # declare references + caveats only.
+    guidance: DbGuidance = field(default_factory=DbGuidance)
 
 
 def security_note(message: str) -> None:

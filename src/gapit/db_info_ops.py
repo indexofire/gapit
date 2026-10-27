@@ -31,6 +31,7 @@ from gapit.db_info_models import DbGuidance, DbReference
 from gapit.db_ops import LOCAL_VENDOR, db_list_entries
 from gapit.errors import DatabaseError
 from gapit.formats.csvutil import tsv_cell
+from gapit.providers import REGISTRY
 from gapit.records import Manifest, read_manifest
 
 INFO_FILENAME = "info.json"
@@ -103,6 +104,28 @@ def _bundled_guidance(bundled: BundledDatabase | None) -> DbGuidance:
     return bundled.metadata.guidance
 
 
+def _default_usage(name: str, kind: str, typed: bool) -> tuple[str, ...]:
+    """The workflow every database of this kind participates in.
+
+    Declared guidance wins; this keeps every database's page runnable without
+    each provider restating the same two commands.
+    """
+    if kind == "cluster":
+        return (f"gapit screen -d {name} [FILE]... --format json",)
+    if typed:
+        return (
+            f"gapit screen -d {name} [FILE]... -o RESULT.tsv",
+            "gapit typing RESULT.tsv",
+        )
+    return (f"gapit screen -d {name} [FILE]... --format json",)
+
+
+def _provider_guidance(name: str) -> DbGuidance:
+    """Guidance declared by the provider module (empty for local databases)."""
+    provider = REGISTRY.get(name)
+    return provider.guidance if provider is not None else DbGuidance()
+
+
 def _build_info(manifest: Manifest) -> DbBuildInfo:
     return DbBuildInfo(
         tool=f"{manifest.tool.name} {manifest.tool.version}",
@@ -134,6 +157,10 @@ def collect_db_info(name: str, datadir: Path | None) -> DbInfoDocument:
     manifest_path = directory / "gapit-manifest.json"
     manifest = read_manifest(manifest_path) if manifest_path.is_file() else None
     guidance = _bundled_guidance(bundled)
+    if not guidance.references and not guidance.caveats:
+        # Provider-declared guidance (the catalog's own literature notes).
+        provider_guidance = _provider_guidance(name)
+        guidance = provider_guidance
     if manifest is not None:
         sidecar = _read_guidance(directory)
         # The database's own sidecar wins over the wheel's declared guidance
@@ -173,7 +200,12 @@ def collect_db_info(name: str, datadir: Path | None) -> DbInfoDocument:
         build=_build_info(manifest) if manifest else None,
         references=guidance.references,
         caveats=guidance.caveats,
-        usage=guidance.usage,
+        usage=guidance.usage
+        or _default_usage(
+            name,
+            manifest.kind if manifest else entry.kind,
+            bool(manifest is not None and manifest.typing_schema),
+        ),
     )
 
 

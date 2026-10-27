@@ -21,6 +21,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider
 from gapit.records import Record
@@ -91,4 +92,24 @@ PROVIDER = Provider(
     ),
     dbtype="nucl",
     transform=transform,
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Gupta SK, Padmanabhan BR, Diene SM, Lopez-Rojas R, Kempf M, Landraud L,"
+                    " Rolain JM. ARG-ANNOT, a new bioinformatic tool to discover antibiotic"
+                    " resistance genes in bacterial genomes. Antimicrob Agents Chemother"
+                    " 2014;58(1):212-20."
+                ),
+                doi="10.1128/AAC.01310-13",
+            ),
+        ),
+        caveats=(
+            "ARG-ANNOT was last curated years before this snapshot's downstream tools;"
+            " treat it as a stable legacy panel and prefer `ncbi`/`resfinder` when currency"
+            " matters.",
+            "Records are gene-family representatives, so a hit usually identifies the family"
+            " (e.g. blaOXA) rather than the exact allele.",
+        ),
+    ),
 )

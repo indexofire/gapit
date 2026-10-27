@@ -12,6 +12,7 @@ import re
 from collections.abc import Iterator
 from pathlib import Path
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider
 from gapit.records import Record
@@ -100,4 +101,25 @@ PROVIDER = Provider(
     ),
     dbtype="nucl",
     transform=transform,
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Feldgarden M, Brover V, Gonzalez-Escalona N, Frye JG, Haendiges J,"
+                    " Haft DH, et al. AMRFinderPlus and the Reference Gene Catalog facilitate"
+                    " examination of the genomic links among antimicrobial resistance, stress"
+                    " response, and virulence. Sci Rep 2021;11(1):12728."
+                ),
+                doi="10.1038/s41598-021-91456-0",
+            ),
+        ),
+        caveats=(
+            "The Reference Gene Catalog spans resistance, stress-response and virulence"
+            " genes: a hit is not automatically an AMR determinant.",
+            "Point mutations (gyrA, parC, rpoB, 23S rRNA) are a separate AMRFinderPlus"
+            " module and are not in this FASTA; gapit reports presence only.",
+            "gapit's 80/80 defaults are more permissive than AMRFinderPlus's curated"
+            " per-family cutoffs, so borderline hits deserve confirmation.",
+        ),
+    ),
 )

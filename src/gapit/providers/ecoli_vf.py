@@ -25,6 +25,7 @@ import re
 from collections.abc import Iterable
 from pathlib import Path
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider
 from gapit.records import Record
@@ -76,4 +77,23 @@ PROVIDER = Provider(
     dbtype="nucl",
     transform=transform,
     license="CC BY-NC 4.0 (VFDB-derived content)",
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "PHAC-NML (Public Health Agency of Canada, National Microbiology"
+                    " Laboratory) E. coli virulence gene panel."
+                ),
+                url="https://github.com/phac-nml",
+                note="Provider-maintained panel; the fetch-time download is the current"
+                " curated content.",
+            ),
+        ),
+        caveats=(
+            "Virulence gene presence is potential, not phenotype: expression, regulation"
+            " and host context decide disease.",
+            "Panels like this are curated around characterised pathotypes, so novel or"
+            " distant alleles fall below the identity floor and read as absent.",
+        ),
+    ),
 )

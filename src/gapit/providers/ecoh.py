@@ -10,6 +10,7 @@ Functional categories are allele-prefix derived — ``fliC*`` → H-antigen,
 from collections.abc import Iterator
 from pathlib import Path
 
+from gapit.db_info_models import DbGuidance, DbReference
 from gapit.fasta import iter_fasta
 from gapit.providers.common import Provider
 from gapit.records import Record
@@ -60,4 +61,23 @@ PROVIDER = Provider(
     source_urls=("https://raw.githubusercontent.com/katholt/srst2/master/data/EcOH.fasta",),
     dbtype="nucl",
     transform=transform,
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Inouye M, Dashnow H, Raven LA, Schultz MB, Pope BJ, Tomita T, et al."
+                    " SRST2: Rapid genomic surveillance for public health and hospital"
+                    " microbiology labs. Genome Med 2014;6(11):90."
+                ),
+                doi="10.1186/s13073-014-0090-6",
+            ),
+        ),
+        caveats=(
+            "In-silico O/H serotyping is not agglutination: some O groups share antigen"
+            " genes and cannot be separated by sequence.",
+            "H antigen calls follow fliC similarity; phase variation or divergent alleles"
+            " can leave H unresolved.",
+            "Serotype is not pathotype — pair with ecoli_dec for DEC designation.",
+        ),
+    ),
 )

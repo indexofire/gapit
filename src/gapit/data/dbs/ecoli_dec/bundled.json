@@ -5,5 +5,25 @@
   "dbtype": "nucl",
   "kind": "gene",
   "snapshotted": "2026-10-02",
-  "license": "Public domain (NCBI/GenBank/DDBJ sources)"
+  "license": "Public domain (NCBI/GenBank/DDBJ sources)",
+  "guidance": {
+    "references": [
+      {
+        "citation": "Kaper JB, Nataro JP, Mobley HL. Pathogenic Escherichia coli. Nat Rev Microbiol 2004;2(2):123-40.",
+        "doi": "10.1038/nrmicro818",
+        "note": "The pathotype framework (EHEC, STEC, EPEC, ETEC, EIEC, EAEC) the scheme's ladder implements."
+      },
+      {
+        "citation": "GB 4789.6-2016, National food safety standard: microbiological examination of food \u2014 examination of diarrheagenic Escherichia coli (China).",
+        "note": "The five-marker designation the gb4789_6 scheme follows, including its uidA genus control."
+      }
+    ],
+    "caveats": [
+      "Pathotypes are not mutually exclusive: escV plus stx is EHEC, stx without escV is STEC, and a strain carrying both EAEC and STEC markers is a hybrid that reports only the higher-severity call (the other one lands in RUNNER_UP).",
+      "uidA is the genus control, not a pathotype marker. uidA-negative isolates (some EIEC/Shigella) fail the control gate and report the fallback with 'control gene absent' rather than 'non-DEC'.",
+      "pic and astA have close homologs outside EAEC, which is why the database ships a 90% identity floor for pic in floors.json; a single pic hit above the default 80% threshold is not by itself an EAEC call.",
+      "stx subtyping stops at stx1a/stx1b/stx2a/stx2b. stx2c, stx2d and other variants fold into presence of the nearest recorded subfamily, so subtype-level epidemiology (e.g. stx2a vs stx2d severity) needs a dedicated subtyping tool.",
+      "A pathotype call is a marker profile, not a phenotype: no marker panel proves toxin expression, and isolates can lose or acquire these genes on mobile elements."
+    ]
+  }
 }

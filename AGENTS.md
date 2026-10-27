@@ -86,6 +86,7 @@ gapit/
 │   ├── db_ops.py        # db use-cases: fetch + list (shared CLI + MCP; no typer)
 │   ├── db_rename_ops.py # db use-case: rename an installed database (gene rebuild / cluster re-stamp)
 │   ├── db_info_ops.py   # db use-case: provenance/literature/caveats document (gapit.dbinfo/1)
+│   ├── db_info_manual.py # `db info` man-style renderer (sections, wrapping, terminal width)
 │   ├── db_info_models.py # leaf models shared by bundled.json and db info (references/guidance)
 │   ├── db_query_ops.py  # db use-cases: search + outdated over installed DBs (shared CLI + MCP)
 │   ├── db_build_ops.py  # db use-case: custom FASTA+TSV → gene db, GBK/GFF → cluster db (shared CLI + MCP)
@@ -130,7 +131,6 @@ gapit/
 │   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
 │   ├── cmd_db_rename.py # `gapit db rename` CLI (naming-convention migration)
 │   ├── cmd_db_info.py   # `gapit db info -d NAME` CLI (manual page / TSV / JSON)
-│   ├── db_info_manual.py # `db info` man-style renderer (plain text, terminal width)
 │   ├── cmd_db_build.py  # `gapit db build` CLI (custom FASTA → native db)
 │   ├── cmd_db_search.py # `gapit db search` CLI (records.jsonl lookup)
 │   ├── cmd_db_outdated.py # `gapit db outdated` CLI (staleness report)
@@ -215,7 +215,8 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   ride the wheel is governed by the §6 policy),
   database listing, per-database `db info -d NAME` (provenance + literature
   references + usage + caveats, merging the provider catalog, `bundled.json`,
-  the manifest, and an optional `info.json` sidecar; `gapit.dbinfo/1`),
+  the manifest, provider modules, and an optional `info.json` sidecar;
+  `gapit.dbinfo/1`),
   records.jsonl gene search, staleness
   report, custom FASTA→native-db build, GBK/GFF→cluster-db build (`--typing` installs a
   validated `gapit.typing/1` or `/2` spec on either kind), the seven download-on-fetch

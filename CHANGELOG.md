@@ -22,7 +22,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   interpretation depends on. It merges the provider catalog, the wheel's
   `bundled.json`, the installed manifest, and an optional `info.json` sidecar
   (so a `db build` product can carry its own references), and emits
-  `gapit.dbinfo/1` under `--json`. On a terminal it prints a man-style page
+  `gapit.dbinfo/1` under `--json`. Every catalog provider declares its own
+  references and caveats in its module and every bundled panel carries them in
+  `bundled.json` (24 databases in total), with the usage recipe synthesized
+  from the database kind, so no database reports an empty page. On a terminal it
+  prints a man-style page
   (NAME / SYNOPSIS / DESCRIPTION / STATUS / PROVENANCE / REFERENCES / CAVEATS /
   USAGE / SEE ALSO, plain text wrapped to the terminal width); piped output or
   `--tsv` keeps the stable `FIELD<TAB>VALUE` table. `cje_cps` ships its full
