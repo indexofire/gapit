@@ -117,7 +117,8 @@ gapit/
 │   ├── screening_cluster.py # cluster screen use-case: kind guards, typing wiring, rendering
 │   ├── screening_reads.py # minimap2 use-cases: --r1/--r2 reads + --aligner minimap2 assemblies
 │   ├── screening_reads_positional.py # positional FASTQ wildcard: pairing + per-sample screens
-│   ├── typing_input.py   # `gapit typing` input: screen TSV/CSV → per-FILE folded GeneCalls
+│   ├── typing_input.py   # `gapit typing` input: contig/reads tables → per-FILE folded GeneCalls
+│   ├── typing_table.py   # `gapit typing` table parsing: contig 15-column + reads #SAMPLE/BREADTH% shapes
 │   ├── typing_ops.py     # `gapit typing` use-case: resolve db, run the engine, render
 │   ├── reads.py          # FASTQ mode: minimap2 PAF parsing, coverage breadth/depth, presence
 │   ├── readpairs.py      # positional FASTQ filename → sample/lane inference
@@ -213,7 +214,9 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   pipeline), with `db fetch <name>` the fresh-upstream refresh path for the
   provider-backed bundled names (ecoh, ncbi, resfinder); what may
   ride the wheel is governed by the §6 policy),
-  database listing, per-database `db info -d NAME` (provenance + literature
+  database listing (`gapit db list`, whose TYPING column reads `command` for gene-kind
+  databases designated by `gapit typing`, `integrated` for cluster-kind databases whose
+  phenotype rides `gapit screen`, and `-` for screen-only databases), per-database `db info -d NAME` (provenance + literature
   references + usage + caveats, merging the provider catalog, `bundled.json`,
   the manifest, provider modules, and an optional `info.json` sidecar;
   `gapit.dbinfo/1`),
@@ -243,9 +246,10 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   Docker policy.
 - **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing ten tools:
   read-only `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via
-  minimap2), `summary`, `schema`, `db_search`, `db_outdated`, plus `db_list` (may create the
-  empty datadir on first use), and the datadir-mutating `db_fetch` (installs databases from
-  the provider catalog; may download) and `db_build` (writes a custom db);
+  minimap2), `summary`, `schema`, `db_search`, `db_outdated`, `db_path` (resolve the
+  effective datadir without creating it), plus `db_list` (may create the empty datadir on
+  first use), and the datadir-mutating `db_fetch` (installs databases from the provider
+  catalog; may download) and `db_build` (writes a custom db);
   tool failures carry the `gapit.error/1` envelope.
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
 - **Self-description**: `gapit --version --json`, `gapit db list --json`, `gapit schema` — an agent

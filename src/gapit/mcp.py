@@ -9,9 +9,10 @@ single messages only (no batch arrays); non-JSON lines are ignored silently
 This module is the PROTOCOL only — frames,
 dispatch, and the serve loop; the tool implementations live in
 :mod:`gapit.mcp_tools` and the tools/list declarations (inputSchemas) in
-:mod:`gapit.mcp_schemas` (screen, summary, schema, db_list, db_fetch,
-db_build, db_search, db_outdated). Tool failures return isError=true with
-the gapit.error/1 envelope as text; stdout is protocol-only.
+:mod:`gapit.mcp_schemas` (screen, screen_reads, summary, schema, db_list,
+db_path, db_fetch, db_build, db_search, db_outdated). Tool failures return
+isError=true with the gapit.error/1 envelope as text; stdout is
+protocol-only.
 """
 
 import json

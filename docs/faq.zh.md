@@ -80,6 +80,18 @@ minimap2 基因簇引擎，每文件报告一个最佳位点判定，附逐基�
 result.tsv`，然后 `gapit typing result.tsv`——或者直接用管道把一步送进另一步。基因
 簇数据库是例外：其判定集成在筛查本身（`PHENOTYPE` 列）。细节：`./typing.md`。
 
+## `gapit summary` 与 `gapit typing` 功能重复吗？
+
+不重复。`summary` 把筛查表折叠成基因 × 文件的存在矩阵，用于比较性总览，不做数据库
+评分；`typing` 则对同样的行评估数据库的 `typing.json`，产出表型判定。两者可以消费
+同一张表（也都支持 stdin），但回答的是不同问题，互相不可替代。
+
+## `gapit screen` 和 `gside scan` 是一回事吗？
+
+不是。`gside scan` 是物种鉴定；`gapit screen` 是用数据库筛查已知基因。名称不同是
+因为操作本身不同，而且 `screen` 是稳定的 CLI 名称——改名会破坏现有流水线和 MCP
+客户端，也不会让两者的语义变得一致。
+
 ## `--threads` 和 `--jobs` 有什么区别？
 
 `--threads` 是一次筛查运行内部的 BLAST 工作线程（传给 `-num_threads`，默认 1）。

@@ -91,6 +91,20 @@ the table back. The bundled `ecoli_dec` panel carries the dual-scheme DEC design
 designation is integrated into the screen itself (the `PHENOTYPE` column). Details:
 `./typing.md`.
 
+## How is `gapit summary` different from `gapit typing`?
+
+`summary` builds a gene × file presence matrix from screen tables — a comparative
+overview with no database scoring. `typing` designates phenotypes by evaluating the
+database's `typing.json` over the same rows. They can consume the same table (and both
+read stdin), but the outputs answer different questions; neither replaces the other.
+
+## Is `gapit screen` the same as `gside scan`?
+
+No. `gside scan` is species identification; `gapit screen` screens known genes against a
+database. The names differ because the operations do, and `screen` is the stable CLI name
+— renaming it would break existing pipelines and MCP clients without making the two
+semantics match.
+
 ## What is the difference between `--threads` and `--jobs`?
 
 `--threads` is BLAST worker threads inside one screening run (passed to

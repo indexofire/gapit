@@ -148,7 +148,12 @@ register_mcp_command(app)
     ),
 )
 def schema(name: str) -> None:
-    """Print the JSON Schema of a gapit output document."""
+    """Print the JSON Schema of a gapit output document.
+
+    The schema is gapit's machine-readable output contract: an agent can
+    discover every field, type, and required key without parsing the docs,
+    then validate a document before consuming it.
+    """
 
     def run() -> None:
         model = SCHEMA_MODELS.get(name)
