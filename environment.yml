@@ -1,0 +1,22 @@
+# Conda environment for running gapit from PyPI with its external binaries.
+#
+# Mirrors the runtime dependencies of pyproject.toml plus pixi.toml's conda
+# binaries (AGENTS.md §2). gapit itself is not on bioconda (recipe submission
+# is deferred), so it installs from PyPI via the `pip:` subsection; the BLAST+
+# and minimap2 executables cannot come from pip and install from bioconda.
+#
+#   conda env create -f environment.yml
+#   conda activate gapit-env
+#
+# For development from a git clone, use pixi instead (`pixi install`).
+name: gapit-env
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.12
+  - blast>=2.15
+  - minimap2>=2.24
+  - pip
+  - pip:
+      - gapit>=0.6.5

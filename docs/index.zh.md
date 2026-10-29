@@ -9,7 +9,7 @@ gapit 筛查 contig 文件和 FASTQ reads 中的已知基因：AMR（抗微生�
 
 | 页面 | 内容 |
 |---|---|
-| [安装](./installation.md) | PyPI wheel 与 pixi 两条安装路径、外部二进制依赖、安装验证、数据库引导、shell 补全 |
+| [安装](./installation.md) | PyPI wheel、conda environment.yml 与 pixi 三条安装路径、外部二进制依赖、安装验证、数据库引导、shell 补全 |
 | [快速开始](./quickstart.md) | 在离线环境下用测试夹具数据库完成一次完整的首个会话 |
 | [contig 筛查](./screen.md) | 对 FASTA/GBK/EMBL 输入运行 `gapit screen`：阈值、过滤器、输出格式 |
 | [reads（FASTQ）筛查](./reads.md) | FASTQ 与 assembly FASTA 走 minimap2：`--r1`/`--r2`、预设参数、基于广度的存在判定、两阶段普查 |

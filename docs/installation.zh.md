@@ -1,7 +1,8 @@
 # 安装 gapit
 
-两条安装路径：PyPI wheel（外部二进制由你提供），或者用 [pixi](https://pixi.sh) 从
-git 克隆安装（二进制由它代管）。
+三条安装路径：PyPI wheel（外部二进制由你提供）、仓库自带的
+[`environment.yml`](https://github.com/indexofire/gapit/blob/main/environment.yml)（由
+conda 代管二进制），或者用 [pixi](https://pixi.sh) 从 git 克隆安装（二进制由它代管）。
 
 ## 从 PyPI 安装
 
@@ -14,7 +15,23 @@ wheel 里打包了 Python 包和 `gapit`/`gapit-mcp` console script，外加七�
 [内置数据库一节](./databases.zh.md)）；其余每个提供商都在抓取时从
 上游下载，因为多家上游许可禁止再分发。它也**不**打包
 BLAST+ 和 minimap2：请先装好它们（见下文 "外部二进制" 一节，例如
-`conda create -n gapit-env -c bioconda blast minimap2`）。
+`conda create -n gapit-env -c conda-forge -c bioconda blast minimap2`）。
+
+## 从 conda 安装（environment.yml）
+
+如果希望 conda 一并管理外部二进制，可以使用仓库根目录的
+[`environment.yml`](https://github.com/indexofire/gapit/blob/main/environment.yml)。
+它锁定 Python 3.12，从 conda-forge/bioconda 安装 BLAST+ 和 minimap2，并在同一环境中
+从 PyPI 安装 gapit：
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/indexofire/gapit/main/environment.yml
+conda env create -f environment.yml
+conda activate gapit-env
+```
+
+gapit 目前还没有提交到 bioconda（recipe 提交暂缓），因此通过文件里的 `pip:` 子节安装；
+BLAST+ 和 minimap2 没有 PyPI 发行版，所以必须作为 conda 依赖。
 
 ## 从源码安装（pixi）
 
@@ -60,9 +77,10 @@ Python >= 3.12 时，`pip install "gapit[gseek]"` 可启用
 ## 外部二进制
 
 gapit 会调用 BLAST+（`blastn`、`blastx`、`makeblastdb`、`blastdbcmd`）和 `minimap2`。
-两者都来自 pixi 环境（conda-forge 和 bioconda），无需手动安装。如果你在 pixi 之外运行
-gapit，请自行确保这些二进制在 PATH 上。输入归一化（plain/gz/bz2 的 FASTA、FASTQ、
-GenBank、EMBL）是原生的，不需要 `any2fasta`。
+两者都来自 pixi 环境或 `environment.yml`（conda-forge 和 bioconda），走这两条路径时
+无需手动安装。如果你只是用 `pip` 安装了 gapit，请自行确保这些二进制在 PATH 上。
+输入归一化（plain/gz/bz2 的 FASTA、FASTQ、GenBank、EMBL）是原生的，不需要
+`any2fasta`。
 
 ## 数据库引导
 
@@ -136,9 +154,20 @@ gapit`）。
 
 ## 升级
 
+从 git 克隆用 pixi 时：
+
 ```bash
 git pull
 pixi install
+```
+
+使用 `environment.yml` 时，在激活的环境中从 PyPI 升级 gapit，并按需刷新 conda 管理的
+二进制：
+
+```bash
+conda activate gapit-env
+pip install --upgrade gapit
+conda update blast minimap2
 ```
 
 数据库内容不会随代码更新：重新运行 `gapit db fetch <name> --force`，从上游重建

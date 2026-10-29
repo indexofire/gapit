@@ -1,7 +1,9 @@
 # Installing gapit
 
-Two install paths: the PyPI wheel (you provide the external binaries) or a git clone with
-[pixi](https://pixi.sh) (binaries managed for you).
+Three install paths: the PyPI wheel (you provide the external binaries), the repository's
+[`environment.yml`](https://github.com/indexofire/gapit/blob/main/environment.yml) (conda
+installs the binaries for you), or a git clone with [pixi](https://pixi.sh) (binaries
+managed for you).
 
 ## From PyPI
 
@@ -16,7 +18,24 @@ first use (see
 provider downloads from upstream at fetch time, because several upstream licenses forbid
 redistribution. It does **not** bundle BLAST+ or minimap2 either — install
 them first ([External binaries](#external-binaries), e.g. `conda create -n gapit-env -c
-bioconda blast minimap2`).
+conda-forge -c bioconda blast minimap2`).
+
+## From conda (environment.yml)
+
+If you want conda to manage the external binaries too, use the repository's
+[`environment.yml`](https://github.com/indexofire/gapit/blob/main/environment.yml). It pins
+Python 3.12, installs BLAST+ and minimap2 from conda-forge/bioconda, and installs gapit
+from PyPI in the same environment:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/indexofire/gapit/main/environment.yml
+conda env create -f environment.yml
+conda activate gapit-env
+```
+
+gapit is not on bioconda yet (recipe submission is deferred), so it arrives through the
+file's `pip:` subsection; BLAST+ and minimap2 have no PyPI distribution, which is why they
+must be conda dependencies.
 
 ## From source (pixi)
 
@@ -62,9 +81,10 @@ gseek; `py312` is the 3.12 baseline feature, not a separate environment. See [gs
 ## External binaries
 
 gapit shells out to BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2`.
-Both come from the pixi environment (conda-forge and bioconda), so there is nothing to install
-by hand. If you run gapit outside pixi, make sure these binaries are on PATH yourself. Input
-normalization (plain/gz/bz2 FASTA, FASTQ, GenBank, EMBL) is native — no `any2fasta` needed.
+Both come from the pixi environment or `environment.yml` (conda-forge and bioconda), so
+there is nothing to install by hand on those paths. If you installed gapit with plain
+`pip`, make sure these binaries are on PATH yourself. Input normalization (plain/gz/bz2
+FASTA, FASTQ, GenBank, EMBL) is native — no `any2fasta` needed.
 
 ## Database bootstrap
 
@@ -142,9 +162,20 @@ ships a powershell emitter (`_GAPIT_COMPLETE=powershell_source gapit`).
 
 ## Upgrading
 
+From a git clone with pixi:
+
 ```bash
 git pull
 pixi install
+```
+
+With `environment.yml`, upgrade gapit from PyPI inside the activated environment and refresh
+the conda-managed binaries as needed:
+
+```bash
+conda activate gapit-env
+pip install --upgrade gapit
+conda update blast minimap2
 ```
 
 Database content does not update with the code: re-run `gapit db fetch <name> --force`

@@ -39,6 +39,17 @@ pixi install
 pixi run gapit --version
 ```
 
+Alternatively, the repository's `environment.yml` puts gapit and the external binaries in a
+conda environment:
+
+```bash
+git clone https://github.com/indexofire/gapit.git
+cd gapit
+conda env create -f environment.yml
+conda activate gapit-env
+gapit --version
+```
+
 The package supports Python 3.12 (3.12 only); the dev environment pins 3.12.
 
 ## Quick start
