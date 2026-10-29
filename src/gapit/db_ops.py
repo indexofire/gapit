@@ -65,6 +65,10 @@ class DbListEntry(BaseModel, frozen=True):
     # Installed providers inherit their manifest's kind (cluster for a
     # GBK/GFF-built db shadowing a provider name); the default is gene.
     kind: Literal["gene", "cluster"] = "gene"
+    # Whether the database carries a typing scheme (typing.json). Gene-kind
+    # databases designate through `gapit typing`; cluster-kind databases
+    # designate inside `gapit screen` (the command refuses cluster dbs).
+    typing: bool = False
     # Upstream content license when the provider pins one (card, vfdb,
     # ecoli_vf, kaptive); omitted otherwise.
     license: str | None = None
@@ -221,6 +225,7 @@ def _extra_entries(root: Path, bundled: frozenset[str]) -> list[DbListEntry]:
                     else sum(1 for _ in iter_fasta(database.sequences_path))
                 ),
                 kind=database.kind,
+                typing=_has_typing(database.path),
                 source="local",
             )
         )
@@ -233,6 +238,17 @@ def _has_blast_index(sequences_path: Path) -> bool:
         (sequences_path.parent / f"{sequences_path.name}{suffix}").exists()
         for suffix in (".nin", ".pin")
     )
+
+
+def _has_typing(path: Path) -> bool:
+    """Whether a database directory carries a typing scheme."""
+    return (path / "typing.json").is_file()
+
+
+def _provider_has_typing(provider: object) -> bool:
+    """Whether an unfetched provider would install a typing scheme (only
+    cluster providers can declare the asset; gene providers never do)."""
+    return isinstance(provider, ClusterProvider) and provider.typing is not None
 
 
 def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbListEntry]:
@@ -262,6 +278,11 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
                 ),
                 records=manifest.n_records if manifest else None,
                 kind=manifest.kind if manifest else database.metadata.kind,
+                typing=(
+                    _has_typing(root / database.name)
+                    if manifest is not None
+                    else database.typing_path is not None
+                ),
                 license=database.metadata.license or None,
                 source="bundled",
             )
@@ -299,6 +320,11 @@ def db_list_entries(root: Path) -> list[DbListEntry]:
                 ),
                 records=manifest.n_records if manifest else None,
                 kind=manifest.kind if manifest else provider.kind,
+                typing=(
+                    _has_typing(root / provider_name)
+                    if installed
+                    else _provider_has_typing(provider)
+                ),
                 license=provider.license,
             )
         )
@@ -315,21 +341,34 @@ def db_list_status(entry: DbListEntry) -> str:
     return "bundled" if entry.source == "bundled" else "available"
 
 
+def db_list_typing(entry: DbListEntry) -> str:
+    """TYPING cell text: how the database designates, when it can.
+
+    ``command`` — a gene-kind database: screen to a table, then run
+    ``gapit typing RESULT.tsv``. ``integrated`` — a typed cluster database:
+    the phenotype rides ``gapit screen`` itself (``gapit typing`` refuses
+    cluster dbs). ``-`` — no typing.json, screen-only."""
+    if not entry.typing:
+        return "-"
+    return "command" if entry.kind == "gene" else "integrated"
+
+
 def db_list_table(entries: Sequence[DbListEntry]) -> Table:
     """Rich rendering of the database listing for interactive terminals.
 
-    Same rows and STATUS texts as the TSV (NAME, DESCRIPTION, STATUS,
-    DBTYPE, PROVIDER); the command prints it only when stdout is a TTY, so
-    pipes and redirects keep the byte-stable TSV. Description cells are
-    literal ``Text`` so upstream prose can never parse as rich markup. The
-    box is SQUARE: every horizontal rule the same thin ``─`` weight (the
+    Same rows and STATUS/TYPING texts as the TSV (NAME, DESCRIPTION, STATUS,
+    DBTYPE, TYPING, PROVIDER); the command prints it only when stdout is a
+    TTY, so pipes and redirects keep the byte-stable TSV. Description cells
+    are literal ``Text`` so upstream prose can never parse as rich markup.
+    The box is SQUARE: every horizontal rule the same thin ``─`` weight (the
     rich default draws the top and head rules heavy).
     """
     table = Table(title="Databases", box=box.SQUARE)
-    table.add_column("Name", style="cyan")
+    table.add_column("Name", style="cyan", no_wrap=True)
     table.add_column("Description")
-    table.add_column("Status")
-    table.add_column("DBTYPE", style="yellow")
+    table.add_column("Status", no_wrap=True)
+    table.add_column("DBTYPE", style="yellow", no_wrap=True)
+    table.add_column("TYPING", style="magenta", no_wrap=True)
     table.add_column("Provider")
     for entry in entries:
         table.add_row(
@@ -337,6 +376,7 @@ def db_list_table(entries: Sequence[DbListEntry]) -> Table:
             Text(entry.description),
             Text(db_list_status(entry), style="green" if entry.installed else "dim"),
             entry.dbtype,
+            db_list_typing(entry),
             entry.vendor,
         )
     return table

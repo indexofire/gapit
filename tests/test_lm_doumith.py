@@ -283,7 +283,7 @@ def test_bundled_lm_doumith_auto_materializes_and_lists(tmp_path: Path) -> None:
     assert listing.exit_code == 0
     assert (
         "lm_doumith\tListeria monocytogenes serogrouping (Doumith 2004)\tinstalled (5)\tnucl\t"
-        "gapit-curated (public-domain INSDC sources)" in listing.stdout
+        "command\tgapit-curated (public-domain INSDC sources)" in listing.stdout
     )
 
     table = tmp_path / "bundled.tsv"

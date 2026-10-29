@@ -103,7 +103,7 @@ def test_valid_no_arg_commands_do_not_print_help(tmp_path: Path) -> None:
 
     listed = runner.invoke(app, ["db", "list", "--datadir", str(empty)])
     assert listed.exit_code == 0
-    assert listed.stdout.startswith("NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER")
+    assert listed.stdout.startswith("NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER")
     assert HELP_SENTINEL not in listed.stdout
 
     # Empty datadir: the documented DATADIR_EMPTY envelope (exit 4), not help.

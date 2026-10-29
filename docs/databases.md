@@ -56,35 +56,43 @@ export GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"
 
 ```console
 $ gapit db list
-NAME	DESCRIPTION	STATUS	DBTYPE	PROVIDER
-ab_k	A. baumannii K locus (Kaptive)	available	nucl	Kaptive (Kenyon lab)
-ab_o	A. baumannii OC locus — official keyword ab_o (Kaptive)	available	nucl	Kaptive (Kenyon lab)
-argannot	ARG-ANNOT acquired resistance genes	available	nucl	IHU Méditerranée-Infection
-bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	available	prot	University of Gothenburg
-card	CARD protein homolog resistance models	available	nucl	McMaster University
-ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	Kaptive (Gladstone lab)
-ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	PHAC-NML
-kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
-kosc_o	K. oxytoca species complex O locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
-kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
-kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
-megares	MEGARes antimicrobial resistance genes	available	nucl	MEG Lab
-plasmidfinder	CGE PlasmidFinder replicons	available	nucl	DTU CGE
-upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	FordeGenomics
-vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	USTC (VFDB)
-victors	Victors virulence factors	available	nucl	University of Chicago
-cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	gapit-curated (Poly 2015; CC0 + NCBI public domain)
-ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	Holt lab (srst2)
-ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gapit-curated (public-domain sources)
-lm_doumith	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	gapit-curated (public-domain INSDC sources)
-ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	bundled	nucl	NCBI
-resfinder	CGE ResFinder acquired resistance genes	bundled	nucl	DTU CGE
-vc_serogroup	Vibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed over from gside	bundled	nucl	gapit-curated (NCBI X59554.1 slice / KY660230.1 / X00171.1)
-vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	gapit-curated (vpasero)
+NAME	DESCRIPTION	STATUS	DBTYPE	TYPING	PROVIDER
+ab_k	A. baumannii K locus (Kaptive)	available	nucl	-	Kaptive (Kenyon lab)
+ab_o	A. baumannii OC locus — official keyword ab_o (Kaptive)	available	nucl	-	Kaptive (Kenyon lab)
+argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée-Infection
+bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	available	prot	-	University of Gothenburg
+card	CARD protein homolog resistance models	available	nucl	-	McMaster University
+ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	-	Kaptive (Gladstone lab)
+ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	-	PHAC-NML
+kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
+kosc_o	K. oxytoca species complex O locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
+kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
+kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
+megares	MEGARes antimicrobial resistance genes	available	nucl	-	MEG Lab
+plasmidfinder	CGE PlasmidFinder replicons	available	nucl	-	DTU CGE
+upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	-	FordeGenomics
+vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	-	USTC (VFDB)
+victors	Victors virulence factors	available	nucl	-	University of Chicago
+cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
+ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	-	Holt lab (srst2)
+ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	command	gapit-curated (public-domain sources)
+lm_doumith	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	command	gapit-curated (public-domain INSDC sources)
+ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	bundled	nucl	-	NCBI
+resfinder	CGE ResFinder acquired resistance genes	bundled	nucl	-	DTU CGE
+vc_serogroup	Vibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed over from gside	bundled	nucl	command	gapit-curated (NCBI X59554.1 slice / KY660230.1 / X00171.1)
+vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	integrated	gapit-curated (vpasero)
 ```
 
 NAME is the database name you pass to `--db`; PROVIDER names the upstream maintainer
-organisation. STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`
+organisation. Every row is a screening database (`gapit screen`); TYPING says how the
+optional designation works, if the database carries a `typing.json`:
+
+- `command` — a gene database: screen to a table, then run `gapit typing RESULT.tsv`.
+- `integrated` — a cluster database: the phenotype rides `gapit screen` itself
+  (`gapit typing` refuses cluster databases).
+- `-` — no typing scheme; screen-only.
+
+STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`
 exists, with N the record count, otherwise `available`. The last eight rows are the
 wheel-shipped [bundled](#bundled-databases-install-time-ready) databases, alphabetical:
 `bundled` before materialization, `installed (N)` after. Three of them (`ecoh`, `ncbi`,
@@ -113,6 +121,7 @@ $ gapit db list --json
       "dbtype": "nucl",
       "installed": true,
       "kind": "gene",
+      "typing": false,
       "records": 2224
     },
     {
@@ -122,6 +131,7 @@ $ gapit db list --json
       "dbtype": "prot",
       "installed": true,
       "kind": "gene",
+      "typing": false,
       "records": 746
     },
     {
@@ -131,6 +141,7 @@ $ gapit db list --json
       "dbtype": "nucl",
       "installed": true,
       "kind": "gene",
+      "typing": false,
       "records": 6059
     }
   ]
@@ -146,6 +157,7 @@ $ gapit db list --json
 | `providers[].description` | string | Short content summary |
 | `providers[].dbtype` | string | `nucl` (screened with blastn) or `prot` (screened with blastx) |
 | `providers[].kind` | string | `gene` (per-gene BLAST screening) or `cluster` (minimap2 locus screening, [screen.md](./screen.md#cluster-databases-kind-cluster)) |
+| `providers[].typing` | boolean | True when the database carries a `typing.json`; gene databases designate via `gapit typing`, cluster databases inside `gapit screen` |
 | `providers[].installed` | boolean | True when a manifest and readable `sequences` exist in the datadir |
 | `providers[].indexed` | boolean | True when a BLAST index (`.nin` or `.pin`) exists; `setupdb` rebuilds a missing/stale one |
 | `providers[].records` | integer | Record count, omitted when the database isn't installed |

@@ -47,6 +47,7 @@ from gapit.db_ops import (
     db_list_json,
     db_list_status,
     db_list_table,
+    db_list_typing,
     perform_fetch,
 )
 from gapit.dispatch import datadir_option, dispatch, quiet_option
@@ -116,7 +117,10 @@ def db_path_command(datadir: Path | None, as_json: bool) -> None:
     "--json", "-J", "as_json", is_flag=True, help="Print machine-readable JSON instead of a table."
 )
 def db_list_command(datadir: Path | None, as_json: bool) -> None:
-    """List known databases (NAME, DESCRIPTION, STATUS, DBTYPE, PROVIDER) and their state."""
+    """List known databases and their state.
+
+    Columns: NAME, DESCRIPTION, STATUS, DBTYPE, TYPING, PROVIDER.
+    """
 
     def run() -> None:
         # Catalog bootstrap: a fresh pip/conda install has no datadir yet, but
@@ -131,11 +135,12 @@ def db_list_command(datadir: Path | None, as_json: bool) -> None:
             # TTY-only rich table; pipes/redirects must keep the byte-stable TSV.
             Console().print(db_list_table(entries))
             return
-        click.echo("NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER")
+        click.echo("NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER")
         for entry in entries:
             click.echo(
                 f"{tsv_cell(entry.name)}\t{tsv_cell(entry.description)}"
-                f"\t{db_list_status(entry)}\t{entry.dbtype}\t{tsv_cell(entry.vendor)}"
+                f"\t{db_list_status(entry)}\t{entry.dbtype}"
+                f"\t{db_list_typing(entry)}\t{tsv_cell(entry.vendor)}"
             )
 
     dispatch(run)

@@ -196,7 +196,7 @@ def test_db_list_bootstraps_a_missing_datadir(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.stderr
     assert missing.is_dir()
     lines = result.stdout.splitlines()
-    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER"
+    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER"
     assert any(line.startswith("ecoh\t") and "\tbundled\t" in line for line in lines)
 
 
@@ -225,10 +225,11 @@ def test_db_list_text_shows_installed_state(
     result = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert result.exit_code == 0
     lines = result.stdout.splitlines()
-    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER"
-    assert f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\tSynthetica" in lines
-    assert f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\tExample Org" in (
-        lines
+    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER"
+    assert f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\t-\tSynthetica" in lines
+    assert (
+        f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\t-\tExample Org"
+        in lines
     )
 
 
@@ -249,7 +250,9 @@ def test_db_list_json_emits_gapit_dblist_document(
     assert by_name[SYN]["records"] == 2
     assert by_name[SYN]["dbtype"] == "nucl"
     assert by_name[SYN]["vendor"] == "Synthetica"
+    assert by_name[SYN]["typing"] is False
     assert by_name[OTHER]["installed"] is False
+    assert by_name[OTHER]["typing"] is False
     assert "records" not in by_name[OTHER]
 
 
@@ -267,7 +270,7 @@ class FakeStdout(io.StringIO):
 
 def test_db_list_table_builds_rich_table() -> None:
     """Given a mixed installed/available entry list, When db_list_table
-    renders at width 100, Then the title, all five column headers, both
+    renders at width 100, Then the title, all six column headers, both
     STATUS texts, and the vendor strings appear — and the captured text
     carries no ANSI escapes."""
     console = Console(record=True, width=100)
@@ -294,7 +297,7 @@ def test_db_list_table_builds_rich_table() -> None:
     )
     text = console.export_text()
     assert "Databases" in text
-    for header in ("Name", "Provider", "Status", "DBTYPE", "Description"):
+    for header in ("Name", "Provider", "Status", "DBTYPE", "TYPING", "Description"):
         assert header in text
     assert "card" in text
     assert "McMaster University" in text
@@ -314,23 +317,23 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
     monkeypatch.setattr(sys, "stdout", fake)
     db_list_command(datadir=datadir, as_json=False)
     assert fake.getvalue() == (
-        "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER\n"
-        f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\tSynthetica\n"
-        f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\tExample Org\n"
+        "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER\n"
+        f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\t-\tSynthetica\n"
+        f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\t-\tExample Org\n"
         "cje_cps\tCampylobacter jejuni Penner capsule (CPS) multiplex PCR panel\tbundled"
-        "\tnucl\tgapit-curated (Poly 2015; CC0 + NCBI public domain)\n"
-        "ecoh\tE. coli O and H antigens (srst2 EcOH)\tbundled\tnucl\tHolt lab (srst2)\n"
+        "\tnucl\tcommand\tgapit-curated (Poly 2015; CC0 + NCBI public domain)\n"
+        "ecoh\tE. coli O and H antigens (srst2 EcOH)\tbundled\tnucl\t-\tHolt lab (srst2)\n"
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
-        "\tbundled\tnucl\tgapit-curated (public-domain sources)\n"
+        "\tbundled\tnucl\tcommand\tgapit-curated (public-domain sources)\n"
         "lm_doumith\tListeria monocytogenes serogrouping (Doumith 2004)\tbundled\tnucl\t"
-        "gapit-curated (public-domain INSDC sources)\n"
-        "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\tNCBI\n"
-        "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\tDTU CGE\n"
+        "command\tgapit-curated (public-domain INSDC sources)\n"
+        "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\t-\tNCBI\n"
+        "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\t-\tDTU CGE\n"
         "vc_serogroup\tVibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed"
-        " over from gside\tbundled\tnucl\tgapit-curated (NCBI X59554.1 slice / KY660230.1"
-        " / X00171.1)\n"
+        " over from gside\tbundled\tnucl\tcommand\tgapit-curated (NCBI X59554.1 slice /"
+        " KY660230.1 / X00171.1)\n"
         "vp_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
-        "nucl\tgapit-curated (vpasero)\n"
+        "nucl\tintegrated\tgapit-curated (vpasero)\n"
     )
 
 
@@ -349,7 +352,7 @@ def test_db_list_tty_renders_rich_table_not_tsv(
     assert "Databases" in out
     assert "installed (2)" in out
     assert "available" in out
-    assert "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER" not in out
+    assert "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER" not in out
 
 
 def test_db_fetch_all_installs_default_dbs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

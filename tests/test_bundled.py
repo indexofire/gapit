@@ -336,7 +336,7 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     bundled_rows = [line for line in lines if line.startswith("ecoli_dec\t")]
     assert bundled_rows == [
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
-        "\tbundled\tnucl\tgapit-curated (public-domain sources)"
+        "\tbundled\tnucl\tcommand\tgapit-curated (public-domain sources)"
     ]
     bundled_all = set(bundled_names())
     first_bundled = next(
@@ -352,7 +352,7 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     assert after.exit_code == 0
     assert (
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
-        "\tinstalled (16)\tnucl\tgapit-curated (public-domain sources)" in after.stdout
+        "\tinstalled (16)\tnucl\tcommand\tgapit-curated (public-domain sources)" in after.stdout
     )
 
     as_json = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
@@ -524,23 +524,23 @@ def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> N
     assert before.exit_code == 0
     lines = before.stdout.splitlines()
     assert lines[-7:] == [
-        "ecoh\tE. coli O and H antigens (srst2 EcOH)\tbundled\tnucl\tHolt lab (srst2)",
+        "ecoh\tE. coli O and H antigens (srst2 EcOH)\tbundled\tnucl\t-\tHolt lab (srst2)",
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
-        "\tbundled\tnucl\tgapit-curated (public-domain sources)",
+        "\tbundled\tnucl\tcommand\tgapit-curated (public-domain sources)",
         "lm_doumith\tListeria monocytogenes serogrouping (Doumith 2004)\tbundled\tnucl\t"
-        "gapit-curated (public-domain INSDC sources)",
-        "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\tNCBI",
-        "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\tDTU CGE",
+        "command\tgapit-curated (public-domain INSDC sources)",
+        "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\t-\tNCBI",
+        "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\t-\tDTU CGE",
         "vc_serogroup\tVibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed"
-        " over from gside\tbundled\tnucl\tgapit-curated (NCBI X59554.1 slice / KY660230.1"
-        " / X00171.1)",
+        " over from gside\tbundled\tnucl\tcommand\tgapit-curated (NCBI X59554.1 slice /"
+        " KY660230.1 / X00171.1)",
         "vp_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
-        "nucl\tgapit-curated (vpasero)",
+        "nucl\tintegrated\tgapit-curated (vpasero)",
     ]
     for name in (*SNAPSHOTS, "vp_ok"):
         assert sum(line.startswith(f"{name}\t") for line in lines) == 1, name
     assert (
-        "card\tCARD protein homolog resistance models\tavailable\tnucl\tMcMaster University"
+        "card\tCARD protein homolog resistance models\tavailable\tnucl\t-\tMcMaster University"
         in (lines[1:-7])
     )
 
@@ -551,7 +551,7 @@ def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> N
     after = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert after.exit_code == 0
     assert (
-        "ecoh\tE. coli O and H antigens (srst2 EcOH)\tinstalled (597)\tnucl\t"
+        "ecoh\tE. coli O and H antigens (srst2 EcOH)\tinstalled (597)\tnucl\t-\t"
         "Holt lab (srst2)" in after.stdout
     )
 

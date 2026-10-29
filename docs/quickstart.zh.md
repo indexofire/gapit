@@ -39,12 +39,12 @@ Indexed tinyamr (3 sequences, nucl)
 
 ```console
 $ gapit db list
-NAME	DESCRIPTION	STATUS	DBTYPE	PROVIDER
-argannot	ARG-ANNOT acquired resistance genes	available	nucl	IHU Méditerranée-Infection
-ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	installed (8373)	nucl	NCBI
+NAME	DESCRIPTION	STATUS	DBTYPE	TYPING	PROVIDER
+argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée-Infection
+ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	installed (8373)	nucl	-	NCBI
 ```
 
-（共二十三个目录数据库：七个内置库在这个数据目录里已显示 `installed`，十六个仅可
+（共二十四个目录数据库：八个内置库在这个数据目录里已显示 `installed`，十六个仅可
 抓取的注册表条目在 `gapit db fetch` 之前显示 `available`。）
 
 ## 2. 筛查一个 contig 文件

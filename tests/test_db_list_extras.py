@@ -58,12 +58,12 @@ def test_db_list_includes_built_gene_and_cluster_databases(tmp_path: Path) -> No
 
     lines = list_rows(datadir)
 
-    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tPROVIDER"
+    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER"
     # Registry providers first (all available: nothing fetched), extras last
     # by name — deterministic ordering.
-    assert lines[-2] == "myamr\t\tinstalled (2)\tnucl\tlocal"
-    assert lines[-1] == "myloci\t\tinstalled (2)\tnucl\tlocal"
-    assert all(line.split("\t")[4] != "local" for line in lines[1:-2])
+    assert lines[-2] == "myamr\t\tinstalled (2)\tnucl\t-\tlocal"
+    assert lines[-1] == "myloci\t\tinstalled (2)\tnucl\t-\tlocal"
+    assert all(line.split("\t")[5] != "local" for line in lines[1:-2])
 
 
 def test_db_list_json_marks_extras_local_and_keeps_registry_entries_untouched(
@@ -92,8 +92,10 @@ def test_db_list_json_marks_extras_local_and_keeps_registry_entries_untouched(
     assert by_name["myamr"]["installed"] is True
     assert by_name["myamr"]["records"] == 2
     assert by_name["myamr"]["kind"] == "gene"
+    assert by_name["myamr"]["typing"] is False
     assert by_name["myloci"]["source"] == "local"
     assert by_name["myloci"]["kind"] == "cluster"
+    assert by_name["myloci"]["typing"] is False
     registry_entries = [entry for entry in providers if "source" not in entry]
     assert registry_entries, "expected the real registry providers"
     assert all(entry["name"] in sorted(REGISTRY_NAMES) for entry in registry_entries)
@@ -172,8 +174,8 @@ def test_db_list_manifestless_dir_counts_fasta_and_detects_dbtype(tmp_path: Path
 
     lines = list_rows(datadir)
 
-    assert lines[-2] == "alegacy\t\tinstalled (2)\tnucl\tlocal"
-    assert lines[-1] == "zproto\t\tinstalled (1)\tprot\tlocal"
+    assert lines[-2] == "alegacy\t\tinstalled (2)\tnucl\t-\tlocal"
+    assert lines[-1] == "zproto\t\tinstalled (1)\tprot\t-\tlocal"
 
 
 def test_db_list_json_surfaces_a_bundled_content_license(tmp_path: Path) -> None:
@@ -183,6 +185,34 @@ def test_db_list_json_surfaces_a_bundled_content_license(tmp_path: Path) -> None
 
     entries = {entry.name: entry for entry in db_list_entries(tmp_path)}
     assert entries["vp_ok"].license == "MIT (database content)"
+    assert entries["vp_ok"].typing is True
+    assert entries["vp_ok"].kind == "cluster"
+    assert entries["ecoh"].typing is False
+
+
+def test_db_list_flags_a_locally_built_typed_gene_database(tmp_path: Path) -> None:
+    """Given a `db build --typing` gene database, When listed, Then the
+    typing capability is true and the TYPING cell names the two-stage
+    command path; an untyped built database stays false/`-`."""
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    typing_data = Path(__file__).parent / "data" / "typing"
+    built = build(
+        "typed",
+        str(typing_data / "markers.fa"),
+        "--datadir",
+        str(datadir),
+        "--typing",
+        str(typing_data / "typing_markers_v2.json"),
+    )
+    assert built.exit_code == 0, built.stderr
+
+    result = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
+    assert result.exit_code == 0, result.stderr
+    entry = next(item for item in json.loads(result.stdout)["providers"] if item["name"] == "typed")
+    assert entry["kind"] == "gene"
+    assert entry["typing"] is True
+    assert list_rows(datadir)[-1] == "typed\t\tinstalled (4)\tnucl\tcommand\tlocal"
 
 
 def test_db_list_does_not_call_a_manifest_only_dir_installed(tmp_path: Path) -> None:

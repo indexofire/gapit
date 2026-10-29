@@ -42,9 +42,9 @@ is usable:
 
 ```console
 $ gapit db list
-NAME	DESCRIPTION	STATUS	DBTYPE	PROVIDER
-argannot	ARG-ANNOT acquired resistance genes	available	nucl	IHU Méditerranée-Infection
-ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	installed (8373)	nucl	NCBI
+NAME	DESCRIPTION	STATUS	DBTYPE	TYPING	PROVIDER
+argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée-Infection
+ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	installed (8373)	nucl	-	NCBI
 ```
 
 (twenty-four catalog databases in total: the eight bundled ones now read `installed` in

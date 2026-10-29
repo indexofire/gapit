@@ -52,35 +52,43 @@ export GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"
 
 ```console
 $ gapit db list
-NAME	DESCRIPTION	STATUS	DBTYPE	PROVIDER
-ab_k	A. baumannii K locus (Kaptive)	available	nucl	Kaptive (Kenyon lab)
-ab_o	A. baumannii OC locus — official keyword ab_o (Kaptive)	available	nucl	Kaptive (Kenyon lab)
-argannot	ARG-ANNOT acquired resistance genes	available	nucl	IHU Méditerranée-Infection
-bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	available	prot	University of Gothenburg
-card	CARD protein homolog resistance models	available	nucl	McMaster University
-ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	Kaptive (Gladstone lab)
-ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	PHAC-NML
-kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
-kosc_o	K. oxytoca species complex O locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
-kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
-kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	Kaptive (klebgenomics)
-megares	MEGARes antimicrobial resistance genes	available	nucl	MEG Lab
-plasmidfinder	CGE PlasmidFinder replicons	available	nucl	DTU CGE
-upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	FordeGenomics
-vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	USTC (VFDB)
-victors	Victors virulence factors	available	nucl	University of Chicago
-ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	Holt lab (srst2)
-ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gapit-curated (public-domain sources)
-lm_doumith	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	gapit-curated (public-domain INSDC sources)
-ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	bundled	nucl	NCBI
-resfinder	CGE ResFinder acquired resistance genes	bundled	nucl	DTU CGE
-vc_serogroup	Vibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed over from gside	bundled	nucl	gapit-curated (NCBI X59554.1 slice / KY660230.1 / X00171.1)
-vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	gapit-curated (vpasero)
+NAME	DESCRIPTION	STATUS	DBTYPE	TYPING	PROVIDER
+ab_k	A. baumannii K locus (Kaptive)	available	nucl	-	Kaptive (Kenyon lab)
+ab_o	A. baumannii OC locus — official keyword ab_o (Kaptive)	available	nucl	-	Kaptive (Kenyon lab)
+argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée-Infection
+bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	available	prot	-	University of Gothenburg
+card	CARD protein homolog resistance models	available	nucl	-	McMaster University
+ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	-	Kaptive (Gladstone lab)
+ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	-	PHAC-NML
+kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
+kosc_o	K. oxytoca species complex O locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
+kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
+kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
+megares	MEGARes antimicrobial resistance genes	available	nucl	-	MEG Lab
+plasmidfinder	CGE PlasmidFinder replicons	available	nucl	-	DTU CGE
+upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	-	FordeGenomics
+vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	-	USTC (VFDB)
+victors	Victors virulence factors	available	nucl	-	University of Chicago
+cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
+ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	-	Holt lab (srst2)
+ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	command	gapit-curated (public-domain sources)
+lm_doumith	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	command	gapit-curated (public-domain INSDC sources)
+ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	bundled	nucl	-	NCBI
+resfinder	CGE ResFinder acquired resistance genes	bundled	nucl	-	DTU CGE
+vc_serogroup	Vibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed over from gside	bundled	nucl	command	gapit-curated (NCBI X59554.1 slice / KY660230.1 / X00171.1)
+vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	integrated	gapit-curated (vpasero)
 ```
 
-NAME 是传给 `--db` 的数据库名；PROVIDER 是上游维护机构。当
-`<datadir>/<name>/gapit-manifest.json` 存在时 STATUS 显示 `installed (N)`，N 是
-记录数，否则显示 `available`。最后七行是按名称排序的 wheel 内置数据库（见下文
+NAME 是传给 `--db` 的数据库名；PROVIDER 是上游维护机构。每一行都是筛查数据库
+（`gapit screen`）；TYPING 说明可选的判定方式（数据库携带 `typing.json` 时）：
+
+- `command` —— 基因数据库：先筛查出结果表，再运行 `gapit typing RESULT.tsv`。
+- `integrated` —— 基因簇数据库：表型判定集成在 `gapit screen` 本身
+  （`gapit typing` 拒绝基因簇数据库）。
+- `-` —— 没有分型方案，仅用于筛查。
+
+当 `<datadir>/<name>/gapit-manifest.json` 存在时 STATUS 显示 `installed (N)`，N 是
+记录数，否则显示 `available`。最后八行是按名称排序的 wheel 内置数据库（见下文
 "内置数据库（即装即用）"一节）：物化前为 `bundled`，物化后为 `installed (N)`。
 其中三个（`ecoh`、`ncbi`、`resfinder`）同时是注册表
 提供商 —— 这类名字只渲染一次，位于内置区（绝不会重复出现一条注册表 `available`
@@ -106,6 +114,7 @@ $ gapit db list --json
       "dbtype": "nucl",
       "installed": true,
       "kind": "gene",
+      "typing": false,
       "records": 2224
     },
     {
@@ -115,6 +124,7 @@ $ gapit db list --json
       "dbtype": "prot",
       "installed": true,
       "kind": "gene",
+      "typing": false,
       "records": 746
     },
     {
@@ -124,6 +134,7 @@ $ gapit db list --json
       "dbtype": "nucl",
       "installed": true,
       "kind": "gene",
+      "typing": false,
       "records": 6059
     }
   ]
@@ -139,6 +150,7 @@ $ gapit db list --json
 | `providers[].description` | string | 内容简述 |
 | `providers[].dbtype` | string | `nucl`（用 blastn 筛查）或 `prot`（用 blastx 筛查） |
 | `providers[].kind` | string | `gene`（逐基因 BLAST 筛查）或 `cluster`（minimap2 位点筛查，见 [screen.md](./screen.md)） |
+| `providers[].typing` | boolean | 数据库携带 `typing.json` 时为 true；基因库经 `gapit typing` 判定，基因簇库在 `gapit screen` 内判定 |
 | `providers[].installed` | boolean | 数据目录里同时存在 manifest 和可读 `sequences` 时为 true |
 | `providers[].indexed` | boolean | 存在 BLAST 索引（`.nin` 或 `.pin`）时为 true；缺失/过期时用 `setupdb` 重建 |
 | `providers[].records` | integer | 记录数，数据库未安装时省略 |

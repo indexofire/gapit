@@ -82,7 +82,8 @@ $ gapit db list --json
       "description": "ARG-ANNOT acquired resistance genes",
       "dbtype": "nucl",
       "installed": true,
-      "records": 2224
+      "records": 2224,
+      "typing": false
     },
     {
       "name": "bacmet2",
@@ -90,7 +91,8 @@ $ gapit db list --json
       "description": "BacMet2 experimentally confirmed biocide/resistance genes (protein)",
       "dbtype": "prot",
       "installed": true,
-      "records": 746
+      "records": 746,
+      "typing": false
     }
   ]
 }
