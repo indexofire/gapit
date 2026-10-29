@@ -185,6 +185,11 @@ therefore always `yes`); `--all-genes` / `-A` adds the absent calls (breadth bel
 the threshold). The table's last column is `PRODUCT` (the contig table keeps the
 abricate `RESISTANCE` column; reads tables do not carry it).
 
+Reads tables feed `gapit typing` directly — `gapit screen --r1 reads.fq --db NAME | gapit
+typing` folds `#SAMPLE` as the FILE key and `BREADTH%` as coverage. Reads/1 has no identity
+column, so typing from it checks breadth only; add a nonzero `--min-identity` to emit
+reads/2's `IDENTITY%` when a scheme's identity floors matter. See
+[Typing schemes](./typing.md#the-two-stage-designation-workflow).
 
 The default is the streaming **tsv** table (tsv is the human default on every gapit surface;
 `--format csv` is its comma spelling):

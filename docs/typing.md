@@ -31,6 +31,13 @@ rows' shared `DATABASE` column, folds every `(FILE, GENE)` to its best row by
 `(%IDENTITY, %COVERAGE)` (first row wins ties — the same per-gene fold the report hits
 got), and evaluates the database's `typing.json` over each FILE's genes.
 
+Reads-mode tables are accepted too: `gapit screen --r1/--r2 ... | gapit typing` folds the
+`#SAMPLE`/`BREADTH%` table with `#SAMPLE` as the FILE key and breadth as coverage, skipping
+the `PRESENT=no` rows `--all-genes` adds. Reads/1 does not carry identity, so its identity
+floors cannot be checked and gapit types from breadth alone; when a scheme depends on
+identity (allele probes, for example), pass a nonzero `--min-identity` so the table gains
+reads/2's `IDENTITY%` column and each rule's `identity_floor` is enforced.
+
 The two stages also compose straight through a pipe — the canonical one-liner:
 
 ```console

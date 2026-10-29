@@ -26,6 +26,13 @@ contigs.fa	risk_monitoring	EHEC	escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
 为其 `(%IDENTITY, %COVERAGE)` 最佳的行（并列时首行获胜——与报告命中原有的逐基因
 折叠一致），再对该 FILE 的基因评估数据库的 `typing.json`。
 
+reads 模式的表也可以直接输入：`gapit screen --r1/--r2 ... | gapit typing` 会折叠
+`#SAMPLE`/`BREADTH%` 表，以 `#SAMPLE` 作为 FILE 键、breadth 作为覆盖度，并跳过
+`--all-genes` 加入的 `PRESENT=no` 行。reads/1 不携带一致性，因此无法检查 identity
+下限，gapit 仅按 breadth 判定；如果方案依赖一致性（例如等位基因探针），请传入非零的
+`--min-identity`，让表带上 reads/2 的 `IDENTITY%` 列，从而执行每条规则的
+`identity_floor`。
+
 两个阶段也可以直接经管道衔接——规范一行式：
 
 ```console

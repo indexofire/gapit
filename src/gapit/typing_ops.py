@@ -1,10 +1,11 @@
 """The `gapit typing` use-case: designation from screen result tables.
 
 Stage 2 of the two-stage pipeline (rightsholder design): ``gapit screen
--o result.tsv --db NAME`` detects genes; this use-case reads the table(s),
-resolves NAME from the DATABASE column under --datadir (the default
-resolution — bundled databases still materialize on first use), loads the
-database's typing.json, and runs the shared gene-path engine
+-o result.tsv --db NAME`` detects genes (contig mode, or reads mode's
+``#SAMPLE``/``BREADTH%`` table); this use-case reads the table(s), resolves
+NAME from the DATABASE column under --datadir (the default resolution —
+bundled databases still materialize on first use), loads the database's
+typing.json, and runs the shared gene-path engine
 (:func:`gapit.typing_gene.evaluate_gene_calls`) over each FILE's folded
 gene calls. Cluster databases refuse with a typed error: their typing is
 integrated into ``gapit screen`` (gapit.cluster/1 emits it directly).

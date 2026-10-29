@@ -2,12 +2,12 @@
 
 Lives outside cli.py to keep that module small; cli.py registers it via
 ``register_typing_command``. The second stage of the designation pipeline:
-``gapit screen -o result.tsv --db NAME`` detects genes, then
-``gapit typing result.tsv`` resolves NAME from the table's DATABASE column
-and designates (the use-case lives in gapit.typing_ops). The table also
-arrives on stdin: ``gapit screen 1.fna --db NAME | gapit typing`` types the
-piped output, and the explicit ``-`` marker reads stdin even under a
-terminal (until EOF).
+``gapit screen -o result.tsv --db NAME`` detects genes (contig or reads
+mode), then ``gapit typing result.tsv`` resolves NAME from the table's
+DATABASE column and designates (the use-case lives in gapit.typing_ops).
+The table also arrives on stdin: ``gapit screen 1.fna --db NAME | gapit
+typing`` types the piped output, and the explicit ``-`` marker reads stdin
+even under a terminal (until EOF).
 """
 
 import sys
@@ -58,7 +58,11 @@ def _stdin_text(files: list[Path]) -> str | None:
     nargs=-1,
     required=False,
     type=click.Path(path_type=Path),
-    help="gapit/abricate screen result TSV/CSV file(s) to type ('-' = stdin).",
+    help=(
+        "gapit/abricate screen result TSV/CSV file(s) to type — contig"
+        " (FILE/%IDENTITY/%COVERAGE) and reads (#SAMPLE/BREADTH%) tables are"
+        " accepted ('-' = stdin)."
+    ),
 )
 @datadir_option()
 @click.option(
@@ -88,7 +92,7 @@ def typing_command(
     quiet: bool,
     output: Path | None,
 ) -> None:
-    """Designate phenotypes from screen result table(s) (typed gene databases)."""
+    """Designate phenotypes from contig or reads screen result table(s) (typed gene databases)."""
     args = list(files or [])
     # Bare invocation at a terminal keeps the help-on-bare policy; with a
     # pipe attached the table arrives on stdin. Runs before dispatch so the

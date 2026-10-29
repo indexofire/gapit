@@ -172,6 +172,10 @@ assembly FASTA 要求 `map-ont`（退出码 2）。FASTQ 接受任何显式预�
 加入缺席判定（breadth 低于阈值）。表尾列为 `PRODUCT`（contig 表保留 abricate 的
 `RESISTANCE` 列；reads 表不携带该列）。
 
+reads 表可以直接喂给 `gapit typing`——`gapit screen --r1 reads.fq --db NAME | gapit
+typing` 以 `#SAMPLE` 作为 FILE 键、`BREADTH%` 作为覆盖度折叠。reads/1 没有一致性列，
+因此仅按 breadth 判定；当方案的一致性下限重要时，传入非零 `--min-identity` 以输出
+reads/2 的 `IDENTITY%`。见[分型方案](./typing.zh.md#two-stage-workflow)。
 
 默认是流式 **tsv** 表格（tsv 是 gapit 所有界面上的人类默认值；`--format csv` 是它的
 逗号拼写）：
