@@ -107,7 +107,11 @@ the package (`ecoli_dec`, `lm_doumith`, and `vc_serogroup` plus the `ncbi`, `res
 BSD-3-Clause / MIT — and the MIT typed-cluster snapshot `vp_ok`), materialized into the
 datadir on first use with zero network; the
 bundled `ecoli_dec` additionally carries per-gene identity floors (`floors.json`, `pic`
-at 90%) that reads mode applies before presence calls. Several
+at 90%) that both engines apply before presence calls, and `cje_cps` ships floors plus
+per-database `screen.json` defaults (MAPQ 20, depth 5, 10% lpxA relative depth). The
+same `screen.json` (`gapit.screen/1`) mechanism lets any database declare its own
+reads/contigs thresholds, so one global parameter set is not forced onto panels of
+different amplicon lengths. Several
 upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0) forbid
 redistribution inside an MIT-licensed distribution, so everything else is fetch-on-demand
 — and `db fetch <name>` refreshes the provider-backed bundled names (`ecoh`, `ncbi`,

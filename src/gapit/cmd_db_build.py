@@ -64,6 +64,15 @@ from gapit.dispatch import datadir_option, dispatch, quiet_option
         " validated, copied into the db as floors.json (gene builds only)."
     ),
 )
+@click.option(
+    "--screen",
+    "-S",
+    type=click.Path(path_type=Path),
+    help=(
+        "gapit.screen/1 per-database screening defaults: validated, copied"
+        " into the db as screen.json (gene builds only)."
+    ),
+)
 @datadir_option()
 @click.option(
     "--description",
@@ -81,6 +90,7 @@ def db_build_command(
     kind: Kind | None,
     typing: Path | None,
     floors: Path | None,
+    screen: Path | None,
     datadir: Path | None,
     description: str,
     force: bool,
@@ -111,6 +121,7 @@ def db_build_command(
             kind=kind,
             typing=typing,
             floors=floors,
+            screen=screen,
         )
         click.echo(receipt.model_dump_json(exclude_none=True))
 

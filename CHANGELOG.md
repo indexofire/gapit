@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **`gapit.screen/1` per-database screening defaults (`screen.json`).** A
+  database can declare its own reads/contigs thresholds; CLI flags still win,
+  and a database without the sidecar behaves exactly as before. Install with
+  `db build --screen`, or drop the file into an installed database directory.
+- **Relative-depth presence gate for reads.** `--min-relative-depth R` and
+  `--relative-to GENE` gate presence on `gene_depth / control_depth >= R`
+  (default control `lpxA`); `--min-depth` adds an absolute floor. The reads TSV
+  appends a `DEPTH_RATIO` column when the gate is active.
+- **Curated HS45 alleles in `cje_cps`.** `HS45_2`–`HS45_5` cover the four
+  distinct 89.06–93.75% alleles found in the 2026 panel, so `-I 90` detects
+  them at ~100%. The panel now also ships `floors.json` (default 90%;
+  `lpxA`/`HS12` 80%) and `screen.json` (MAPQ 20, depth 5, 10% lpxA ratio,
+  contig merge-fragments). The 80.47% C. coli repeat remains excluded; the
+  83% HS37 oxidoreductase cross-reaction is dropped by the 90% floor.
+
 All notable changes to gapit are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this

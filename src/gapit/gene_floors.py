@@ -31,6 +31,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from gapit.db import Database
 from gapit.dbcodec import decode_seqid
 from gapit.errors import DatabaseError, InputError
+from gapit.hits import Hit
 from gapit.paf import PafRecord, alignment_identity
 
 FLOORS_FILENAME = "floors.json"
@@ -132,3 +133,23 @@ def apply_gene_floors(
     (max-of-both). The gene is decoded from the target seqid once per
     unique tname (duplicate records of one gene share the floor)."""
     return list(iter_apply_gene_floors(rows, floors, default_db=default_db))
+
+
+def iter_apply_hit_floors(hits: Iterable[Hit], floors: GeneFloors) -> Iterator[Hit]:
+    """Contig-mode twin of :func:`iter_apply_gene_floors`: drop BLAST hits
+    whose already-decoded gene identity is below the gene's floor.
+
+    The blastn call still uses the global ``--minid`` (BLAST cannot take a
+    per-subject threshold); the floor is a POST-filter, so set ``--minid`` to
+    the lowest floor in the document (the cje_cps panel uses 80 while its
+    default floor is 90). ``None`` means no floor and the hit survives.
+    """
+    for hit in hits:
+        floor = floors.genes.get(hit.gene, floors.default)
+        if floor is None or hit.identity_pct >= floor:
+            yield hit
+
+
+def apply_hit_floors(hits: Iterable[Hit], floors: GeneFloors) -> list[Hit]:
+    """Materialized form of :func:`iter_apply_hit_floors`."""
+    return list(iter_apply_hit_floors(hits, floors))

@@ -39,7 +39,7 @@ _CHUNK_BYTES = 1 << 20
 # Sidecars a gene database may carry. typing/floors reference gene ids and the
 # info sidecar holds the database's own literature/caveats; none of them carry
 # the db name, so a re-projection must carry them across verbatim.
-SIDECARS = ("typing.json", "floors.json", "info.json")
+SIDECARS = ("typing.json", "floors.json", "screen.json", "info.json")
 
 
 def generate_sequences(records_path: Path, sequences_path: Path) -> None:

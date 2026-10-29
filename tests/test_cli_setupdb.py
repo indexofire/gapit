@@ -37,7 +37,7 @@ def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
     assert stderr_lines[:6] == [
         f"gapit: materializing bundled database {name} ({records} records) into {datadir}"
         for name, records in (
-            ("cje_cps", 37),
+            ("cje_cps", 42),
             ("ecoh", 597),
             ("ecoli_dec", 16),
             ("lm_doumith", 5),
@@ -50,7 +50,7 @@ def test_setupdb_then_listing_roundtrip(tmp_path: Path) -> None:
         f"gapit: materializing bundled database vp_ok (195 loci) into {datadir}",
     ]
     assert stderr_lines[8:] == [
-        "Indexed cje_cps (37 sequences, nucl)",
+        "Indexed cje_cps (42 sequences, nucl)",
         "Indexed ecoh (597 sequences, nucl)",
         "Indexed ecoli_dec (16 sequences, nucl)",
         "Indexed lm_doumith (5 sequences, nucl)",

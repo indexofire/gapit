@@ -1,0 +1,8 @@
+{
+  "schema": "gapit.floors/1",
+  "default": 90.0,
+  "genes": {
+    "lpxA": 80.0,
+    "HS12": 80.0
+  }
+}

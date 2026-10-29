@@ -102,6 +102,12 @@ class BundledDatabase(BaseModel, frozen=True):
         return floors if floors.is_file() else None
 
     @property
+    def screen_path(self) -> Path | None:
+        """The bundled gapit.screen/1 defaults, when the database ships one."""
+        screen = self.path / "screen.json"
+        return screen if screen.is_file() else None
+
+    @property
     def features_path(self) -> Path | None:
         """The bundled gapit.features/1 table — required (and checked at
         discovery) for cluster bundles, absent from gene bundles."""
@@ -188,6 +194,7 @@ def materialize_bundled(name: str, datadir: Path, *, quiet: bool = True) -> None
         quiet=True,
         typing=bundled.typing_path,
         floors=bundled.floors_path,
+        screen=bundled.screen_path,
         source="bundled",
     )
 

@@ -334,11 +334,18 @@ PAF 比对在聚合前被丢弃，消除只看广度的存在判定在同源基�
 | `schema` | string | 恒为 `gapit.reads/2` |
 | `params.min_identity` | number | 生效的单比对一致性下限，0 = 关闭 |
 | `params.min_mapq` | integer | 生效的单比对 MAPQ 下限，0 = 关闭 |
+| `params.min_depth` | number | 相对深度门控开启时的绝对平均深度下限；关闭时省略 |
+| `params.min_relative_depth` | number | 基因:对照基因平均深度比下限（0..1）；关闭时省略 |
+| `params.relative_to` | string | 相对深度门控的对照基因；关闭时省略 |
 | `files[].genes[].mean_identity_pct` | number | 幸存比对上按比对长度加权的单比对一致性均值，保留 2 位 |
+| `files[].genes[].relative_depth_pct` | number | 基因:对照基因平均深度比的百分比；相对门控关闭时省略 |
 
 单比对一致性是 `100 * (alen - nm) / alen`（PAF block 长度与 `NM:i:` 标签；没有 NM
-的行按 100 计）。同源实战示例与阈值建议见
-[reads.md](./reads.md)。
+的行按 100 计）。`present` 同时要求 `breadth_pct >= min_breadth`、
+`mean_depth >= min_depth`，以及相对门控开启时的
+`relative_depth_pct / 100 >= min_relative_depth`；相对门控开启但对照基因缺失时，
+所有判定为 absent。相对门控开启时 tsv 追加 `DEPTH_RATIO` 列（百分比）。同源实战
+示例与阈值建议见 [reads.zh.md](./reads.zh.md#gene-floors)。
 
 ### gapit.cluster/1（基因簇数据库筛查）
 
@@ -532,9 +539,9 @@ $ gapit --version --json
 `gapit schema <name>` 打印每个文档的 JSON Schema。十二个名字：`report`、
 `typing_result`、`reads`、`reads2`、`cluster`、`summary`、`error`、`version`，外加
 数据库侧文档 `features`（gapit.features/1，基因簇数据库的特征表）、`typing`
-（gapit.typing/1，基因簇数据
-库的声明式评分规范）和 `floors`（gapit.floors/1，reads 模式存在判定的逐基因一致性
-下限）。`gapit schema report` 的裁剪片段：
+（gapit.typing/1，基因簇数据库的声明式评分规范）、`floors`（gapit.floors/1，
+reads/contig 模式存在判定的逐基因一致性下限）和 `screen`（gapit.screen/1，每数据库
+筛查默认值）。`gapit schema report` 的裁剪片段：
 
 ```json
 {

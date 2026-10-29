@@ -144,7 +144,7 @@ register_mcp_command(app)
     help=(
         "Document to introspect: report, reads, reads2, cluster, cluster2,"
         " summary, error, version, dblist, dboutdated, datadir, features,"
-        " typing, typing_result, or floors."
+        " typing, typing_result, floors, or screen."
     ),
 )
 def schema(name: str) -> None:

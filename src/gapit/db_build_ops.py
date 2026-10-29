@@ -42,6 +42,11 @@ from gapit.fasta import FastaRecord, iter_fasta
 from gapit.gene_floors import FLOORS_FILENAME, read_floors, validate_floors
 from gapit.proctools import note
 from gapit.records import Record, read_manifest, write_records
+from gapit.screen_defaults import (
+    SCREEN_FILENAME,
+    read_screen_defaults,
+    validate_screen_defaults,
+)
 from gapit.typing_gene import validate_gene_typing
 from gapit.typing_models import read_typing_document, typing_schema_of
 
@@ -156,6 +161,7 @@ def perform_build(
     kind: Kind | None = None,
     typing: Path | None = None,
     floors: Path | None = None,
+    screen: Path | None = None,
     source: Literal["bundled"] | None = None,
 ) -> BuildReceipt:
     """Run the custom-build pipeline and return the receipt — the shared CLI
@@ -201,6 +207,7 @@ def perform_build(
                 "--kind": kind is not None,
                 "--typing": typing is not None,
                 "--floors": floors is not None,
+                "--screen": screen is not None,
             },
         )
     if not fasta.is_file():
@@ -279,7 +286,14 @@ def perform_build(
         if typing is not None:
             shutil.copyfile(typing, build_dir / "typing.json")
         if floors is not None:
+            read_floors(floors)
             shutil.copyfile(floors, build_dir / FLOORS_FILENAME)
+        if screen is not None:
+            screen_document = read_screen_defaults(screen)
+            validate_screen_defaults(
+                screen_document, frozenset(record.gene for record in records), source=screen
+            )
+            shutil.copyfile(screen, build_dir / SCREEN_FILENAME)
         manifest = build_database(
             build_dir,
             name=name,

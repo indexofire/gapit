@@ -1,0 +1,16 @@
+{
+  "schema": "gapit.screen/1",
+  "reads": {
+    "min_breadth": 90.0,
+    "min_identity": 80.0,
+    "min_mapq": 20,
+    "min_depth": 5.0,
+    "min_relative_depth": 0.1,
+    "relative_to": "lpxA"
+  },
+  "contigs": {
+    "minid": 80.0,
+    "mincov": 80.0,
+    "merge_fragments": true
+  }
+}

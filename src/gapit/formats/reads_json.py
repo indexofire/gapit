@@ -75,6 +75,7 @@ class GeneCoverage2Document(BaseModel, frozen=True):
     reads_mapped: int
     present: bool
     mean_identity_pct: float
+    relative_depth_pct: float | None = None
 
 
 class Reads2FileDocument(BaseModel, frozen=True):
@@ -94,6 +95,9 @@ class Reads2ParamsDocument(BaseModel, frozen=True):
     threads: int
     min_identity: float
     min_mapq: int
+    min_depth: float | None = None
+    min_relative_depth: float | None = None
+    relative_to: str | None = None
 
 
 class Reads2Document(BaseModel, frozen=True):
@@ -142,7 +146,7 @@ def render_reads_json(reports: Iterable[ReadsReport], params: ReadsParams, *, no
             for report in reports
         ],
     )
-    return document.model_dump_json(indent=2, by_alias=True)
+    return document.model_dump_json(indent=2, by_alias=True, exclude_none=True)
 
 
 def _gene_coverage2_document(gene: GeneCoverage) -> GeneCoverage2Document:
@@ -158,6 +162,9 @@ def _gene_coverage2_document(gene: GeneCoverage) -> GeneCoverage2Document:
         reads_mapped=gene.reads_mapped,
         present=gene.present,
         mean_identity_pct=round(gene.mean_identity_pct, 2),
+        relative_depth_pct=(
+            None if gene.relative_depth_pct is None else round(gene.relative_depth_pct, 2)
+        ),
     )
 
 
@@ -176,6 +183,11 @@ def render_reads2_json(
             threads=params.threads,
             min_identity=params.min_identity,
             min_mapq=params.min_mapq,
+            min_depth=params.min_depth if params.min_relative_depth > 0.0 else None,
+            min_relative_depth=(
+                params.min_relative_depth if params.min_relative_depth > 0.0 else None
+            ),
+            relative_to=params.relative_to if params.min_relative_depth > 0.0 else None,
         ),
         files=[
             Reads2FileDocument(
@@ -185,4 +197,4 @@ def render_reads2_json(
             for report in reports
         ],
     )
-    return document.model_dump_json(indent=2, by_alias=True)
+    return document.model_dump_json(indent=2, by_alias=True, exclude_none=True)

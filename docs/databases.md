@@ -692,7 +692,8 @@ $ gapit db install card.json \
   sequences.n*|p*       BLAST index built from sequences
   gapit-manifest.json   provenance sidecar, written last
   typing.json           optional gapit.typing/1 or /2 scoring spec (typed dbs)
-  floors.json           optional gapit.floors/1 per-gene identity floors (reads mode)
+  floors.json           optional gapit.floors/1 per-gene identity floors (reads + contigs)
+  screen.json           optional gapit.screen/1 per-database reads/contigs defaults
 ```
 
 ### records.jsonl
@@ -766,7 +767,7 @@ and `datadir` are).
 ### floors.json — per-gene identity floors
 
 An optional sidecar declaring a MINIMUM alignment identity (%) per gene for reads-mode
-presence (schema `gapit.floors/1`, introspect with `gapit schema floors`; see
+and contig-mode presence (schema `gapit.floors/1`, introspect with `gapit schema floors`; see
 [reads.md](./reads.md#per-gene-identity-floors-gapitfloors1-database-side) for the
 screening semantics and the `pic` worked example):
 
@@ -782,7 +783,10 @@ screening semantics and the `pic` worked example):
 
 The file's presence IS the flag — no manifest field, no CLI switch. A database without
 the sidecar screens byte-identically to before (the floors are a db-driven opt-in, not a
-CLI contract change), and the blastn contig path never reads them. Built-in via
+CLI contract change). Both engines read them: reads mode drops sub-floor alignments
+before aggregation; contig mode post-filters BLAST hits, so set `--minid` to the lowest
+floor in the document and let the floor enforce the higher per-gene threshold.
+Built-in via
 `db build --floors` (next sections), or drop the file into an existing db directory; it
 is validated at screening time too (malformed content fails with `FLOORS_MALFORMED`,
 exit 4). The bundled `ecoli_dec` ships `{"genes": {"pic": 90.0}}` — the SPATE-homolog
@@ -893,8 +897,8 @@ syn_betalac	SYN-0001	ampicillin;cephalosporin
 ### Per-gene identity floors (`--floors`)
 
 `--floors FILE` installs a `gapit.floors/1` document as the database's `floors.json`
-sidecar — the per-gene minimum alignment identity for reads-mode presence (see
-[reads.md](./reads.md#per-gene-identity-floors-gapitfloors1-database-side)). The
+sidecar — the per-gene minimum alignment identity for reads-mode and contig-mode
+presence (see [reads.md](./reads.md#per-gene-identity-floors-gapitfloors1-database-side)). The
 document is validated before any artifact is written: every gene in `genes` must exist
 in the FASTA (`FLOORS_UNKNOWN_GENE`, exit 4 — a floor for a missing gene is silently
 dead safety config), values must lie in [0, 100] and the structure parse
@@ -909,6 +913,25 @@ $ gapit db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --floors m
 {"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
 $ cat ./db/tinyamr/floors.json
 {"schema": "gapit.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
+```
+
+### Per-database screening defaults (`--screen`)
+
+`--screen FILE` installs a `gapit.screen/1` document as the database's `screen.json`
+sidecar — the reads/contigs defaults (breadth, identity prefilter, MAPQ, depth,
+relative-depth control, contig identity/coverage, merge-fragments). The document is
+parsed before any artifact is written (`SCREEN_DEFAULTS_MALFORMED`, exit 4); a relative
+control gene must exist in the FASTA (`SCREEN_DEFAULTS_UNKNOWN_GENE`, exit 4). CLI flags
+still win per run. See [screen.json](#screenjson).
+
+```console
+$ cat my_screen.json
+{"schema": "gapit.screen/1",
+ "reads": {"min_identity": 80.0, "min_mapq": 20, "min_depth": 5.0,
+           "min_relative_depth": 0.10, "relative_to": "lpxA"},
+ "contigs": {"minid": 80.0, "mincov": 80.0, "merge_fragments": true}}
+$ gapit db build tinyamr my_genes.fa --datadir ./db --screen my_screen.json
+$ cat ./db/tinyamr/screen.json
 ```
 
 ### Rebuilding
@@ -1126,3 +1149,48 @@ consume:
 ```console
 $ python scripts/cluster_calibration.py mycps --datadir ./db labels.tsv
 ```
+
+### screen.json — per-database screening defaults {#screenjson}
+
+Sequence length, allele diversity, and a control gene change what a good hit
+means: a 62 bp amplicon needs a higher identity floor than an 857 bp one, and
+a panel with `lpxA` can gate presence on relative depth. A database may ship a
+`screen.json` sidecar (schema `gapit.screen/1`) declaring its own defaults:
+
+```json
+{
+  "schema": "gapit.screen/1",
+  "reads": {
+    "min_breadth": 90.0,
+    "min_identity": 80.0,
+    "min_mapq": 20,
+    "min_depth": 5.0,
+    "min_relative_depth": 0.10,
+    "relative_to": "lpxA"
+  },
+  "contigs": {
+    "minid": 80.0,
+    "mincov": 80.0,
+    "merge_fragments": true
+  }
+}
+```
+
+Precedence: **CLI flag > `screen.json` > global CLI default**. Only options the
+user did not pass are filled from the sidecar, so `gapit screen -d cje_cps ...`
+works with no flags while `--min-mapq 30` still wins for one run.
+
+Install it with `gapit db build NAME INPUT --screen FILE` or drop `screen.json`
+into an installed database directory (then `gapit db build NAME` re-projects
+the gene database and carries the sidecar verbatim). `gapit schema screen`
+prints the JSON Schema.
+
+The bundled `cje_cps` panel ships one: MAPQ 20, 10% `lpxA` relative-depth,
+depth 5, and contig `--merge-fragments`. Per-gene identity remains in
+`floors.json` (default 90%, `lpxA`/`HS12` 80% in the curated panel).
+
+Upgrading an existing `cje_cps` directory: the wheel's bundle is only
+materialized when the database is absent, so an already-installed copy keeps
+its old records/sidecars. Copy the new `records.jsonl`/`floors.json`/
+`screen.json` into the directory and run `gapit db build cje_cps`, or remove
+the directory and let the next screen re-materialize the bundle.

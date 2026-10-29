@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from gapit.db import Database
 from gapit.errors import DependencyError, GapitError, InputError
 from gapit.fragments import merge_fragment_hits
+from gapit.gene_floors import apply_hit_floors, gene_floors
 from gapit.gseek_engine import engine, run_blast_gseek
 from gapit.hits import process_rows, process_rows_with_partials
 from gapit.report import Report, ScreeningParams
@@ -256,12 +257,18 @@ def screen_file(
     are folded into one hit per gene when their union coverage reaches mincov.
     """
     rows = run_blastn(query, database, params, dbtype=dbtype, debug=debug)
+    floors = gene_floors(database)
     if merge_fragments:
         hits, partials = process_rows_with_partials(
             rows, mincov=params.mincov, default_db=params.db
         )
+        if floors is not None:
+            hits = apply_hit_floors(hits, floors)
+            partials = apply_hit_floors(partials, floors)
         hits = merge_fragment_hits(hits, partials, mincov=params.mincov)
     else:
         hits = process_rows(rows, mincov=params.mincov, default_db=params.db)
+        if floors is not None:
+            hits = apply_hit_floors(hits, floors)
     ordered = sorted(hits, key=lambda hit: (hit.sequence, hit.start))
     return Report(file=str(query), hits=tuple(ordered))

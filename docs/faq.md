@@ -140,7 +140,7 @@ and the per-sample output are documented in `./reads.md`.
 ## What are per-gene identity floors?
 
 A database-side `floors.json` (`gapit.floors/1`) declares a minimum alignment identity
-per gene for reads-mode presence: alignments below the floor are dropped before
+per gene for reads-mode and contig-mode presence: alignments below the floor are dropped before
 breadth and depth are aggregated, so a close-but-not-exact homolog no longer over-calls
 the gene. The real case that motivated it: the SPATE-homolog `pic` in the bundled
 `ecoli_dec` panel read about 86.6% identity at 97.6% breadth and crossed the 90%
@@ -148,6 +148,18 @@ presence threshold, while the blastn contig path correctly rejected it; the ship
 floor (`pic` at 90) makes reads mode agree. Install one with `gapit db build --floors
 FILE` or by dropping the file into the db directory; a database without one screens
 byte-identically to before. Details: `./reads.md` and `./databases.md`.
+
+## What are per-database screening defaults?
+
+Different reference sets need different thresholds: a 62 bp amplicon, an 857 bp gene,
+and a panel with an `lpxA` control cannot share one global identity/MAPQ/depth rule.
+A database can ship `screen.json` (`gapit.screen/1`) with its own reads/contigs
+defaults (identity prefilter, MAPQ, depth, relative-depth control, contig
+identity/coverage, merge-fragments). Precedence is CLI flag > `screen.json` > global
+default. The bundled `cje_cps` panel uses MAPQ 20, depth 5, and a 10% `lpxA`
+relative-depth gate, plus `floors.json` with a 90% default and 80% for `lpxA`/`HS12`.
+Install with `gapit db build NAME INPUT --screen FILE`; details in
+`./databases.md#screenjson`.
 
 ## What is this "MISSING_DEPENDENCY" error?
 

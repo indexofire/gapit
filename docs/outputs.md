@@ -350,11 +350,19 @@ thresholds off the output stays `gapit.reads/1`, byte-identical. Fields from
 | `schema` | string | Always `gapit.reads/2` |
 | `params.min_identity` | number | Per-alignment identity floor in effect, 0 = off |
 | `params.min_mapq` | integer | Per-alignment MAPQ floor in effect, 0 = off |
+| `params.min_depth` | number | Absolute mean-depth floor when relative gating is active; omitted when off |
+| `params.min_relative_depth` | number | Gene:control mean-depth ratio floor (0..1); omitted when off |
+| `params.relative_to` | string | Control gene for the relative gate; omitted when off |
 | `files[].genes[].mean_identity_pct` | number | Alignment-length-weighted mean per-alignment identity over the kept alignments, rounded to 2 |
+| `files[].genes[].relative_depth_pct` | number | Gene:control mean-depth ratio as a percentage; omitted when relative gating is off |
 
 Per-alignment identity is `100 * (alen - nm) / alen` (PAF block length and `NM:i:` tag; a row
-without NM counts as 100). See [reads.md](./reads.md#filtering-alignments-by-identity-and-mapq-gapitreads2)
-for the homolog worked example and threshold guidance.
+without NM counts as 100). `present` is `breadth_pct >= min_breadth` AND
+`mean_depth >= min_depth` AND (`relative_depth_pct / 100 >= min_relative_depth` when the
+relative gate is active); a missing control with the relative gate on makes every call
+absent. The tsv table appends a `DEPTH_RATIO` column (percentage) when the gate is active.
+See [reads.md](./reads.md#filtering-alignments-by-identity-and-mapq-gapitreads2) for the
+homolog worked example and threshold guidance.
 
 ### gapit.cluster/1 (cluster-database screening)
 
@@ -547,11 +555,12 @@ $ gapit --version --json
 {"schema":"gapit.version/1","name":"gapit","version":"0.6.5"}
 ```
 
-`gapit schema <name>` prints the JSON Schema for each document. The eleven names: `report`,
+`gapit schema <name>` prints the JSON Schema for each document. The twelve names: `report`,
 `typing_result`, `reads`, `reads2`, `cluster`, `summary`, `error`, `version`, plus the
 database-side documents `features` (gapit.features/1, a cluster db's feature table),
-`typing` (gapit.typing/1, a cluster db's declarative scoring spec), and `floors`
-(gapit.floors/1, per-gene identity floors for reads-mode presence). A trimmed fragment of
+`typing` (gapit.typing/1, a cluster db's declarative scoring spec), `floors`
+(gapit.floors/1, per-gene identity floors for reads + contigs), and `screen`
+(gapit.screen/1, per-database screening defaults). A trimmed fragment of
 `gapit schema report`:
 
 ```json

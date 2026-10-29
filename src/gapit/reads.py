@@ -95,7 +95,9 @@ def detect_read_kind(path: Path) -> ReadFileKind:
 
 class ReadsParams(BaseModel, frozen=True):
     """Parameters for one read-screening run (SPEC.md §10). The reads/2
-    thresholds default off; gapit.reads/1 rendering ignores them entirely."""
+    thresholds default off; gapit.reads/1 rendering ignores them entirely.
+    ``min_depth``/``min_relative_depth`` add the abundance gate: absolute
+    mean depth and the gene:control mean-depth ratio (0..1)."""
 
     db: str
     read_type: ReadType = "sr"
@@ -103,13 +105,18 @@ class ReadsParams(BaseModel, frozen=True):
     threads: int = Field(default=1, ge=1)
     min_identity: float = Field(default=0.0, ge=0.0, le=100.0)
     min_mapq: int = Field(default=0, ge=0)
+    min_depth: float = Field(default=0.0, ge=0.0)
+    min_relative_depth: float = Field(default=0.0, ge=0.0, le=1.0)
+    relative_to: str = "lpxA"
 
 
 class GeneCoverage(BaseModel, frozen=True):
     """Per-gene presence call over primary alignments. mean_identity_pct is
     the alen-weighted mean of per-alignment identity over the aggregated
     (kept) rows — the weighting favors long alignments; computed in reads/1
-    mode too but rendered only by gapit.reads/2."""
+    mode too but rendered only by gapit.reads/2. ``relative_depth_pct`` is
+    the gene:control mean-depth ratio as a percentage (None when no control
+    gene was found or relative-depth gating is off)."""
 
     database: str
     gene: str
@@ -122,6 +129,7 @@ class GeneCoverage(BaseModel, frozen=True):
     reads_mapped: int
     present: bool
     mean_identity_pct: float
+    relative_depth_pct: float | None = None
 
 
 class ReadsReport(BaseModel, frozen=True):
@@ -137,11 +145,21 @@ def aggregate_coverage(
     default_db: str,
     min_breadth: float,
     products: Mapping[str, str] | None = None,
+    min_depth: float = 0.0,
+    min_relative_depth: float = 0.0,
+    relative_to: str | None = None,
 ) -> list[GeneCoverage]:
     """Aggregate primary alignments per target: breadth = union of
     tstart..tend intervals, depth = summed interval lengths, reads = distinct
     qnames. tlen is the FIRST-SEEN row's tlen per target (denominator
-    contract). Zero-read genes are omitted; output sorts by (-breadth, gene)."""
+    contract). Zero-read genes are omitted; output sorts by (-breadth, gene).
+
+    ``min_depth``/``min_relative_depth`` gate presence after aggregation.
+    The relative gate compares each gene's mean depth with the mean depth of
+    ``relative_to`` (default lpxA at the call sites); a missing control with
+    ``min_relative_depth > 0`` makes every call absent (the control is the
+    sample-level gate, so its absence must not silently pass everything).
+    """
     intervals: dict[str, list[tuple[int, int]]] = {}
     tlens: dict[str, int] = {}
     qnames: dict[str, set[str]] = {}
@@ -185,7 +203,25 @@ def aggregate_coverage(
                 ),
             )
         )
-    return sorted(coverages, key=lambda entry: (-entry.breadth_pct, entry.gene))
+    control_depth = (
+        max((entry.mean_depth for entry in coverages if entry.gene == relative_to), default=None)
+        if relative_to
+        else None
+    )
+    gated: list[GeneCoverage] = []
+    for entry in coverages:
+        relative_pct = (
+            None if control_depth in (None, 0.0) else 100.0 * entry.mean_depth / control_depth
+        )
+        present = entry.present and entry.mean_depth >= min_depth
+        if min_relative_depth > 0.0:
+            present = (
+                present and relative_pct is not None and relative_pct >= 100.0 * min_relative_depth
+            )
+        gated.append(
+            entry.model_copy(update={"present": present, "relative_depth_pct": relative_pct})
+        )
+    return sorted(gated, key=lambda entry: (-entry.breadth_pct, entry.gene))
 
 
 def screen_reads(
@@ -198,6 +234,9 @@ def screen_reads(
     debug: bool = False,
     min_identity: float = 0.0,
     min_mapq: int = 0,
+    min_depth: float = 0.0,
+    min_relative_depth: float = 0.0,
+    relative_to: str = "lpxA",
 ) -> ReadsReport:
     """Screen one sample's lanes against one database into a sample-level
     ReadsReport (union of all lanes' primary alignments). With a nonzero
@@ -227,7 +266,13 @@ def screen_reads(
         rows = iter_apply_gene_floors(rows, floors, default_db=database.name)
     products = dict(iter_fasta_headers(database.sequences_path))
     genes = aggregate_coverage(
-        rows, default_db=database.name, min_breadth=min_breadth, products=products
+        rows,
+        default_db=database.name,
+        min_breadth=min_breadth,
+        products=products,
+        min_depth=min_depth,
+        min_relative_depth=min_relative_depth,
+        relative_to=relative_to,
     )
     files = [str(r1) for r1, _ in lanes] + [str(r2) for _, r2 in lanes if r2 is not None]
     return ReadsReport(reads=tuple(files), genes=tuple(genes))

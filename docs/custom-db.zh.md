@@ -24,7 +24,8 @@ gapit db build NAME FASTA [OPTIONS]
 | `--dbtype` | `nucl` 或 `prot` | 强制分子类型（默认：从序列自动检测）。 |
 | `--kind` / `-k` | `gene` 或 `cluster` | 强制数据库类型（默认：从输入后缀自动检测；与后缀不一致是用法错误）。 |
 | `--typing` / `-T` | path | `gapit.typing/1` 或 `/2` 评分规范：先校验，再复制进数据库成为 `typing.json`，并记入其 manifest。 |
-| `--floors` / `-F` | path | `gapit.floors/1` 逐基因一致性下限，用于 reads 模式的存在判定：先校验，再复制进数据库成为 `floors.json`（仅限基因库构建）。 |
+| `--floors` / `-F` | path | `gapit.floors/1` 逐基因一致性下限，用于 reads/contig 模式的存在判定：先校验，再复制进数据库成为 `floors.json`（仅限基因库构建）。 |
+| `--screen` / `-S` | path | `gapit.screen/1` 每数据库 reads/contigs 默认值：先校验，再复制进数据库成为 `screen.json`（仅限基因库构建）。 |
 | `--datadir` | path | 数据库目录（默认：`$GAPIT_DATADIR`，然后 `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db`）。 |
 | `--description` | 文本 | FASTA 表头没有描述文本的记录的默认产物。 |
 | `--force` | 开关 | 数据库已存在时覆盖。 |

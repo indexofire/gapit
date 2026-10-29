@@ -638,7 +638,8 @@ $ gapit db install card.json \
   sequences.n*|p*       BLAST index built from sequences
   gapit-manifest.json   provenance sidecar, written last
   typing.json           可选的 gapit.typing/1 或 /2 评分规范（带分型的数据库）
-  floors.json           可选的 gapit.floors/1 按基因一致性下限（reads 模式）
+  floors.json           可选的 gapit.floors/1 按基因一致性下限（reads + contigs）
+  screen.json           可选的 gapit.screen/1 每数据库 reads/contigs 默认值
 ```
 
 ### records.jsonl
@@ -724,9 +725,11 @@ manifest，来自 plasmidfinder 数据库：
 | `genes` | object | `{基因: 最小一致性 %}`，取值在 [0, 100] 内 |
 
 文件的存在本身就是开关——没有 manifest 字段，也没有 CLI 开关。不带边车的数据库
-输出与之前逐字节一致（下限是数据库驱动的可选开启，不是 CLI 契约变更）；blastn
-contig 路径从不读取它们。通过 `db build --floors` 安装（见下节），或把文件直接放
-进既有数据库目录；筛查时同样会校验（内容损坏以 `FLOORS_MALFORMED` 失败，exit 4）。
+输出与之前逐字节一致（下限是数据库驱动的可选开启，不是 CLI 契约变更）。两种引擎都会
+读取它们：reads 模式在聚合前丢弃低于下限的比对；contig 模式在 BLAST 命中共后过滤。
+因此把 `--minid` 设为文档中最低的 floor，让 floor 执行更高的逐基因阈值。通过
+`db build --floors` 安装（见下节），或把文件直接放进既有数据库目录；筛查时同样会
+校验（内容损坏以 `FLOORS_MALFORMED` 失败，exit 4）。
 内置的 `ecoli_dec` 携带 `{"genes": {"pic": 90.0}}`——SPATE 同源假阳性的修复。
 
 ## 表头格式与兼容性
@@ -826,7 +829,7 @@ syn_betalac	SYN-0001	ampicillin;cephalosporin
 ### 按基因一致性下限（`--floors`）
 
 `--floors FILE` 把一份 `gapit.floors/1` 文档安装为数据库的 `floors.json` 边车——
-reads 模式存在判定的逐基因最小比对一致性（见
+reads/contig 模式存在判定的逐基因最小比对一致性（见
 [reads.zh.md](./reads.zh.md#gene-floors)）。文档在
 任何产物落盘前先校验：`genes` 里的每个基因必须存在于 FASTA
 （`FLOORS_UNKNOWN_GENE`，exit 4——给缺失基因设下限是静默失效的安全配置），取值必
@@ -841,6 +844,25 @@ $ gapit db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --floors m
 {"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
 $ cat ./db/tinyamr/floors.json
 {"schema": "gapit.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
+```
+
+### 每数据库筛查默认值（`--screen`）
+
+`--screen FILE` 把一份 `gapit.screen/1` 文档安装为数据库的 `screen.json` 边车——
+reads/contigs 的默认值（breadth、identity 预过滤、MAPQ、depth、相对深度对照基因、
+contig identity/coverage、merge-fragments）。文档在任何产物落盘前解析
+（`SCREEN_DEFAULTS_MALFORMED`，exit 4）；相对深度的对照基因必须存在于 FASTA
+（`SCREEN_DEFAULTS_UNKNOWN_GENE`，exit 4）。每次运行时 CLI 显式参数仍然优先。见
+[screen.json](#screenjson)。
+
+```console
+$ cat my_screen.json
+{"schema": "gapit.screen/1",
+ "reads": {"min_identity": 80.0, "min_mapq": 20, "min_depth": 5.0,
+           "min_relative_depth": 0.10, "relative_to": "lpxA"},
+ "contigs": {"minid": 80.0, "mincov": 80.0, "merge_fragments": true}}
+$ gapit db build tinyamr my_genes.fa --datadir ./db --screen my_screen.json
+$ cat ./db/tinyamr/screen.json
 ```
 
 ### 重建
@@ -1016,3 +1038,44 @@ O1/O139 与 Ogawa/Inaba、以及带文档的 DEC 占位——已编码为经过�
 ```console
 $ python scripts/cluster_calibration.py mycps --datadir ./db labels.tsv
 ```
+
+
+### screen.json — 每数据库筛查默认值 {#screenjson}
+
+序列长度、等位基因多样性和是否有对照基因都会改变“好命中”的定义：62 bp 的
+amplicon 比 857 bp 的基因需要更高的一致性；有 `lpxA` 的面板可以用相对深度做门控。
+数据库可以携带 `screen.json` 边车（schema `gapit.screen/1`）声明自己的默认值：
+
+```json
+{
+  "schema": "gapit.screen/1",
+  "reads": {
+    "min_breadth": 90.0,
+    "min_identity": 80.0,
+    "min_mapq": 20,
+    "min_depth": 5.0,
+    "min_relative_depth": 0.10,
+    "relative_to": "lpxA"
+  },
+  "contigs": {
+    "minid": 80.0,
+    "mincov": 80.0,
+    "merge_fragments": true
+  }
+}
+```
+
+优先级：**CLI 显式参数 > `screen.json` > 全局 CLI 默认值**。只有用户没有显式传入的
+选项才会从边车补齐，所以 `gapit screen -d cje_cps ...` 可以零参数使用推荐值，而
+`--min-mapq 30` 仍然只覆盖那一次运行。
+
+安装方式：`gapit db build NAME INPUT --screen FILE`，或把 `screen.json` 直接放进已
+安装数据库目录后运行 `gapit db build NAME` 重新投影（边车原样保留）。`gapit schema
+screen` 打印 JSON Schema。
+
+内置 `cje_cps` 面板已携带：MAPQ 20、10% `lpxA` 相对深度、depth 5、contig
+`--merge-fragments`；逐基因 identity 在 `floors.json`（默认 90%，`lpxA`/`HS12` 80%）。
+
+升级已安装的 `cje_cps` 目录：wheel 里的 bundle 只在数据库不存在时物化，已有副本不会
+自动更新。把新的 `records.jsonl`/`floors.json`/`screen.json` 复制进目录后运行
+`gapit db build cje_cps`，或删除目录让下一次筛查重新物化。

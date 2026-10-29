@@ -41,12 +41,19 @@
 | `--min-breadth` | `-b` | float | `90.0` | *reads 模式。* 判定存在的最小广度百分比。 |
 | `--min-identity` | `-I` | float | `0.0` | *reads 模式。* 每条比对的最小一致性百分比，`0 <= x <= 100`；`0` = 关闭。任何非零值都会输出 `gapit.reads/2`（见 [./outputs.md](./outputs.md)）。 |
 | `--min-mapq` | `-M` | int | `0` | *reads 模式。* 每条比对的最小 MAPQ；`0` = 关闭。任何非零值都会输出 `gapit.reads/2`。 |
+| `--min-depth` | `-e` | float | `0.0` | *reads 模式。* 判定存在的最小平均深度；`0` = 关闭。 |
+| `--min-relative-depth` | `-R` | float | `0.0` | *reads 模式。* 基因:对照基因平均深度比的最小值（`0 <= x <= 1`）；`0` = 关闭。 |
+| `--relative-to` | `-r` | str | `lpxA` | *reads 模式。* `--min-relative-depth` 的对照基因。 |
 | `--min-gene-cov` | `-g` | float | `90.0` | *仅基因簇数据库。* 基因判定为 `present` 的最小覆盖度百分比。 |
 | `--min-gene-id` | `-G` | float | `90.0` | *仅基因簇数据库。* 基因判定为 `present` 的最小一致性百分比。 |
 | `--min-cluster-cov` | `-C` | float | `96.0` | *仅基因簇数据库。* 最佳位点判定的最小位点覆盖度百分比。 |
 
 \* 位置参数 FILE 或 `--fofn`，或经 `--r1` 进入 reads 模式。位置文件与 `--r1`/`--r2`
 互斥。
+
+数据库可以携带 `screen.json`（`gapit.screen/1`）声明自己的 reads/contigs 默认值。
+优先级是 **CLI 显式参数 > `screen.json` > 全局 CLI 默认值**；未显式传入的选项由数据库
+边车补齐。见 [databases.zh.md](./databases.zh.md#screenjson)。
 
 ## 输入文件
 

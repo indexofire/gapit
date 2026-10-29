@@ -89,11 +89,11 @@ def test_info_flips_to_installed_with_build_provenance(datadir: Path) -> None:
     document = collect_db_info("cje_cps", datadir)
 
     assert document.status == "installed"
-    assert document.records == 37
+    assert document.records == 42
     assert document.kind == "gene"
     assert document.typing_schema == "gapit.typing/2"
     assert document.build is not None and document.build.tool.startswith("gapit ")
-    assert document.snapshot == "2026-10-27"
+    assert document.snapshot == "2026-10-29"
     assert len(document.references) == 4
     assert len(document.caveats) >= 5
     assert document.destination == str(datadir / "cje_cps")

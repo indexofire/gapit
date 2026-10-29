@@ -71,6 +71,8 @@ def validate_reads_usage(
     min_identity: float,
     min_mapq: int,
     threads: int,
+    min_depth: float = 0.0,
+    min_relative_depth: float = 0.0,
 ) -> None:
     """Usage gates shared by the minimap2 entry points, in the frozen order
     (thresholds), before any file is touched. Every output format is legal in
@@ -82,6 +84,10 @@ def validate_reads_usage(
         usage_fail(f"--min-identity must be in [0, 100]: got {min_identity}")
     if min_mapq < 0:
         usage_fail(f"--min-mapq must be >= 0: got {min_mapq}")
+    if min_depth < 0.0:
+        usage_fail(f"--min-depth must be >= 0: got {min_depth}")
+    if not 0.0 <= min_relative_depth <= 1.0:
+        usage_fail(f"--min-relative-depth must be in [0, 1]: got {min_relative_depth}")
     if threads < 1:
         usage_fail(f"--threads must be >= 1: got {threads}")
 
@@ -99,6 +105,9 @@ def _screen_lanes(
     quiet: bool,
     debug: bool,
     all_genes: bool = False,
+    min_depth: float = 0.0,
+    min_relative_depth: float = 0.0,
+    relative_to: str = "lpxA",
 ) -> str:
     """Minimap2 engine core shared by both entry points: preset resolution,
     screening, rendering; tsv is the default format (the streaming table —
@@ -128,6 +137,9 @@ def _screen_lanes(
         debug=debug,
         min_identity=min_identity,
         min_mapq=min_mapq,
+        min_depth=min_depth,
+        min_relative_depth=min_relative_depth,
+        relative_to=relative_to,
     )
     present = sum(1 for gene in report.genes if gene.present)
     if not quiet:
@@ -139,17 +151,21 @@ def _screen_lanes(
         threads=threads,
         min_identity=min_identity,
         min_mapq=min_mapq,
+        min_depth=min_depth,
+        min_relative_depth=min_relative_depth,
+        relative_to=relative_to,
     )
     now = datetime.now(UTC)
-    reads2 = min_identity > 0.0 or min_mapq > 0
+    reads2 = min_identity > 0.0 or min_mapq > 0 or min_relative_depth > 0.0
+    relative = min_relative_depth > 0.0
     fmt = output_format if output_format is not None else OutputFormat.tsv
     if fmt is OutputFormat.tsv or fmt is OutputFormat.csv:
         # The default table: single sample, so one chunk — preamble + chunk
         # concatenate to format_reads_tsv exactly (the positional path's
         # streaming unit; here the run is one lane-union entry).
         csv = fmt is OutputFormat.csv
-        output = reads_tsv_preamble(reads2=reads2, csv=csv) + reads_tsv_chunk(
-            report, reads2=reads2, csv=csv, all_genes=all_genes
+        output = reads_tsv_preamble(reads2=reads2, relative=relative, csv=csv) + reads_tsv_chunk(
+            report, reads2=reads2, relative=relative, csv=csv, all_genes=all_genes
         )
     elif fmt is OutputFormat.md:
         output = (
@@ -183,6 +199,9 @@ def run_screen_reads(
     minid: float = 80.0,
     mincov: float = 80.0,
     all_genes: bool = False,
+    min_depth: float = 0.0,
+    min_relative_depth: float = 0.0,
+    relative_to: str = "lpxA",
 ) -> str:
     """Screen FASTQ reads or assembly FASTA given as already-split per-lane
     --r1/--r2 file lists (the CLI owns the comma-splitting; MCP passes arrays
@@ -193,7 +212,9 @@ def run_screen_reads(
     Returns the rendered output."""
     if aligner is AlignerEnum.blastn:
         usage_fail("--aligner blastn is not available for --r1/--r2 reads input")
-    validate_reads_usage(min_breadth, min_identity, min_mapq, threads)
+    validate_reads_usage(
+        min_breadth, min_identity, min_mapq, threads, min_depth, min_relative_depth
+    )
     reject_blastn_thresholds(minid, mincov, "--r1/--r2")
     lanes = _pair_read_lanes(r1, r2)
     for path in [r1_path for r1_path, _ in lanes] + [
@@ -213,6 +234,9 @@ def run_screen_reads(
         quiet,
         debug,
         all_genes=all_genes,
+        min_depth=min_depth,
+        min_relative_depth=min_relative_depth,
+        relative_to=relative_to,
     )
 
 
@@ -235,6 +259,9 @@ def run_screen_assemblies(
     minid: float = 80.0,
     mincov: float = 80.0,
     all_genes: bool = False,
+    min_depth: float = 0.0,
+    min_relative_depth: float = 0.0,
+    relative_to: str = "lpxA",
 ) -> str:
     """Screen positional assembly FASTA file(s) with the minimap2 engine
     (--aligner minimap2): every input must be FASTA(.gz) content — FASTQ
@@ -244,7 +271,9 @@ def run_screen_assemblies(
     blastn thresholds --minid/--mincov are rejected here instead of silently
     ignored. A nonzero --min-identity/--min-mapq turns on gapit.reads/2
     filtering.     Returns the rendered output."""
-    validate_reads_usage(min_breadth, min_identity, min_mapq, threads)
+    validate_reads_usage(
+        min_breadth, min_identity, min_mapq, threads, min_depth, min_relative_depth
+    )
     if fofn is not None:
         usage_fail("--fofn is not available with --aligner minimap2")
     if jobs != 1:
@@ -273,4 +302,7 @@ def run_screen_assemblies(
         quiet,
         debug,
         all_genes=all_genes,
+        min_depth=min_depth,
+        min_relative_depth=min_relative_depth,
+        relative_to=relative_to,
     )

@@ -22,7 +22,8 @@ gapit db build NAME FASTA [OPTIONS]
 | `--dbtype` | `nucl` or `prot` | Force the molecule type (default: auto-detect from the sequences). |
 | `--kind` / `-k` | `gene` or `cluster` | Force the database kind (default: auto-detect from the input suffix; a disagreement is a usage error). |
 | `--typing` / `-T` | path | `gapit.typing/1` or `/2` scoring spec: validated, copied into the db as `typing.json`, recorded in its manifest. |
-| `--floors` / `-F` | path | `gapit.floors/1` per-gene identity floors for reads-mode presence: validated, copied into the db as `floors.json` (gene builds only). |
+| `--floors` / `-F` | path | `gapit.floors/1` per-gene identity floors for reads + contigs: validated, copied into the db as `floors.json` (gene builds only). |
+| `--screen` / `-S` | path | `gapit.screen/1` per-database reads/contigs defaults: validated, copied into the db as `screen.json` (gene builds only). |
 | `--datadir` | path | Database directory (default: `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`). |
 | `--description` | text | Default product for records whose FASTA header has no description text. |
 | `--force` | flag | Overwrite the database if it already exists. |

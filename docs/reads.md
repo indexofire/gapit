@@ -135,6 +135,9 @@ to the wildcard path only.
 | `--min-breadth` | float | `90.0` | Minimum %breadth for presence. |
 | `--min-identity` | float | `0.0` (off) | Minimum %identity per alignment (0–100); any nonzero value turns on [gapit.reads/2](#filtering-alignments-by-identity-and-mapq-gapitreads2) filtering. |
 | `--min-mapq` | int | `0` (off) | Minimum MAPQ per alignment; any nonzero value turns on gapit.reads/2 filtering. |
+| `--min-depth` | float | `0.0` (off) | Minimum mean depth for presence. |
+| `--min-relative-depth` | float | `0.0` (off) | Minimum gene:control mean-depth ratio (0..1); see [relative-depth gate](#relative-depth). |
+| `--relative-to` | str | `lpxA` | Control gene for `--min-relative-depth`. |
 | `--db` | str | required | Database to screen against (datadir subdir). No default — pick one explicitly (`gapit db list`). |
 | `--datadir` | path | `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db` | Database directory. |
 | `--threads` | int | `1` | minimap2 worker threads. |
@@ -143,7 +146,7 @@ to the wildcard path only.
 | `--debug` | flag | off | Verbose stderr diagnostics; echoes the minimap2 command line. |
 | `--format` | tsv\|csv\|json\|md | `tsv` | Output format. Reads default to the streaming tsv table (csv = comma spelling) on every path; `--format json` is the agent's single `gapit.reads/1`(+`/2`) document, `--format md` the Markdown form. |
 
-`--minid` and `--mincov` do NOT apply to reads mode. Presence is decided by breadth only.
+`--minid` and `--mincov` do NOT apply to reads mode. Without depth gating, presence is decided by breadth (and the optional identity/MAPQ/database floors); `--min-depth` and `--min-relative-depth` add the abundance gate. Database-side defaults can fill `--min-identity`, `--min-mapq`, `--min-depth`, and the relative-depth controls (see [databases.md](./databases.md#screenjson)).
 
 ## Choosing `--read-type`
 
@@ -364,6 +367,12 @@ genes_found: 1
 ```
 
 ## Per-gene identity floors (gapit.floors/1, database-side)
+
+Floors apply in **both** modes: reads mode drops sub-floor alignments before
+aggregation; contig mode post-filters BLAST hits after the global `--minid`.
+Set contig `--minid` to the lowest floor in the document and let the floor
+enforce the higher per-gene threshold (the cje_cps panel searches at 80,
+default floor 90, lpxA/HS12 80).
 
 `--min-identity` is a per-run decision. Sometimes the right decision belongs to the
 database: a curated panel knows which of its genes sit inside a homologous family and
@@ -767,3 +776,31 @@ you need gene-family answers from many assemblies quickly.
   (hundreds of nt and up); lower `--min-breadth` for tiny dbs.
 - **Gzip input.** `.gz` files work for FASTQ and FASTA alike; input detection peeks through the
   gzip wrapper, and minimap2 decompresses natively.
+
+## Relative-depth presence gate (`--min-relative-depth`) {#relative-depth}
+
+Breadth and identity answer "is the gene there?"; depth answers "is it a
+trace or a real component of this sample?". A single read can cover a short
+amplicon completely, so an absolute read count is the wrong gate — the same
+10 reads mean 10% of a 100× sample and 100% of a 10× sample.
+
+The gate compares each gene's mean depth with a **control gene** (default
+`lpxA`, the panel's single-copy positive control):
+
+```bash
+gapit screen -d cje_cps -1 R1.fq.gz -2 R2.fq.gz \
+  --min-relative-depth 0.10 --relative-to lpxA
+```
+
+- `--min-relative-depth R` (0..1, default 0 = off): present requires
+  `gene_depth / control_depth >= R`. `0.10` = 10%.
+- `--relative-to GENE` (default `lpxA`): the control gene. A missing control
+  with relative gating on makes every call absent — the positive-control gate
+  must not silently pass everything.
+- `--min-depth D` (default 0 = off): an independent absolute floor.
+- The tsv table appends a `DEPTH_RATIO` column (gene:control depth as a
+  percentage) when relative gating is active. The control row is `100.00`. The curated cje_cps panel also ships `lpxA_2` (C. coli lpxA), so the control survives an explicit `-I 90` on C. coli templates.
+
+Databases can ship these defaults in `screen.json`; see
+[databases.md](./databases.md#screenjson).
+CLI flags always override the database defaults.

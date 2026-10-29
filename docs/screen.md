@@ -43,12 +43,20 @@ targeted usage error pointing at `--db`.
 | `--min-breadth` | `-b` | float | `90.0` | *Reads mode.* Minimum %breadth for presence. |
 | `--min-identity` | `-I` | float | `0.0` | *Reads mode.* Minimum %identity per alignment, `0 <= x <= 100`; `0` = off. Any nonzero value emits `gapit.reads/2` ([./outputs.md](./outputs.md)). |
 | `--min-mapq` | `-M` | int | `0` | *Reads mode.* Minimum MAPQ per alignment; `0` = off. Any nonzero value emits `gapit.reads/2`. |
+| `--min-depth` | `-e` | float | `0.0` | *Reads mode.* Minimum mean depth for presence; `0` = off. |
+| `--min-relative-depth` | `-R` | float | `0.0` | *Reads mode.* Minimum gene:control mean-depth ratio (`0 <= x <= 1`); `0` = off. |
+| `--relative-to` | `-r` | str | `lpxA` | *Reads mode.* Control gene for `--min-relative-depth`. |
 | `--min-gene-cov` | `-g` | float | `90.0` | *Cluster databases only.* Minimum %coverage for a gene `present` verdict. |
 | `--min-gene-id` | `-G` | float | `90.0` | *Cluster databases only.* Minimum %identity for a gene `present` verdict. |
 | `--min-cluster-cov` | `-C` | float | `96.0` | *Cluster databases only.* Minimum locus %coverage for a best-locus call. |
 
 \* Positional FILEs or `--fofn`, or reads mode via `--r1`. Positional files and `--r1`/`--r2`
 are mutually exclusive.
+
+A database may ship `screen.json` (`gapit.screen/1`) with its own reads/contigs
+defaults. Precedence is **CLI flag > `screen.json` > global CLI default**; options you
+did not pass are filled from the database sidecar. See
+[databases.md](./databases.md#screenjson).
 
 ## Input files
 

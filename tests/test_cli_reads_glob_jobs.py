@@ -226,6 +226,9 @@ def test_output_midbatch_failure_persists_already_written_samples(
         debug: bool = False,
         min_identity: float = 0.0,
         min_mapq: int = 0,
+        min_depth: float = 0.0,
+        min_relative_depth: float = 0.0,
+        relative_to: str = "lpxA",
     ) -> ReadsReport:
         names = {path.name for lane in lanes for path in lane if path is not None}
         if any(name.startswith("s2_") for name in names):
@@ -239,6 +242,9 @@ def test_output_midbatch_failure_persists_already_written_samples(
             debug=debug,
             min_identity=min_identity,
             min_mapq=min_mapq,
+            min_depth=min_depth,
+            min_relative_depth=min_relative_depth,
+            relative_to=relative_to,
         )
 
     monkeypatch.setattr(screening_reads_positional, "screen_reads", fail_s2)
@@ -334,6 +340,9 @@ def test_sample1_emits_before_slow_sample2_completes(
         debug: bool = False,
         min_identity: float = 0.0,
         min_mapq: int = 0,
+        min_depth: float = 0.0,
+        min_relative_depth: float = 0.0,
+        relative_to: str = "lpxA",
     ) -> ReadsReport:
         report = real(
             lanes,
@@ -344,6 +353,9 @@ def test_sample1_emits_before_slow_sample2_completes(
             debug=debug,
             min_identity=min_identity,
             min_mapq=min_mapq,
+            min_depth=min_depth,
+            min_relative_depth=min_relative_depth,
+            relative_to=relative_to,
         )
         names = {path.name for lane in lanes for path in lane if path is not None}
         if any(name.startswith("s2_") for name in names):

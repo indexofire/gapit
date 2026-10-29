@@ -4,9 +4,9 @@
   "vendor": "gapit-curated (Poly 2015; CC0 + NCBI public domain)",
   "dbtype": "nucl",
   "kind": "gene",
-  "snapshotted": "2026-10-27",
+  "snapshotted": "2026-10-29",
   "license": "CC0 (paper) + public domain (NCBI/GenBank accessions)",
-  "note": "36 CPS amplicon targets + lpxA control; extracted from the GenBank accessions listed in Poly et al. 2015, PLoS ONE 10(12):e0144349 (Table 3). The cje_cps typing asset follows the paper's Table 4 patterns, with HS4/HS16/HS64 complex rules and actual amplicon-presence floors; see docs/databases.md.",
+  "note": "36 CPS amplicon targets + lpxA control; extracted from the GenBank accessions listed in Poly et al. 2015, PLoS ONE 10(12):e0144349 (Table 3). The cje_cps typing asset follows the paper's Table 4 patterns, with HS4/HS16/HS64 complex rules and actual amplicon-presence floors. Curated additions (2026-10-29): HS45_2..HS45_5 (four distinct 89.06-93.75% HS45 alleles) and lpxA_2 (C. coli lpxA), floors.json (default identity 90%, lpxA/HS12 80%), and screen.json (reads MAPQ 20, min depth 5, 10% lpxA relative-depth gate; contigs merge-fragments).",
   "guidance": {
     "references": [
       {
@@ -37,6 +37,7 @@
       "gapit screen isolate.fa --db cje_cps --format json      # single-shot agent-readable output"
     ],
     "caveats": [
+      "HS45 89-94% alleles are curated into the panel so -I 90 detects them at ~100%; the 80.47% C. coli repeat is not an HS45 allele and is excluded by the 90% floor. HS37 83% hits are oxidoreductase cross-reactions, not HS37 alleles; the 90% default floor removes them.",
       "47 Penner serotypes collapse into 35 capsule types: the panel calls types and complexes, not individual serotypes. HS4 complex (HS4/13/43/50/62/65), HS6/7, HS8/17, HS23/36, HS33/35 and HS5/31 share their CPS locus; resolving inside a complex needs antisera or cgMLST.",
       "Shared amplicons are biology, not BLAST noise: the HS45 band also appears in the HS5/31, HS32 and HS60 loci, the HS15 band in HS58, and only the HS52 band separates HS16 from HS64. The scheme declares those as full multi-band exact_set profiles; a lone HS45 call means 'HS45-like amplicon', not the HS45 serotype.",
       "lpxA is the panel's positive-control gate, not a speciation test: the gate opens on any screen row that survives --minid/--mincov (80/80 by default), so a C. coli template can open it. Klena 2004 discriminated the four species with a multiplex in which lpxA is one component; here it only says the assay worked and the template is Campylobacter-like.",

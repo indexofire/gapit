@@ -123,13 +123,24 @@ reads 模式：`./reads.md`。
 
 ## 什么是逐基因一致性下限（floors）？
 
-数据库侧的 `floors.json`（`gapit.floors/1`）为 reads 模式的存在判定声明每个基因的
-最小比对一致性：低于下限的比对在广度/深度聚合之前被丢弃，于是"接近但不完全相同"
+数据库侧的 `floors.json`（`gapit.floors/1`）为 reads 模式和 contig 模式的存在判定
+声明每个基因的最小比对一致性：低于下限的比对在广度/深度聚合之前被丢弃，于是"接近但不完全相同"
 的同源基因不再过量判定。催生它的真实案例：内置 `ecoli_dec` 面板中的 SPATE 同源基因
 `pic` 在约 86.6% 一致性、97.6% 广度时越过了 90% 存在阈值，而 blastn contig 路径
 正确地拒绝了它；随库发布的下限（`pic` 90）让 reads 模式与之一致。用 `gapit db
 build --floors FILE` 安装，或直接把文件放进数据库目录；没有该文件的数据库筛查输出
 与之前逐字节一致。细节：`./reads.md` 和 `./databases.md`。
+
+## 什么是每数据库筛查默认值？
+
+不同参考集需要不同阈值：62 bp 的 amplicon、857 bp 的基因、带 `lpxA` 对照的面板
+不可能共用一套全局 identity/MAPQ/depth 规则。数据库可以携带 `screen.json`
+（`gapit.screen/1`）声明自己的 reads/contigs 默认值（identity 预过滤、MAPQ、
+depth、相对深度对照、contig identity/coverage、merge-fragments）。优先级是
+CLI 显式参数 > `screen.json` > 全局默认值。内置 `cje_cps` 使用 MAPQ 20、depth 5、
+10% `lpxA` 相对深度门控，以及 `floors.json`（默认 90%，`lpxA`/`HS12` 80%）。
+用 `gapit db build NAME INPUT --screen FILE` 安装；细节见
+`./databases.zh.md#screenjson`。
 
 ## 这个 "MISSING_DEPENDENCY" 错误是什么？
 

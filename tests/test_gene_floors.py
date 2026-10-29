@@ -21,6 +21,7 @@ from gapit.gene_floors import (
     read_floors,
     validate_floors,
 )
+from gapit.hits import Hit
 from gapit.paf import PafRecord, filter_alignments
 from gapit.reads import aggregate_coverage
 
@@ -242,3 +243,45 @@ def test_floors_and_min_identity_are_conjunctive() -> None:
     filtered = filter_alignments(rows, min_identity=95.0)
     gated = apply_gene_floors(filtered, GeneFloors(genes={"geneA": 90.0}), default_db="db")
     assert [entry.qname for entry in gated] == ["r96"]
+
+
+def hit(gene: str, identity_pct: float, *, sequence: str = "contig1") -> Hit:
+    """A minimal contig-mode Hit for the gene-floor post-filter."""
+    return Hit(
+        sequence=sequence,
+        start=1,
+        end=100,
+        strand="+",
+        gene=gene,
+        database="db",
+        accession="ACC",
+        product="product",
+        function="RES",
+        s_start=1,
+        s_end=100,
+        s_len=100,
+        coverage_map="===============",
+        gap_openings=0,
+        gaps=0,
+        identity_pct=identity_pct,
+        coverage_pct=100.0,
+        aligned_len=100,
+    )
+
+
+def test_hit_floors_apply_to_contig_mode() -> None:
+    """Given default 90 and lpxA floor 80, When contig hits arrive at 89 and
+    84, Then the 89% gene drops while lpxA survives — the BLAST global minid
+    is only the search floor, the per-gene floor is the verdict."""
+    from gapit.gene_floors import apply_hit_floors
+
+    floors = GeneFloors(default=90.0, genes={"lpxA": 80.0})
+    kept = apply_hit_floors([hit("HS45", 89.0), hit("lpxA", 84.0)], floors)
+    assert [entry.gene for entry in kept] == ["lpxA"]
+
+
+def test_hit_floors_keep_row_at_the_floor() -> None:
+    from gapit.gene_floors import apply_hit_floors
+
+    kept = apply_hit_floors([hit("HS45", 90.0)], GeneFloors(genes={"HS45": 90.0}))
+    assert len(kept) == 1

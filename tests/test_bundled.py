@@ -153,9 +153,10 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert cje_cps.metadata.vendor.startswith("gapit-curated (Poly 2015")
     assert cje_cps.metadata.dbtype == "nucl"
     assert cje_cps.metadata.kind == "gene"
-    assert cje_cps.metadata.snapshotted == "2026-10-27"
+    assert cje_cps.metadata.snapshotted == "2026-10-29"
     assert cje_cps.typing_path is not None
-    assert cje_cps.floors_path is None
+    assert cje_cps.floors_path is not None
+    assert cje_cps.screen_path is not None
     ecoli_dec = by_name["ecoli_dec"]
     assert ecoli_dec.metadata.vendor == "gapit-curated (public-domain sources)"
     assert ecoli_dec.metadata.dbtype == "nucl"
@@ -201,7 +202,7 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     locked mechanically across all eight bundles (record counts pinned;
     the vp_ok cluster snapshot's bare locus ids are trivially clean)."""
     typed_counts = {
-        "cje_cps": 37,
+        "cje_cps": 42,
         "ecoli_dec": 16,
         "lm_doumith": 5,
         "vc_serogroup": 3,

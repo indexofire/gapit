@@ -86,3 +86,41 @@ def test_cje_cps_penner_calls(tmp_path: Path, genes: list[str], phenotype: str) 
     sample = tmp_path / "sample.fa"
     _write_sample(sample, genes)
     assert _call(sample, datadir, tmp_path) == phenotype
+
+
+def test_bundled_hs45_alleles_floors_and_screen_defaults() -> None:
+    """The curated panel carries the 89-94% HS45 alleles, a 90% default
+    identity floor (lpxA/HS12 at 80%), and per-database reads defaults that
+    keep MAPQ 20 + a 10% lpxA relative-depth gate."""
+    bundled = find_bundled("cje_cps")
+    assert bundled is not None
+    accessions = {
+        decode_seqid(record.id, default_db="cje_cps").accession
+        for record in iter_fasta(bundled.sequences_path)
+    }
+    assert {"HS45_2", "HS45_3", "HS45_4", "HS45_5"} <= accessions
+    floors = json.loads((bundled.path / "floors.json").read_text(encoding="utf-8"))
+    assert floors["default"] == 90.0
+    assert floors["genes"] == {"lpxA": 80.0, "HS12": 80.0}
+    screen = json.loads((bundled.path / "screen.json").read_text(encoding="utf-8"))
+    assert screen["reads"]["min_mapq"] == 20
+    assert screen["reads"]["min_relative_depth"] == 0.10
+    assert screen["contigs"]["merge_fragments"] is True
+
+
+def test_hs45_divergent_allele_is_detected_with_default_floors(tmp_path: Path) -> None:
+    """Given the HS45_2 allele added to the panel, When the default screen
+    runs (no --minid override), Then the allele clears the 90% floor and the
+    panel calls HS45 — the reason the allele was curated."""
+    bundled = find_bundled("cje_cps")
+    assert bundled is not None
+    by_accession = {
+        decode_seqid(record.id, default_db="cje_cps").accession: record.sequence
+        for record in iter_fasta(bundled.sequences_path)
+    }
+    sample = tmp_path / "hs45_2.fa"
+    sample.write_text(
+        f">lpxA\n{by_accession['AL111168.1:251030-251821']}\n>HS45_2\n{by_accession['HS45_2']}\n",
+        encoding="utf-8",
+    )
+    assert _call(sample, tmp_path / "datadir", tmp_path) == "HS45"

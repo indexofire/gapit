@@ -62,6 +62,9 @@ def run_screen_reads_positional(
     emit: Emit | None = None,
     all_genes: bool = False,
     stdout_emit: bool = False,
+    min_depth: float = 0.0,
+    min_relative_depth: float = 0.0,
+    relative_to: str = "lpxA",
 ) -> str:
     """Screen positional FASTQ file(s) as auto-paired samples: one minimap2
     run per lane, per-sample union, one files[] entry per sample (reads[]
@@ -72,7 +75,9 @@ def run_screen_reads_positional(
     Returns the full output for the caller to echo (MCP contract), and when
     ``emit`` is given also hands each rendered chunk to it as soon as the
     chunk exists (module docstring)."""
-    validate_reads_usage(min_breadth, min_identity, min_mapq, threads)
+    validate_reads_usage(
+        min_breadth, min_identity, min_mapq, threads, min_depth, min_relative_depth
+    )
     reject_blastn_thresholds(minid, mincov, "positional reads")
     if jobs < 1:
         usage_fail(f"--jobs must be >= 1: got {jobs}")
@@ -109,6 +114,9 @@ def run_screen_reads_positional(
             debug=debug,
             min_identity=min_identity,
             min_mapq=min_mapq,
+            min_depth=min_depth,
+            min_relative_depth=min_relative_depth,
+            relative_to=relative_to,
         )
         present = sum(1 for gene in report.genes if gene.present)
         if task_id is None and not quiet:
@@ -137,9 +145,13 @@ def run_screen_reads_positional(
         threads=threads,
         min_identity=min_identity,
         min_mapq=min_mapq,
+        min_depth=min_depth,
+        min_relative_depth=min_relative_depth,
+        relative_to=relative_to,
     )
     now = datetime.now(UTC)
-    reads2 = min_identity > 0.0 or min_mapq > 0
+    reads2 = min_identity > 0.0 or min_mapq > 0 or min_relative_depth > 0.0
+    relative = min_relative_depth > 0.0
     fmt = output_format if output_format is not None else OutputFormat.tsv
     with screen_progress(samples, quiet=quiet) as (bar, task_id):
         chunks: list[str] = []
@@ -174,18 +186,26 @@ def run_screen_reads_positional(
             first = True
             for report in iter_reports():
                 if header_pending:
-                    sink(reads_tsv_preamble(reads2=reads2, csv=csv))
+                    sink(reads_tsv_preamble(reads2=reads2, relative=relative, csv=csv))
                     if separator:
                         sink(separator)
                     header_pending = False
                 if not first and separator:
                     sink(separator)
                 first = False
-                sink(reads_tsv_chunk(report, reads2=reads2, csv=csv, all_genes=all_genes))
+                sink(
+                    reads_tsv_chunk(
+                        report,
+                        reads2=reads2,
+                        relative=relative,
+                        csv=csv,
+                        all_genes=all_genes,
+                    )
+                )
             if separator:
                 sink(separator)
             if header_pending and not chunks:
-                sink(reads_tsv_preamble(reads2=reads2, csv=csv))
+                sink(reads_tsv_preamble(reads2=reads2, relative=relative, csv=csv))
         else:
             render = render_reads2_json if reads2 else render_reads_json
             sink(render(list(iter_reports()), params, now=now))

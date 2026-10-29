@@ -124,6 +124,9 @@ reads 模式走同一条 `gapit screen` 命令；以下是适用的参数（转�
 | `--min-breadth` | float | `90.0` | 判定存在的最小广度百分比。 |
 | `--min-identity` | float | `0.0`（关闭） | 单条比对的最小一致性百分比（0-100）；任意非零值开启 gapit.reads/2 过滤（见下文）。 |
 | `--min-mapq` | int | `0`（关闭） | 单条比对的最小 MAPQ；任意非零值开启 gapit.reads/2 过滤。 |
+| `--min-depth` | float | `0.0`（关闭） | 判定存在的最小平均深度。 |
+| `--min-relative-depth` | float | `0.0`（关闭） | 基因:对照基因平均深度比的最小值（0..1）；见[相对深度门控](#relative-depth)。 |
+| `--relative-to` | str | `lpxA` | `--min-relative-depth` 的对照基因。 |
 | `--db` | str | 必填 | 用于筛查的数据库（数据目录的子目录）。没有默认值 —— 请显式选择（`gapit db list`）。 |
 | `--datadir` | path | `$GAPIT_DATADIR`，然后 `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db` | 数据库目录。 |
 | `--threads` | int | `1` | minimap2 工作线程数。 |
@@ -132,7 +135,10 @@ reads 模式走同一条 `gapit screen` 命令；以下是适用的参数（转�
 | `--debug` | 开关 | 关闭 | 详细的 stderr 诊断；回显 minimap2 命令行。 |
 | `--format` | tsv\|csv\|json\|md | `tsv` | 输出格式。所有路径的 reads 默认输出流式 tsv 表格（csv = 逗号拼写）；`--format json` 是给 agent 的单个 `gapit.reads/1`(+`/2`) 文档，`--format md` 是 Markdown 形式。 |
 
-`--minid` 和 `--mincov` 不适用于 reads 模式。存在与否只由广度决定。
+`--minid` 和 `--mincov` 不适用于 reads 模式。未开启深度门控时，存在与否由广度
+（以及可选的 identity/MAPQ/数据库下限）决定；`--min-depth` 与
+`--min-relative-depth` 增加丰度门控。数据库可通过 `screen.json` 提供这些选项的
+默认值（见 [databases.zh.md](./databases.zh.md#screenjson)），CLI 显式参数仍然优先。
 
 ## 选择 `--read-type`
 
@@ -229,7 +235,32 @@ reads 模式的存在判定默认只看广度，这会对同源基因家族过�
 同源基因 ~85-92% 被丢弃）；原始 ONT reads 的真比对更嘈杂，可降到 90 左右。数据库里
 有重复或倍增的基因拷贝、广度在拷贝间分摊时，用 `--min-mapq 20` 或更高。
 
-### 实战示例：同源夹具
+### 相对深度门控（`--min-relative-depth`） {#relative-depth}
+
+广度和一致性回答“基因在不在”；深度回答“它是样本的真实组分还是痕量污染”。一条
+read 就能完整覆盖短 amplicon，所以绝对 reads 数不是好的门控——同样的 10 条 reads
+在 100× 样本里只有 10%，在 10× 样本里却是 100%。
+
+门控比较每个基因的平均深度与**对照基因**（默认 `lpxA`，面板的单拷贝阳性对照）：
+
+```bash
+gapit screen -d cje_cps -1 R1.fq.gz -2 R2.fq.gz \
+  --min-relative-depth 0.10 --relative-to lpxA
+```
+
+- `--min-relative-depth R`（0..1，默认 0 = 关闭）：判定 present 要求
+  `gene_depth / control_depth >= R`。`0.10` = 10%。
+- `--relative-to GENE`（默认 `lpxA`）：对照基因。相对门控开启但对照基因缺失时，
+  所有判定为 absent——阳性对照的缺失不能静默放行全部基因。
+- `--min-depth D`（默认 0 = 关闭）：独立的绝对深度下限。
+- 相对门控开启时 tsv 追加 `DEPTH_RATIO` 列（基因:对照深度百分比），对照行是
+  `100.00`。
+
+数据库可以在 `screen.json` 里声明这些默认值；CLI 显式参数优先。`lpxA` 在本项目
+117/117 个 assemblies 中每个样本恰好 1 个命中，可作为相对深度分母；但它的 depth 会
+受复制起点/覆盖度影响，因此只用比值，不用绝对拷贝数。
+
+## 实战示例：同源夹具
 
 仓库夹具确定性地复现了这个失败与修正
 （`tests/data/reads2_db/homologs` + `tests/data/reads2`）：数据库有一条 600 nt 的
@@ -362,8 +393,10 @@ schema 为 `gapit.floors/1`（用 `gapit schema floors` 内省）：
   同源序列因此塌缩到存在阈值之下，不再误报。
 - 下限是**数据库驱动的可选开启**：CLI 契约没有任何变化，不带边车的数据库输出与
   之前逐字节一致——既有数据库和已发布的输出 schema（`gapit.reads/1`、
-  `gapit.reads/2`）都不受影响。blastn contig 管线从不读取 floors；它的
-  `--minid` 本就按一致性过滤。
+  `gapit.reads/2`）都不受影响。
+- floors 现在也应用于 **contig 模式**：BLAST 仍用全局 `--minid` 搜索，命中后再按
+  基因 floor 过滤。把 `--minid` 设为文档中最低的 floor，让 floor 执行更高的逐基因
+  阈值（`cje_cps` 用 80 搜索、默认 floor 90、`lpxA`/`HS12` 80）。
 - floors 与 `--min-identity` 是合取关系：两者同时生效时，一条比对必须同时通过
   基因下限和全局过滤（逐行取更严者）。
 - 安装方式：`gapit db build NAME genes.fa --floors floors.json`——先校验
@@ -372,7 +405,7 @@ schema 为 `gapit.floors/1`（用 `gapit schema floors` 内省）：
   读取。详见
   [databases.zh.md](./databases.zh.md#floorsjson)。
 
-### 实战示例：`pic` 的 SPATE 假阳性（内置 `ecoli_dec`）
+## 实战示例：`pic` 的 SPATE 假阳性（内置 `ecoli_dec`）
 
 分离株 26ECO0084 携带一个与面板 `pic` 基因约 86.6% 一致的 SPATE 家族同源序列。
 reads 模式下，该同源序列的比对仍覆盖了基因长度的 97.59%，广度判存在因此报出了
