@@ -13,6 +13,8 @@ theme:
     - navigation.top
     - navigation.sections
     - content.code.copy
+  palette:
+    primary: orange
 
 # search must be declared explicitly (and before i18n) so mkdocs-material keeps
 # it; i18n then localizes and deduplicates it per language. reconfigure_material
