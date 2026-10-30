@@ -49,7 +49,7 @@ def test_rename_gene_database_rewrites_records_headers_and_manifest(
     """Given an installed gene database, When renamed, Then the receipt names
     the new database, the old directory is gone, and every record, header, and
     manifest carries the new name while the sequences survive byte-for-byte."""
-    _gene_db_from_bundle("lm_doumith", datadir, "old_lm")
+    _gene_db_from_bundle("lmo_sero", datadir, "old_lm")
     before = {
         (decode_seqid(record.id, default_db="old_lm").gene, record.sequence)
         for record in iter_fasta(datadir / "old_lm" / "sequences")
@@ -91,10 +91,10 @@ def test_rename_gene_database_rewrites_records_headers_and_manifest(
 def test_renamed_gene_database_still_screens_and_types(datadir: Path) -> None:
     """Given a renamed typed gene database, When the two-stage pipeline runs,
     Then the screen names the new database and typing still designates."""
-    _gene_db_from_bundle("lm_doumith", datadir, "old_lm")
+    _gene_db_from_bundle("lmo_sero", datadir, "old_lm")
     renamed = runner.invoke(app, ["db", "rename", "old_lm", "lm_panel", "--datadir", str(datadir)])
     assert renamed.exit_code == 0, renamed.stderr
-    bundled = find_bundled("lm_doumith")
+    bundled = find_bundled("lmo_sero")
     assert bundled is not None
     sample = datadir.parent / "sample.fa"
     sample.write_text(
@@ -135,20 +135,30 @@ def test_rename_cluster_database_copies_artifacts_and_restamps_manifest(
     """Given an installed cluster database, When renamed, Then the locus FASTA
     and feature table travel verbatim (their headers carry no db name), the
     manifest and its record count move, and screening still works."""
-    materialize_bundled("vp_ok", datadir, quiet=True)
-    sequences_bytes = (datadir / "vp_ok" / "sequences").read_bytes()
+    materialize_bundled("vpa_ok", datadir, quiet=True)
+    sequences_bytes = (datadir / "vpa_ok" / "sequences").read_bytes()
 
-    result = runner.invoke(app, ["db", "rename", "vp_ok", "vpa_ok", "--datadir", str(datadir)])
+    result = runner.invoke(
+        app, ["db", "rename", "vpa_ok", "vpa_renamed", "--datadir", str(datadir)]
+    )
 
     assert result.exit_code == 0, result.stderr
     receipt = json.loads(result.stdout)
-    assert (receipt["db"], receipt["kind"], receipt["records"]) == ("vpa_ok", "cluster", 195)
-    assert not (datadir / "vp_ok").exists()
-    assert (datadir / "vpa_ok" / "sequences").read_bytes() == sequences_bytes
-    assert (datadir / "vpa_ok" / "features.json").is_file()
-    manifest = read_manifest(datadir / "vpa_ok" / "gapit-manifest.json")
-    assert (manifest.name, manifest.kind, manifest.header_format) == ("vpa_ok", "cluster", "plain")
-    assert (datadir / "vpa_ok" / "sequences.nin").is_file()
+    assert (receipt["db"], receipt["kind"], receipt["records"]) == (
+        "vpa_renamed",
+        "cluster",
+        195,
+    )
+    assert not (datadir / "vpa_ok").exists()
+    assert (datadir / "vpa_renamed" / "sequences").read_bytes() == sequences_bytes
+    assert (datadir / "vpa_renamed" / "features.json").is_file()
+    manifest = read_manifest(datadir / "vpa_renamed" / "gapit-manifest.json")
+    assert (manifest.name, manifest.kind, manifest.header_format) == (
+        "vpa_renamed",
+        "cluster",
+        "plain",
+    )
+    assert (datadir / "vpa_renamed" / "sequences.nin").is_file()
 
 
 def test_rename_refuses_a_missing_source(datadir: Path) -> None:
@@ -162,8 +172,8 @@ def test_rename_refuses_a_missing_source(datadir: Path) -> None:
 def test_rename_refuses_an_existing_target_unless_forced(datadir: Path) -> None:
     """Given an installed target, Then exit 4 DB_ALREADY_EXISTS; --force
     replaces it and still leaves exactly one copy of each name."""
-    _gene_db_from_bundle("lm_doumith", datadir, "one")
-    _gene_db_from_bundle("lm_doumith", datadir, "two")
+    _gene_db_from_bundle("lmo_sero", datadir, "one")
+    _gene_db_from_bundle("lmo_sero", datadir, "two")
 
     refused = runner.invoke(app, ["db", "rename", "one", "two", "--datadir", str(datadir)])
     assert refused.exit_code == 4
@@ -193,7 +203,7 @@ def test_rename_preserves_the_info_sidecar(datadir: Path) -> None:
     Then the sidecar travels to the new name (the rebuild copies sidecars)."""
     import json
 
-    _gene_db_from_bundle("lm_doumith", datadir, "old_lm")
+    _gene_db_from_bundle("lmo_sero", datadir, "old_lm")
     sidecar = datadir / "old_lm" / "info.json"
     sidecar.write_text(json.dumps({"caveats": ["keep me"]}), encoding="utf-8")
 

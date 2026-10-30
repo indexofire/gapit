@@ -87,6 +87,11 @@ class Provider:
     # usage recipe is synthesized from the database kind, so providers usually
     # declare references + caveats only.
     guidance: DbGuidance = field(default_factory=DbGuidance)
+    # Optional post-transform hook: (download workdir, staged db dir) -> None.
+    # Providers that need non-record sidecars (typing/screen/floors documents,
+    # raw protein FASTA for a companion command) write them here BEFORE the
+    # manifest is stamped. The generic record pipeline stays unchanged.
+    finalize: Callable[[Path, Path], None] | None = None
 
 
 def security_note(message: str) -> None:
@@ -258,6 +263,8 @@ def fetch_provider(
             records = tuple(
                 _normalize_record(record, provider.dbtype) for record in provider.transform(workdir)
             )
+            if provider.finalize is not None:
+                provider.finalize(workdir, build_dir)
         kept, dropped = _dedupe(records)
         note(quiet, f"read {len(records)} records from {provider.name}")
         note(quiet, f"dropped {dropped} duplicate sequence(s), kept {len(kept)}")

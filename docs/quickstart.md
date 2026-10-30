@@ -12,8 +12,8 @@ Run everything from the repo root with the gapit environment on PATH
 ## 1. Set up a throwaway datadir
 
 The fixture db at `tests/data/db/tinyamr` holds three short AMR genes: `tetA`,
-`blaTEM-1`, and `sul1`. Copy it into a temp datadir and let `gapit setupdb` bootstrap
-the rest: it materializes the eight bundled databases that ship in the wheel (zero
+`blaTEM-1`, and `sul1`. Copy it into a temp datadir and let `gapit db setup` bootstrap
+the rest: it materializes the seven bundled databases that ship in the wheel (zero
 network — including `ecoli_dec`, which you will type with in section 4) and indexes
 everything, no `makeblastdb` by hand:
 
@@ -21,7 +21,7 @@ everything, no `makeblastdb` by hand:
 mkdir -p /tmp/gapit-quickstart/db
 cp -r tests/data/db/tinyamr /tmp/gapit-quickstart/db/
 export GAPIT_DATADIR=/tmp/gapit-quickstart/db
-gapit setupdb
+gapit db setup
 ```
 
 All progress goes to stderr; one run prints (trimmed):
@@ -29,7 +29,7 @@ All progress goes to stderr; one run prints (trimmed):
 ```console
 gapit: materializing bundled database ecoh (597 records) into /tmp/gapit-quickstart/db
 gapit: materializing bundled database ecoli_dec (17 records) into /tmp/gapit-quickstart/db
-gapit: materializing bundled database lm_doumith (5 records) into /tmp/gapit-quickstart/db
+gapit: materializing bundled database lmo_sero (5 records) into /tmp/gapit-quickstart/db
 ...
 Indexed ecoli_dec (17 sequences, nucl)
 Indexed tinyamr (3 sequences, nucl)
@@ -47,9 +47,8 @@ argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée
 ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	installed (8373)	nucl	-	NCBI
 ```
 
-(twenty-four catalog databases in total: the eight bundled ones now read `installed` in
-this datadir, the sixteen fetch-only registry entries read `available` until you
-`gapit db fetch` them)
+(twenty-five catalog databases in total: the seven bundled ones now read `installed` in
+this datadir, the rest read `available` until you `gapit db fetch` them)
 
 ## 2. Screen a contig file
 
@@ -94,7 +93,7 @@ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.5"
+    "version": "0.6.6"
   },
   "created_at": "2026-09-19T01:11:06Z",
   "params": {

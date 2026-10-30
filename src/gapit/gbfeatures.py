@@ -133,6 +133,7 @@ class _Record:
     def __init__(self, locus_id: str) -> None:
         self.id = locus_id
         self.notes: list[str] = []
+        self.serovar = ""
         self.cds: list[tuple[str, dict[str, list[str]]]] = []
         self.sequence: list[str] = []
         # the feature between its header line and the next feature/section
@@ -144,6 +145,7 @@ class _Record:
         """Route the finished feature into notes (source) or cds (CDS)."""
         if self.key == "source":
             self.notes.extend(self.quals.get("note", ()))
+            self.serovar = _first(self.quals.get("serovar", [])) or self.serovar
         elif self.key == "CDS":
             self.cds.append((self.location, dict(self.quals)))
         self.key, self.location, self.quals = "", "", {}
@@ -202,6 +204,10 @@ class _Record:
                 locus=self.id,
             )
         label = self._note_back("locus")
+        if label == self.id and self.serovar:
+            # NCBI O-serogroup records carry /serovar="O1 Inaba" rather than
+            # the kaptive-style O locus note; use it as the display label.
+            label = self.serovar
         kind = self._note_back("type")
         return LocusSequence(
             features=LocusFeatures(

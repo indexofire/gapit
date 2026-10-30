@@ -124,6 +124,8 @@ def test_info_reads_a_user_database_sidecar(datadir: Path) -> None:
     sidecar.write_text(
         json.dumps(
             {
+                "description": "In-house AMR panel",
+                "vendor": "gapit(Hangzhou CDC)",
                 "references": [{"citation": "Smith 2026, Lab panel (unpublished)"}],
                 "caveats": ["unpublished panel: validate before reporting"],
                 "usage": ["gapit screen x.fa --db labgenes"],
@@ -136,6 +138,8 @@ def test_info_reads_a_user_database_sidecar(datadir: Path) -> None:
 
     assert document.status == "installed"
     assert document.kind == "gene"
+    assert document.description == "In-house AMR panel"
+    assert document.vendor == "gapit(Hangzhou CDC)"
     assert document.source_urls == ("local",)
     assert [reference.citation for reference in document.references] == [
         "Smith 2026, Lab panel (unpublished)"

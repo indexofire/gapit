@@ -78,12 +78,12 @@ def test_discover_databases_sorted_by_name(tmp_path: Path) -> None:
     assert [db.name for db in discover_databases(tmp_path)] == ["alpha", "mid", "zeta"]
 
 
-def test_list_databases_without_setupdb_raises_not_indexed(tmp_path: Path) -> None:
-    """Given a discovered db without a BLAST index, When listed, Then DatabaseError
-    (exit 4) pointing at `gapit setupdb`."""
+def test_list_databases_without_reindex_raises_not_indexed(tmp_path: Path) -> None:
+    """Given a discovered db without a BLAST index, When listed without reindex, Then DatabaseError
+    (exit 4) pointing at `gapit db setup`."""
     write_sequences(tmp_path / "tinyamr")
     with pytest.raises(DatabaseError) as excinfo:
-        list_databases(tmp_path, setupdb=False)
+        list_databases(tmp_path, reindex=False)
     assert "not indexed" in str(excinfo.value)
-    assert "gapit setupdb" in str(excinfo.value)
+    assert "gapit db setup" in str(excinfo.value)
     assert excinfo.value.exit_code == 4

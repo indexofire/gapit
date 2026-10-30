@@ -2,8 +2,8 @@
 
 Commands that need input print their full help when invoked with no
 arguments at all (click ``no_args_is_help``) instead of erroring; commands
-that are VALID with no arguments (`mcp`, `setupdb`, `db list`,
-`db outdated`) must keep running bare. Two stdin-aware commands keep their
+that are VALID with no arguments (`mcp`, `db list`, `db outdated`,
+`db setup`) must keep running bare. Two stdin-aware commands keep their
 own tty-guarded bare-help instead: `typing` and `summary` read a piped
 table when stdin is not a terminal (their suites pin the probe).
 Flag-present-but-input-missing invocations keep their typed usage-error
@@ -97,7 +97,7 @@ def test_db_fetch_flag_without_name_is_usage_error(
 def test_valid_no_arg_commands_do_not_print_help(tmp_path: Path) -> None:
     """Given commands that are valid with no arguments, When run bare, Then
     they execute (or emit their own documented envelopes) without ever
-    printing help: db list, db outdated, setupdb."""
+    printing help: db list, db outdated, db setup."""
     empty = tmp_path / "datadir"
     empty.mkdir()
 
@@ -112,7 +112,7 @@ def test_valid_no_arg_commands_do_not_print_help(tmp_path: Path) -> None:
     assert "DATADIR_EMPTY" in outdated.stderr
     assert HELP_SENTINEL not in _normalized(outdated)
 
-    setup = runner.invoke(app, ["setupdb", "--datadir", str(empty)])
+    setup = runner.invoke(app, ["db", "setup", "--datadir", str(empty)])
     assert setup.exit_code == 0
     assert HELP_SENTINEL not in _normalized(setup)
 

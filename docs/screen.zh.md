@@ -9,7 +9,7 @@
 
 ## 选项
 
-转写自 `gapit screen --help`（gapit 0.6.5）。标记为 *reads 模式* 的参数只在传入
+转写自 `gapit screen --help`（gapit 0.6.6）。标记为 *reads 模式* 的参数只在传入
 `--r1`/`--r2` 时生效，记录在 [./reads.md](./reads.md)。
 
 每个选项都接受 **短** 列给出的单横线短形式（例如 `--db` 的 `-d`）；长形式仍是规范写法，
@@ -79,7 +79,7 @@ contig。FASTA 与 FASTQ 位置参数混用是用法错误，错误信息点名 
 ```console
 $ mkdir -p /tmp/gapit-demo/datadir/tinyamr
 $ cp tests/data/db/tinyamr/sequences /tmp/gapit-demo/datadir/tinyamr/sequences
-$ gapit setupdb --datadir /tmp/gapit-demo/datadir
+$ gapit db setup --datadir /tmp/gapit-demo/datadir
 Indexed tinyamr (3 sequences, nucl)
 $ export GAPIT_DATADIR=/tmp/gapit-demo/datadir
 ```
@@ -111,7 +111,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.5"
+    "version": "0.6.6"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {

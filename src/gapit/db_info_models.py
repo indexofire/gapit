@@ -31,8 +31,15 @@ class DbGuidance(BaseModel, frozen=True):
     (unresolvable subtypes, documented assay artefacts, threshold effects);
     ``usage`` is the how-to (the commands that constitute the intended
     workflow). Both serialize as plain string lists.
+
+    A local ``info.json`` sidecar may additionally declare the listing
+    ``description`` and ``vendor`` (for example a curated database whose
+    provenance is an in-house build rather than a fetchable provider).
+    Bundled guidance normally leaves both empty.
     """
 
     references: tuple[DbReference, ...] = ()
     caveats: tuple[str, ...] = ()
     usage: tuple[str, ...] = ()
+    description: str = ""
+    vendor: str = ""

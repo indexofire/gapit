@@ -1,0 +1,4603 @@
+{
+  "schema": "gapit.typing/2",
+  "schemes": [
+    {
+      "name": "o_group",
+      "rules": [
+        {
+          "model": "cluster_match",
+          "phenotype": "O1",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594800:gmhD@1",
+              "LC594800:manC@1387",
+              "LC594800:algC@2787"
+            ]
+          },
+          "notes": [
+            "O locus O1 Inaba; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O1",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594801:gmhD@1",
+              "LC594801:manC@1387",
+              "LC594801:algC@2787"
+            ]
+          },
+          "notes": [
+            "O locus O1 Ogawa; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O2",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594901:gmhD@1",
+              "LC594901:wzz@1164",
+              "LC594901:tnp@2495"
+            ]
+          },
+          "notes": [
+            "O locus O2; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O3",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594919:gmhD@1",
+              "LC594919:wzz@1156",
+              "LC594919:ascD@2450"
+            ]
+          },
+          "notes": [
+            "O locus O3; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O4",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594928:gmhD@1",
+              "LC594928:wzz@1163",
+              "LC594928:wecB@2381"
+            ]
+          },
+          "notes": [
+            "O locus O4; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O5",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594939:gmhD@1",
+              "LC594939:wzz@1165",
+              "LC594939:wecB@2386"
+            ]
+          },
+          "notes": [
+            "O locus O5; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O6",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594950:gmhD@1",
+              "LC594950:rmlB@1178",
+              "LC594950:rmlA@2266"
+            ]
+          },
+          "notes": [
+            "O locus O6; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O7",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594961:gmhD@1",
+              "LC594961:wzz@1156",
+              "LC594961:wecB@2442"
+            ]
+          },
+          "notes": [
+            "O locus O7; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O8",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594970:gmhD@1",
+              "LC594970:vpg248@1325",
+              "LC594970:vpg249@2062"
+            ]
+          },
+          "notes": [
+            "O locus O8; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O9",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594981:gmhD@1",
+              "LC594981:wzz@1163",
+              "LC594981:wecB@2392"
+            ]
+          },
+          "notes": [
+            "O locus O9; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O10",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594802:gmhD@1",
+              "LC594802:wzz@1156",
+              "LC594802:iolG@2301"
+            ]
+          },
+          "notes": [
+            "O locus O10; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O11",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594812:gmhD@1",
+              "LC594812:wzz@1165",
+              "LC594812:rmlB@2346"
+            ]
+          },
+          "notes": [
+            "O locus O11; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O12",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594819:gmhD@1",
+              "LC594819:rmlB@1178",
+              "LC594819:rmlA@2266"
+            ]
+          },
+          "notes": [
+            "O locus O12; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O13",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594830:gmhD@1",
+              "LC594830:wzz@1164",
+              "LC594830:tnp@2503"
+            ]
+          },
+          "notes": [
+            "O locus O13; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O14",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594839:gmhD@1",
+              "LC594839:rmlB@1178",
+              "LC594839:rmlA@2266"
+            ]
+          },
+          "notes": [
+            "O locus O14; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O15",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594849:gmhD@1",
+              "LC594849:wzz@1155",
+              "LC594849:wecB@2440"
+            ]
+          },
+          "notes": [
+            "O locus O15; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O16",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594860:gmhD@1",
+              "LC594860:wzz@1165",
+              "LC594860:wecB@2409"
+            ]
+          },
+          "notes": [
+            "O locus O16; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O17",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594870:gmhD@1",
+              "LC594870:wzz@1165",
+              "LC594870:tnp@2539"
+            ]
+          },
+          "notes": [
+            "O locus O17; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O18",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594881:gmhD@1",
+              "LC594881:wzz@1164",
+              "LC594881:wecB@2408"
+            ]
+          },
+          "notes": [
+            "O locus O18; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O19",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594891:gmhD@1",
+              "LC594891:rmlB@1178",
+              "LC594891:rmlA@2266"
+            ]
+          },
+          "notes": [
+            "O locus O19; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O21",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594910:gmhD@1",
+              "LC594910:wzz@1170",
+              "LC594910:rmlB@2357"
+            ]
+          },
+          "notes": [
+            "O locus O21; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O22",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594911:gmhD@1",
+              "LC594911:wbfA@1038",
+              "LC594911:wbfB@2635"
+            ]
+          },
+          "notes": [
+            "O locus O22; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O23",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594912:gmhD@1",
+              "LC594912:wzz@1165",
+              "LC594912:wbpA@2422"
+            ]
+          },
+          "notes": [
+            "O locus O23; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O24",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594913:gmhD@1",
+              "LC594913:wzz@1156",
+              "LC594913:iolG@2301"
+            ]
+          },
+          "notes": [
+            "O locus O24; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O25",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594914:gmhD@1",
+              "LC594914:wzz@1156",
+              "LC594914:rmlB@2322"
+            ]
+          },
+          "notes": [
+            "O locus O25; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O26",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594915:gmhD@1",
+              "LC594915:wzz@1147",
+              "LC594915:pglF@2358"
+            ]
+          },
+          "notes": [
+            "O locus O26; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O27",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594916:gmhD@1",
+              "LC594916:wzz@1170",
+              "LC594916:tnp@2666"
+            ]
+          },
+          "notes": [
+            "O locus O27; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O28",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594917:gmhD@1",
+              "LC594917:rmlB@1185",
+              "LC594917:rmlA@2273"
+            ]
+          },
+          "notes": [
+            "O locus O28; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O29",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594918:gmhD@1",
+              "LC594918:wzz@1164",
+              "LC594918:tnp@2470"
+            ]
+          },
+          "notes": [
+            "O locus O29; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O31",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594920:gmhD@1",
+              "vpg539",
+              "LC594920:wzz@1291"
+            ]
+          },
+          "notes": [
+            "O locus O31; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O33",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594921:gmhD@1",
+              "LC594921:manC@1388",
+              "LC594921:algC@2788"
+            ]
+          },
+          "notes": [
+            "O locus O33; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O34",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594922:gmhD@1",
+              "LC594922:rmlB@1133",
+              "LC594922:rmlA@2250"
+            ]
+          },
+          "notes": [
+            "O locus O34; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O35",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594923:gmhD@1",
+              "LC594923:wzz@1097",
+              "LC594923:wecB@2471"
+            ]
+          },
+          "notes": [
+            "O locus O35; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O36",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594924:gmhD@1",
+              "LC594924:iolG@1309",
+              "LC594924:wbpA@2368"
+            ]
+          },
+          "notes": [
+            "O locus O36; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O37",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594925:gmhD@1",
+              "vpg547",
+              "LC594925:mshA@2501"
+            ]
+          },
+          "notes": [
+            "O locus O37; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O38",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594926:gmhD@1",
+              "LC594926:wzz@1164",
+              "LC594926:iolG@2442"
+            ]
+          },
+          "notes": [
+            "O locus O38; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O39",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594927:gmhD@1",
+              "LC594927:rmlB@1178",
+              "LC594927:rmlA@2266"
+            ]
+          },
+          "notes": [
+            "O locus O39; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O40",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594929:gmhD@1",
+              "LC594929:wzz@1162",
+              "LC594929:tnp@2468"
+            ]
+          },
+          "notes": [
+            "O locus O40; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O41",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594930:gmhD@1",
+              "LC594930:wzy@1494",
+              "vpg145"
+            ]
+          },
+          "notes": [
+            "O locus O41; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O42",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594931:gmhD@1",
+              "LC594931:wzz@1165",
+              "LC594931:rmlB@2345"
+            ]
+          },
+          "notes": [
+            "O locus O42; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O43",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594932:gmhD@1",
+              "LC594932:wzz@1170",
+              "LC594932:rmlB@2351"
+            ]
+          },
+          "notes": [
+            "O locus O43; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O44",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594933:gmhD@1",
+              "LC594933:wzz@1124",
+              "LC594933:rmlB@2338"
+            ]
+          },
+          "notes": [
+            "O locus O44; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O45",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594934:gmhD@1",
+              "LC594934:wbfA@1038",
+              "LC594934:wbfB@2642"
+            ]
+          },
+          "notes": [
+            "O locus O45; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O46",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594935:gmhD@1",
+              "LC594935:wzz@1170",
+              "LC594935:rmlB@2354"
+            ]
+          },
+          "notes": [
+            "O locus O46; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O47",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594936:gmhD@1",
+              "LC594936:rmlB@1178",
+              "LC594936:rmlA@2266"
+            ]
+          },
+          "notes": [
+            "O locus O47; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O48",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594937:gmhD@1",
+              "LC594937:wzz@1168",
+              "LC594937:tnp@2531"
+            ]
+          },
+          "notes": [
+            "O locus O48; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O49",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594938:gmhD@1",
+              "LC594938:manC@1388",
+              "LC594938:algC@2787"
+            ]
+          },
+          "notes": [
+            "O locus O49; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O50",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594940:gmhD@1",
+              "LC594940:wzz@1160",
+              "LC594940:tnp@2468"
+            ]
+          },
+          "notes": [
+            "O locus O50; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O51",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594941:gmhD@1",
+              "LC594941:wzz@1165",
+              "LC594941:pglF@2414"
+            ]
+          },
+          "notes": [
+            "O locus O51; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O52",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594942:gmhD@1",
+              "LC594942:wzz@1162",
+              "LC594942:rmlB@2346"
+            ]
+          },
+          "notes": [
+            "O locus O52; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O53",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594943:gmhD@1",
+              "LC594943:wbfA@1038",
+              "LC594943:wbfB@2663"
+            ]
+          },
+          "notes": [
+            "O locus O53; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O54",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594944:gmhD@1",
+              "LC594944:wzz@1165",
+              "LC594944:rmlB@2348"
+            ]
+          },
+          "notes": [
+            "O locus O54; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O55",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594945:gmhD@1",
+              "LC594945:manC@1388",
+              "LC594945:algC@2788"
+            ]
+          },
+          "notes": [
+            "O locus O55; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O56",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594946:gmhD@1",
+              "LC594946:pglF@1842",
+              "LC594946:wbeE@3042"
+            ]
+          },
+          "notes": [
+            "O locus O56; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O57",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594947:gmhD@1",
+              "LC594947:wbfA@1038",
+              "LC594947:wbfB@2663"
+            ]
+          },
+          "notes": [
+            "O locus O57; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O58",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594948:gmhD@1",
+              "LC594948:rmlB@1179",
+              "LC594948:rmlA@2267"
+            ]
+          },
+          "notes": [
+            "O locus O58; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O59",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594949:gmhD@1",
+              "fepE",
+              "vpg608"
+            ]
+          },
+          "notes": [
+            "O locus O59; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O60",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594951:gmhD@1",
+              "LC594951:manC@1387",
+              "LC594951:algC@2787"
+            ]
+          },
+          "notes": [
+            "O locus O60; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O61",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594952:gmhD@1",
+              "LC594952:wbfA@1038",
+              "LC594952:wbfB@2649"
+            ]
+          },
+          "notes": [
+            "O locus O61; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O62",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594953:gmhD@1",
+              "LC594953:wbfA@1038",
+              "LC594953:wbfB@2635"
+            ]
+          },
+          "notes": [
+            "O locus O62; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O63",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594954:gmhD@1",
+              "LC594954:manC@1387",
+              "LC594954:algC@2786"
+            ]
+          },
+          "notes": [
+            "O locus O63; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O64",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594955:gmhD@1",
+              "LC594955:wzz@1165",
+              "LC594955:capD@2473"
+            ]
+          },
+          "notes": [
+            "O locus O64; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O65",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594956:gmhD@1",
+              "LC594956:wzz@1163",
+              "LC594956:rmlB@2344"
+            ]
+          },
+          "notes": [
+            "O locus O65; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O66",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594957:gmhD@1",
+              "LC594957:rmlB@1182",
+              "LC594957:rmlA@2270"
+            ]
+          },
+          "notes": [
+            "O locus O66; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O67",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594958:gmhD@1",
+              "LC594958:manC@1387",
+              "LC594958:algC@2787"
+            ]
+          },
+          "notes": [
+            "O locus O67; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O68",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594959:gmhD@1",
+              "LC594959:wzz@1164",
+              "LC594959:rmlB@2354"
+            ]
+          },
+          "notes": [
+            "O locus O68; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O69",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594960:gmhD@1",
+              "LC594960:wzz@1164",
+              "LC594960:tnp@2538"
+            ]
+          },
+          "notes": [
+            "O locus O69; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O70",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594962:gmhD@1",
+              "LC594962:wzz@1163",
+              "LC594962:tnp@2398"
+            ]
+          },
+          "notes": [
+            "O locus O70; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O72",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594963:gmhD@1",
+              "LC594963:wzz@1170",
+              "LC594963:iolG@2429"
+            ]
+          },
+          "notes": [
+            "O locus O72; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O74",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594964:gmhD@1",
+              "LC594964:wzz@1165",
+              "LC594964:wbpA@2424"
+            ]
+          },
+          "notes": [
+            "O locus O74; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O75",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594965:gmhD@1",
+              "LC594965:wbfA@1038",
+              "LC594965:wbfB@2691"
+            ]
+          },
+          "notes": [
+            "O locus O75; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O76",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594966:gmhD@1",
+              "LC594966:rmlB@1185",
+              "LC594966:rmlA@2273"
+            ]
+          },
+          "notes": [
+            "O locus O76; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O77",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594967:gmhD@1",
+              "LC594967:manC@1388",
+              "LC594967:algC@2787"
+            ]
+          },
+          "notes": [
+            "O locus O77; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O78",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594968:gmhD@1",
+              "LC594968:wzz@1164",
+              "LC594968:wzz@1987"
+            ]
+          },
+          "notes": [
+            "O locus O78; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O79",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594969:gmhD@1",
+              "LC594969:tnp@1328",
+              "LC594969:wzx@2557"
+            ]
+          },
+          "notes": [
+            "O locus O79; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O80",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594971:gmhD@1",
+              "LC594971:wzz@1163",
+              "LC594971:rmlB@2344"
+            ]
+          },
+          "notes": [
+            "O locus O80; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O81",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594972:gmhD@1",
+              "LC594972:rmlB@1178",
+              "LC594972:rmlA@2266"
+            ]
+          },
+          "notes": [
+            "O locus O81; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O82",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594973:gmhD@1",
+              "LC594973:wzz@1160",
+              "LC594973:tnp@2466"
+            ]
+          },
+          "notes": [
+            "O locus O82; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O83",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594974:gmhD@1",
+              "LC594974:wzz@1163",
+              "LC594974:tnp@3886"
+            ]
+          },
+          "notes": [
+            "O locus O83; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O84",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594975:gmhD@1",
+              "LC594975:wzz@1163",
+              "LC594975:rmlB@2347"
+            ]
+          },
+          "notes": [
+            "O locus O84; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O85",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594976:gmhD@1",
+              "LC594976:wzz@1164",
+              "LC594976:rmlB@2348"
+            ]
+          },
+          "notes": [
+            "O locus O85; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O86",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594977:gmhD@1",
+              "LC594977:wzz@1165",
+              "LC594977:pglF@2453"
+            ]
+          },
+          "notes": [
+            "O locus O86; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O87",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594978:gmhD@1",
+              "LC594978:rmlB@1185",
+              "LC594978:rmlA@2273"
+            ]
+          },
+          "notes": [
+            "O locus O87; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O88",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594979:gmhD@1",
+              "LC594979:wzz@1170",
+              "LC594979:iolG@2429"
+            ]
+          },
+          "notes": [
+            "O locus O88; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O89",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594980:gmhD@1",
+              "LC594980:wzz@1162",
+              "LC594980:rmlB@2345"
+            ]
+          },
+          "notes": [
+            "O locus O89; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O90",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594982:gmhD@1",
+              "LC594982:manC@1387",
+              "LC594982:algC@2787"
+            ]
+          },
+          "notes": [
+            "O locus O90; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O91",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594983:gmhD@1",
+              "LC594983:rmlB@1182",
+              "LC594983:rmlA@2270"
+            ]
+          },
+          "notes": [
+            "O locus O91; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O92",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594984:gmhD@1",
+              "LC594984:wbfA@1053",
+              "LC594984:wbfB@2654"
+            ]
+          },
+          "notes": [
+            "O locus O92; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O93",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594985:gmhD@1",
+              "vpg672",
+              "LC594985:tnp@1565"
+            ]
+          },
+          "notes": [
+            "O locus O93; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O94",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594986:gmhD@1",
+              "LC594986:wzz@1165",
+              "LC594986:tnp@2485"
+            ]
+          },
+          "notes": [
+            "O locus O94; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O95",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594987:gmhD@1",
+              "LC594987:tnp@1347",
+              "LC594987:pglF@3121"
+            ]
+          },
+          "notes": [
+            "O locus O95; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O96",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594988:gmhD@1",
+              "LC594988:wzz@1165",
+              "LC594988:rmlB@2343"
+            ]
+          },
+          "notes": [
+            "O locus O96; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O97",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594989:gmhD@1",
+              "LC594989:wzz@1148",
+              "LC594989:iolG@2203"
+            ]
+          },
+          "notes": [
+            "O locus O97; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O98",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594990:gmhD@1",
+              "LC594990:wzz@1163",
+              "LC594990:tnp@2498"
+            ]
+          },
+          "notes": [
+            "O locus O98; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O99",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594991:gmhD@1",
+              "LC594991:wzz@1163",
+              "LC594991:rmlB@2347"
+            ]
+          },
+          "notes": [
+            "O locus O99; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O100",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594803:gmhD@1",
+              "LC594803:wzz@1163",
+              "vpg250"
+            ]
+          },
+          "notes": [
+            "O locus O100; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O102",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594804:gmhD@1",
+              "LC594804:manC@1387",
+              "LC594804:algC@2786"
+            ]
+          },
+          "notes": [
+            "O locus O102; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O103",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594805:gmhD@1",
+              "LC594805:rmlB@1178",
+              "LC594805:rmlA@2266"
+            ]
+          },
+          "notes": [
+            "O locus O103; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O104",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594806:gmhD@1",
+              "LC594806:wzz@1166",
+              "LC594806:rmlB@2347"
+            ]
+          },
+          "notes": [
+            "O locus O104; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O105",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594807:gmhD@1",
+              "LC594807:wbfA@1038",
+              "LC594807:wbfB@2642"
+            ]
+          },
+          "notes": [
+            "O locus O105; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O106",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594808:gmhD@1",
+              "LC594808:rmlB@1178",
+              "LC594808:rmlA@2266"
+            ]
+          },
+          "notes": [
+            "O locus O106; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O107",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594809:gmhD@1",
+              "LC594809:wbfA@1038",
+              "LC594809:wbfB@2638"
+            ]
+          },
+          "notes": [
+            "O locus O107; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O108",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594810:gmhD@1",
+              "LC594810:wzz@1163",
+              "LC594810:rmlB@2268"
+            ]
+          },
+          "notes": [
+            "O locus O108; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O109",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594811:gmhD@1",
+              "LC594811:wzz@1163",
+              "LC594811:tnp@2555"
+            ]
+          },
+          "notes": [
+            "O locus O109; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O110",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594813:gmhD@1",
+              "LC594813:wzz@1166",
+              "LC594813:iolG@2439"
+            ]
+          },
+          "notes": [
+            "O locus O110; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O111",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594814:gmhD@1",
+              "LC594814:wbfA@1046",
+              "LC594814:wbfA@2064"
+            ]
+          },
+          "notes": [
+            "O locus O111; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O112",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594815:gmhD@1",
+              "LC594815:wbfA@1038",
+              "LC594815:wbfB@2635"
+            ]
+          },
+          "notes": [
+            "O locus O112; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O113",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594816:gmhD@1",
+              "LC594816:wzz@1160",
+              "LC594816:rmlB@2343"
+            ]
+          },
+          "notes": [
+            "O locus O113; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O118",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594817:gmhD@1",
+              "LC594817:wzz@1164",
+              "LC594817:tnp@2462"
+            ]
+          },
+          "notes": [
+            "O locus O118; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O119",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594818:gmhD@1",
+              "LC594818:rmlB@1185",
+              "LC594818:rmlA@2273"
+            ]
+          },
+          "notes": [
+            "O locus O119; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O120",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594820:gmhD@1",
+              "LC594820:rmlB@1185",
+              "LC594820:rmlA@2273"
+            ]
+          },
+          "notes": [
+            "O locus O120; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O121",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594821:gmhD@1",
+              "LC594821:wzz@1170",
+              "LC594821:rmlB@2341"
+            ]
+          },
+          "notes": [
+            "O locus O121; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O122",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594822:gmhD@1",
+              "LC594822:wzz@1163",
+              "LC594822:tnp@2555"
+            ]
+          },
+          "notes": [
+            "O locus O122; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O123",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594823:gmhD@1",
+              "LC594823:rmlB@1182",
+              "LC594823:rmlA@2270"
+            ]
+          },
+          "notes": [
+            "O locus O123; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O124",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594824:gmhD@1",
+              "LC594824:wzz@1162",
+              "LC594824:tnp@2468"
+            ]
+          },
+          "notes": [
+            "O locus O124; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O125",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594825:gmhD@1",
+              "LC594825:wbfA@1038",
+              "LC594825:wbfB@2663"
+            ]
+          },
+          "notes": [
+            "O locus O125; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O126",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594826:gmhD@1",
+              "vpg320",
+              "LC594826:mshA@2495"
+            ]
+          },
+          "notes": [
+            "O locus O126; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O127",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594827:gmhD@1",
+              "LC594827:wzz@1164",
+              "LC594827:rmlB@2365"
+            ]
+          },
+          "notes": [
+            "O locus O127; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O128",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594828:gmhD@1",
+              "LC594828:wzz@1166",
+              "LC594828:iolG@2439"
+            ]
+          },
+          "notes": [
+            "O locus O128; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O129",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594829:gmhD@1",
+              "LC594829:wzz@1164",
+              "LC594829:rmlB@2354"
+            ]
+          },
+          "notes": [
+            "O locus O129; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O130",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594831:gmhD@1",
+              "LC594831:manC@1388",
+              "LC594831:algC@2787"
+            ]
+          },
+          "notes": [
+            "O locus O130; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O131",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594832:gmhD@1",
+              "LC594832:manC@1387",
+              "LC594832:algC@2786"
+            ]
+          },
+          "notes": [
+            "O locus O131; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O132",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594833:gmhD@1",
+              "LC594833:wbfA@1038",
+              "LC594833:wbfB@2635"
+            ]
+          },
+          "notes": [
+            "O locus O132; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O133",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594834:gmhD@1",
+              "LC594834:wzz@1164",
+              "LC594834:rmlB@2345"
+            ]
+          },
+          "notes": [
+            "O locus O133; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O134",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594835:gmhD@1",
+              "LC594835:wzz@1163",
+              "LC594835:rmlB@2347"
+            ]
+          },
+          "notes": [
+            "O locus O134; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O136",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594836:gmhD@1",
+              "LC594836:wzz@1164",
+              "LC594836:wecB@2408"
+            ]
+          },
+          "notes": [
+            "O locus O136; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O137",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594837:gmhD@1",
+              "LC594837:wzz@1156",
+              "LC594837:iolG@2286"
+            ]
+          },
+          "notes": [
+            "O locus O137; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O139",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594838:gmhD@1",
+              "LC594838:wbfA@1059",
+              "LC594838:wbfB@2657"
+            ]
+          },
+          "notes": [
+            "O locus O139; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O140",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594840:gmhD@1",
+              "LC594840:manC@1387",
+              "LC594840:algC@2786"
+            ]
+          },
+          "notes": [
+            "O locus O140; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O141",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594841:gmhD@1",
+              "LC594841:wbfA@1059",
+              "LC594841:wbfB@2657"
+            ]
+          },
+          "notes": [
+            "O locus O141; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O142",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594842:gmhD@1",
+              "LC594842:wzz@1162",
+              "LC594842:rmlB@2343"
+            ]
+          },
+          "notes": [
+            "O locus O142; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O144",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594843:gmhD@1",
+              "LC594843:rmlB@1185",
+              "LC594843:rmlA@2273"
+            ]
+          },
+          "notes": [
+            "O locus O144; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O145",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594844:gmhD@1",
+              "LC594844:wzz@1124",
+              "LC594844:wecB@2416"
+            ]
+          },
+          "notes": [
+            "O locus O145; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O146",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594845:gmhD@1",
+              "LC594845:wbfA@1107",
+              "LC594845:wbfB@2954"
+            ]
+          },
+          "notes": [
+            "O locus O146; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O147",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594846:gmhD@1",
+              "LC594846:wbfA@1119",
+              "LC594846:wbfB@2812"
+            ]
+          },
+          "notes": [
+            "O locus O147; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O148",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594847:gmhD@1",
+              "LC594847:wzz@1164",
+              "LC594847:wecB@2408"
+            ]
+          },
+          "notes": [
+            "O locus O148; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O149",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594848:gmhD@1",
+              "LC594848:wzz@1165",
+              "LC594848:wecB@2383"
+            ]
+          },
+          "notes": [
+            "O locus O149; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O150",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594850:gmhD@1",
+              "LC594850:wzz@1170",
+              "LC594850:rmlB@2351"
+            ]
+          },
+          "notes": [
+            "O locus O150; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O151",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594851:gmhD@1",
+              "LC594851:wbfA@1038",
+              "LC594851:wbfB@2663"
+            ]
+          },
+          "notes": [
+            "O locus O151; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O152",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594852:gmhD@1",
+              "LC594852:wbfA@1038",
+              "LC594852:wbfB@2670"
+            ]
+          },
+          "notes": [
+            "O locus O152; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O153",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594853:gmhD@1",
+              "LC594853:wzz@1164",
+              "LC594853:rmlB@2364"
+            ]
+          },
+          "notes": [
+            "O locus O153; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O155",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594855:gmhD@1",
+              "LC594855:wbfA@1119",
+              "LC594855:wbfB@2798"
+            ]
+          },
+          "notes": [
+            "O locus O155; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O156",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594856:gmhD@1",
+              "LC594856:wzz@1148",
+              "LC594856:iolG@2203"
+            ]
+          },
+          "notes": [
+            "O locus O156; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O157",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594857:gmhD@1",
+              "LC594857:iolG@1417",
+              "LC594857:tnp@2566"
+            ]
+          },
+          "notes": [
+            "O locus O157; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O158",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594858:gmhD@1",
+              "LC594858:wbfA@1038",
+              "LC594858:wbfB@2670"
+            ]
+          },
+          "notes": [
+            "O locus O158; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O159",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594859:gmhD@1",
+              "LC594859:rmlB@1184",
+              "LC594859:rmlA@2250"
+            ]
+          },
+          "notes": [
+            "O locus O159; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O160",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594861:gmhD@1",
+              "LC594861:wbfA@1038",
+              "LC594861:wbfB@2670"
+            ]
+          },
+          "notes": [
+            "O locus O160; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O161",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594862:gmhD@1",
+              "LC594862:wbfA@1035",
+              "LC594862:wbfB@2660"
+            ]
+          },
+          "notes": [
+            "O locus O161; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O162",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594863:gmhD@1",
+              "LC594863:wzz@1160",
+              "LC594863:rmlB@2344"
+            ]
+          },
+          "notes": [
+            "O locus O162; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O163",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594864:gmhD@1",
+              "LC594864:wzz@1164",
+              "LC594864:rmlB@2348"
+            ]
+          },
+          "notes": [
+            "O locus O163; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O164",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594865:gmhD@1",
+              "LC594865:wzz@1156",
+              "LC594865:pglF@2705"
+            ]
+          },
+          "notes": [
+            "O locus O164; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O165",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594866:gmhD@1",
+              "LC594866:wbfA@1107",
+              "LC594866:wbfB@2904"
+            ]
+          },
+          "notes": [
+            "O locus O165; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O166",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594867:gmhD@1",
+              "LC594867:wbfA@1038",
+              "LC594867:wbfB@2642"
+            ]
+          },
+          "notes": [
+            "O locus O166; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O168",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594868:gmhD@1",
+              "LC594868:wzz@1170",
+              "LC594868:iolG@2429"
+            ]
+          },
+          "notes": [
+            "O locus O168; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O169",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594869:gmhD@1",
+              "LC594869:wbfA@1038",
+              "LC594869:wbfB@2663"
+            ]
+          },
+          "notes": [
+            "O locus O169; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O170",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594871:gmhD@1",
+              "LC594871:wbfA@1038",
+              "LC594871:wbfB@2670"
+            ]
+          },
+          "notes": [
+            "O locus O170; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O171",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594872:gmhD@1",
+              "LC594872:wbfA@1038",
+              "LC594872:wbfB@2635"
+            ]
+          },
+          "notes": [
+            "O locus O171; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O172",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594873:gmhD@1",
+              "LC594873:manC@1388",
+              "LC594873:algC@2788"
+            ]
+          },
+          "notes": [
+            "O locus O172; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O173",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594874:gmhD@1",
+              "LC594874:wbfA@1119",
+              "LC594874:wbfB@2812"
+            ]
+          },
+          "notes": [
+            "O locus O173; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O174",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594875:gmhD@1",
+              "LC594875:wzz@1165",
+              "LC594875:pglF@2414"
+            ]
+          },
+          "notes": [
+            "O locus O174; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O175",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594876:gmhD@1",
+              "LC594876:wzz@1170",
+              "LC594876:rmlB@2354"
+            ]
+          },
+          "notes": [
+            "O locus O175; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O176",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594877:gmhD@1",
+              "LC594877:wzz@1155",
+              "LC594877:wecB@2440"
+            ]
+          },
+          "notes": [
+            "O locus O176; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O177",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594878:gmhD@1",
+              "LC594878:wzz@1166",
+              "LC594878:rmlB@2347"
+            ]
+          },
+          "notes": [
+            "O locus O177; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O178",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594879:gmhD@1",
+              "LC594879:tnp@1292",
+              "LC594879:tnp@2403"
+            ]
+          },
+          "notes": [
+            "O locus O178; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O179",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594880:gmhD@1",
+              "LC594880:rmlB@1182",
+              "LC594880:rmlA@2270"
+            ]
+          },
+          "notes": [
+            "O locus O179; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O180",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594882:gmhD@1",
+              "LC594882:wbfA@1103",
+              "LC594882:wbfB@2884"
+            ]
+          },
+          "notes": [
+            "O locus O180; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O181",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594883:gmhD@1",
+              "LC594883:wzz@1164",
+              "LC594883:rmlB@2348"
+            ]
+          },
+          "notes": [
+            "O locus O181; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O182",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594884:gmhD@1",
+              "LC594884:wzz@1163",
+              "LC594884:tnp@2508"
+            ]
+          },
+          "notes": [
+            "O locus O182; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O183",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594885:gmhD@1",
+              "LC594885:wbfA@1038",
+              "LC594885:wbfB@2635"
+            ]
+          },
+          "notes": [
+            "O locus O183; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O184",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594886:gmhD@1",
+              "LC594886:wzz@1124",
+              "LC594886:iolG@2408"
+            ]
+          },
+          "notes": [
+            "O locus O184; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O185",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594887:gmhD@1",
+              "LC594887:wzz@1165",
+              "LC594887:wecB@2386"
+            ]
+          },
+          "notes": [
+            "O locus O185; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O186",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594888:gmhD@1",
+              "LC594888:wzz@1156",
+              "LC594888:rmlB@2322"
+            ]
+          },
+          "notes": [
+            "O locus O186; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O187",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594889:gmhD@1",
+              "LC594889:wzz@1164",
+              "LC594889:rmlB@2347"
+            ]
+          },
+          "notes": [
+            "O locus O187; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O188",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594890:gmhD@1",
+              "LC594890:wbfA@1038",
+              "LC594890:wbfB@2663"
+            ]
+          },
+          "notes": [
+            "O locus O188; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O190",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594892:gmhD@1",
+              "LC594892:wzz@1165",
+              "LC594892:rmlB@2346"
+            ]
+          },
+          "notes": [
+            "O locus O190; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O191",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594893:gmhD@1",
+              "LC594893:rmlB@1182",
+              "LC594893:rmlA@2270"
+            ]
+          },
+          "notes": [
+            "O locus O191; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O192",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594894:gmhD@1",
+              "LC594894:wzz@1284",
+              "LC594894:rmlB@2338"
+            ]
+          },
+          "notes": [
+            "O locus O192; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O193",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594895:gmhD@1",
+              "LC594895:wbfA@1103",
+              "LC594895:wbfB@2884"
+            ]
+          },
+          "notes": [
+            "O locus O193; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O196",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594897:gmhD@1",
+              "LC594897:wbfA@1064",
+              "LC594897:wbfB@2793"
+            ]
+          },
+          "notes": [
+            "O locus O196; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O197",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594898:gmhD@1",
+              "LC594898:wzz@1164",
+              "LC594898:rmlB@2347"
+            ]
+          },
+          "notes": [
+            "O locus O197; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O198",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594899:gmhD@1",
+              "LC594899:wzz@1165",
+              "LC594899:tnp@2539"
+            ]
+          },
+          "notes": [
+            "O locus O198; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O199",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594900:gmhD@1",
+              "LC594900:rmlB@1187",
+              "LC594900:rmlA@2275"
+            ]
+          },
+          "notes": [
+            "O locus O199; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O200",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594902:gmhD@1",
+              "LC594902:wzz@1165",
+              "LC594902:wbpA@2424"
+            ]
+          },
+          "notes": [
+            "O locus O200; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O204",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594903:gmhD@1",
+              "LC594903:manC@1387",
+              "LC594903:algC@2786"
+            ]
+          },
+          "notes": [
+            "O locus O204; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O205",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594904:gmhD@1",
+              "LC594904:wbfA@1107",
+              "LC594904:wbfB@2954"
+            ]
+          },
+          "notes": [
+            "O locus O205; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O206",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594905:gmhD@1",
+              "LC594905:manC@1388",
+              "LC594905:algC@2788"
+            ]
+          },
+          "notes": [
+            "O locus O206; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O207",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594906:gmhD@1",
+              "LC594906:wzz@1164",
+              "LC594906:iolG@2444"
+            ]
+          },
+          "notes": [
+            "O locus O207; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O208",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594907:gmhD@1",
+              "LC594907:wzz@1165",
+              "LC594907:rmlB@2345"
+            ]
+          },
+          "notes": [
+            "O locus O208; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O209",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594908:gmhD@1",
+              "LC594908:wzz@1164",
+              "LC594908:tnp@2630"
+            ]
+          },
+          "notes": [
+            "O locus O209; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        },
+        {
+          "model": "cluster_match",
+          "phenotype": "O210",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "LC594909:gmhD@1",
+              "LC594909:wbfA@1046",
+              "LC594909:wbfB@2761"
+            ]
+          },
+          "notes": [
+            "O locus O210; reference sequence from Murase et al. 2022 (Microb Genom 000860).",
+            "OL reference clusters are not all serologically verified; a locus match is not a confirmed O serogroup."
+          ]
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.05,
+      "fallback": "OUT",
+      "control_gene": "ompW"
+    },
+    {
+      "name": "species",
+      "rules": [
+        {
+          "model": "cluster_match",
+          "phenotype": "V. cholerae",
+          "coverage": {
+            "weight": 0.55,
+            "floor": 90.0
+          },
+          "identity": {
+            "weight": 0.25,
+            "floor": 95.0
+          },
+          "key_genes": {
+            "weight": 0.2,
+            "genes": [
+              "ompW"
+            ]
+          },
+          "notes": [
+            "ompW species control from V. cholerae N16961 (NC_002506.1); not an absolute species marker."
+          ]
+        }
+      ],
+      "cutoff": 0.9,
+      "ambiguity_margin": 0.0,
+      "fallback": "non-cholerae"
+    }
+  ]
+}

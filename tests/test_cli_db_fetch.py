@@ -315,24 +315,21 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
     assert fetch(SYN, "--datadir", str(datadir)).exit_code == 0
     fake = FakeStdout(tty=False)
     monkeypatch.setattr(sys, "stdout", fake)
-    db_list_command(datadir=datadir, as_json=False)
+    db_list_command(datadir=datadir, names_only=False, as_json=False)
     assert fake.getvalue() == (
         "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER\n"
-        f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\t-\tSynthetica\n"
-        f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\t-\tExample Org\n"
         "cje_cps\tCampylobacter jejuni Penner capsule (CPS) multiplex PCR panel\tbundled"
         "\tnucl\tcommand\tgapit-curated (Poly 2015; CC0 + NCBI public domain)\n"
         "ecoh\tE. coli O and H antigens (srst2 EcOH)\tbundled\tnucl\t-\tHolt lab (srst2)\n"
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
         "\tbundled\tnucl\tcommand\tgapit-curated (public-domain sources)\n"
-        "lm_doumith\tListeria monocytogenes serogrouping (Doumith 2004)\tbundled\tnucl\t"
+        "lmo_sero\tListeria monocytogenes serogrouping (Doumith 2004)\tbundled\tnucl\t"
         "command\tgapit-curated (public-domain INSDC sources)\n"
         "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\t-\tNCBI\n"
         "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\t-\tDTU CGE\n"
-        "vc_serogroup\tVibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed"
-        " over from gside\tbundled\tnucl\tcommand\tgapit-curated (NCBI X59554.1 slice /"
-        " KY660230.1 / X00171.1)\n"
-        "vp_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
+        f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\t-\tSynthetica\n"
+        f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\t-\tExample Org\n"
+        "vpa_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
         "nucl\tintegrated\tgapit-curated (vpasero)\n"
     )
 
@@ -347,7 +344,7 @@ def test_db_list_tty_renders_rich_table_not_tsv(
     assert fetch(SYN, "--datadir", str(datadir)).exit_code == 0
     fake = FakeStdout(tty=True)
     monkeypatch.setattr(sys, "stdout", fake)
-    db_list_command(datadir=datadir, as_json=False)
+    db_list_command(datadir=datadir, names_only=False, as_json=False)
     out = fake.getvalue()
     assert "Databases" in out
     assert "installed (2)" in out

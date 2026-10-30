@@ -12,12 +12,12 @@ gapit 生来就是被程序驱动的。每个输出都以机器可读为设计�
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.5"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.6.6"}
 ```
 
-输出 schema。十六个文档可自省：`report`、`typing_result`、`reads`、`reads2`、
-`cluster`、`cluster2`、`summary`、`error`、`version`、`dblist`、`dbinfo`、
-`dboutdated`、`datadir`，外加数据库侧文档 `features`、`typing` 和 `floors`。每个都
+输出 schema。十八个文档可自省：`report`、`typing_result`、`reads`、`reads2`、
+`cluster`、`cluster2`、`summary`、`error`、`version`、`dblist`、`dbsetup`、`dbinfo`、
+`dboutdated`、`datadir`，外加数据库侧文档 `features`、`typing`、`floors` 和 `screen`。每个都
 打印完整的 JSON Schema：
 
 ```console
@@ -31,12 +31,14 @@ $ gapit schema summary         # gapit.summary/1
 $ gapit schema error           # gapit.error/1
 $ gapit schema version         # gapit.version/1
 $ gapit schema dblist          # gapit.dblist/1（数据库目录）
+$ gapit schema dbsetup         # gapit.dbsetup/1（db setup 回执）
 $ gapit schema dbinfo          # gapit.dbinfo/1（单个数据库的来源与注意事项）
 $ gapit schema dboutdated      # gapit.dboutdated/1（过期报告）
 $ gapit schema datadir         # gapit.datadir/1（解析路径/来源）
 $ gapit schema features        # gapit.features/1 (cluster db feature table)
 $ gapit schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
 $ gapit schema floors          # gapit.floors/1 (per-gene identity floors, reads mode)
+$ gapit schema screen          # gapit.screen/1（数据库筛查默认值）
 ```
 
 例如 `gapit schema version`（真实输出）：
@@ -211,6 +213,7 @@ $ gapit db list --json
 ## 工具运行时集成
 
 如果你的运行时讲 MCP，把 gapit 注册为服务器，用 `screen`、`screen_reads`、
-`summary`、`schema` 和 `db_list` 作为工具而不是子进程：`./mcp.md`。服务器也暴露
-`db` 命令（`db_fetch`、`db_build`、`db_search`、`db_outdated`），agent 可以在同一个
-会话里准备好所需数据库并完成筛查。
+`summary`、`typing`、`schema` 和 `db_list` 作为工具而不是子进程：`./mcp.md`。
+服务器也暴露 `db` 命令（`db_setup`、`db_fetch`、`db_build`、`db_search`、
+`db_outdated`），agent 可以在同一个会话里准备好数据库、完成筛查并做分型。
+`typing` 直接接受筛查表文本；W/Y 判定时其 `notes` 会指出 EX7E 后续步骤。

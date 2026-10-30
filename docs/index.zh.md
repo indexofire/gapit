@@ -18,6 +18,7 @@ gapit 筛查 contig 文件和 FASTQ reads 中的已知基因：AMR（抗微生�
 | [数据目录](./datadir.md) | datadir 解析（`db path`）、数据库结构、跨环境共享、conda/Docker 规范、安全与可复现性 |
 | [自定义数据库](./custom-db.md) | `gapit db build` 实战演练：任意 FASTA 变成可筛查的数据库，完整示例 |
 | [分型方案](./typing.md) | 两阶段判定流水线（`gapit screen` 而后 `gapit typing`）与 `gapit.typing/2`——rule/scheme 原语、六方案实战手册（Doumith、ShigaTyper、meningotype、副溶血弧菌 O/K、霍乱弧菌、DEC）、等位基因探针技巧、校准 |
+| [脑膜炎奈瑟菌血清群分型](./nme_sero.md) | `nme_sero` 数据库：血清群 + ctrA + sodC 深度内参（`gapit screen` + `gapit typing`；不含 MLST/等位基因分型） |
 | [输出](./outputs.md) | TSV/JSON/Markdown 格式、schema、错误信封、退出码 |
 | [MCP 服务器](./mcp.md) | `gapit mcp`：通过 stdio JSON-RPC 为 agent 运行时提供分析 + 数据库工具 |
 | [面向 agent 的指南](./agents.md) | 自主 agent 如何消费 gapit：schema、自省、错误处理 |
@@ -31,12 +32,12 @@ gapit 筛查 contig 文件和 FASTQ reads 中的已知基因：AMR（抗微生�
 | `gapit typing` | 从筛查结果表判定表型（typed 基因数据库） | [分型方案](./typing.md) |
 | `gapit summary` | 把一份或多份报告表汇总成基因存在/缺失矩阵 | [汇总报告](./summary.md) |
 | `gapit db fetch` | 抓取并构建数据库到数据目录（kaptive 基因簇数据库在抓取时下载） | [数据库](./databases.md) |
-| `gapit db list` | 列出已知数据库（NAME、上游 PROVIDER、安装状态） | [数据库](./databases.md) |
+| `gapit db list` | 列出已知数据库（NAME、上游 PROVIDER、安装状态）；`-n` 只输出名称 | [数据库](./databases.md) |
 | `gapit db path` | 打印解析后的数据目录（不创建） | [数据目录](./datadir.md) |
 | `gapit db install` | 校验 SHA256 后安装本地文件 | [数据库](./databases.md) |
 | `gapit db build` | 从基因 FASTA 构建数据库，或从 GBK/GFF 位点构建基因簇数据库（可选配 `--typing` 表型评分规范） | [自定义数据库](./custom-db.md) |
-| `gapit setupdb` | 为数据目录下的所有数据库构建 BLAST 索引 | 本页 |
-| `gapit schema` | 打印 gapit 输出文档的 JSON Schema（`report`、`typing_result`、`reads`、`reads2`、`cluster`、`summary`、`error`、`version`、`features`、`typing`、`floors`、`screen`） | [输出](./outputs.md) |
+| `gapit db setup` | 引导/建索引（`-a` 全部，`-d NAME` 单个；指定缺失 provider 会自动下载） | [数据目录](./datadir.md) |
+| `gapit schema` | 打印 gapit 输出文档的 JSON Schema（`report`、`typing_result`、`reads`、`reads2`、`cluster`、`summary`、`error`、`version`、`dblist`、`dbsetup`、`dboutdated`、`datadir`、`features`、`typing`、`floors`、`screen`） | [输出](./outputs.md) |
 | `gapit mcp` | 运行 MCP stdio 服务器（同时安装为 `gapit-mcp` console script） | [MCP 服务器](./mcp.md) |
 
 ## 项目文档

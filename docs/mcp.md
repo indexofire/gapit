@@ -2,8 +2,8 @@
 
 gapit ships a Model Context Protocol (MCP) stdio server that exposes the CLI as
 tools. An agent runtime can screen assemblies and reads, summarize reports,
-introspect schemas, and self-provision databases without shelling out or
-parsing terminal output. The protocol is hand-rolled newline-delimited JSON-RPC 2.0
+type screen results, introspect schemas, and self-provision databases without
+shelling out or parsing terminal output. The protocol is hand-rolled newline-delimited JSON-RPC 2.0
 with no extra dependencies: one request per line on stdin, one response per
 line on stdout.
 
@@ -30,21 +30,28 @@ the module CLI as `{"command": "gapit", "args": ["mcp"]}`.
 
 ## Tools
 
-Ten tools: four analysis tools (`screen`, `screen_reads`, `summary`, `schema`)
-and six database tools (`db_list`, `db_path`, `db_fetch`, `db_build`, `db_search`,
-`db_outdated`) that mirror `gapit db ...` exactly. `db_list`/`db_search`/
+Twelve tools: five analysis tools (`screen`, `screen_reads`, `summary`, `typing`,
+`schema`) and seven database tools (`db_list`, `db_path`, `db_setup`, `db_fetch`,
+`db_build`, `db_search`, `db_outdated`) that mirror `gapit db ...`. `db_list`/`db_search`/
 `db_outdated` are read-only (`db_list` may create an empty datadir on first
-use); `db_fetch`/`db_build` mutate the datadir. Argument lists below are
+use); `db_setup`/`db_fetch`/`db_build` mutate the datadir. Argument lists below are
 transcribed from the live `tools/list` `inputSchema` objects.
+
+`typing` accepts the screen table text directly (the `table` argument), so an
+agent can pipe `screen` with `format: "tsv"` into it without writing a file.
+For a W/Y call the typing result's `notes` carry the follow-up: run the synG
+EX7E check with `menwy`.
 
 | Tool | Arguments | Returns |
 |---|---|---|
 | `screen` | `files` (array of strings, required), `db` (string, required — no default), `minid` (number), `mincov` (number), `format` (string: `json` \| `tsv` \| `csv` \| `md`, default `json`), `aligner` (string: `blastn` \| `minimap2`, default `blastn`), `merge_fragments` (boolean, default `false`; blastn only — cross-contig fragment merging), `min_breadth` (number 0–100, default `90`; minimap2 only), `min_identity` (number 0–100, default `0`; minimap2 only), `min_mapq` (integer ≥ 0, default `0`; minimap2 only), `all_genes` (boolean; minimap2 only), `min_gene_cov` (number 0–100, default `90`; cluster dbs only), `min_gene_id` (number 0–100, default `90`; cluster dbs only), `min_cluster_cov` (number 0–100, default `96`; cluster dbs only), `datadir` (string) | Report text: `gapit.report/1` JSON by default, TSV/CSV/Markdown per `format`; `aligner minimap2` runs the reads engine and emits `gapit.reads/1`. A cluster-kind `db` emits `gapit.cluster/1`: best-locus call, per-gene verdicts, and — when the database carries a single-scheme `typing.json` — the phenotype call with its `phenotype_detail` score breakdown; a multi-scheme `typing.json` emits `gapit.cluster/2` with a `phenotypes` map of every scheme's call |
 | `screen_reads` | `r1` (array of strings, required — one path per lane), `r2` (array of strings, same count as `r1`), `read_type` (string: `sr` \| `map-ont` \| `map-hifi`, default `sr`), `min_breadth` (number 0–100, default `90`), `min_identity` (number 0–100, default `0`), `min_mapq` (integer ≥ 0, default `0`), `all_genes` (boolean), `format` (string: `json` \| `tsv` \| `csv` \| `md`, default `json`), `db` (string, required — no default), `datadir` (string) | `gapit.reads/1` JSON by default or TSV/CSV/Markdown per `format`; `min_identity`/`min_mapq` > 0 switches to `gapit.reads/2` |
 | `summary` | `files` (array of report table paths, required), `identity` (boolean), `nopath` (boolean) | `gapit.summary/1` JSON |
-| `schema` | `name` (string, required, one of `cluster`, `error`, `features`, `floors`, `reads`, `reads2`, `report`, `summary`, `typing`, `typing_result`, `version`) | The JSON Schema of that output document |
+| `typing` | `table` (string, required — screen result TSV/CSV text), `datadir` (string), `format` (string: `json` \| `tsv` \| `md`, default `json`) | `gapit.typing_result/1` JSON by default; `notes` carry follow-up guidance (W/Y → synG EX7E) |
+| `schema` | `name` (string, required, one of `report`, `reads`, `reads2`, `cluster`, `cluster2`, `summary`, `error`, `version`, `dblist`, `dbsetup`, `dboutdated`, `datadir`, `dbinfo`, `features`, `typing`, `typing_result`, `floors`, `screen`) | The JSON Schema of that output document |
 | `db_list` | `datadir` (string) | `gapit.dblist/1`: database names, install state, record counts, indexed flag |
 | `db_path` | `datadir` (string) | `gapit.datadir/1`: resolved datadir, existence, and source |
+| `db_setup` | `datadir` (string), `no_bundles` (boolean, default `false`), `names` (array of strings; default all) | `gapit.dbsetup/1`: fetched providers, materialized bundles, indexed databases |
 | `db_fetch` | `name` (string, required — a database NAME, or `all` for the card+vfdb default set), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line per database (`db`, `records`, `dbtype`, `destination`). Every database downloads from its upstream provider, so installs need network and can take minutes |
 | `db_build` | `name` (string, required), `fasta` (string, required — a LOCAL filesystem path), `tsv` (string), `dbtype` (string: `nucl` \| `prot`), `description` (string), `kind` (string: `gene` \| `cluster`), `typing` (string), `floors` (string), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line (`db`, `records`, `dbtype`, `destination`) |
 | `db_search` | `term` (string, required), `db` (string), `field` (string: `gene` \| `accession` \| `function` \| `product` \| `any`, default `any`), `exact` (boolean, default `false`), `limit` (integer ≥ 0, default `100`; `0` = unlimited), `datadir` (string) | TSV hit rows with columns `DB`, `GENE`, `ACCESSION`, `FUNCTION`, `PRODUCT`, `LENGTH` |
@@ -102,14 +109,14 @@ EOF
 Response line 1, verbatim:
 
 ```text
-{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.6.5"}}}
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.6.6"}}}
 ```
 
 Response line 2 (real output, elided in the middle; each tool carries its full
 `inputSchema`):
 
 ```text
-{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for known genes (json = gapit.report/1; aligner minimap2 = fast assembly survey emitting gapit.reads/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string"}, ... },"required":["files","db"]}}, {"name":"screen_reads","description":"Screen FASTQ reads for genes via minimap2 (json = gapit.reads/1; min_identity/min_mapq > 0 emits gapit.reads/2). Returns the rendered document.","inputSchema":{"type":"object","properties":{"r1":{"type":"array","items":{"type":"string"}},"r2":{"type":"array","items":{"type":"string"}},"read_type":{"type":"string","enum":["sr","map-ont","map-hifi"],"default":"sr"}, ... },"required":["r1","db"]}}, {"name":"summary", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
+{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for known genes (json = gapit.report/1; aligner minimap2 = fast assembly survey emitting gapit.reads/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string"}, ... },"required":["files","db"]}}, {"name":"screen_reads","description":"Screen FASTQ reads for genes via minimap2 (json = gapit.reads/1; min_identity/min_mapq > 0 emits gapit.reads/2). Returns the rendered document.","inputSchema":{"type":"object","properties":{"r1":{"type":"array","items":{"type":"string"}},"r2":{"type":"array","items":{"type":"string"}},"read_type":{"type":"string","enum":["sr","map-ont","map-hifi"],"default":"sr"}, ... },"required":["r1","db"]}}, {"name":"summary", ...}, {"name":"typing", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_path", ...}, {"name":"db_setup", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
 ```
 
 Response line 3 (real output, text content elided). The screen result rides in
@@ -125,7 +132,7 @@ the same run):
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.6.5"},
+  "tool": {"name": "gapit", "version": "0.6.6"},
   "created_at": "2026-09-19T01:15:44Z",
   "params": {"db": "tinyamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [
@@ -154,6 +161,14 @@ the same run):
 }
 ```
 
+### Typing a screen result
+
+The `typing` tool takes the screen table text directly in `table` (TSV or CSV).
+Run `screen` with `format: "tsv"`, pass `result.content[0].text` as `table`, and
+read `files[].phenotypes.<scheme>.notes`. For `nme_sero`, a W/Y call returns a
+`NEXT STEP` note naming the synG EX7E check (P = W, G = Y, S = W/Y) and the
+`menwy` follow-up, so the agent does not report W/Y as a final serogroup.
+
 ### Screening reads
 
 `screen_reads` mirrors `gapit screen --r1/--r2`: minimap2 per lane, presence
@@ -181,7 +196,7 @@ the same run):
 ```json
 {
   "schema": "gapit.reads/1",
-  "tool": {"name": "gapit", "version": "0.6.5"},
+  "tool": {"name": "gapit", "version": "0.6.6"},
   "created_at": "2026-09-22T00:07:35Z",
   "params": {
     "db": "tinyreads",
@@ -256,7 +271,7 @@ hit is the gene the agent just built the database from (real output):
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.6.5"},
+  "tool": {"name": "gapit", "version": "0.6.6"},
   "created_at": "2026-09-20T13:38:39Z",
   "params": {"db": "myamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [

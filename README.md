@@ -1,5 +1,7 @@
 # gapit
 
+[English](README.md) | [中文](README.zh.md)
+
 Mass screening of contigs and reads for known genes — AMR, virulence, serotype, plasmid
 replicons, species targets, or any custom database. An agent-first Python reimplementation
 of [abricate](https://github.com/tseemann/abricate): byte-compatible TSV plus first-class
@@ -66,6 +68,9 @@ gapit screen contigs.fa --db ncbi --format md
 # (typed gene databases — the bundled ecoli_dec carries the dual-scheme DEC panel)
 gapit screen isolates.fa --db ecoli_dec --output dec.tsv
 gapit typing dec.tsv
+# Neisseria meningitidis: serogroup + ctrA + sodC control (no MLST)
+gapit db fetch nme_sero
+gapit screen isolate.fna -d nme_sero
 
 # Screen FASTQ reads; --read-type picks the minimap2 preset
 gapit screen --r1 sample_R1.fastq.gz --r2 sample_R2.fastq.gz --read-type sr --db card
@@ -74,7 +79,7 @@ gapit screen --r1 ont_reads.fastq.gz --db ncbi --read-type map-ont --format json
 # Summarize report tables into a gene presence/absence matrix
 gapit summary *.tsv
 
-# Databases: eight ship in-wheel and work instantly; the rest download from upstream on fetch
+# Databases: seven ship in-wheel and work instantly; the rest download from upstream on fetch
 gapit db fetch all         # default set (card, vfdb)
 gapit db fetch ncbi
 gapit db list
@@ -95,16 +100,16 @@ A database is a directory under the datadir, resolved from `--datadir`, then
 `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`
 (use `gapit db path` to inspect it). On a fresh install
 `gapit db list` bootstraps the datadir and lists the catalog (bundled rows ready for
-first use); `gapit setupdb` creates it and materializes all eight bundled databases.
-Twenty-three databases are
-built into the catalog — twelve gene providers, seven kaptive cluster providers, and
-eight bundled snapshots (`cje_cps`, `ecoh`, `ecoli_dec`, `lm_doumith`, `ncbi`, `resfinder`,
-`vc_serogroup`, `vp_ok`; `ecoh`/`ncbi`/`resfinder` are also provider names). Every
+first use); `gapit db setup` creates it and materializes all seven bundled databases.
+Twenty-five databases are
+built into the catalog — thirteen gene providers, eight cluster providers, and
+seven bundled snapshots (`cje_cps`, `ecoh`, `ecoli_dec`, `lmo_sero`, `ncbi`, `resfinder`,
+`vpa_ok`; `ecoh`/`ncbi`/`resfinder` are also provider names). Every
 provider builds on `gapit db fetch`,
-which downloads from upstream — and eight content-provenance-audited ones also ship inside
-the package (`ecoli_dec`, `lm_doumith`, and `vc_serogroup` plus the `ncbi`, `resfinder`,
+which downloads from upstream — including `nme_sero` (N. meningitidis serogroup + ctrA + sodC, non-MLST) — and seven content-provenance-audited ones also ship inside
+the package (`ecoli_dec`, `lmo_sero` plus the `ncbi`, `resfinder`,
 `ecoh` snapshots — public domain / Apache-2.0 /
-BSD-3-Clause / MIT — and the MIT typed-cluster snapshot `vp_ok`), materialized into the
+BSD-3-Clause / MIT — and the MIT typed-cluster snapshot `vpa_ok`), materialized into the
 datadir on first use with zero network; the
 bundled `ecoli_dec` additionally carries per-gene identity floors (`floors.json`, `pic`
 at 90%) that both engines apply before presence calls, and `cje_cps` ships floors plus
@@ -130,12 +135,12 @@ conda/Docker guidance, and security notes, see [Data directory](docs/datadir.md)
 | `ecoli_dec` | Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation) | nucl |
 | `vfdb` | VFDB virulence factors (set A, nucleotide) | nucl |
 | `ecoli_vf` | E. coli virulence factors | nucl |
-| `lm_doumith` | Listeria monocytogenes serogrouping (Doumith 2004) | nucl |
+| `lmo_sero` | Listeria monocytogenes serogrouping (Doumith 2004) | nucl |
 | `bacmet2` | BacMet2 biocide/resistance genes (protein) | prot |
 | `victors` | Victors virulence factors | nucl |
 | `upec_expec_vf` | UPEC/ExPEC virulence genes | nucl |
-| `vc_serogroup` | V. cholerae O1/O139 serogroup + ctxA toxigenicity markers | nucl |
-| `vp_ok` | V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero; cluster, MIT, one-scan O:K serotype) | nucl |
+| `vpa_ok` | V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero; cluster, MIT, one-scan O:K serotype) | nucl |
+| `vch_oagc` | V. cholerae O-antigen gene clusters (190 OL loci + ompW control; cluster, fetch-on-demand) | nucl |
 
 gapit also reads datadirs built by abricate itself (legacy `~~~` headers). The reverse
 does not hold: gapit-native databases use the `gapit/v1` header format (see SPEC.md §11),
@@ -146,10 +151,10 @@ Gene **cluster** databases are a second kind: `gapit db build NAME loci.gbk|gff3
 and the seven Kaptive cluster databases (kpsc_k, kpsc_o, kosc_k, kosc_o, ab_k, ab_o,
 ecoli_kps) fetch the Kaptive antigen-locus references at install time (GPL-3.0 content, so
 nothing is bundled — cite Kaptive/Wyres et al. 2020 for results). The typed cluster
-bundle `vp_ok`
+bundle `vpa_ok`
 merges the vpasero OAgc + CPSgc references (MIT) into one bundled db — a pure built-in in
-the ecoli_dec/lm_doumith pattern, no `db fetch` — where a single
-`gapit screen --db vp_ok` renders gapit.cluster/2 with `o_group`, `k_group`, and the
+the ecoli_dec/lmo_sero pattern, no `db fetch` — where a single
+`gapit screen --db vpa_ok` renders gapit.cluster/2 with `o_group`, `k_group`, and the
 composed `serotype` O:K call (RIMD 2210633 → O3:K6), working straight after
 `pip install gapit` with zero network.
 `gapit db list --json`
@@ -181,12 +186,14 @@ surfaces each provider's content license where one is pinned.
 gapit ships an MCP (Model Context Protocol) stdio server so agent runtimes can
 screen assemblies without parsing CLI output: `gapit mcp` or the `gapit-mcp`
 console script speaks newline-delimited JSON-RPC 2.0 on stdin/stdout (no extra
-dependencies — the protocol is hand-rolled). It exposes ten tools:
+dependencies — the protocol is hand-rolled). It exposes twelve tools:
 `screen` (gapit.report/1 by default; `aligner minimap2` for a fast assembly
 survey), `screen_reads` (FASTQ via minimap2, gapit.reads/1), `summary`
-(gapit.summary/1), `schema`, `db_list`, plus the database tools `db_fetch`,
-`db_build`, `db_search`, and `db_outdated` so an agent can self-provision
-and inspect databases mid-session.
+(gapit.summary/1), `typing` (designate from a screen table and surface
+follow-up notes such as the W/Y EX7E check), `schema`, `db_list`, plus the
+database tools `db_path`, `db_setup`, `db_fetch`, `db_build`, `db_search`, and
+`db_outdated` so an agent can self-provision and inspect databases
+mid-session.
 Tool failures return `isError: true` with the `gapit.error/1` envelope as text.
 Register it with an MCP client:
 
@@ -227,6 +234,6 @@ roadmap (the current architecture lives in `AGENTS.md`, `SPEC.md`, and `docs/dat
 
 gapit is MIT-licensed. It is a behavioral reimplementation of abricate (GPL-2.0) and
 copies no Perl code; abricate itself remains GPL-2.0. The only database content inside
-the package is the eight audited, permissively licensed bundles under `src/gapit/data/dbs/`
+the package is the seven audited, permissively licensed bundles under `src/gapit/data/dbs/`
 (public domain / Apache-2.0 / BSD-3-Clause / MIT); every other provider downloads from
 upstream at fetch time, under its own license (SPEC.md §9).

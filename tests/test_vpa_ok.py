@@ -1,6 +1,6 @@
-"""vp_ok suite: the committed typing asset and the bundle↔build differential.
+"""vpa_ok suite: the committed typing asset and the bundle↔build differential.
 
-vp_ok is a PURE built-in bundled database (the ecoli_dec/lm_doumith
+vpa_ok is a PURE built-in bundled database (the ecoli_dec/lmo_sero
 pattern): no provider module, no source URLs, no `db fetch` — the wheel's
 typed cluster snapshot materializes on first use and one screen renders
 gapit.cluster/2. These tests pin the committed gapit.typing/2 asset's
@@ -9,7 +9,7 @@ shape and, when local copies of the real vpautils GenBank files exist
 `gapit db build` over the merged GBKs — the regeneration contract behind
 `scripts/generate_vp_typing.py` and any future snapshot refresh. The
 offline bundled-path behavior (materialization, cluster/2 phenotypes)
-lives in test_bundled.py; the RIMD acceptance in test_vp_ok_acceptance.py.
+lives in test_bundled.py; the RIMD acceptance in test_vpa_ok_acceptance.py.
 """
 
 import json
@@ -23,8 +23,8 @@ from gapit.bundled import find_bundled
 from gapit.cli import app
 from gapit.fasta import iter_fasta
 
-TYPING_ASSET = Path(gapit.__file__).resolve().parent / "data" / "dbs" / "vp_ok" / "typing.json"
-VP_OK_LOCI = 195
+TYPING_ASSET = Path(gapit.__file__).resolve().parent / "data" / "dbs" / "vpa_ok" / "typing.json"
+VPA_OK_LOCI = 195
 
 runner = CliRunner()
 
@@ -80,10 +80,10 @@ def test_committed_asset_holds_three_schemes() -> None:
 
 
 def loci_fasta(destination: Path, *loci: str) -> None:
-    """Write the named loci of the bundled vp_ok sequences as one FASTA
+    """Write the named loci of the bundled vpa_ok sequences as one FASTA
     record per locus — the synthetic carrier built from the wheel's own
     content, zero network."""
-    bundled = find_bundled("vp_ok")
+    bundled = find_bundled("vpa_ok")
     assert bundled is not None
     wanted = set(loci)
     with destination.open("w", encoding="utf-8") as handle:
@@ -94,7 +94,7 @@ def loci_fasta(destination: Path, *loci: str) -> None:
 
 @REAL_DATA
 def test_bundle_is_byte_identical_to_a_db_build(tmp_path: Path) -> None:
-    """Given the wheel's vp_ok snapshot and the real vpautils GBKs it was
+    """Given the wheel's vpa_ok snapshot and the real vpautils GBKs it was
     produced from, When one datadir is built by `gapit db build` over the
     concatenated GBKs (--typing the committed asset) and another by
     bundled materialization (one carrier screen), Then both sequences AND
@@ -111,7 +111,7 @@ def test_bundle_is_byte_identical_to_a_db_build(tmp_path: Path) -> None:
         [
             "db",
             "build",
-            "vp_ok",
+            "vpa_ok",
             str(merged),
             "--typing",
             str(TYPING_ASSET),
@@ -121,7 +121,7 @@ def test_bundle_is_byte_identical_to_a_db_build(tmp_path: Path) -> None:
         ],
     )
     assert built.exit_code == 0, built.stderr
-    assert json.loads(built.stdout)["records"] == VP_OK_LOCI
+    assert json.loads(built.stdout)["records"] == VPA_OK_LOCI
 
     sample = tmp_path / "carrier.fna"
     loci_fasta(sample, "OL3")
@@ -129,11 +129,11 @@ def test_bundle_is_byte_identical_to_a_db_build(tmp_path: Path) -> None:
     bundle_dd.mkdir()
     screened = runner.invoke(
         app,
-        ["screen", str(sample), "--db", "vp_ok", "--datadir", str(bundle_dd), "--quiet"],
+        ["screen", str(sample), "--db", "vpa_ok", "--datadir", str(bundle_dd), "--quiet"],
     )
     assert screened.exit_code == 0, screened.stderr
 
     for artifact in ("sequences", "features.json"):
-        assert (bundle_dd / "vp_ok" / artifact).read_bytes() == (
-            build_dd / "vp_ok" / artifact
+        assert (bundle_dd / "vpa_ok" / artifact).read_bytes() == (
+            build_dd / "vpa_ok" / artifact
         ).read_bytes(), artifact

@@ -75,8 +75,28 @@ def test_bash_completion_lists_subcommands() -> None:
     assert result.exit_code == 0
     completions = [line.split(",", 1)[1] for line in result.stdout.splitlines()]
     assert "screen" in completions
-    assert "setupdb" in completions
     assert "summary" in completions
+    assert "db" in completions
+    # Database bootstrap is a `db` subcommand, not a top-level command.
+    assert "setupdb" not in completions
+
+
+def test_bash_completion_lists_db_subcommands() -> None:
+    """Given the completion probe one level below `db`, When run, Then the
+    database subcommands include the canonical setup."""
+    result = runner.invoke(
+        app,
+        [],
+        env={
+            "_GAPIT_COMPLETE": "bash_complete",
+            "COMP_WORDS": "gapit db ",
+            "COMP_CWORD": "2",
+        },
+    )
+    assert result.exit_code == 0
+    completions = [line.split(",", 1)[1] for line in result.stdout.splitlines()]
+    assert "fetch" in completions
+    assert "setup" in completions
 
 
 def test_completion_output_only_when_requested() -> None:

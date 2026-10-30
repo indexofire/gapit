@@ -69,7 +69,7 @@ gapit/
 │   └── ci.yml           # gates matrix Python 3.12 + parity job
 ├── src/gapit/
 │   ├── __init__.py
-│   ├── cli.py           # click entrypoint: screen / summary / db / setupdb / schema / mcp
+│   ├── cli.py           # click entrypoint: screen / summary / db / schema / mcp
 │   ├── config.py        # datadir resolution, first-run bootstrap, defaults, env vars
 │   ├── dispatch.py      # shared CLI dispatch (error envelope → exit codes) + --datadir option + --output target
 │   ├── proctools.py     # external-tool plumbing: argv subprocess runner + stderr notes
@@ -84,6 +84,7 @@ gapit/
 │   ├── cluster.py       # cluster-screening engine core: minimap2 asm20 → per-locus/per-gene calls
 │   ├── cluster_math.py  # cs-walk → union coverage/identity math + verdicts (pure functions)
 │   ├── db_ops.py        # db use-cases: fetch + list (shared CLI + MCP; no typer)
+│   ├── db_setup_ops.py  # db use-case: bootstrap + materialize + index (gapit.dbsetup/1)
 │   ├── db_rename_ops.py # db use-case: rename an installed database (gene rebuild / cluster re-stamp)
 │   ├── db_info_ops.py   # db use-case: provenance/literature/caveats document (gapit.dbinfo/1)
 │   ├── db_info_manual.py # `db info` man-style renderer (sections, wrapping, terminal width)
@@ -128,13 +129,14 @@ gapit/
 │   ├── cmd_screen_reads_args.py # reads-mode CLI arg rules (comma split + flag rejects)
 │   ├── cmd_summary.py   # `gapit summary` CLI (registered from cli.py)
 │   ├── cmd_typing.py    # `gapit typing` CLI (registered from cli.py)
-│   ├── cmd_db.py        # `gapit db` command group (fetch/path/list/build/install/search/outdated)
+│   ├── cmd_db.py        # `gapit db` command group (fetch/path/list/build/install/search/outdated/setup)
 │   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
 │   ├── cmd_db_rename.py # `gapit db rename` CLI (naming-convention migration)
 │   ├── cmd_db_info.py   # `gapit db info -d NAME` CLI (manual page / TSV / JSON)
 │   ├── cmd_db_build.py  # `gapit db build` CLI (custom FASTA → native db)
 │   ├── cmd_db_search.py # `gapit db search` CLI (records.jsonl lookup)
 │   ├── cmd_db_outdated.py # `gapit db outdated` CLI (staleness report)
+│   ├── cmd_db_setup.py  # `gapit db setup` CLI (bootstrap + materialize + index)
 │   ├── mcp.py           # MCP stdio server (hand-rolled JSON-RPC 2.0); backs gapit-mcp
 │   ├── mcp_tools.py     # MCP tool implementations (call the shared use-cases)
 │   ├── mcp_schemas.py   # MCP tools/list declarations (names, descriptions, inputSchemas)
@@ -152,11 +154,11 @@ gapit/
 │   │   ├── typing_result.py # gapit.typing_result/1 models + TSV/JSON/MD renderers
 │   │   ├── schemas.py   # registered output models behind `gapit schema`
 │   │   └── summary.py   # summary matrix renderers (TSV/CSV/JSON/MD)
-│   ├── providers/       # 19 database provider modules (12 gene + 7 kaptive cluster) + cluster_common.py + common.py
+│   ├── providers/       # 20 database provider modules (13 gene + 7 kaptive cluster) + cluster_common.py + common.py
 │   └── py.typed
 ├── scripts/
 │   ├── cluster_calibration.py # developer calibration harness for typed cluster dbs (single-scheme split dbs)
-│   └── generate_vp_typing.py # regenerates the committed vp_ok typing asset from the vpautils OAgc/CPSgc GBKs
+│   └── generate_vp_typing.py # regenerates the committed vpa_ok typing asset from the vpautils OAgc/CPSgc GBKs
 └── tests/
     ├── data/            # tiny synthetic db + contigs + reads (fast, offline)
     ├── golden/          # expected outputs incl. abricate reference TSVs
@@ -185,7 +187,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
 
 - **Formats**: `--format tsv|csv|json|md` (default `tsv` for abricate compatibility).
 - **JSON**: top-level `"schema": "gapit.report/1"`; schema introspectable via
-  `gapit schema report | reads | reads2 | summary | cluster | cluster2 | dblist | dbinfo | dboutdated | datadir | error | version` (plus
+  `gapit schema report | reads | reads2 | summary | cluster | cluster2 | dblist | dbsetup | dbinfo | dboutdated | datadir | error | version` (plus
   `cluster | cluster2 | features | typing | typing_result | floors`). Keys are snake_case,
   units explicit (`identity_pct`, `coverage_pct`). Semver the schema; never rename or
   retype a field in a minor bump.
@@ -198,16 +200,16 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   detects genes (screen output is phenotype-free; typed and untyped gene dbs screen
   byte-identically), then `gapit typing result.tsv [-D|-f|-o|-q]` designates from the screen
   table (`gapit.typing_result/1`; cluster dbs refuse — their typing rides the screen).
-  No typing MCP tool yet (future work).
-- **DB acquisition** `[gapit-extension]`: `gapit db fetch|path|list|info|search|outdated|build|install|rename` —
+  The MCP `typing` tool accepts the screen table text and returns the same document.
+- **DB acquisition** `[gapit-extension]`: `gapit db fetch|path|list|info|search|outdated|build|install|rename|setup` —
   database fetch from the provider catalog (every provider downloads from upstream at fetch
   time — nothing catalog-side is bundled inside the wheel beyond the sanctioned exceptions,
   a license-compliance requirement: CARD/VFDB terms are non-commercial and Kaptive is GPL,
-  so none of those may ride an MIT distribution; the sanctioned exceptions are the eight
+  so none of those may ride an MIT distribution; the sanctioned exceptions are the seven
   content-provenance-audited bundles under `src/gapit/data/dbs/` — the public-domain
-  `ecoli_dec`, `lm_doumith`, `vc_serogroup`, and `cje_cps` panels, three permissively licensed
+  `ecoli_dec`, `lmo_sero`, and `cje_cps` panels, three permissively licensed
   provider snapshots (`ncbi` public domain, `resfinder` Apache-2.0, `ecoh` BSD-3-Clause),
-  and the MIT `vp_ok` typed cluster snapshot — a pure built-in in the ecoli_dec/lm_doumith pattern: no
+  and the MIT `vpa_ok` typed cluster snapshot — a pure built-in in the ecoli_dec/lmo_sero pattern: no
   provider module, no `db fetch`; vpautils OAgc+CPSgc merged content, MIT
   (GPL/NC content is never bundled) — materialized into the datadir on first use via
   `bundled.py` (gene bundles replay the gene pipeline, the cluster bundle the cluster
@@ -222,9 +224,9 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   `gapit.dbinfo/1`),
   records.jsonl gene search, staleness
   report, custom FASTA→native-db build, GBK/GFF→cluster-db build (`--typing` installs a
-  validated `gapit.typing/1` or `/2` spec on either kind), the seven download-on-fetch
-  kaptive cluster providers (four upstream repos, GPL content, never bundled), the
-  MIT-licensed `vp_ok` typed cluster bundle (OAgc+CPSgc merged: the committed typing asset
+  validated `gapit.typing/1` or `/2` spec on either kind), the eight download-on-fetch
+  cluster providers (the seven Kaptive panels plus `vch_oagc`, the V. cholerae
+  O-antigen/ompW provider; never bundled), the MIT-licensed `vpa_ok` typed cluster bundle (OAgc+CPSgc merged: the committed typing asset
   installs a 3-scheme `gapit.typing/2` doc so one screen renders `gapit.cluster/2` with
   the composed `O:K` serotype, zero network from first install), SHA256-verified
   local-file install, `db build NAME` with **no input** (re-projects an installed gene
@@ -241,16 +243,17 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   stay stable; `db rename` is the sanctioned migration path when a name must change.
   Datadir precedence is `--datadir`, `$GAPIT_DATADIR`,
   `$XDG_DATA_HOME/gapit/db` (absolute XDG only), then `~/.local/share/gapit/db`;
-  `gapit db path [--json]` introspects it without creating, while `db list`/`setupdb`
+  `gapit db path [--json]` introspects it without creating, while `db list`/`db setup`
   bootstrap a missing root. See `docs/datadir.md` for the database anatomy, sharing and
   Docker policy.
-- **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing ten tools:
+- **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing twelve tools:
   read-only `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via
-  minimap2), `summary`, `schema`, `db_search`, `db_outdated`, `db_path` (resolve the
-  effective datadir without creating it), plus `db_list` (may create the empty datadir on
-  first use), and the datadir-mutating `db_fetch` (installs databases from the provider
-  catalog; may download) and `db_build` (writes a custom db);
-  tool failures carry the `gapit.error/1` envelope.
+  minimap2), `summary`, `typing` (screen-table text → typing result + follow-up notes),
+  `schema`, `db_search`, `db_outdated`, `db_path` (resolve the effective datadir without
+  creating it), plus `db_list` (may create the empty datadir on first use), and the
+  datadir-mutating `db_setup` (bootstrap/index), `db_fetch` (installs databases from the
+  provider catalog; may download) and `db_build` (writes a custom db); tool failures carry
+  the `gapit.error/1` envelope.
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
 - **Self-description**: `gapit --version --json`, `gapit db list --json`, `gapit schema` — an agent
   must be able to discover everything without reading docs.

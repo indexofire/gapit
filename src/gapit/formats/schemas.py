@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from gapit.db_info_ops import DbInfoDocument
 from gapit.db_ops import DatadirDocument, DbListDocument
 from gapit.db_query_ops import DbOutdatedDocument
+from gapit.db_setup_ops import DbSetupDocument
 from gapit.errors import ErrorEnvelope
 from gapit.formats.cluster import ClusterDocument
 from gapit.formats.cluster2 import Cluster2Document
@@ -34,6 +35,7 @@ SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "error": ErrorEnvelope,
     "version": VersionDocument,
     "dblist": DbListDocument,
+    "dbsetup": DbSetupDocument,
     "dboutdated": DbOutdatedDocument,
     "datadir": DatadirDocument,
     "dbinfo": DbInfoDocument,

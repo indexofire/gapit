@@ -7,7 +7,7 @@ loci would collide); ``colliding_genes.gbk`` is its synthetic fixture (two
 records, three ``wzx`` CDS, one clashing ``/locus_tag``). The /1 tripwire
 pins the kaptive_style/screening features.json bytes: /1 and untyped
 builds must stay byte-identical to the committed tables. The column tests
-are pure model-level renders over the vp_ok cookbook document (no engine).
+are pure model-level renders over the vpa_ok cookbook document (no engine).
 """
 
 from pathlib import Path
@@ -65,10 +65,10 @@ class TestResolveGeneIds:
         ]
 
     def test_unique_only_loci_pass_through_verbatim(self) -> None:
-        """Given a fixture with no id collisions (the vp_ok panel), When
+        """Given a fixture with no id collisions (the vpa_ok panel), When
         resolved, Then every gene keeps its primary id."""
         loci = parse_genbank_features(
-            Path(__file__).parent / "data" / "typing" / "schemes" / "vp_ok.gbk"
+            Path(__file__).parent / "data" / "typing" / "schemes" / "vpa_ok.gbk"
         )
 
         resolved = resolve_gene_ids(loci)
@@ -138,7 +138,7 @@ _AMBIGUOUS = SchemeCall(phenotype=None, score=0.9, confidence="ambiguous")
 _FALLBACK = SchemeCall(phenotype="OUT", score=0.0, confidence="low")
 _K_FALLBACK = SchemeCall(phenotype="KUT", score=0.0, confidence="low")
 _DOCUMENT = read_typing_document(
-    Path(__file__).parent / "data" / "typing" / "schemes" / "vp_ok.json"
+    Path(__file__).parent / "data" / "typing" / "schemes" / "vpa_ok.json"
 )
 _BEST = BestCall(
     locus="OL3_or_O13",
@@ -154,7 +154,7 @@ _BEST = BestCall(
 
 class TestPhenotypesCell:
     def test_columns_put_compose_first_then_scheme_blocks(self) -> None:
-        """Given the vp_ok cookbook document (o_group, k_group, serotype
+        """Given the vpa_ok cookbook document (o_group, k_group, serotype
         compose), When the /2 columns derive, Then SEROTYPE leads and each
         non-compose scheme carries its call + winner-evidence block (the
         o_group prefix shortens to O)."""

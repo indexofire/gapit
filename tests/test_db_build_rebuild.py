@@ -44,7 +44,7 @@ def test_rebuild_republishes_an_edited_gene_name(datadir: Path) -> None:
     """Given a database whose records were edited to rename a gene, When
     `db build NAME` runs, Then the sequences headers, the manifest count, and the
     BLAST index all follow the edit."""
-    _materialize("lm_doumith", "lm", datadir)
+    _materialize("lmo_sero", "lm", datadir)
     records_path = datadir / "lm" / "records.jsonl"
     records = [json.loads(line) for line in records_path.read_text(encoding="utf-8").splitlines()]
     renamed = [
@@ -79,7 +79,7 @@ def test_rebuild_merges_two_alleles_under_one_gene_name(datadir: Path) -> None:
     the database is rebuilt, Then both records survive (the duplicate dropper
     only drops identical gene+sequence pairs) and a screen reports the single
     shared name."""
-    bundled = find_bundled("lm_doumith")
+    bundled = find_bundled("lmo_sero")
     assert bundled is not None
     fasta = datadir.parent / "alleles.fa"
     fasta.write_text(
@@ -126,9 +126,9 @@ def test_rebuild_merges_two_alleles_under_one_gene_name(datadir: Path) -> None:
 def test_rebuild_rejects_a_cluster_database(datadir: Path) -> None:
     """Given a cluster database, When `db build NAME` (no INPUT) runs, Then exit 4
     DB_REBUILD_CLUSTER points at `db build NAME FILE` from the source GBK/GFF."""
-    materialize_bundled("vp_ok", datadir, quiet=True)
+    materialize_bundled("vpa_ok", datadir, quiet=True)
 
-    result = runner.invoke(app, ["db", "build", "vp_ok", "--datadir", str(datadir)])
+    result = runner.invoke(app, ["db", "build", "vpa_ok", "--datadir", str(datadir)])
 
     assert result.exit_code == 4
     envelope = json.loads(result.stderr.splitlines()[-1])
@@ -145,7 +145,7 @@ def test_rebuild_rejects_an_unknown_database(datadir: Path) -> None:
 def test_a_broken_record_edit_leaves_the_database_intact(datadir: Path) -> None:
     """Given a records file with an unparseable line, When the in-place rebuild runs,
     Then it fails without touching the installed artifacts (staged publish)."""
-    _materialize("lm_doumith", "lm", datadir)
+    _materialize("lmo_sero", "lm", datadir)
     before = (datadir / "lm" / "sequences").read_bytes()
     records_path = datadir / "lm" / "records.jsonl"
     records_path.write_text(
@@ -163,7 +163,7 @@ def test_rebuild_preserves_the_info_sidecar(datadir: Path) -> None:
     """Given a database carrying an info.json sidecar, When it is rebuilt,
     Then the sidecar survives — a curation edit must not drop the database's
     own literature and caveats."""
-    _materialize("lm_doumith", "lm", datadir)
+    _materialize("lmo_sero", "lm", datadir)
     sidecar = datadir / "lm" / "info.json"
     sidecar.write_text(
         json.dumps({"references": [{"citation": "Smith 2026"}], "caveats": ["keep me"]}),
@@ -179,7 +179,7 @@ def test_rebuild_preserves_the_info_sidecar(datadir: Path) -> None:
 def test_in_place_build_rejects_input_shaping_flags(datadir: Path) -> None:
     """Given no INPUT, When a new-database flag is passed, Then the call fails
     as a usage error naming the flags instead of silently ignoring them."""
-    _materialize("lm_doumith", "lm", datadir)
+    _materialize("lmo_sero", "lm", datadir)
     tsv = datadir.parent / "meta.tsv"
     tsv.write_text("gene\taccession\n", encoding="utf-8")
 

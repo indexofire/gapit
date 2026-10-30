@@ -41,7 +41,7 @@ FLIP = {"A": "C", "C": "G", "G": "T", "T": "A"}
 runner = CliRunner()
 
 GENE_FIXTURES = ("doumith", "shigella", "meningotype", "dec")
-COOKBOOK_DOCS = ("doumith", "shigella", "meningotype", "dec", "vp_ok", "cholerae")
+COOKBOOK_DOCS = ("doumith", "shigella", "meningotype", "dec", "vpa_ok", "cholerae")
 
 
 def mutate(parent: str, *sites: int) -> str:
@@ -148,10 +148,10 @@ class TestDocumentsValidate:
         assert document.schemes
 
     def test_vp_compose_placeholders_name_the_sibling_schemes(self) -> None:
-        """Given the vp_ok document, When its compose template is parsed,
+        """Given the vpa_ok document, When its compose template is parsed,
         Then the placeholders are exactly the o_group/k_group siblings in
         order."""
-        document = read_typing_document(SCHEMES / "vp_ok.json")
+        document = read_typing_document(SCHEMES / "vpa_ok.json")
         (compose,) = [scheme.compose for scheme in document.schemes if scheme.compose]
         assert template_placeholders(compose) == ("o_group", "k_group")
 

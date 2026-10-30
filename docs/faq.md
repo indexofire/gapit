@@ -53,7 +53,7 @@ overwriting.
 
 Resolution order: `--datadir` on the command line, then `$GAPIT_DATADIR`, then
 `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`. `gapit db path` prints it
-without creating; `gapit db list` and `gapit setupdb` create a missing root
+without creating; `gapit db list` and `gapit db setup` create a missing root
 automatically; strict queries such as `db outdated` and `db search` require it and fail
 with `DATADIR_NOT_FOUND` (exit 4). To keep databases inside an activated conda
 environment, set `GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"` (the home default survives
@@ -65,7 +65,7 @@ Yes, unchanged: point gapit at the datadir that abricate built and screen.
 If the BLAST indices are missing or stale, rebuild them all with:
 
 ```console
-$ gapit setupdb
+$ gapit db setup
 ```
 
 Only gapit-native output goes the other way (abricate cannot read `gapit/v1`
@@ -176,9 +176,9 @@ PATH.
 ## What licenses apply to the databases?
 
 gapit itself is MIT-licensed. Six audited, permissively licensed bundles ship inside
-the wheel (the public-domain `ecoli_dec` and `lm_doumith` panels, the `ncbi`,
+the wheel (the public-domain `ecoli_dec` and `lmo_sero` panels, the `ncbi`,
 `resfinder`, `ecoh` snapshots — Apache-2.0 / BSD-3-Clause / MIT — and
-the MIT typed-cluster snapshot `vp_ok`) and
+the MIT typed-cluster snapshot `vpa_ok`) and
 materialize into the datadir on first use; every other provider downloads from upstream
 at fetch time, and the content keeps its original
 licenses (CARD's McMaster non-commercial terms, VFDB's CC BY-NC,
@@ -190,6 +190,6 @@ license expose it in `gapit db list --json`. Details in SPEC.md §9 and the
 
 Write a provider module and fetch it by name: every provider downloads from its
 upstream source at fetch time, transforms the records, and builds locally. Nothing
-beyond the eight audited bundles ships in the wheel (upstream licenses such as CARD's or
+beyond the seven audited bundles ships in the wheel (upstream licenses such as CARD's or
 VFDB's forbid redistribution inside an MIT-licensed distribution). The header format,
 transforms, and build pipeline are specified in SPEC.md §11.

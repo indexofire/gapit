@@ -152,7 +152,7 @@ ambiguous。
 `tests/test_typing_schemes.py` / `tests/test_typing_schemes_cluster.py` 会构建每个夹具
 数据库并断言下文的表型判定。**所有序列均为合成序列**——它们编码的是方案逻辑而非
 策展内容；按各提供商的许可条款，真实策展是未来的工作。两个策展例外就放在它们
-旁边：内置的 `lm_doumith` 面板（真实公共领域 INSDC 序列）与内置的 `cje_cps` 荚膜
+旁边：内置的 `lmo_sero` 面板（真实公共领域 INSDC 序列）与内置的 `cje_cps` 荚膜
 面板（取自公共领域 INSDC 收录的扩增子），各自有独立测试模块，见下文头两节。
 
 ### 空肠弯曲菌 Penner 荚膜型 —— 内置 cje_cps 面板（基因库）
@@ -181,9 +181,9 @@ ambiguous。
 论文记录的每条注意事项都写在获胜规则的 `notes` 里（已声明的非预期扩增、HS1 的
 607 与 610 bp 长度差异、复合型分组），因此一次判定自带限定条件，而不必回头翻论文。
 
-### 李斯特菌血清群 —— 内置 lm_doumith 面板（基因库）
+### 李斯特菌血清群 —— 内置 lmo_sero 面板（基因库）
 
-`lm_doumith` 是一个内置数据库：取自公共领域 INSDC 记录的 Doumith 标记，加上
+`lmo_sero` 是一个内置数据库：取自公共领域 INSDC 记录的 Doumith 标记，加上
 `doumith_serogroup` 方案（`gapit.typing/2`）——与 LisSero 相同的五标记多重 PCR
 语义，`prs` 为属级 `control_gene`，每条规则 95/95 阈值（Doumith 等 2004，J Clin
 Microbiol 42:3819）：
@@ -202,18 +202,18 @@ ORF2819+ORF2110 谱式判给变体。大写基因名（`ORF2819`、`ORF2110`）�
 分型全程原样传递。两阶段使用，零网络（首次筛检时自动物化）：
 
 ```console
-$ gapit screen isolates.fa --db lm_doumith --output lm.tsv --quiet
+$ gapit screen isolates.fa --db lmo_sero --output lm.tsv --quiet
 $ gapit typing lm.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
-lm_doumith_iia.fa	doumith_serogroup	IIa	lmo0737;prs	high	1.0000	IVb-v (0.0000)	...
-lm_doumith_ivb.fa	doumith_serogroup	IVb	ORF2110;ORF2819;prs	high	1.0000	IVb-v (0.0000)	...
+lmo_sero_iia.fa	doumith_serogroup	IIa	lmo0737;prs	high	1.0000	IVb-v (0.0000)	...
+lmo_sero_ivb.fa	doumith_serogroup	IVb	ORF2110;ORF2819;prs	high	1.0000	IVb-v (0.0000)	...
 ```
 
 fallback 为 `untypeable (4a/4c, atypical profile, or non-Lm Listeria)`；缺 `prs` 时
 控制基因门触发（`control gene absent`）。已知局限以 notes 随判定输出：4b/4d/4e
 共享所有标记、EGD-e 判为 IIc（Doumith 2004 原文记载）、ORF 标记的水平转移可能
 伪造 IIb 谱式——详见数据库指南中的
-[lm_doumith 一节](./databases.md)。
+[lmo_sero 一节](./databases.md)。
 
 ### 李斯特菌血清群 —— Doumith 表（基因库）
 
@@ -258,9 +258,13 @@ PCR panel（`sacB`/A、`synD`/B、`synE`/C、`xcbB`/X、`synF`/Y，按 meningoty
 命名）——W/Y 则通过 **EX7E 等位基因探针** `synG_EX7E_P` / `synG_EX7E_G` 以
 `identity_floor` 99.5 判定（见下文）。fallback `NG`。
 
+这是演示等位基因探针技巧的 cookbook fixture。生产用血清群数据库是 `nme_sero`；
+它刻意不携带这些探针，而是输出一条 `NEXT STEP` 提示 EX7E 后续检查（见
+[nme_sero.zh.md](./nme_sero.zh.md)）。
+
 ### 副溶血弧菌 O 与 K —— Kaptive 模式（基因簇库）
 
-`vp_ok.json` + `vp_ok.gbk`：仿照 van der Graaf-van Bloois 等 2023（Microb Genom
+`vpa_ok.json` + `vpa_ok.gbk`：仿照 van der Graaf-van Bloois 等 2023（Microb Genom
 9:mgen001007；16 个 O 与 71 个 K 血清型）的 Kaptive 数据库构建的 OAgc/CPSgc 样位点。
 三个 scheme：
 
@@ -270,7 +274,7 @@ PCR panel（`sacB`/A、`synD`/B、`synE`/C、`xcbB`/X、`synF`/Y，按 meningoty
 - `k_group` —— K 位点上同构，fallback `KUT`（K 不可分型）。
 - `serotype` —— 记录 panel 输出形状的 `"{o_group}:{k_group}"` compose scheme。
 
-vp_ok 手册文档安装为**一个合并数据库**，渲染 `gapit.cluster/2`：每个文件对每个
+vpa_ok 手册文档安装为**一个合并数据库**，渲染 `gapit.cluster/2`：每个文件对每个
 scheme 给出判定（`o_group`、`k_group`，随后由原料渲染的 `serotype` compose——
 一次扫描得到 `O3/O13:K6`），TSV 行把组合血清型放在最前，随后每个方案给出判定
 与胜出位点的证据（`FILE SEROTYPE O_GROUP O_LOCUS O_COVERAGE ... K_GROUP K_LOCUS
@@ -389,13 +393,13 @@ vc_inaba.fa  wbe      O1    inaba      100.00    99.44     3        0        -
 （每个 scheme 一个数据库）：
 
 ```console
-$ gapit db build vp_ok vp_ok.gbk --typing vp_ok.json   # 一个合并库 → gapit.cluster/2
-$ gapit screen sample.fa --db vp_ok --quiet
+$ gapit db build vpa_ok vpa_ok.gbk --typing vpa_ok.json   # 一个合并库 → gapit.cluster/2
+$ gapit screen sample.fa --db vpa_ok --quiet
 FILE      SEROTYPE   O_GROUP  O_LOCUS     O_COVERAGE  ...  K_GROUP  K_LOCUS  K_COVERAGE  ...
 sample.fa O3/O13:K6  O3/O13   OL3_or_O13  100.00      ...  K6       KL6     100.00      ...
 
-$ gapit db build vp_o vp_ok.gbk --typing vp_o_group.json   # /1 拆分（各一个 scheme）
-$ gapit db build vp_k vp_ok.gbk --typing vp_k_group.json
+$ gapit db build vp_o vpa_ok.gbk --typing vp_o_group.json   # /1 拆分（各一个 scheme）
+$ gapit db build vp_k vpa_ok.gbk --typing vp_k_group.json
 $ gapit screen sample.fa --db vp_o --quiet   # → O3/O13
 $ gapit screen sample.fa --db vp_k --quiet   # → K6
 ```

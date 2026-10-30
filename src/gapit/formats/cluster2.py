@@ -18,7 +18,7 @@ locus's evidence (``<P>_LOCUS``, ``<P>_COVERAGE``, ``<P>_IDENTITY``,
 uppercased scheme name minus a trailing ``_GROUP``, so ``o_group``
 renders ``O_GROUP`` then ``O_LOCUS``). Fallback calls render the
 fallback string with ``-`` evidence; ambiguous calls render ``-`` in the
-call column. For vp_ok the header is ``FILE  SEROTYPE  O_GROUP  O_LOCUS
+call column. For vpa_ok the header is ``FILE  SEROTYPE  O_GROUP  O_LOCUS
 … K_MISSING`` — the composed serotype leads. Single-scheme and untyped
 databases keep byte-identical gapit.cluster/1 (formats/cluster.py).
 Registered in the schema registry as ``cluster2``.

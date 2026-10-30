@@ -1,4 +1,4 @@
-"""vp_ok acceptance suite (Phase 3): the literature-locked RIMD 2210633
+"""vpa_ok acceptance suite (Phase 3): the literature-locked RIMD 2210633
 call plus structural checks over unlabelled vpasero genomes.
 
 The database comes from the wheel's bundled cluster snapshot (no provider
@@ -55,11 +55,11 @@ REAL_DATA = pytest.mark.skipif(
 
 @pytest.fixture(scope="module")
 def real_db(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    """The vp_ok database built ONCE by materializing the wheel's bundled
+    """The vpa_ok database built ONCE by materializing the wheel's bundled
     cluster snapshot (one synthetic-carrier screen, zero network); returns
     its datadir."""
     datadir = tmp_path_factory.mktemp("vp-accept-dd")
-    bundled = find_bundled("vp_ok")
+    bundled = find_bundled("vpa_ok")
     assert bundled is not None
     carrier = datadir.parent / "carrier.fna"
     wanted = {"OL3", "KL6"}
@@ -69,7 +69,7 @@ def real_db(tmp_path_factory: pytest.TempPathFactory) -> Path:
                 handle.write(f">{record.id} sampled\n{record.sequence}\n")
     result = runner.invoke(
         app,
-        ["screen", str(carrier), "--db", "vp_ok", "--datadir", str(datadir), "--quiet"],
+        ["screen", str(carrier), "--db", "vpa_ok", "--datadir", str(datadir), "--quiet"],
     )
     assert result.exit_code == 0, result.stderr
     return datadir
@@ -83,7 +83,7 @@ def phenotypes_of(datadir: Path, sample: Path) -> dict[str, dict[str, object]]:
             "screen",
             str(sample),
             "--db",
-            "vp_ok",
+            "vpa_ok",
             "--datadir",
             str(datadir),
             "--format",
@@ -109,7 +109,7 @@ class TestRimdAcceptance:
         assert "RIMD 2210633" in header
 
     def test_rimd_calls_o3_k6_with_sensible_confidence(self, real_db: Path) -> None:
-        """Given RIMD 2210633 screened against the bundled vp_ok database,
+        """Given RIMD 2210633 screened against the bundled vpa_ok database,
         When the cluster/2 report renders, Then o_group calls O3, k_group
         calls K6, serotype composes O3:K6 — every scheme at score >= 0.9
         with high confidence (the locked acceptance)."""

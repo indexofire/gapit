@@ -13,13 +13,13 @@ Version, as one JSON line:
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.5"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.6.6"}
 ```
 
-Output schemas. Sixteen documents are introspectable: `report`, `typing_result`,
+Output schemas. Eighteen documents are introspectable: `report`, `typing_result`,
 `reads`, `reads2`, `cluster`, `cluster2`, `summary`, `error`, `version`, `dblist`,
-`dbinfo`, `dboutdated`, `datadir`, plus the database-side documents `features`,
-`typing`, and `floors`. Each prints its full JSON Schema:
+`dbsetup`, `dbinfo`, `dboutdated`, `datadir`, plus the database-side documents `features`,
+`typing`, `floors`, and `screen`. Each prints its full JSON Schema:
 
 ```console
 $ gapit schema report          # gapit.report/1 (contig screening)
@@ -32,12 +32,14 @@ $ gapit schema summary         # gapit.summary/1
 $ gapit schema error           # gapit.error/1
 $ gapit schema version         # gapit.version/1
 $ gapit schema dblist          # gapit.dblist/1 (database catalog)
+$ gapit schema dbsetup         # gapit.dbsetup/1 (db setup receipt)
 $ gapit schema dbinfo          # gapit.dbinfo/1 (provenance + caveats of one database)
 $ gapit schema dboutdated      # gapit.dboutdated/1 (staleness report)
 $ gapit schema datadir         # gapit.datadir/1 (resolved path/source)
 $ gapit schema features        # gapit.features/1 (cluster db feature table)
 $ gapit schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
 $ gapit schema floors          # gapit.floors/1 (per-gene identity floors, reads mode)
+$ gapit schema screen          # gapit.screen/1 (per-database screening defaults)
 ```
 
 For example, `gapit schema version` (real output):
@@ -219,7 +221,9 @@ Screening options: `./screen.md`. Summary semantics: `./summary.md`.
 ## Tool-runtime integration
 
 If your runtime speaks MCP, register gapit as a server and call `screen`,
-`screen_reads`, `summary`, `schema`, and `db_list` as tools instead of
-subprocesses: `./mcp.md`. The server also exposes the `db` commands
-(`db_fetch`, `db_build`, `db_search`, `db_outdated`), so an agent can
-provision the database it needs and screen against it in one session.
+`screen_reads`, `summary`, `typing`, `schema`, and `db_list` as tools instead
+of subprocesses: `./mcp.md`. The server also exposes the `db` commands
+(`db_setup`, `db_fetch`, `db_build`, `db_search`, `db_outdated`), so an agent
+can provision the database it needs, screen it, and type the result in one
+session. `typing` takes the screen table text directly; a W/Y call's `notes`
+name the EX7E follow-up.

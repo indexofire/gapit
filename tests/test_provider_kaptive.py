@@ -95,11 +95,13 @@ def kaptive_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 def test_real_registry_carries_the_seven_kaptive_providers() -> None:
     """Given the shipped provider registry, When inspected, Then the seven
-    official-keyword kaptive names are the ONLY cluster providers, each
-    with its verified raw main URL,
-    upstream-repo + Wyres provenance, and a GPL-3.0 content license
-    (nothing bundled)."""
-    assert {n for n, p in REGISTRY.items() if p.kind == "cluster"} == {*KAPTIVE_PROVIDERS}
+    official-keyword kaptive names are cluster providers alongside vch_oagc,
+    each with its verified raw main URL, upstream-repo + Wyres provenance,
+    and a GPL-3.0 content license (nothing bundled)."""
+    assert {n for n, p in REGISTRY.items() if p.kind == "cluster"} == {
+        *KAPTIVE_PROVIDERS,
+        "vch_oagc",
+    }
     for name, (url, repo) in EXPECTED_SOURCES.items():
         provider = REGISTRY[name]
         assert isinstance(provider, ClusterProvider), name

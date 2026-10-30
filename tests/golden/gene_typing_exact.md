@@ -1,6 +1,6 @@
 ---
 schema: gapit.report/1
-tool: gapit 0.6.5
+tool: gapit 0.6.6
 created_at: 2026-09-30T12:00:00Z
 db: markers
 minid: 80.0

@@ -18,6 +18,7 @@ TSV on stdout, plus first-class JSON and Markdown outputs with versioned schemas
 | [Data directory](./datadir.md) | Datadir resolution (`db path`), database anatomy, sharing across envs, conda/Docker guidance, security/reproducibility |
 | [Custom databases](./custom-db.md) | `gapit db build` walkthrough: any FASTA to a screenable database, worked examples |
 | [Typing schemes](./typing.md) | The two-stage designation pipeline (`gapit screen` then `gapit typing`) and `gapit.typing/2`: rule/scheme primitives, the six-scheme cookbook (Doumith, ShigaTyper, meningotype, VP O/K, cholerae, DEC), allele probe tricks, calibration |
+| [Meningococcal serogroup typing](./nme_sero.md) | `nme_sero` database: serogroup + ctrA + sodC depth control (`gapit screen` + `gapit typing`; no MLST/allele typing) |
 | [Outputs](./outputs.md) | TSV/JSON/Markdown formats, schemas, error envelopes, exit codes |
 | [MCP server](./mcp.md) | `gapit mcp`: analysis + database tools for agent runtimes over stdio JSON-RPC |
 | [Agent guide](./agents.md) | Consuming gapit from autonomous agents: schemas, introspection, errors |
@@ -31,12 +32,12 @@ TSV on stdout, plus first-class JSON and Markdown outputs with versioned schemas
 | `gapit typing` | Designate phenotypes from screen result table(s) (typed gene databases) | [Typing schemes](./typing.md) |
 | `gapit summary` | Summarize report table(s) into a gene presence/absence matrix | [Summary](./summary.md) |
 | `gapit db fetch` | Fetch and build database(s) into the datadir (kaptive cluster dbs download on fetch) | [Databases](./databases.md) |
-| `gapit db list` | List known databases (NAME, upstream PROVIDER, install state) | [Databases](./databases.md) |
+| `gapit db list` | List known databases (NAME, upstream PROVIDER, install state); `-n` prints names only | [Databases](./databases.md) |
 | `gapit db path` | Print the resolved datadir (no creation) | [Data directory](./datadir.md) |
 | `gapit db install` | Install a local file after verifying its SHA256 | [Databases](./databases.md) |
 | `gapit db build` | Build a database from a gene FASTA, or from GBK/GFF loci as a cluster database (optionally with a `--typing` phenotype spec) | [Custom databases](./custom-db.md) |
-| `gapit setupdb` | Build BLAST indices for all databases under the datadir | here |
-| `gapit schema` | Print the JSON Schema of a gapit output document (`report`, `typing_result`, `reads`, `reads2`, `cluster`, `summary`, `error`, `version`, `features`, `typing`, `floors`, `screen`) | [Outputs](./outputs.md) |
+| `gapit db setup` | Bootstrap/index databases (`-a` all, `-d NAME` one; named providers fetch when missing) | [Data directory](./datadir.md) |
+| `gapit schema` | Print the JSON Schema of a gapit output document (`report`, `typing_result`, `reads`, `reads2`, `cluster`, `summary`, `error`, `version`, `dblist`, `dbsetup`, `dboutdated`, `datadir`, `features`, `typing`, `floors`, `screen`) | [Outputs](./outputs.md) |
 | `gapit mcp` | Run the MCP stdio server (also installed as the `gapit-mcp` console script) | [MCP server](./mcp.md) |
 
 ## Project documents

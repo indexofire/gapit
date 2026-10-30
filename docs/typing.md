@@ -165,7 +165,7 @@ one marker FASTA or GBK loci file each. Every document validates against the cur
 and `tests/test_typing_schemes.py` / `tests/test_typing_schemes_cluster.py` build each fixture
 database and assert the phenotype calls below. **All sequences are synthetic** — they encode
 the scheme logic, not curated content; real curation is future work per provider licensing.
-Two curated exceptions sit beside them: the bundled `lm_doumith` panel (real public-domain
+Two curated exceptions sit beside them: the bundled `lmo_sero` panel (real public-domain
 INSDC sequences) and the bundled `cje_cps` capsule panel (amplicons extracted from public-domain
 INSDC accessions), each with its own test module and described first below.
 
@@ -197,9 +197,9 @@ Every caveat the paper documents lives in the winning rule's `notes` (the declar
 unexpected amplicons, the HS1 607-vs-610 bp length difference, the complex groupings), so a
 call carries its own qualification instead of requiring the paper to interpret it.
 
-### Listeria serogroups — the bundled lm_doumith panel (gene db)
+### Listeria serogroups — the bundled lmo_sero panel (gene db)
 
-`lm_doumith` is a bundled database: the Doumith markers extracted from public-domain
+`lmo_sero` is a bundled database: the Doumith markers extracted from public-domain
 INSDC records and the `doumith_serogroup` scheme (`gapit.typing/2`) — the same five-marker
 multiplex-PCR semantics as LisSero, with `prs` as the genus-level `control_gene` and 95/95
 floors on every rule (Doumith et al. 2004, J Clin Microbiol 42:3819):
@@ -219,17 +219,17 @@ ORF2819+ORF2110 profile carrying `lmo0737` resolves to the variant. Uppercase ge
 zero network (the bundle materializes on first screen):
 
 ```console
-$ gapit screen isolates.fa --db lm_doumith --output lm.tsv --quiet
+$ gapit screen isolates.fa --db lmo_sero --output lm.tsv --quiet
 $ gapit typing lm.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
-lm_doumith_iia.fa	doumith_serogroup	IIa	lmo0737;prs	high	1.0000	IVb-v (0.0000)	...
-lm_doumith_ivb.fa	doumith_serogroup	IVb	ORF2110;ORF2819;prs	high	1.0000	IVb-v (0.0000)	...
+lmo_sero_iia.fa	doumith_serogroup	IIa	lmo0737;prs	high	1.0000	IVb-v (0.0000)	...
+lmo_sero_ivb.fa	doumith_serogroup	IVb	ORF2110;ORF2819;prs	high	1.0000	IVb-v (0.0000)	...
 ```
 
 Fallback `untypeable (4a/4c, atypical profile, or non-Lm Listeria)`; without `prs` the
 control gate fires (`control gene absent`). Known limits ride the calls as notes: 4b/4d/4e
 share every marker, EGD-e types as IIc (documented in Doumith 2004), and HGT of the ORF
-markers can fake a IIb profile — see the [lm_doumith section](databases.md) in the
+markers can fake a IIb profile — see the [lmo_sero section](databases.md) in the
 databases guide.
 
 ### Listeria serogroups — the Doumith table (gene db)
@@ -277,9 +277,14 @@ serogroup over the Mothershed et al. 2004 (J Clin Microbiol 42:320–328) real-t
 W/Y through the **EX7E allele probes** `synG_EX7E_P` / `synG_EX7E_G` at `identity_floor`
 99.5 (see below). Fallback `NG`.
 
+This is a cookbook fixture demonstrating the allele-probe trick. The production
+serogroup database is `nme_sero`; it deliberately does not carry these probes
+and instead emits a `NEXT STEP` note for the EX7E follow-up (see
+[nme_sero.md](./nme_sero.md)).
+
 ### V. parahaemolyticus O and K — the Kaptive pattern (cluster db)
 
-`vp_ok.json` + `vp_ok.gbk`: OAgc/CPSgc-like loci after the Kaptive databases of
+`vpa_ok.json` + `vpa_ok.gbk`: OAgc/CPSgc-like loci after the Kaptive databases of
 van der Graaf-van Bloois et al. 2023 (Microb Genom 9:mgen001007; 16 O and 71 K serotypes).
 Three schemes:
 
@@ -289,7 +294,7 @@ Three schemes:
 - `k_group` — the same shape over the K loci, fallback `KUT` (K untypeable).
 - `serotype` — the `"{o_group}:{k_group}"` compose scheme documenting the panel output.
 
-The vp_ok cookbook document installs as **one merged database** rendering
+The vpa_ok cookbook document installs as **one merged database** rendering
 `gapit.cluster/2`: every scheme is called per file (`o_group`, `k_group`, then the
 `serotype` compose rendered from its ingredients — `O3/O13:K6` in one scan), and its
 TSV row puts the composed serotype FIRST and then gives each scheme its call plus the
@@ -419,13 +424,13 @@ The cluster O/K pattern: the merged /2 install (one scan, every scheme) and the
 historical /1 split (one database per scheme):
 
 ```console
-$ gapit db build vp_ok vp_ok.gbk --typing vp_ok.json   # ONE merged db → gapit.cluster/2
-$ gapit screen sample.fa --db vp_ok --quiet
+$ gapit db build vpa_ok vpa_ok.gbk --typing vpa_ok.json   # ONE merged db → gapit.cluster/2
+$ gapit screen sample.fa --db vpa_ok --quiet
 FILE      SEROTYPE   O_GROUP  O_LOCUS     O_COVERAGE  ...  K_GROUP  K_LOCUS  K_COVERAGE  ...
 sample.fa O3/O13:K6  O3/O13   OL3_or_O13  100.00      ...  K6       KL6     100.00      ...
 
-$ gapit db build vp_o vp_ok.gbk --typing vp_o_group.json   # /1 split (one scheme each)
-$ gapit db build vp_k vp_ok.gbk --typing vp_k_group.json
+$ gapit db build vp_o vpa_ok.gbk --typing vp_o_group.json   # /1 split (one scheme each)
+$ gapit db build vp_k vpa_ok.gbk --typing vp_k_group.json
 $ gapit screen sample.fa --db vp_o --quiet   # → O3/O13
 $ gapit screen sample.fa --db vp_k --quiet   # → K6
 ```

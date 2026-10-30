@@ -20,7 +20,8 @@ from rich.text import Text
 from gapit import config
 from gapit.bundled import BundledDatabase, bundled_databases
 from gapit.db import Database, discover_databases, mol_type
-from gapit.errors import UsageError
+from gapit.db_info_models import DbGuidance
+from gapit.errors import DatabaseError, UsageError
 from gapit.fasta import iter_fasta
 from gapit.progress import screen_progress
 from gapit.providers import REGISTRY
@@ -198,6 +199,29 @@ def _detected_dbtype(database: Database) -> Literal["nucl", "prot"]:
     return mol_type(letters)
 
 
+def _local_listing_metadata(directory: Path) -> tuple[str, str]:
+    """Description/vendor from a local ``info.json`` sidecar, when present.
+
+    Local databases built with ``db build`` can carry the same ``info.json``
+    guidance document used by ``db info``; its optional ``description`` and
+    ``vendor`` fields feed the listing so curated panels are not anonymous
+    ``local`` rows. A malformed sidecar is a typed error, never silently
+    ignored provenance.
+    """
+    path = directory / "info.json"
+    if not path.is_file():
+        return "", ""
+    try:
+        guidance = DbGuidance.model_validate_json(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, ValueError) as exc:
+        raise DatabaseError(
+            f"malformed database info sidecar: {path}: {exc}",
+            code="DBINFO_MALFORMED",
+            context={"file": str(path)},
+        ) from exc
+    return guidance.description, guidance.vendor
+
+
 def _extra_entries(root: Path, bundled: frozenset[str]) -> list[DbListEntry]:
     """Rows for installed databases neither the registry nor the wheel knows
     — `db build` products, checksum-installed or abricate-style directories.
@@ -211,11 +235,12 @@ def _extra_entries(root: Path, bundled: frozenset[str]) -> list[DbListEntry]:
             continue
         manifest_path = database.path / "gapit-manifest.json"
         manifest = read_manifest(manifest_path) if manifest_path.is_file() else None
+        info_description, info_vendor = _local_listing_metadata(database.path)
         entries.append(
             DbListEntry(
                 name=database.name,
-                vendor=LOCAL_VENDOR,
-                description=(manifest.note or "") if manifest else "",
+                vendor=info_vendor or LOCAL_VENDOR,
+                description=info_description or ((manifest.note or "") if manifest else ""),
                 dbtype=manifest.dbtype if manifest else _detected_dbtype(database),
                 installed=True,
                 indexed=_has_blast_index(database.sequences_path),
@@ -256,7 +281,7 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
     dbtype) from ``bundled.json``; installed state and record count from a
     materialized manifest under the datadir. A bundle whose directory exists
     but never finished materializing (no manifest) lists as not installed —
-    the next screen/setupdb rebuilds it. A bundled name that is also a
+    the next screen or `db setup` rebuilds it. A bundled name that is also a
     registry provider (ncbi, resfinder, ...) appears ONLY here: the bundled
     row replaces its registry row so one name is always one row."""
     entries: list[DbListEntry] = []
@@ -293,10 +318,13 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
 def db_list_entries(root: Path) -> list[DbListEntry]:
     """Database rows for the gapit.dblist/1 listing — shared CLI + MCP path.
 
-    Registry providers first (alphabetical, bundled names skipped — their
-    rows come from the bundled section), then bundled databases by name,
-    then datadir-discovered extras by name, so local ``db build``/``db
-    install`` databases are never hidden.
+    Rows are sorted globally by NAME so CLI TSV, the rich table, and the
+    ``gapit.dblist/1`` JSON all share one deterministic order. Registry
+    providers, bundled databases, and datadir-discovered local databases
+    stay distinguishable by their additive ``source`` field and STATUS, not
+    by position. Bundled names are skipped in the registry loop because
+    their rows come from the bundled section; local ``db build``/``db
+    install`` databases are appended and never hidden.
     """
     bundled = tuple(bundled_databases())
     bundled_names = frozenset(database.name for database in bundled)
@@ -328,7 +356,9 @@ def db_list_entries(root: Path) -> list[DbListEntry]:
                 license=provider.license,
             )
         )
-    return entries + _bundled_entries(bundled, root) + _extra_entries(root, bundled_names)
+    entries.extend(_bundled_entries(bundled, root))
+    entries.extend(_extra_entries(root, bundled_names))
+    return sorted(entries, key=lambda entry: entry.name)
 
 
 def db_list_status(entry: DbListEntry) -> str:

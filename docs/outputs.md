@@ -141,7 +141,7 @@ Real document, same run as the TSV above:
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.5"
+    "version": "0.6.6"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -233,7 +233,7 @@ row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
 ```json
 {
   "schema": "gapit.typing_result/1",
-  "tool": {"name": "gapit", "version": "0.6.5"},
+  "tool": {"name": "gapit", "version": "0.6.6"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
   "db": "ecoli_dec",
@@ -418,6 +418,35 @@ table written by `db build`) and `typing` (the declarative scoring spec installe
 `learned_linear`, plus `cutoff`, `ambiguity_margin`, and `fallback`). The typing document is
 the contract the phenotype evaluator implements; see [databases.md](./databases.md#cluster-databases-gbkgff).
 
+### gapit.dbsetup/1 (db setup receipt)
+
+`gapit db setup --json` emits one document describing the bootstrap/index run. Progress
+is suppressed so stdout carries only the receipt:
+
+```json
+{
+  "schema": "gapit.dbsetup/1",
+  "datadir": "/home/me/.local/share/gapit/db",
+  "materialized": ["ecoli_dec"],
+  "fetched": [],
+  "databases": [
+    {"db": "ecoli_dec", "records": 16, "dbtype": "nucl"},
+    {"db": "tinyamr", "records": 3, "dbtype": "nucl"}
+  ]
+}
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `schema` | string | Always `gapit.dbsetup/1` |
+| `datadir` | string | Absolute datadir that was set up |
+| `materialized` | array of string | Bundled databases materialized in this run (empty with `--no-bundles` or when all were already installed) |
+| `fetched` | array of string | Provider databases fetched in this run (only with explicit `--db NAME`; `--all` never fetches) |
+| `databases` | array | Every database indexed in this run, in datadir name order |
+| `databases[].db` | string | Database name |
+| `databases[].records` | integer | Sequence/locus count from the BLAST index |
+| `databases[].dbtype` | string | `nucl` or `prot` |
+
 ### gapit.summary/1 (summary matrix)
 
 `gapit summary --format json` turns report tables into a gene matrix. Real output
@@ -428,7 +457,7 @@ summarizing two report files, one with a `tetA` hit and one with none:
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.5"
+    "version": "0.6.6"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -535,7 +564,7 @@ $ gapit db fetch nosuchdb            # exit 2, usage
 {"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
 
 $ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr contigs.fa   # exit 4, db error, before indexing
-{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gapit-own-db/db/tinyamr/sequences is not indexed, please try: gapit setupdb","context":{"db":"/tmp/opencode/gapit-own-db/db/tinyamr/sequences"}}
+{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gapit-own-db/db/tinyamr/sequences is not indexed, please try: gapit db setup","context":{"db":"/tmp/opencode/gapit-own-db/db/tinyamr/sequences"}}
 ```
 
 A missing external binary (exit 3) reports which one:
@@ -552,13 +581,14 @@ An agent can discover the whole contract from the binary alone.
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.5"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.6.6"}
 ```
 
-`gapit schema <name>` prints the JSON Schema for each document. The twelve names: `report`,
-`typing_result`, `reads`, `reads2`, `cluster`, `summary`, `error`, `version`, plus the
-database-side documents `features` (gapit.features/1, a cluster db's feature table),
-`typing` (gapit.typing/1, a cluster db's declarative scoring spec), `floors`
+`gapit schema <name>` prints the JSON Schema for each document. The eighteen names:
+`report`, `typing_result`, `reads`, `reads2`, `cluster`, `cluster2`, `summary`, `error`,
+`version`, `dblist`, `dbsetup`, `dboutdated`, `datadir`, `dbinfo`, plus the database-side
+documents `features` (gapit.features/1, a cluster db's feature table), `typing`
+(gapit.typing/2, a cluster db's declarative scoring spec; /1 still reads), `floors`
 (gapit.floors/1, per-gene identity floors for reads + contigs), and `screen`
 (gapit.screen/1, per-database screening defaults). A trimmed fragment of
 `gapit schema report`:

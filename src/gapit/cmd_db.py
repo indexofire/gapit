@@ -1,5 +1,8 @@
-"""The `gapit db` command group: build, fetch, list, install.
+"""The `gapit db` command group: build, fetch, list, install, setup.
 
+- ``db setup``: bootstrap a missing datadir, materialize bundled
+  databases, and rebuild every BLAST index under the datadir (use-case:
+  :mod:`gapit.db_setup_ops`, command: :mod:`gapit.cmd_db_setup`).
 - ``db build NAME FASTA``: build a custom gapit-native database from a
   user-supplied FASTA (+ optional TSV metadata) — the whole acquisition
   pipeline without a provider (use-case: :mod:`gapit.db_build_ops`,
@@ -41,6 +44,7 @@ from gapit.cmd_db_install import db_install_command
 from gapit.cmd_db_outdated import db_outdated_command
 from gapit.cmd_db_rename import db_rename_command
 from gapit.cmd_db_search import db_search_command
+from gapit.cmd_db_setup import db_setup_command
 from gapit.db_ops import (
     datadir_json,
     db_list_entries,
@@ -114,12 +118,20 @@ def db_path_command(datadir: Path | None, as_json: bool) -> None:
 
 @datadir_option()
 @click.option(
+    "--name",
+    "-n",
+    "names_only",
+    is_flag=True,
+    help="Print only database names, space-separated (no header).",
+)
+@click.option(
     "--json", "-J", "as_json", is_flag=True, help="Print machine-readable JSON instead of a table."
 )
-def db_list_command(datadir: Path | None, as_json: bool) -> None:
+def db_list_command(datadir: Path | None, names_only: bool, as_json: bool) -> None:
     """List known databases and their state.
 
-    Columns: NAME, DESCRIPTION, STATUS, DBTYPE, TYPING, PROVIDER.
+    Columns: NAME, DESCRIPTION, STATUS, DBTYPE, TYPING, PROVIDER. With
+    ``--name``, print only the names, space-separated, in NAME order.
     """
 
     def run() -> None:
@@ -127,6 +139,12 @@ def db_list_command(datadir: Path | None, as_json: bool) -> None:
         # listing must still work and leave the default location ready for the
         # first fetch/screen. Installed-state checks below only read manifests.
         root = config.ensure_datadir(datadir)
+        if names_only:
+            if as_json:
+                usage_fail("db list takes --name or --json, not both")
+            entries = db_list_entries(root)
+            click.echo(" ".join(entry.name for entry in entries))
+            return
         if as_json:
             click.echo(db_list_json(root))
             return
@@ -147,7 +165,7 @@ def db_list_command(datadir: Path | None, as_json: bool) -> None:
 
 
 def register_db_command(app: click.Group) -> None:
-    """Attach the `db` command group (install, fetch, list) to the CLI app.
+    """Attach the `db` command group (setup, install, fetch, list, ...) to the CLI app.
 
     Input-requiring subcommands print help when invoked bare
     (``no_args_is_help``); ``list``/``outdated`` are valid with no
@@ -156,14 +174,15 @@ def register_db_command(app: click.Group) -> None:
     db_app = click.Group(
         "db",
         help=(
-            "Database acquisition and maintenance: fetch, build, verified local install,"
-            " listing, per-database info, rename, search, staleness."
+            "Database acquisition and maintenance: fetch, build, setup/index, verified"
+            " local install, listing, per-database info, rename, search, staleness."
         ),
         no_args_is_help=True,
     )
     db_app.command("install", no_args_is_help=True)(db_install_command)
     db_app.command("build", no_args_is_help=True)(db_build_command)
     db_app.command("fetch", no_args_is_help=True)(db_fetch_command)
+    db_app.add_command(db_setup_command, "setup")
     db_app.command("path")(db_path_command)
     db_app.command("list")(db_list_command)
     db_app.command("info", no_args_is_help=True)(db_info_command)

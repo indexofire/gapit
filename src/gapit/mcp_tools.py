@@ -22,6 +22,7 @@ from gapit.db_query_ops import (
     perform_outdated,
     perform_search,
 )
+from gapit.db_setup_ops import perform_setup
 from gapit.errors import usage_fail
 from gapit.formats.schemas import SCHEMA_MODELS
 from gapit.formats.summary import render_summary_json
@@ -34,6 +35,7 @@ from gapit.screening import (
 from gapit.screening_cluster import reject_cluster_engine_flags
 from gapit.screening_reads import run_screen_assemblies, run_screen_reads
 from gapit.summary import SummaryParams, build_summary
+from gapit.typing_ops import run_typing
 
 # Parsed JSON-RPC argument containers stay dict[str, Any] until the
 # per-field isinstance checks in the helpers below pin concrete types (the
@@ -48,6 +50,14 @@ def _paths(arguments: dict[str, Any], key: str) -> list[Path]:
     if not isinstance(value, list) or not all(isinstance(item, str) for item in items):
         usage_fail(f"{key} must be an array of file path strings")
     return [Path(item) for item in items]
+
+
+def _string_list(arguments: dict[str, Any], key: str) -> list[str]:
+    value: Any = arguments.get(key, [])
+    items: Any = arguments.get(key, [])
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in items):
+        usage_fail(f"{key} must be an array of strings")
+    return list(items)
 
 
 def _string(arguments: dict[str, Any], key: str, default: str) -> str:
@@ -251,6 +261,20 @@ def _tool_summary(arguments: dict[str, Any]) -> str:
     return render_summary_json(matrix, now=datetime.now(UTC))
 
 
+def _tool_typing(arguments: dict[str, Any]) -> str:
+    table = _required_string(arguments, "table")
+    output_format = _string(arguments, "format", "json")
+    if output_format not in ("json", "tsv", "md"):
+        usage_fail(f"format must be one of json, tsv, md: got {output_format}")
+    return run_typing(
+        [],
+        _optional_path(arguments, "datadir"),
+        OutputFormat(output_format),
+        True,
+        stdin_text=table,
+    )
+
+
 def _tool_schema(arguments: dict[str, Any]) -> str:
     name = _string(arguments, "name", "")
     model = SCHEMA_MODELS.get(name)
@@ -267,6 +291,17 @@ def _tool_db_list(arguments: dict[str, Any]) -> str:
 
 def _tool_db_path(arguments: dict[str, Any]) -> str:
     return datadir_json(_optional_path(arguments, "datadir"))
+
+
+def _tool_db_setup(arguments: dict[str, Any]) -> str:
+    names = _string_list(arguments, "names")
+    document = perform_setup(
+        _optional_path(arguments, "datadir"),
+        quiet=True,
+        bundles=not _flag(arguments, "no_bundles"),
+        names=names or None,
+    )
+    return document.model_dump_json(by_alias=True)
 
 
 def _tool_db_fetch(arguments: dict[str, Any]) -> str:
@@ -327,9 +362,11 @@ TOOL_HANDLERS: dict[str, Callable[[dict[str, Any]], str]] = {
     "screen": _tool_screen,
     "screen_reads": _tool_screen_reads,
     "summary": _tool_summary,
+    "typing": _tool_typing,
     "schema": _tool_schema,
     "db_list": _tool_db_list,
     "db_path": _tool_db_path,
+    "db_setup": _tool_db_setup,
     "db_fetch": _tool_db_fetch,
     "db_build": _tool_db_build,
     "db_search": _tool_db_search,

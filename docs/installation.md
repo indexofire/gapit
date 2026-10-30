@@ -12,7 +12,7 @@ pip install gapit
 ```
 
 The wheel bundles the Python package and the `gapit`/`gapit-mcp` console scripts, plus
-eight audited, permissively licensed database bundles that materialize into the datadir on
+seven audited, permissively licensed database bundles that materialize into the datadir on
 first use (see
 [Bundled databases](./databases.md#bundled-databases-install-time-ready)); every other
 provider downloads from upstream at fetch time, because several upstream licenses forbid
@@ -67,9 +67,9 @@ gapit --version
 
 ```console
 $ gapit --version
-gapit 0.6.5
+gapit 0.6.6
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.5"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.6.6"}
 ```
 
 ## Optional gseek engine
@@ -91,11 +91,11 @@ FASTA, FASTQ, GenBank, EMBL) is native — no `any2fasta` needed.
 Screening needs at least one database in the datadir (`$GAPIT_DATADIR`, then
 `~/.local/share/gapit/db`; override per call with `--datadir`). On a fresh install,
 `gapit db path` shows the effective location, `gapit db list` works before any database
-exists (it bootstraps the datadir and lists the catalog), and `gapit setupdb` creates the
+exists (it bootstraps the datadir and lists the catalog), and `gapit db setup` creates the
 datadir and materializes the bundled databases.
 Seven audited, permissively licensed databases ship inside the wheel and need no network:
-the first screen against a bundled name materializes it automatically, and `gapit setupdb`
-materializes all eight at once. Every other provider downloads from upstream when fetched
+the first screen against a bundled name materializes it automatically, and `gapit db setup`
+materializes all seven at once. Every other provider downloads from upstream when fetched
 (network required), because several
 upstream licenses — CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0 — forbid
 redistribution inside an MIT-licensed package. See [Databases](./databases.md) for the

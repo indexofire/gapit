@@ -84,6 +84,18 @@ TOOLS: list[dict[str, object]] = [
         ["files"],
     ),
     _tool_entry(
+        "typing",
+        "Designate phenotypes from a gapit/abricate screen result table (TSV or CSV"
+        " text). Returns gapit.typing_result/1 JSON by default; its notes carry"
+        " any follow-up guidance (for meningococcal W/Y, the synG EX7E check).",
+        dict(
+            table=_STR,
+            datadir=_STR,
+            format={"type": "string", "enum": ["json", "tsv", "md"], "default": "json"},
+        ),
+        ["table"],
+    ),
+    _tool_entry(
         "schema",
         "Print the JSON Schema of a gapit output document.",
         dict(name={"type": "string", "enum": sorted(SCHEMA_MODELS)}),
@@ -98,6 +110,14 @@ TOOLS: list[dict[str, object]] = [
         "db_path",
         "Resolve the effective datadir and its source without creating it (gapit.datadir/1).",
         dict(datadir=_STR),
+    ),
+    _tool_entry(
+        "db_setup",
+        "Bootstrap the datadir, materialize bundled databases, and rebuild BLAST"
+        " indices (gapit.dbsetup/1). names selects databases (missing providers are"
+        " fetched, missing bundles materialized); no_bundles skips bundled"
+        " materialization and indexes only what is already installed.",
+        dict(datadir=_STR, no_bundles=_FLAG, names=_FILES),
     ),
     _tool_entry(
         "db_fetch",

@@ -63,9 +63,9 @@ gapit --version
 
 ```console
 $ gapit --version
-gapit 0.6.5
+gapit 0.6.6
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.5"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.6.6"}
 ```
 
 ## 可选 gseek 引擎
@@ -87,9 +87,9 @@ gapit 会调用 BLAST+（`blastn`、`blastx`、`makeblastdb`、`blastdbcmd`）�
 筛查需要数据目录（`--datadir`，然后 `$GAPIT_DATADIR`，然后
 `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db`）里至少有一个数据库。全新安装时，
 `gapit db path` 显示生效位置，`gapit db list` 在任何数据库
-存在之前就能工作（它会自动创建数据目录并列出目录清单），`gapit setupdb` 会创建数据
+存在之前就能工作（它会自动创建数据目录并列出目录清单），`gapit db setup` 会创建数据
 目录并物化内置数据库。七个经过审计、许可宽松的数据库随 wheel 发布且无需网络：对某个
-内置库名的第一次筛查会自动物化它，`gapit setupdb` 则一次性物化全部七个。其余每个
+内置库名的第一次筛查会自动物化它，`gapit db setup` 则一次性物化全部七个。其余每个
 提供商都在抓取时从上游下载（需要网络），因为多家上游许可——CARD 的 McMaster 条款、
 VFDB 的 CC BY-NC、Kaptive 的 GPL-3.0——禁止随 MIT 许可的包再分发。完整的数据库表与
 内置库说明见[数据库](./databases.zh.md)。

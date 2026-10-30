@@ -74,6 +74,7 @@ def test_schema_registers_database_listing_documents() -> None:
     """The database listing documents are first-class agent contracts now."""
     for name, schema in (
         ("dblist", "gapit.dblist/1"),
+        ("dbsetup", "gapit.dbsetup/1"),
         ("dboutdated", "gapit.dboutdated/1"),
         ("datadir", "gapit.datadir/1"),
     ):

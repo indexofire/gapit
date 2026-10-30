@@ -2,18 +2,16 @@
 
 import json
 from collections.abc import Sequence
-from pathlib import Path
 from typing import Any
 
 import click
 
-from gapit import __version__, config, db
-from gapit.bundled import bundled_names, materialize_bundled
+from gapit import __version__
 from gapit.cmd_db import register_db_command
 from gapit.cmd_screen import register_screen_command
 from gapit.cmd_summary import register_summary_command
 from gapit.cmd_typing import register_typing_command
-from gapit.dispatch import datadir_option, dispatch
+from gapit.dispatch import dispatch
 from gapit.errors import UsageError, render_error, usage_fail
 from gapit.formats.json import VersionDocument
 from gapit.formats.schemas import SCHEMA_MODELS
@@ -108,29 +106,6 @@ def main(ctx: click.Context, show_version: bool | None, as_json: bool) -> None:
 app = main
 
 
-def _setupdb(datadir: Path | None, debug: bool) -> None:
-    # setupdb is the explicit bootstrap command: create the datadir when the
-    # machine has none, then materialize the bundled databases and index all.
-    root = config.ensure_datadir(datadir)
-    for bundled_name in bundled_names():
-        if not (root / bundled_name / "gapit-manifest.json").is_file():
-            materialize_bundled(bundled_name, root, quiet=False)
-    infos = db.list_databases(root, setupdb=True, debug=debug)
-    for info in infos:
-        click.echo(
-            f"Indexed {info.name} ({info.n_sequences} sequences, {info.dbtype})",
-            err=True,
-        )
-
-
-@app.command("setupdb")
-@datadir_option()
-@click.option("--debug", "-v", is_flag=True, help="Echo external command lines to stderr.")
-def setupdb(datadir: Path | None, debug: bool) -> None:
-    """Materialize bundled databases, then build BLAST indices for everything under the datadir."""
-    dispatch(lambda: _setupdb(datadir, debug))
-
-
 register_screen_command(app)
 register_typing_command(app)
 register_summary_command(app)
@@ -143,8 +118,8 @@ register_mcp_command(app)
     "name",
     help=(
         "Document to introspect: report, reads, reads2, cluster, cluster2,"
-        " summary, error, version, dblist, dboutdated, datadir, features,"
-        " typing, typing_result, floors, or screen."
+        " summary, error, version, dblist, dbsetup, dboutdated, datadir,"
+        " features, typing, typing_result, floors, or screen."
     ),
 )
 def schema(name: str) -> None:

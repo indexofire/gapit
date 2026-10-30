@@ -1,8 +1,8 @@
 ---
 schema: gapit.cluster/2
-tool: gapit 0.6.5
+tool: gapit 0.6.6
 created_at: 2026-10-01T12:00:00Z
-db: vp_ok
+db: vpa_ok
 preset: asm20
 min_gene_cov: 90.0
 min_gene_id: 90.0

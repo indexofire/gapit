@@ -200,7 +200,7 @@ def blast_db_info(db_prefix: Path) -> BlastDbInfo:
     result = run_tool(["blastdbcmd", "-info", "-db", str(db_prefix)])
     if result.returncode != 0:
         raise DatabaseError(
-            f"Database {db_prefix} is not indexed, please try: gapit setupdb",
+            f"Database {db_prefix} is not indexed, please try: gapit db setup",
             code="DATABASE_NOT_INDEXED",
             context={"db": str(db_prefix)},
         )
@@ -265,12 +265,22 @@ def _manifest_dbtype(db_dir: Path) -> Literal["nucl", "prot"] | None:
         return None
 
 
-def list_databases(datadir: Path, *, setupdb: bool, debug: bool = False) -> list[DatabaseInfo]:
-    """Enumerate databases (building indices first when ``setupdb``), requiring
-    every database to be indexed; returns one DatabaseInfo per database."""
+def list_databases(
+    datadir: Path,
+    *,
+    reindex: bool,
+    debug: bool = False,
+    names: frozenset[str] | None = None,
+) -> list[DatabaseInfo]:
+    """Enumerate databases (rebuilding indices first when ``reindex``), requiring
+    every database to be indexed; returns one DatabaseInfo per database.
+    ``names`` restricts the set (``None`` means every discovered database)."""
     infos: list[DatabaseInfo] = []
-    for database in discover_databases(datadir):
-        if setupdb:
+    databases = discover_databases(datadir)
+    if names is not None:
+        databases = [database for database in databases if database.name in names]
+    for database in databases:
+        if reindex:
             with database_lock(database.path):
                 make_blast_db(
                     database.sequences_path,
@@ -284,7 +294,8 @@ def list_databases(datadir: Path, *, setupdb: bool, debug: bool = False) -> list
         )
         if not index_exists:
             raise DatabaseError(
-                f"Database {database.name} is not indexed, please try: gapit setupdb",
+                f"Database {database.name} is not indexed, please try:"
+                f" gapit db setup {database.name}",
                 code="DATABASE_NOT_INDEXED",
                 context={"db": database.name},
             )

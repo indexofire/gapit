@@ -18,7 +18,7 @@ PD, Apache-2.0, BSD, MIT — never GPL or non-commercial terms; everything
 else stays download-on-fetch in the provider catalog. The three provider
 snapshots (ncbi, resfinder, ecoh) are point-in-time copies
 of exactly what ``db fetch`` would install (gapit/v1 headers, produced by
-the provider pipeline itself); the typed cluster snapshot vp_ok is a pure
+the provider pipeline itself); the typed cluster snapshot vpa_ok is a pure
 built-in (no provider behind it) carrying the resolved gapit.features/1
 table a completed /2 build produced; ``db fetch <name>`` remains the
 freshness path for the provider-backed bundled names and overwrites the

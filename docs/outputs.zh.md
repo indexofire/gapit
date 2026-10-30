@@ -130,7 +130,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.5"
+    "version": "0.6.6"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -220,7 +220,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 ```json
 {
   "schema": "gapit.typing_result/1",
-  "tool": {"name": "gapit", "version": "0.6.5"},
+  "tool": {"name": "gapit", "version": "0.6.6"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
   "db": "ecoli_dec",
@@ -400,6 +400,35 @@ typing 的数据库是同一个表头去掉 `PHENOTYPE`。没有位点判定的�
 `learned_linear` 规则，外加 `cutoff`、`ambiguity_margin` 和 `fallback`）。typing
 文档就是表型求值器实现的契约；见 [databases.md](./databases.md)。
 
+### gapit.dbsetup/1（`db setup` 回执）
+
+`gapit db setup --json` 输出一份描述引导/建索引过程的文档，并抑制进度信息，保证
+stdout 只有回执：
+
+```json
+{
+  "schema": "gapit.dbsetup/1",
+  "datadir": "/home/me/.local/share/gapit/db",
+  "materialized": ["ecoli_dec"],
+  "fetched": [],
+  "databases": [
+    {"db": "ecoli_dec", "records": 16, "dbtype": "nucl"},
+    {"db": "tinyamr", "records": 3, "dbtype": "nucl"}
+  ]
+}
+```
+
+| 字段 | 类型 | 含义 |
+|---|---|---|
+| `schema` | string | 恒为 `gapit.dbsetup/1` |
+| `datadir` | string | 本次设置的数据目录绝对路径 |
+| `materialized` | string 数组 | 本次物化的内置库（`--no-bundles` 或已安装时为空） |
+| `fetched` | string 数组 | 本次下载的 provider 数据库（仅显式 `--db NAME`；`--all` 不下载） |
+| `databases` | array | 本次建索引的全部数据库，按数据目录名称排序 |
+| `databases[].db` | string | 数据库名 |
+| `databases[].records` | integer | BLAST 索引报告的序列/位点数 |
+| `databases[].dbtype` | string | `nucl` 或 `prot` |
+
 ### gapit.summary/1（汇总矩阵）
 
 `gapit summary --format json` 把报告表折叠成基因矩阵。真实输出，汇总两份报告：一份
@@ -410,7 +439,7 @@ typing 的数据库是同一个表头去掉 `PHENOTYPE`。没有位点判定的�
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.5"
+    "version": "0.6.6"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -516,7 +545,7 @@ $ gapit db fetch nosuchdb            # exit 2, usage
 {"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
 
 $ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr contigs.fa   # exit 4, db error, before indexing
-{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gapit-own-db/db/tinyamr/sequences is not indexed, please try: gapit setupdb","context":{"db":"/tmp/opencode/gapit-own-db/db/tinyamr/sequences"}}
+{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gapit-own-db/db/tinyamr/sequences is not indexed, please try: gapit db setup","context":{"db":"/tmp/opencode/gapit-own-db/db/tinyamr/sequences"}}
 ```
 
 缺外部二进制（退出码 3）时会报告是哪一个：
@@ -533,15 +562,16 @@ agent 只凭二进制就能发现整个契约。
 
 ```console
 $ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.5"}
+{"schema":"gapit.version/1","name":"gapit","version":"0.6.6"}
 ```
 
-`gapit schema <name>` 打印每个文档的 JSON Schema。十二个名字：`report`、
-`typing_result`、`reads`、`reads2`、`cluster`、`summary`、`error`、`version`，外加
-数据库侧文档 `features`（gapit.features/1，基因簇数据库的特征表）、`typing`
-（gapit.typing/1，基因簇数据库的声明式评分规范）、`floors`（gapit.floors/1，
-reads/contig 模式存在判定的逐基因一致性下限）和 `screen`（gapit.screen/1，每数据库
-筛查默认值）。`gapit schema report` 的裁剪片段：
+`gapit schema <name>` 打印每个文档的 JSON Schema。十八个名字：`report`、
+`typing_result`、`reads`、`reads2`、`cluster`、`cluster2`、`summary`、`error`、
+`version`、`dblist`、`dbsetup`、`dboutdated`、`datadir`、`dbinfo`，外加数据库侧文档
+`features`（gapit.features/1，基因簇数据库的特征表）、`typing`（gapit.typing/2，
+基因簇数据库的声明式评分规范；/1 仍可读取）、`floors`（gapit.floors/1，reads/contig
+模式存在判定的逐基因一致性下限）和 `screen`（gapit.screen/1，每数据库筛查默认值）。
+`gapit schema report` 的裁剪片段：
 
 ```json
 {

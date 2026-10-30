@@ -9,7 +9,7 @@ Database setup is covered in [./databases.md](./databases.md); a full walk-throu
 
 ## Options
 
-Transcribed from `gapit screen --help` (gapit 0.6.5). Flags marked *reads mode* apply only when
+Transcribed from `gapit screen --help` (gapit 0.6.6). Flags marked *reads mode* apply only when
 you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 
 Every option also accepts the single-dash short form listed in the **Short** column (e.g.
@@ -83,7 +83,7 @@ temp datadir, index it, and point `$GAPIT_DATADIR` at it. Never write into
 ```console
 $ mkdir -p /tmp/gapit-demo/datadir/tinyamr
 $ cp tests/data/db/tinyamr/sequences /tmp/gapit-demo/datadir/tinyamr/sequences
-$ gapit setupdb --datadir /tmp/gapit-demo/datadir
+$ gapit db setup --datadir /tmp/gapit-demo/datadir
 Indexed tinyamr (3 sequences, nucl)
 $ export GAPIT_DATADIR=/tmp/gapit-demo/datadir
 ```
@@ -115,7 +115,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.5"
+    "version": "0.6.6"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {

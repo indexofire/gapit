@@ -69,6 +69,7 @@ nav:
   - Data directory: datadir.md
   - Custom databases: custom-db.md
   - Typing schemes: typing.md
+  - Meningococcal serogroup typing (nme_sero): nme_sero.md
   - Outputs: outputs.md
   - gseek engine: gseek-engine.md
   - MCP server: mcp.md

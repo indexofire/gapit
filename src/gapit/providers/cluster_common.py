@@ -60,6 +60,10 @@ class ClusterProvider:
     source_urls: tuple[str, ...]
     license: str
     note: str
+    # Committed extra GBK/GFF loci appended after the downloaded sources
+    # (a provider-specific control locus, for example). These are wheel
+    # assets, not downloads; their content is part of the provider build.
+    extra_sources: tuple[Path, ...] = ()
     dbtype: Dbtype = "nucl"
     kind: Literal["cluster"] = "cluster"
     typing: Path | None = None
@@ -140,4 +144,6 @@ def _merged_loci(provider: ClusterProvider, workdir: Path) -> list[LocusSequence
     loci: list[LocusSequence] = []
     for url in provider.source_urls:
         loci.extend(parse_cluster_input(workdir / url_basename(url)))
+    for extra in provider.extra_sources:
+        loci.extend(parse_cluster_input(extra))
     return loci

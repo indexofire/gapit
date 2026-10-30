@@ -2,7 +2,7 @@
 
 Databases installed into the datadir outside the provider catalog — `db
 build` products (gene + cluster kinds) and manifest-less abricate-style
-directories — must appear as ``local`` rows after the registry providers.
+directories — must appear as ``local`` rows in the NAME-sorted listing.
 With no extras the output carries no trace of the extension (additive
 proof). Real binaries through the CLI surface (test_cli_db_build.py
 conventions).
@@ -46,8 +46,8 @@ def list_rows(datadir: Path) -> list[str]:
 
 def test_db_list_includes_built_gene_and_cluster_databases(tmp_path: Path) -> None:
     """Given a datadir holding one gene-kind and one cluster-kind `db build`
-    product, When `db list`, Then both render as local rows after every
-    registry provider — STATUS from the manifest record count, PROVIDER
+    product, When `db list`, Then both render as local rows in the globally
+    NAME-sorted listing — STATUS from the manifest record count, PROVIDER
     local, DBTYPE nucl, empty DESCRIPTION (no manifest note)."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
@@ -59,11 +59,12 @@ def test_db_list_includes_built_gene_and_cluster_databases(tmp_path: Path) -> No
     lines = list_rows(datadir)
 
     assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER"
-    # Registry providers first (all available: nothing fetched), extras last
-    # by name — deterministic ordering.
-    assert lines[-2] == "myamr\t\tinstalled (2)\tnucl\t-\tlocal"
-    assert lines[-1] == "myloci\t\tinstalled (2)\tnucl\t-\tlocal"
-    assert all(line.split("\t")[5] != "local" for line in lines[1:-2])
+    rows = [line.split("\t") for line in lines[1:]]
+    names = [row[0] for row in rows]
+    assert names == sorted(names)
+    by_name = {row[0]: row for row in rows}
+    assert by_name["myamr"] == ["myamr", "", "installed (2)", "nucl", "-", "local"]
+    assert by_name["myloci"] == ["myloci", "", "installed (2)", "nucl", "-", "local"]
 
 
 def test_db_list_json_marks_extras_local_and_keeps_registry_entries_untouched(
@@ -120,11 +121,10 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
         ("cje_cps", "bundled"),
         ("ecoh", "bundled"),
         ("ecoli_dec", "bundled"),
-        ("lm_doumith", "bundled"),
+        ("lmo_sero", "bundled"),
         ("ncbi", "bundled"),
         ("resfinder", "bundled"),
-        ("vc_serogroup", "bundled"),
-        ("vp_ok", "bundled"),
+        ("vpa_ok", "bundled"),
     ]
     for entry in with_source:
         assert entry["installed"] is False
@@ -173,20 +173,23 @@ def test_db_list_manifestless_dir_counts_fasta_and_detects_dbtype(tmp_path: Path
     (proto / "sequences").write_text(f">prot_gene\n{SEQ_PROT}\n", encoding="utf-8")
 
     lines = list_rows(datadir)
+    rows = {line.split("\t")[0]: line for line in lines[1:]}
 
-    assert lines[-2] == "alegacy\t\tinstalled (2)\tnucl\t-\tlocal"
-    assert lines[-1] == "zproto\t\tinstalled (1)\tprot\t-\tlocal"
+    assert rows["alegacy"] == "alegacy\t\tinstalled (2)\tnucl\t-\tlocal"
+    assert rows["zproto"] == "zproto\t\tinstalled (1)\tprot\t-\tlocal"
+    names = [line.split("\t")[0] for line in lines[1:]]
+    assert names == sorted(names)
 
 
 def test_db_list_json_surfaces_a_bundled_content_license(tmp_path: Path) -> None:
-    """Given the bundled vp_ok row, When listed, Then its pinned MIT content
+    """Given the bundled vpa_ok row, When listed, Then its pinned MIT content
     license is carried in the gapit.dblist/1 entry."""
     from gapit.db_ops import db_list_entries
 
     entries = {entry.name: entry for entry in db_list_entries(tmp_path)}
-    assert entries["vp_ok"].license == "MIT (database content)"
-    assert entries["vp_ok"].typing is True
-    assert entries["vp_ok"].kind == "cluster"
+    assert entries["vpa_ok"].license == "MIT (database content)"
+    assert entries["vpa_ok"].typing is True
+    assert entries["vpa_ok"].kind == "cluster"
     assert entries["ecoh"].typing is False
 
 
@@ -212,7 +215,7 @@ def test_db_list_flags_a_locally_built_typed_gene_database(tmp_path: Path) -> No
     entry = next(item for item in json.loads(result.stdout)["providers"] if item["name"] == "typed")
     assert entry["kind"] == "gene"
     assert entry["typing"] is True
-    assert list_rows(datadir)[-1] == "typed\t\tinstalled (4)\tnucl\tcommand\tlocal"
+    assert "typed\t\tinstalled (4)\tnucl\tcommand\tlocal" in list_rows(datadir)
 
 
 def test_db_list_does_not_call_a_manifest_only_dir_installed(tmp_path: Path) -> None:
@@ -243,7 +246,7 @@ def test_db_list_does_not_call_a_manifest_only_dir_installed(tmp_path: Path) -> 
 
 def test_db_list_reports_installed_but_unindexed(tmp_path: Path) -> None:
     """Given a manifest with sequences but no BLAST index, When db list runs,
-    Then installed is true but indexed is false (screen still needs setupdb)."""
+    Then installed is true but indexed is false (screen still needs db setup)."""
     datadir = tmp_path / "datadir"
     db_dir = datadir / "card"
     db_dir.mkdir(parents=True)
@@ -266,3 +269,75 @@ def test_db_list_reports_installed_but_unindexed(tmp_path: Path) -> None:
     by_name = {entry["name"]: entry for entry in json.loads(result.stdout)["providers"]}
     assert by_name["card"]["installed"] is True
     assert by_name["card"]["indexed"] is False
+
+
+def test_db_list_name_prints_space_separated_sorted_names(tmp_path: Path) -> None:
+    """Given a catalog, When db list -n runs, Then stdout is one space-separated
+    line of names in NAME order, with no header and no TSV fields."""
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    entries = db_list_entries(datadir)
+    names = [entry.name for entry in entries]
+
+    result = runner.invoke(app, ["db", "list", "-n", "--datadir", str(datadir)])
+
+    assert result.exit_code == 0
+    assert result.stdout == " ".join(names) + "\n"
+    assert names == sorted(names)
+    assert "\t" not in result.stdout
+    assert "NAME" not in result.stdout
+
+
+def test_db_list_name_and_json_are_mutually_exclusive(tmp_path: Path) -> None:
+    """Given -n and --json together, When db list runs, Then it is a usage
+    error instead of silently choosing one rendering."""
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    result = runner.invoke(app, ["db", "list", "-n", "--json", "--datadir", str(datadir)])
+    assert result.exit_code == 2
+    assert "not both" in result.stderr
+
+
+def test_db_list_reads_local_info_description_and_vendor(tmp_path: Path) -> None:
+    """Given a local database with an info.json description/vendor, When
+    listed, Then the row carries both instead of the anonymous local label."""
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    fasta = tmp_path / "genes.fa"
+    fasta.write_text(GENE_FASTA, encoding="utf-8")
+    assert build("myamr", str(fasta), "--datadir", str(datadir)).exit_code == 0
+    (datadir / "myamr" / "info.json").write_text(
+        json.dumps(
+            {
+                "description": "Local AMR panel",
+                "vendor": "gapit(Hangzhou CDC)",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
+    assert result.exit_code == 0, result.stderr
+    entry = next(item for item in json.loads(result.stdout)["providers"] if item["name"] == "myamr")
+    assert entry["description"] == "Local AMR panel"
+    assert entry["vendor"] == "gapit(Hangzhou CDC)"
+
+    rows = list_rows(datadir)
+    assert "myamr\tLocal AMR panel\tinstalled (2)\tnucl\t-\tgapit(Hangzhou CDC)" in rows
+
+
+def test_db_list_malformed_local_info_is_a_typed_error(tmp_path: Path) -> None:
+    """Given a malformed local info.json, When db list runs, Then provenance
+    corruption is a typed DBINFO_MALFORMED error, not a silent local row."""
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    fasta = tmp_path / "genes.fa"
+    fasta.write_text(GENE_FASTA, encoding="utf-8")
+    assert build("myamr", str(fasta), "--datadir", str(datadir)).exit_code == 0
+    (datadir / "myamr" / "info.json").write_text("{not json", encoding="utf-8")
+
+    result = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
+
+    assert result.exit_code == 4
+    envelope = json.loads(result.stderr.splitlines()[-1])
+    assert envelope["code"] == "DBINFO_MALFORMED"

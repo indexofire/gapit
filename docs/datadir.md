@@ -41,7 +41,7 @@ gapit can read both.
 
 The BLAST index (`.nin/.nsq/.nhr` for nucleotide, `.pin/.psq/.phr` for protein) is a
 generated artifact, not source data. A missing or stale index is rebuilt by
-`gapit setupdb` or by the normal build pipeline.
+`gapit db setup` or by the normal build pipeline.
 
 `gapit-manifest.json` is written **last**. It certifies the artifacts (`sha256`,
 `n_records`, `dbtype`, `kind`, `source`, `typing_schema`, licenses, tool versions).
@@ -61,7 +61,7 @@ A cluster database (`kind: cluster`) holds one FASTA record per **locus** plus
 `features.json`, which maps loci to genes and coordinates. `gapit screen` runs the
 minimap2 cluster engine and scores genes/loci from the `cs` walk. A multi-scheme
 `typing.json` makes the cluster output `gapit.cluster/2`; otherwise the database renders
-`gapit.cluster/1`. `vp_ok` is the bundled typed-cluster example.
+`gapit.cluster/1`. `vpa_ok` is the bundled typed-cluster example.
 
 ### Where databases come from
 
@@ -94,14 +94,57 @@ Commands differ on whether they create the directory:
 | Command | Missing datadir |
 |---|---|
 | `gapit db list` | Creates the empty root, then lists the catalog |
-| `gapit setupdb` | Creates the root, materializes bundled databases, indexes all |
+| `gapit db setup` | Creates the root, materializes bundled databases, indexes all |
 | `gapit db fetch` / `db build` | Creates the root as part of the write path |
 | `screen` / `typing` against a bundled name | Creates the root and materializes that bundle |
 | `screen` / `typing` against a fetched name | Requires it (`DATADIR_NOT_FOUND`, exit 4) |
 | `db search` / `db outdated` | Requires it (`DATADIR_NOT_FOUND`, exit 4) |
 
-`db list` and `setupdb` are the explicit first-run bootstrap paths. `db path` is pure
+`db list` and `db setup` are the explicit first-run bootstrap paths. `db path` is pure
 introspection.
+
+### Bootstrapping with `gapit db setup`
+
+`gapit db setup` creates a missing datadir, materializes bundled databases that are
+not installed yet, and rebuilds the BLAST index for every database it finds. An
+already-installed bundle (manifest present) is left untouched; every discovered
+database is reindexed in place, so the command is a repair path as well as a first-run
+path.
+
+Select databases explicitly:
+
+```bash
+gapit db setup                 # same as --all (kept for compatibility)
+gapit db setup -a              # all installed + bundled databases
+gapit db setup -d nme_sero   # only nme_sero
+gapit db setup -d ecoli_dec -d cje_cps
+```
+
+`--all/-a` never fetches providers: it materializes missing bundled databases and
+rebuilds the index for everything installed or bundled. `--db/-d NAME` is explicit
+per database: an installed name is reindexed, a missing bundled name is materialized,
+and a missing provider name is fetched with the normal `db fetch` pipeline before it
+is indexed. A name that is none of those is a `DATABASE_NOT_FOUND` error before
+anything is written.
+
+| Option | Effect |
+|---|---|
+| `--all`, `-a` | Set up every installed/bundled database (never fetches providers) |
+| `--db`, `-d NAME` | Set up NAME (repeatable); missing providers are fetched, missing bundles materialized |
+| `--datadir`, `-D PATH` | Use PATH instead of the resolved datadir |
+| `--no-bundles`, `-B` | Skip bundled materialization (named providers may still be fetched) |
+| `--json`, `-J` | Print one `gapit.dbsetup/1` receipt on stdout and suppress progress |
+| `--quiet`, `-q` | Silence progress diagnostics on stderr |
+| `--debug`, `-v` | Echo external command lines (`makeblastdb`) to stderr |
+
+The JSON receipt names the bundles that were materialized, the providers that were
+fetched, and every database that was indexed:
+
+```json
+{"schema":"gapit.dbsetup/1","datadir":"/path/to/db","materialized":["ecoli_dec"],"fetched":[],"databases":[{"db":"ecoli_dec","records":16,"dbtype":"nucl"}]}
+```
+
+Introspect it with `gapit schema dbsetup`.
 
 ## Why not `$CONDA_PREFIX` by default?
 
@@ -155,7 +198,7 @@ hidden per-database `flock`, and builds happen in a hidden staging directory bef
 rename swap. Readers normally see the old database or the new one; there is still a
 short rename window where the canonical path is being replaced. Do not schedule
 concurrent writes to the same database against a shared datadir if a reader cannot
-tolerate that window. `gapit setupdb` rebuilds BLAST indices in place, so do not run it
+tolerate that window. `gapit db setup` rebuilds BLAST indices in place, so do not run it
 concurrently with `db fetch`/`db build` for the same database.
 
 **Permissions.** New datadirs and transaction staging directories are created `0700`.
@@ -180,7 +223,7 @@ docker run --rm -it \
   --user "$(id -u):$(id -g)" \
   -v gapit-data:/data/gapit \
   -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.5 gapit db list
+  gapit:0.6.6 gapit db list
 ```
 
 For CI, mount or cache a workspace directory and pin versions:
@@ -189,13 +232,13 @@ For CI, mount or cache a workspace directory and pin versions:
 docker run --rm \
   -v "$PWD/.gapit-db:/data/gapit" \
   -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.5 gapit screen sample.fna --db ecoli_dec
+  gapit:0.6.6 gapit screen sample.fna --db ecoli_dec
 ```
 
 You can bake reference databases into an image for **read-only** screening:
 
 ```dockerfile
-RUN gapit setupdb --datadir /opt/gapit/db
+RUN gapit db setup --datadir /opt/gapit/db
 ENV GAPIT_DATADIR=/opt/gapit/db
 ```
 
@@ -219,7 +262,7 @@ a project datadir instead.
 ```text
 gapit db path [--json]      # resolved datadir, no creation
 gapit db list [--json]      # catalog + install state; bootstraps root
-gapit setupdb               # bootstrap + materialize + index
+gapit db setup              # bootstrap + materialize + index
 gapit db fetch NAME         # provider download/build
 gapit db build NAME INPUT   # custom gene or cluster database
 gapit db outdated           # installed DB age (strict; requires datadir)

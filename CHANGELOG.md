@@ -1,9 +1,35 @@
 # Changelog
 
-## [Unreleased]
+## [0.6.6] - 2026-10-30
 
 ### Added
 
+- **`nme_sero` provider.** Non-MLST *Neisseria meningitidis* gene-presence
+  panel fetched from MDU-PHL/meningotype (GPL-3.0 + PubMLST terms,
+  fetch-on-demand): serogroup A/B/C/W/X/Y amplicons, `ctrA` capsule marker
+  and a single-copy `sodC` depth control. `gapit screen -d nme_sero` +
+  `gapit typing` call the serogroup; `screen.json` gates FASTQ presence on
+  the gene:sodC depth ratio; a W/Y call carries a `NEXT STEP` note telling an
+  agent to resolve W vs Y with the synG EX7E motif. MLST/cc and allele-level
+  PorA/FetA/PorB/BAST typing stay outside gapit (gMLST database / external
+  finetyping pipeline).
+- **MCP `typing` and `db_setup` tools.** The stdio server can now consume the
+  screen table text directly (`typing`) and bootstrap/index a datadir
+  (`db_setup`), so an agent can go from screening to a designation without
+  shelling out. The typing result carries the same `NEXT STEP` notes as the
+  CLI, including the W/Y → synG EX7E follow-up.
+- **`vch_oagc` provider (V. cholerae O-antigen).** A fetch-on-demand cluster
+  database: 190 OL reference loci from Murase et al. 2022 (Microb Genom
+  mgen000860; NCBI BioProject PRJDB8600), fetched from NCBI efetch, plus a
+  committed `ompW` species-control locus. The committed typing asset installs
+  `o_group` (189 O phenotypes; O1-Inaba/O1-Ogawa fold to O1) and `species`
+  (`ompW` -> V. cholerae). Many OL clusters are not serologically verified;
+  `OUT` is not non-O1/non-O139, OLU loci are not yet included, and
+  `ctxA/ctxB` are deliberately left to a future `vch_vf`.
+- **Local `info.json` listing metadata.** A database's `info.json` may now
+  declare `description` and `vendor`; `db list` and `db info` use them for
+  local/curated databases instead of an empty description and the `local`
+  vendor. Malformed sidecars stay typed `DBINFO_MALFORMED` errors.
 - **`gapit.screen/1` per-database screening defaults (`screen.json`).** A
   database can declare its own reads/contigs thresholds; CLI flags still win,
   and a database without the sidecar behaves exactly as before. Install with
@@ -18,6 +44,34 @@
   `lpxA`/`HS12` 80%) and `screen.json` (MAPQ 20, depth 5, 10% lpxA ratio,
   contig merge-fragments). The 80.47% C. coli repeat remains excluded; the
   83% HS37 oxidoreductase cross-reaction is dropped by the 90% floor.
+
+### Changed
+
+- **`gapit setupdb` is replaced by `gapit db setup`.** Database bootstrap and
+  index rebuilding sit with the other datadir operations, and the old
+  top-level spelling is removed (an unknown command now). The redesigned
+  command takes `--all/-a` (every installed/bundled database, never fetches
+  providers), `--db/-d NAME` (repeatable; a missing provider is fetched, a
+  missing bundle materialized), `--quiet/-q`, `--debug/-v`,
+  `--no-bundles/-B` (skip bundle materialization), and `--json/-J` (emit the
+  new `gapit.dbsetup/1` receipt on stdout with progress suppressed).
+  `DATABASE_NOT_INDEXED` hints, completion, and all docs point at
+  `gapit db setup`.
+- **Bundled database renames: `lm_doumith` → `lmo_sero`, `vp_ok` → `vpa_ok`.**
+  The old names are gone from the catalog, docs, and tests; `lmo_sero` keeps
+  the Doumith serogrouping panel and `vpa_ok` keeps the V. parahaemolyticus
+  O:K cluster/typing asset.
+- **`gapit db list` is NAME-sorted; `-n/--name` prints names only.** The TSV,
+  rich table, JSON, and MCP listing now share one global NAME order (registry,
+  bundled, and local rows interleave). `gapit db list -n` emits one
+  space-separated line for shell loops such as
+  `for name in $(gapit db list -n); do gapit db setup -d "$name"; done`.
+
+### Removed
+
+- **Bundled `vc_serogroup`.** The legacy V. cholerae O1/O139 + ctxA gene
+  panel is removed from the wheel and catalog; use `vch_oagc` for O-antigen
+  locus typing and a future `vch_vf` for ctxA/ctxB.
 
 All notable changes to gapit are documented in this file.
 
@@ -34,7 +88,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and designated by the `penner_cps` scheme (`gapit.typing/2`) covering the 35
   capsule types the paper resolves — complexes called as complexes, shared
   amplicon profiles declared as rules, every caveat carried as a note. Real
-  public-domain content, so it ships in the wheel like `lm_doumith`.
+  public-domain content, so it ships in the wheel like `lmo_sero`.
 - **`gapit db build NAME` with no input re-projects the installed database.**
   The curation path the databases guide promised but had no command for: edit
   `records.jsonl` (rename a gene, merge two alleles under one name, drop a
@@ -272,10 +326,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   /gene→locus_tag→`locus:id@start` resolution at build time). Registered as
   `gapit schema cluster2`.
 
-- **Bundled `vp_ok`: V. parahaemolyticus O:K serotyping, one scan.** The wheel now ships a
+- **Bundled `vpa_ok`: V. parahaemolyticus O:K serotyping, one scan.** The wheel now ships a
   typed cluster bundle (six bundles total; ~7.9 MiB committed artifacts) built from the
   vpasero OAgc/CPSgc reference loci (195 loci, MIT): `pip install gapit` →
-  `gapit screen genome.fna --db vp_ok` auto-materializes with zero network and renders
+  `gapit screen genome.fna --db vpa_ok` auto-materializes with zero network and renders
   `gapit.cluster/2` with `o_group`, `k_group`, and the composed `O:K` serotype
   (RIMD 2210633 → O3:K6). Kind-aware cluster-bundle materialization replays the same
   cluster build entry `db build` uses — bundle ≡ build, byte-identical `sequences` +
@@ -301,8 +355,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   rich table renders with uniformly thin rule lines (was a heavy header separator).
 
 - **`upec_expec_vf` no longer rides the wheel** — it returns to pure fetch-on-demand in
-  the provider catalog; the sanctioned bundled set is `ecoh`, `ecoli_dec`, `lm_doumith`,
-  `ncbi`, `resfinder`, `vp_ok`.
+  the provider catalog; the sanctioned bundled set is `ecoh`, `ecoli_dec`, `lmo_sero`,
+  `ncbi`, `resfinder`, `vpa_ok`.
 
 ## [0.5.4] - 2026-10-03
 
@@ -349,7 +403,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   examples now paste the real default `+`/`-` cells; schema rosters add `floors`
   (eleven documents) and the `gapit.dblist/1` field table gains `kind`; the database
   catalog is described as its real 21-row self (12 gene + 7 kaptive cluster + the
-  `ecoli_dec`/`lm_doumith` bundles); the quickstart gains a "Type your samples"
+  `ecoli_dec`/`lmo_sero` bundles); the quickstart gains a "Type your samples"
   tutorial (two-stage designation, the screen|typing pipe, wildcard-FASTQ auto-pairing)
   and uses `gapit setupdb` as the bootstrap path; `gapit screen` docs list
   `--min-identity`/`-I` and `--min-mapq`/`-M`; the `gapit db build` reference lists
@@ -383,7 +437,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   alleles at 90.4–91% leave no margin), materialized with the bundle; MCP `screen_reads`
   inherits the gate through the shared use-case.
 
-- **Bundled `lm_doumith`: Listeria monocytogenes serogrouping (Doumith 2004) — the sixth
+- **Bundled `lmo_sero`: Listeria monocytogenes serogrouping (Doumith 2004) — the sixth
   bundled database.** Five markers extracted from public-domain INSDC records (`prs`,
   `lmo0737`, `lmo1118`, `ORF2819`, `ORF2110`; strand-corrected, `lmo0737` verified against
   EGD-e) behind the `gapit.typing/2` scheme `doumith_serogroup` (95/95 floors, `prs`
@@ -392,7 +446,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   2011's 4b variant (`IVb-v`, declared before `IVb` so an lmo0737-carrying 4b profile
   resolves to the variant); fallback `untypeable (4a/4c, atypical profile, or non-Lm
   Listeria)`. Materializes on first screen like every bundle (zero network);
-  `tests/test_lm_doumith.py` pins the synthetic marker-subset matrix, the control gate,
+  `tests/test_lmo_sero.py` pins the synthetic marker-subset matrix, the control gate,
   the two-stage golden, and the bundled integration — the bundled roster grows to six
   (discovery, red-flag scan, `db list`, and `setupdb` pins updated). Uppercase gene ids
   (`ORF2819`/`ORF2110`) now ride a shipped database, locking that build/screen/typing

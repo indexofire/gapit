@@ -23,9 +23,11 @@ from gapit.providers import (
     kpsc_o,
     megares,
     ncbi,
+    nme_sero,
     plasmidfinder,
     resfinder,
     upec_expec_vf,
+    vch_oagc,
     vfdb,
     victors,
 )
@@ -49,9 +51,11 @@ REGISTRY: dict[str, AnyProvider] = {
     kpsc_o.PROVIDER.name: kpsc_o.PROVIDER,
     megares.PROVIDER.name: megares.PROVIDER,
     ncbi.PROVIDER.name: ncbi.PROVIDER,
+    nme_sero.PROVIDER.name: nme_sero.PROVIDER,
     plasmidfinder.PROVIDER.name: plasmidfinder.PROVIDER,
     resfinder.PROVIDER.name: resfinder.PROVIDER,
     upec_expec_vf.PROVIDER.name: upec_expec_vf.PROVIDER,
+    vch_oagc.PROVIDER.name: vch_oagc.PROVIDER,
     vfdb.PROVIDER.name: vfdb.PROVIDER,
     victors.PROVIDER.name: victors.PROVIDER,
 }

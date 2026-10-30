@@ -240,7 +240,7 @@ consumes abricate-built datadirs.
 > MD mirrors it plus per-scheme lines. Untyped and single-scheme dbs keep byte-identical
 > `gapit.cluster/1`. /2 builds guarantee globally-unique gene ids (collision-aware
 > /gene→locus_tag→`locus:id@start` resolution at build time). Registered as
-> `gapit schema cluster2`. The vp_ok cookbook now installs as one merged db.
+> `gapit schema cluster2`. The vpa_ok cookbook now installs as one merged db.
 > **Amended (2026-10-20, pre-adoption):** the packed `PHENOTYPES` cell and the
 > global-best columns are replaced by document-derived per-scheme columns — compose
 > value columns first (`SEROTYPE`), then each scheme's call + winner-locus evidence

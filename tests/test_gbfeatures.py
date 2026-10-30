@@ -152,3 +152,31 @@ def test_malformed_bakta_shapes_raise_typed_input_error(tmp_path: Path, text: st
     with pytest.raises(InputError) as excinfo:
         parse_genbank_features(path)
     assert excinfo.value.code == "INVALID_GENBANK"
+
+
+def test_ncbi_serovar_is_used_as_label_when_no_locus_note(tmp_path: Path) -> None:
+    """Given an NCBI O-serogroup record with /serovar but no O-locus note,
+    When parsed, Then the serovar becomes the display label instead of the
+    accession id (the source used by the vch_oagc provider)."""
+    path = tmp_path / "serovar.gbk"
+    path.write_text(
+        "LOCUS       TEST0001                  60 bp    DNA     linear   BCT 01-JAN-2026\n"
+        "DEFINITION  Vibrio cholerae O1 Inaba O-antigen region.\n"
+        "ACCESSION   TEST0001\n"
+        "FEATURES             Location/Qualifiers\n"
+        "     source          1..60\n"
+        '                     /organism="Vibrio cholerae"\n'
+        '                     /serovar="O1 Inaba"\n'
+        "     CDS             1..60\n"
+        '                     /gene="wbeE"\n'
+        '                     /product="O-antigen biosynthesis"\n'
+        "ORIGIN\n"
+        "        1 atggctgctg ctgctgctgc tgctgctgct gctgctgctg ctgctgctgc tgctgctgct\n"
+        "//\n",
+        encoding="utf-8",
+    )
+
+    (locus,) = parse_genbank_features(path)
+
+    assert locus.features.label == "O1 Inaba"
+    assert locus.features.type == "TEST0001"

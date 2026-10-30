@@ -1,4 +1,4 @@
-"""Bundled lm_doumith: the Listeria Doumith-2004 serogrouping panel.
+"""Bundled lmo_sero: the Listeria Doumith-2004 serogrouping panel.
 
 A bundled database — five public-domain INSDC-extracted markers
 (prs, lmo0737, lmo1118, ORF2819, ORF2110) behind the gapit.typing/2 scheme
@@ -28,9 +28,9 @@ from gapit.typing_rules import ExactSetRule
 
 SCHEMES = Path(__file__).parent / "data" / "typing" / "schemes"
 GOLDEN = Path(__file__).parent / "golden"
-PANEL = SCHEMES / "lm_doumith.fa"
-SPEC = SCHEMES / "lm_doumith.json"
-BUNDLE = Path(__file__).parents[1] / "src" / "gapit" / "data" / "dbs" / "lm_doumith"
+PANEL = SCHEMES / "lmo_sero.fa"
+SPEC = SCHEMES / "lmo_sero.json"
+BUNDLE = Path(__file__).parents[1] / "src" / "gapit" / "data" / "dbs" / "lmo_sero"
 
 runner = CliRunner()
 
@@ -59,7 +59,7 @@ def build_db(datadir: Path) -> None:
         [
             "db",
             "build",
-            "lm_doumith",
+            "lmo_sero",
             str(PANEL),
             "--typing",
             str(SPEC),
@@ -88,7 +88,7 @@ def type_json(sample: Path, datadir: Path, tmp_path: Path) -> dict[str, object]:
             "screen",
             str(sample),
             "--db",
-            "lm_doumith",
+            "lmo_sero",
             "--datadir",
             str(datadir),
             "-o",
@@ -102,7 +102,7 @@ def type_json(sample: Path, datadir: Path, tmp_path: Path) -> dict[str, object]:
     )
     assert result.exit_code == 0, result.stderr
     document = json.loads(result.stdout)
-    assert document["db"] == "lm_doumith"
+    assert document["db"] == "lmo_sero"
     return document["files"][0]["phenotypes"]["doumith_serogroup"]
 
 
@@ -166,7 +166,7 @@ def test_prs_control_gate_and_unrelated_sequence(tmp_path: Path) -> None:
             "screen",
             str(unrelated),
             "--db",
-            "lm_doumith",
+            "lmo_sero",
             "--datadir",
             str(datadir),
             "-o",
@@ -190,7 +190,7 @@ def test_typing_command_end_to_end_on_one_representative(tmp_path: Path) -> None
     datadir = tmp_path / "datadir"
     datadir.mkdir()
     build_db(datadir)
-    sample = write_sample(tmp_path, "lm_doumith_iia", ["prs", "lmo0737"])
+    sample = write_sample(tmp_path, "lmo_sero_iia", ["prs", "lmo0737"])
     table = tmp_path / "iia.tsv"
     screened = runner.invoke(
         app,
@@ -198,7 +198,7 @@ def test_typing_command_end_to_end_on_one_representative(tmp_path: Path) -> None
             "screen",
             str(sample),
             "--db",
-            "lm_doumith",
+            "lmo_sero",
             "--datadir",
             str(datadir),
             "-o",
@@ -222,18 +222,18 @@ def test_typing_command_end_to_end_on_one_representative(tmp_path: Path) -> None
         "NOTES",
     ]
     row = lines[1].split("\t")
-    assert row[:4] == ["lm_doumith_iia.fa", "doumith_serogroup", "IIa", "lmo0737;prs"]
+    assert row[:4] == ["lmo_sero_iia.fa", "doumith_serogroup", "IIa", "lmo0737;prs"]
 
 
 def test_typing_golden_iia_and_ivb(tmp_path: Path) -> None:
     """Given the IIa and IVb isolates screened into one table, When typed as
     the DEFAULT TSV, Then the designation output is byte-identical to the
-    committed golden — the two-stage lm_doumith surface, frozen."""
+    committed golden — the two-stage lmo_sero surface, frozen."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
     build_db(datadir)
-    iia = write_sample(tmp_path, "lm_doumith_iia", ["prs", "lmo0737"])
-    ivb = write_sample(tmp_path, "lm_doumith_ivb", ["prs", "ORF2819", "ORF2110"])
+    iia = write_sample(tmp_path, "lmo_sero_iia", ["prs", "lmo0737"])
+    ivb = write_sample(tmp_path, "lmo_sero_ivb", ["prs", "ORF2819", "ORF2110"])
     table = tmp_path / "golden.tsv"
     screened = runner.invoke(
         app,
@@ -242,7 +242,7 @@ def test_typing_golden_iia_and_ivb(tmp_path: Path) -> None:
             str(iia),
             str(ivb),
             "--db",
-            "lm_doumith",
+            "lmo_sero",
             "--datadir",
             str(datadir),
             "--nopath",
@@ -254,35 +254,35 @@ def test_typing_golden_iia_and_ivb(tmp_path: Path) -> None:
     assert screened.exit_code == 0, screened.stderr
     result = runner.invoke(app, ["typing", str(table), "--datadir", str(datadir), "--quiet"])
     assert result.exit_code == 0, result.stderr
-    assert result.stdout == (GOLDEN / "lm_doumith_typing.tsv").read_text(encoding="utf-8")
+    assert result.stdout == (GOLDEN / "lmo_sero_typing.tsv").read_text(encoding="utf-8")
 
 
-def test_bundled_lm_doumith_auto_materializes_and_lists(tmp_path: Path) -> None:
+def test_bundled_lmo_sero_auto_materializes_and_lists(tmp_path: Path) -> None:
     """Given a fresh EMPTY datadir and no prior fetch, When screening against
-    the bundled lm_doumith, Then the wheel copy materializes (5 records, one
+    the bundled lmo_sero, Then the wheel copy materializes (5 records, one
     stderr note), the manifest certifies the bundled-source typed database,
     every marker is called at 100%, and `db list` flips the row from bundled
     to installed (5)."""
-    assert find_bundled("lm_doumith") is not None
+    assert find_bundled("lmo_sero") is not None
     datadir = tmp_path / "datadir"
     datadir.mkdir()
-    sample = write_sample(tmp_path, "lm_doumith_ivbv", ["prs", "ORF2819", "ORF2110", "lmo0737"])
+    sample = write_sample(tmp_path, "lmo_sero_ivbv", ["prs", "ORF2819", "ORF2110", "lmo0737"])
 
     result = runner.invoke(
-        app, ["screen", str(sample), "--db", "lm_doumith", "--datadir", str(datadir), "--quiet"]
+        app, ["screen", str(sample), "--db", "lmo_sero", "--datadir", str(datadir), "--quiet"]
     )
     assert result.exit_code == 0, result.stderr
-    manifest = read_manifest(datadir / "lm_doumith" / "gapit-manifest.json")
+    manifest = read_manifest(datadir / "lmo_sero" / "gapit-manifest.json")
     assert manifest.n_records == 5
     assert manifest.source == "bundled"
     assert manifest.typing_schema == "gapit.typing/2"
-    assert (datadir / "lm_doumith" / "typing.json").is_file()
-    assert (datadir / "lm_doumith" / "sequences.nin").is_file()
+    assert (datadir / "lmo_sero" / "typing.json").is_file()
+    assert (datadir / "lmo_sero" / "sequences.nin").is_file()
 
     listing = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert listing.exit_code == 0
     assert (
-        "lm_doumith\tListeria monocytogenes serogrouping (Doumith 2004)\tinstalled (5)\tnucl\t"
+        "lmo_sero\tListeria monocytogenes serogrouping (Doumith 2004)\tinstalled (5)\tnucl\t"
         "command\tgapit-curated (public-domain INSDC sources)" in listing.stdout
     )
 
@@ -294,7 +294,7 @@ def test_bundled_lm_doumith_auto_materializes_and_lists(tmp_path: Path) -> None:
                 "screen",
                 str(sample),
                 "--db",
-                "lm_doumith",
+                "lmo_sero",
                 "--datadir",
                 str(datadir),
                 "-o",

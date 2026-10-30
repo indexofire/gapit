@@ -125,8 +125,8 @@ def query_datadir(tmp_path: Path) -> Path:
 # ------------------------------------------------------------- tools/list --
 
 
-def test_tools_list_carries_the_four_db_tools_with_schemas() -> None:
-    """Given tools/list, When served, Then db_fetch/db_build/db_search/
+def test_tools_list_carries_the_db_tools_with_schemas() -> None:
+    """Given tools/list, When served, Then db_setup/db_fetch/db_build/db_search/
     db_outdated are advertised with object schemas and correct requireds."""
     (response,) = exchange({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
     by_name = {tool["name"]: tool for tool in response["result"]["tools"]}
@@ -135,7 +135,9 @@ def test_tools_list_carries_the_four_db_tools_with_schemas() -> None:
     assert {"kind", "typing", "floors"} <= set(by_name["db_build"]["inputSchema"]["properties"])
     assert by_name["db_search"]["inputSchema"]["required"] == ["term"]
     assert by_name["db_outdated"]["inputSchema"]["required"] == []
-    for name in ("db_fetch", "db_build", "db_search", "db_outdated"):
+    assert by_name["db_setup"]["inputSchema"]["required"] == []
+    assert "names" in by_name["db_setup"]["inputSchema"]["properties"]
+    for name in ("db_setup", "db_fetch", "db_build", "db_search", "db_outdated"):
         assert by_name[name]["description"]
         assert by_name[name]["inputSchema"]["type"] == "object"
 

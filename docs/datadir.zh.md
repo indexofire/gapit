@@ -38,7 +38,7 @@ gapit 刻意把**工具环境**和**数据库状态**分开。本页说明数据
 `~~~` 分隔的 header。gapit 两种都能读。
 
 BLAST 索引（核酸 `.nin/.nsq/.nhr`，蛋白 `.pin/.psq/.phr`）是生成物，不是源数据。索引缺失或
-过期时，`gapit setupdb` 或正常构建流程会重建。
+过期时，`gapit db setup` 或正常构建流程会重建。
 
 `gapit-manifest.json` 最后写入，用于认证产物（`sha256`、`n_records`、`dbtype`、`kind`、
 `source`、`typing_schema`、许可证、工具版本）。发现和列表会使用它，但为了兼容 abricate，
@@ -55,7 +55,7 @@ gene 数据库每个已知基因/标记一条 FASTA 记录。contig 筛查使用
 cluster 数据库（`kind: cluster`）每个**位点**一条 FASTA 记录，另有 `features.json` 描述
 位点到基因及坐标的映射。`gapit screen` 使用 minimap2 cluster 引擎，根据 `cs` walk 计算基因/
 位点评分。多 scheme 的 `typing.json` 输出 `gapit.cluster/2`；否则输出 `gapit.cluster/1`。
-内置的 `vp_ok` 是带 typing 的 cluster 示例。
+内置的 `vpa_ok` 是带 typing 的 cluster 示例。
 
 ### 数据库来源
 
@@ -87,13 +87,51 @@ entrypoint 和 agent 工作流。
 | 命令 | 缺失 datadir 时 |
 |---|---|
 | `gapit db list` | 创建空根目录，然后列出目录清单 |
-| `gapit setupdb` | 创建根目录、物化内置库、为全部库建索引 |
+| `gapit db setup` | 创建根目录、物化内置库、为全部库建索引 |
 | `gapit db fetch` / `db build` | 作为写路径的一部分创建根目录 |
 | `screen` / `typing` 指向内置库名 | 创建根目录并物化该内置库 |
 | `screen` / `typing` 指向已 fetch 的名字 | 要求目录存在（`DATADIR_NOT_FOUND`，退出码 4） |
 | `db search` / `db outdated` | 要求目录存在（`DATADIR_NOT_FOUND`，退出码 4） |
 
-`db list` 和 `setupdb` 是显式的首次使用引导路径；`db path` 只做路径查询。
+`db list` 和 `db setup` 是显式的首次使用引导路径；`db path` 只做路径查询。
+
+### 用 `gapit db setup` 引导
+
+`gapit db setup` 会创建缺失的数据目录、物化尚未安装的内置数据库，并为发现的所有
+数据库重建 BLAST 索引。已经安装的内置库（有 manifest）不会被重复物化；所有发现的
+数据库都会就地重建索引，因此它既是首次引导命令，也是修复命令。
+
+显式选择数据库：
+
+```bash
+gapit db setup                 # 等同于 --all（保留兼容）
+gapit db setup -a              # 全部已安装 + 内置数据库
+gapit db setup -d nme_sero   # 只处理 nme_sero
+gapit db setup -d ecoli_dec -d cje_cps
+```
+
+`--all/-a` 不会下载 provider：只物化缺失的内置库，并为所有已安装/内置数据库重建
+索引。`--db/-d NAME` 是显式单库模式：已安装则重建索引；缺失的内置库先物化；缺失的
+provider 先走正常 `db fetch` 流程下载，再建索引。既未安装也不是内置/provider 的名字
+会在任何写入前以 `DATABASE_NOT_FOUND` 报错。
+
+| 选项 | 作用 |
+|---|---|
+| `--all`、`-a` | 设置全部已安装/内置数据库（不下载 provider） |
+| `--db`、`-d NAME` | 设置 NAME（可重复）；缺失 provider 会下载，缺失内置库会物化 |
+| `--datadir`、`-D PATH` | 使用指定数据目录，而不是解析出的默认目录 |
+| `--no-bundles`、`-B` | 跳过内置库物化（显式指定的 provider 仍可下载） |
+| `--json`、`-J` | 在 stdout 输出一份 `gapit.dbsetup/1` 回执，并抑制进度信息 |
+| `--quiet`、`-q` | 抑制 stderr 进度信息 |
+| `--debug`、`-v` | 将外部命令（`makeblastdb`）回显到 stderr |
+
+JSON 回执列出本次物化的内置库、下载的 provider 以及所有已建索引的数据库：
+
+```json
+{"schema":"gapit.dbsetup/1","datadir":"/path/to/db","materialized":["ecoli_dec"],"fetched":[],"databases":[{"db":"ecoli_dec","records":16,"dbtype":"nucl"}]}
+```
+
+可用 `gapit schema dbsetup` 内省。
 
 ## 为什么不默认放在 `$CONDA_PREFIX`？
 
@@ -141,7 +179,7 @@ gapit db list
 **写并发。** 并发 `db fetch`/`db build` 现在会通过数据库级隐藏 `flock` 串行化，并且先构建到
 隐藏 staging 目录，再 rename 切换。读者通常看到旧库或新库；但 canonical 路径替换仍有一个很短
 的 rename 窗口。如果共享 datadir 上的读者不能容忍这个窗口，不要并发写同一数据库。
-`gapit setupdb` 会就地重建 BLAST 索引，因此不要对同一数据库并发运行它和
+`gapit db setup` 会就地重建 BLAST 索引，因此不要对同一数据库并发运行它和
 `db fetch`/`db build`。
 
 **权限。** 新 datadir 和事务 staging 默认 `0700`。多用户共享需要显式的 group/ACL 策略；默认
@@ -164,7 +202,7 @@ docker run --rm -it \
   --user "$(id -u):$(id -g)" \
   -v gapit-data:/data/gapit \
   -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.5 gapit db list
+  gapit:0.6.6 gapit db list
 ```
 
 CI 中挂载或缓存 workspace 目录，并固定版本：
@@ -173,13 +211,13 @@ CI 中挂载或缓存 workspace 目录，并固定版本：
 docker run --rm \
   -v "$PWD/.gapit-db:/data/gapit" \
   -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.5 gapit screen sample.fna --db ecoli_dec
+  gapit:0.6.6 gapit screen sample.fna --db ecoli_dec
 ```
 
 可以为**只读**筛查把参考库烤进镜像：
 
 ```dockerfile
-RUN gapit setupdb --datadir /opt/gapit/db
+RUN gapit db setup --datadir /opt/gapit/db
 ENV GAPIT_DATADIR=/opt/gapit/db
 ```
 
@@ -202,7 +240,7 @@ ENV GAPIT_DATADIR=/opt/gapit/db
 ```text
 gapit db path [--json]      # 解析 datadir，不创建
 gapit db list [--json]      # 目录清单 + 安装状态；会引导创建根目录
-gapit setupdb               # 引导 + 物化 + 建索引
+gapit db setup              # 引导 + 物化 + 建索引
 gapit db fetch NAME         # provider 下载/构建
 gapit db build NAME INPUT   # 自定义 gene 或 cluster 数据库
 gapit db outdated           # 已安装库年龄（严格；要求 datadir）

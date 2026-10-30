@@ -11,11 +11,11 @@ gapit 数据库是一个参考基因目录，你用 contigs 和 reads 去筛查�
 
 | 范围 | 规则 | 示例 |
 |---|---|---|
-| 种 | 属名首字母 + 种名前 2 个字母 | `cje_cps`（*C. jejuni* 荚膜）、`eco_vf`（*E. coli* 毒力）、`vch_serogroup`（*V. cholerae* 血清群）、`vpa_ok`（*V. parahaemolyticus* O:K） |
+| 种 | 属名首字母 + 种名前 2 个字母 | `cje_cps`（*C. jejuni* 荚膜）、`eco_vf`（*E. coli* 毒力）、`vch_oagc`（*V. cholerae* O 抗原）、`vpa_ok`（*V. parahaemolyticus* O:K） |
 | 属 | 属名前 3 个字母 | `shi_serotype`（*Shigella*）、`cam_cps`（*Campylobacter* 属级荚膜） |
 
 使用小写 ASCII、下划线和内容后缀（`_cps`、`_vf`、`_serogroup`、`_ok`、`_dec`）。
-已发布的旧名（`cam`、`ecoh`、`ecoli_dec`、`lm_doumith`、`vc_serogroup`、`vp_ok` 等）
+已发布的旧名（`cam`、`ecoh`、`ecoli_dec`、`lmo_sero`、`vpa_ok` 等）
 是兼容性标识，不按此规则改名。
 
 ## 数据库存放在哪里
@@ -28,7 +28,7 @@ gapit 数据库是一个参考基因目录，你用 contigs 和 reads 去筛查�
 3. `$XDG_DATA_HOME/gapit/db`（仅限绝对的 `XDG_DATA_HOME`）
 4. `~/.local/share/gapit/db`
 
-数据目录的位置在它还不存在时也会被解析出来。`gapit db list` 与 `gapit setupdb`
+数据目录的位置在它还不存在时也会被解析出来。`gapit db list` 与 `gapit db setup`
 会自动创建缺失的根目录（因此全新 `pip install gapit` 可以立即查看目录并完成初始化）；
 `db fetch`/`db build` 作为写路径的一部分创建它。真正消费已安装数据库的命令仍要求
 它存在——但 `screen`/`typing` 指向**内置**库名时会物化该内置库并在首次使用时创建
@@ -58,28 +58,41 @@ ab_o	A. baumannii OC locus — official keyword ab_o (Kaptive)	available	nucl	-	
 argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée-Infection
 bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	available	prot	-	University of Gothenburg
 card	CARD protein homolog resistance models	available	nucl	-	McMaster University
+cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
+ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	-	Holt lab (srst2)
+ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	command	gapit-curated (public-domain sources)
 ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	-	Kaptive (Gladstone lab)
 ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	-	PHAC-NML
 kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
 kosc_o	K. oxytoca species complex O locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
 kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
 kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
+lmo_sero	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	command	gapit-curated (public-domain INSDC sources)
 megares	MEGARes antimicrobial resistance genes	available	nucl	-	MEG Lab
+ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	bundled	nucl	-	NCBI
+nme_sero	脑膜炎奈瑟菌血清群 + ctrA + sodC 内参（非 MLST）	available	nucl	command	MDU-PHL
 plasmidfinder	CGE PlasmidFinder replicons	available	nucl	-	DTU CGE
+resfinder	CGE ResFinder acquired resistance genes	bundled	nucl	-	DTU CGE
 upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	-	FordeGenomics
+vch_oagc	Vibrio cholerae O-antigen gene clusters (OAGC; 190 OL loci) + ompW species control	available	nucl	integrated	gapit(Hangzhou CDC)
 vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	-	USTC (VFDB)
 victors	Victors virulence factors	available	nucl	-	University of Chicago
-cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
-ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	-	Holt lab (srst2)
-ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	command	gapit-curated (public-domain sources)
-lm_doumith	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	command	gapit-curated (public-domain INSDC sources)
-ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	bundled	nucl	-	NCBI
-resfinder	CGE ResFinder acquired resistance genes	bundled	nucl	-	DTU CGE
-vc_serogroup	Vibrio cholerae O1/O139 serogroup + ctxA toxigenicity markers; handed over from gside	bundled	nucl	command	gapit-curated (NCBI X59554.1 slice / KY660230.1 / X00171.1)
-vp_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	integrated	gapit-curated (vpasero)
+vpa_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	integrated	gapit-curated (vpasero)
 ```
 
-NAME 是传给 `--db` 的数据库名；PROVIDER 是上游维护机构。每一行都是筛查数据库
+行按 NAME 全局排序，因此 TSV 和 JSON 列表可以直接消费，无需再次排序。NAME 是传给
+`--db` 的数据库名；PROVIDER 是上游维护机构。
+
+shell 循环可以用 `gapit db list -n`：只输出一行空格分隔的名称（无表头、无字段）：
+
+```console
+$ gapit db list -n
+ab_k ab_o argannot ... vpa_ok vpa_vf
+$ for name in $(gapit db list -n); do gapit db setup -d "$name"; done
+```
+
+这个循环是显式的“全部下载并建索引”模式：缺失的 provider 会被 fetch，缺失的内置库
+会被物化，已安装的数据库会重建索引。只修复、不下载时用 `gapit db setup --all`。每一行都是筛查数据库
 （`gapit screen`）；TYPING 说明可选的判定方式（数据库携带 `typing.json` 时）：
 
 - `command` —— 基因数据库：先筛查出结果表，再运行 `gapit typing RESULT.tsv`。
@@ -92,7 +105,7 @@ NAME 是传给 `--db` 的数据库名；PROVIDER 是上游维护机构。每一�
 "内置数据库（即装即用）"一节）：物化前为 `bundled`，物化后为 `installed (N)`。
 其中三个（`ecoh`、`ncbi`、`resfinder`）同时是注册表
 提供商 —— 这类名字只渲染一次，位于内置区（绝不会重复出现一条注册表 `available`
-行），`gapit db fetch <name>` 仍是它们的上游刷新路径；`vp_ok` 仅有内置库
+行），`gapit db fetch <name>` 仍是它们的上游刷新路径；`vpa_ok` 仅有内置库
 （无提供商、无 fetch）。目录之外装进数据目录的数据库
 同样会列出：排在内置区之后、按名称排序 —— `db build` 产物（基因与 cluster
 两类都是）以及无 manifest 的目录（abricate 风格或 `db install` 落盘的字节）以
@@ -152,7 +165,7 @@ $ gapit db list --json
 | `providers[].kind` | string | `gene`（逐基因 BLAST 筛查）或 `cluster`（minimap2 位点筛查，见 [screen.md](./screen.md)） |
 | `providers[].typing` | boolean | 数据库携带 `typing.json` 时为 true；基因库经 `gapit typing` 判定，基因簇库在 `gapit screen` 内判定 |
 | `providers[].installed` | boolean | 数据目录里同时存在 manifest 和可读 `sequences` 时为 true |
-| `providers[].indexed` | boolean | 存在 BLAST 索引（`.nin` 或 `.pin`）时为 true；缺失/过期时用 `setupdb` 重建 |
+| `providers[].indexed` | boolean | 存在 BLAST 索引（`.nin` 或 `.pin`）时为 true；用 `db setup` 重建索引 |
 | `providers[].records` | integer | 记录数，数据库未安装时省略 |
 | `providers[].license` | string | 上游内容许可证，仅提供商或内置快照声明时出现（card、vfdb、ecoli_vf、kaptive、内置内容） |
 | `providers[].source` | string | 目录之外装进数据目录的数据库（`db build` / `db install`）为 `local`，wheel 内置数据库为 `bundled`（见下）；注册表条目省略该字段 |
@@ -217,8 +230,8 @@ KIND	gene
 `--json` 输出 `gapit.dbinfo/1` 文档（`gapit schema dbinfo`），供智能体消费：
 
 ```console
-$ gapit db info -d vc_serogroup --json | head -1
-{"schema":"gapit.dbinfo/1","name":"vc_serogroup","description":"Vibrio cholerae O1/O139 ...
+$ gapit db info -d vpa_ok --json | head -1
+{"schema":"gapit.dbinfo/1","name":"vpa_ok","description":"V. parahaemolyticus O and K ...
 ```
 
 `STATUS` 与 `db list` 一致——`installed`（磁盘上有 manifest）、`bundled`（随 wheel
@@ -233,23 +246,26 @@ Kaptive 的"位点型≠血清型"、VFDB 的 CC BY-NC 条款）。`tests/test_d
 设为强制门：新增数据库若缺少至少一条文献、一条注意事项和一段用法，CI 直接失败。
 
 **自带文献资料。** `db build` 产物可以在自己的目录下放一个
-`<datadir>/<NAME>/info.json`，字段同样是三个可选列表：
+`<datadir>/<NAME>/info.json`，可带 `description`/`vendor` 以及三个指引列表：
 
 ```json
 {
+  "description": "In-house AMR panel",
+  "vendor": "gapit(Hangzhou CDC)",
   "references": [{"citation": "Smith 2026, in-house panel (unpublished)"}],
   "caveats": ["unpublished markers: confirm before reporting"],
   "usage": ["gapit screen x.fa --db labgenes"]
 }
 ```
 
-边车文件优先于内置库声明的指引，所以数据目录里的副本可以收紧或替换 wheel 的说明，
-而不必重建任何东西。
+可选的 `description` 和 `vendor` 字段会进入 `db list` 与 `db info`，因此本地策展库
+不再显示为空描述、`local` 提供方。边车文件优先于内置库声明的指引，所以数据目录里的
+副本可以收紧或替换 wheel 的说明，而不必重建任何东西。
 
 ## 内置数据库（即装即用）
 
 大多数数据库在 `db fetch` 时才从上游下载，因为许可证禁止再分发（见"提供商"一节）。
-少数**内置**数据库随 gapit wheel 一起发布 —— 共八个，其内容经过逐条记录的来源
+少数**内置**数据库随 gapit wheel 一起发布 —— 共七个，其内容经过逐条记录的来源
 审计（公共领域来源，或 Apache-2.0 / BSD-3-Clause / MIT 宽松许可面板；GPL 与
 非商业许可内容绝不随 wheel 分发）。无需下载、无需确认：内置数据库开箱即用。
 
@@ -258,37 +274,36 @@ Kaptive 的"位点型≠血清型"、VFDB 的 CC BY-NC 条款）。`tests/test_d
 | `cje_cps` | 空肠弯曲菌 Penner 荚膜多重 PCR 面板（37 条记录：36 条 CPS 扩增子 + `lpxA` 对照） | 2026-10-27 | `gapit.typing/2`（方案 `penner_cps`） |
 | `ecoh` | 大肠杆菌 O/H 抗原基因（597 条记录，srst2 EcOH） | 2026-10-02 | — |
 | `ecoli_dec` | 致腹泻大肠杆菌标志基因面板（16 条记录，GB 4789.6 + 风险监测判定） | 2026-10-02 | `gapit.typing/2`（`gb4789_6`、`risk_monitoring` 双方案） |
-| `lm_doumith` | 单核细胞增生李斯特菌血清群分型（5 条记录，Doumith 2004 标记） | 2026-10-03 | `gapit.typing/2`（方案 `doumith_serogroup`） |
+| `lmo_sero` | 单核细胞增生李斯特菌血清群分型（5 条记录，Doumith 2004 标记） | 2026-10-03 | `gapit.typing/2`（方案 `doumith_serogroup`） |
 | `ncbi` | NCBI AMRFinderPlus 精选 AMR（8373 条记录） | 2026-10-02 | — |
 | `resfinder` | CGE ResFinder 获得性耐药基因（3206 条记录） | 2026-10-02 | — |
-| `vc_serogroup` | 霍乱弧菌 O1/O139 血清群 + ctxA 产毒标记 | 2026-10-19 | `gapit.typing/2`（`serogroup` 方案） |
-| `vp_ok` | 副溶血性弧菌 O/K 抗原位点（195 个位点，vpautils OAgc+CPSgc；cluster 类） | 2026-10-12 | `gapit.typing/2`（`o_group`、`k_group`、`serotype` 三方案） |
+| `vpa_ok` | 副溶血性弧菌 O/K 抗原位点（195 个位点，vpautils OAgc+CPSgc；cluster 类） | 2026-10-12 | `gapit.typing/2`（`o_group`、`k_group`、`serotype` 三方案） |
 
 **许可证来源声明。** `ecoli_dec` 的每条记录都取自公共领域的一级提交（NCBI
 RefSeq/GenBank/DDBJ 收录号，与权利方面板等位相同）；2026-10 审计中发现原面板里
 混入的两条 VFDB 来源记录已被移除并替换；2026-10 重建时，构建管线的精确去重又丢弃了
 与 `estA3`（M18346.1）逐字节相同的 `estA4`（J03311.1）副本 —— 同一个 `sth` 基因、
-同一序列 —— 面板因此为 16 条记录。`lm_doumith` 面板以同样方式取自公共领域
+同一序列 —— 面板因此为 16 条记录。`lmo_sero` 面板以同样方式取自公共领域
 的 INSDC 记录（收录号见每条头部；反向互补标记已做链向校正，`lmo0737` 经与 EGD-e
 比对验证 100% 一致）。三个提供商快照（`ecoh`、`ncbi`、`resfinder`）
 通过了 2026-10 对**全部**记录的内容级审计：
 NCBI AMRFinderPlus 内容属公共领域（美国政府作品），CGE ResFinder 数据库为
-Apache-2.0，srst2 的 EcOH 为 BSD-3-Clause —— 三者均允许随 MIT 许可的 wheel 再分发。`vp_ok` 基因簇快照是 MIT 许可的
+Apache-2.0，srst2 的 EcOH 为 BSD-3-Clause —— 三者均允许随 MIT 许可的 wheel 再分发。`vpa_ok` 基因簇快照是 MIT 许可的
 vpautils 内容（实验室逐位点精选、Bakta 注释，经
 [indexofire/vpautils](https://github.com/indexofire/vpautils)）；以一次完整
 gapit.typing/2 构建产出的已解析 `sequences` + `features.json` 形式入轮。`cje_cps`
 面板取自原论文列出的 GenBank 收录号（公共领域 INSDC 记录；论文本身为 CC0），因此
-同样通过审计。回归测试锁定了八个内置库的头部不出现任何 `VF*` / `VFDB` / `ARO:`
+同样通过审计。回归测试锁定了七个内置库的头部不出现任何 `VF*` / `VFDB` / `ARO:`
 标签。
 
 **快照是一个时间点。** 每个快照的 `sequences` 文件与快照当日上游内容产出的结果
 逐字节一致（resfinder 由回归测试对着一份固定的上游
-归档副本逐字节验证；vp_ok 在本地存在真实 vpautils GenBank 文件时，对着
+归档副本逐字节验证；vpa_ok 在本地存在真实 vpautils GenBank 文件时，对着
 `gapit db build` 重建的结果逐字节验证
 —— 含 `features.json`、含基因 id 解析）。随着上游持续更新，wheel 副本会逐渐滞后：
 提供商背景的内置名（`ecoh`、`ncbi`、`resfinder`）用 `gapit db fetch
 <name>`（单独使用，或加 `--force` 覆盖已物化副本）重新下载**最新**上游内容
-并重建数据目录里的库 —— 这是刷新路径；`vp_ok` 没有提供商，刷新意味着新的
+并重建数据目录里的库 —— 这是刷新路径；`vpa_ok` 没有提供商，刷新意味着新的
 已解析快照随 wheel 版本发布。`bundled.json` 记录快照日期备查。
 （v1 的 `db outdated` 仍以 manifest 为准：报告的是已装内容的物化/抓取时间，
 不做内置-vs-上游比较 —— 将 wheel 快照与最新上游对比属未来工作。）
@@ -299,13 +314,13 @@ ecoli_dec (16 records) into <datadir>`，`--quiet` 可静默），随后走标�
 构建管线：`records.jsonl`、gapit/v1 头部的 `sequences`、BLAST 索引、（库自带时）
 `typing.json` 副本，以及盖上 `source: "bundled"` 的 manifest。该管线与
 `gapit db build` 共享，会在构建时丢弃精确重复的（基因, 序列）记录（保留首条；
-stderr 提示与回执中的 `duplicates_dropped` 计数）。基因簇内置库（`vp_ok`）改走
+stderr 提示与回执中的 `duplicates_dropped` 计数）。基因簇内置库（`vpa_ok`）改走
 基因簇管线：物化时用与 `gapit db build` 相同的基因簇构建入口，从入轮产物重建位点
 FASTA 与
 `features.json` —— 基因 id 保持快照时的已解析状态，typing 规格对其重新校验、
 不做重解析。全程确定性、零
-网络。`gapit db list`、`gapit setupdb`、`db fetch`/`db build`，以及对内置库名的
-第一次筛查都会自动创建缺失的数据目录；`gapit setupdb` 在建索引的同时物化全部内置库；
+网络。`gapit db list`、`gapit db setup`、`db fetch`/`db build`，以及对内置库名的
+第一次筛查都会自动创建缺失的数据目录；`gapit db setup` 在建索引的同时物化全部内置库；
 manifest 一旦存在，重跑都是无操作。`db list` 在物化前显示 `bundled`、物化后显示
 `installed (16)` —— 四个列表入口（TSV、rich 表格、`--json`、MCP `db_list`）一致。
 
@@ -350,7 +365,7 @@ isolate.fa	penner_cps	HS4 complex (HS4/13/43/50/62/65)	HS4A;lpxA	high	1.0000	HS1
 复合型折叠、共享扩增子带型、`lpxA` 不等于种鉴定、62 bp HS2 的 E-value 下限、
 HS1 的 607 与 610 bp 差异、水平转移风险，以及论文自身的未定型率观察。
 
-### 李斯特菌血清群分型（`lm_doumith`）
+### 李斯特菌血清群分型（`lmo_sero`）
 
 用于单核细胞增生李斯特菌（Listeria monocytogenes）血清群预测的分型内置库：
 五个标记 —— `prs`、`lmo0737`、`lmo1118`、`ORF2819`、`ORF2110` —— 以 95/95
@@ -359,7 +374,7 @@ PCR 分群（Doumith 等 2004，J Clin Microbiol 42:3819），并扩展了 Huang
 4b 变体：`prs` 作为属级控制基因把关整个方案，`IIa`（1/2a 或 3a）、`IIc`
 （1/2c 或 3c）、`IIb`（1/2b、3b 或 7）、`IVb`（4b、4d 或 4e）与 `IVb-v`（携带
 lmo0737 的 4b 变体）—— 与 LisSero 等工具的 in-silico 语义一致。判定走两阶段
-管线：`gapit screen -o table.tsv --db lm_doumith`，然后 `gapit typing
+管线：`gapit screen -o table.tsv --db lmo_sero`，然后 `gapit typing
 table.tsv`。
 
 已知的局限（相关处以 notes 形式随判定输出）：
@@ -379,19 +394,19 @@ table.tsv`。
 回退判定 —— `untypeable (4a/4c, atypical profile, or non-Lm Listeria)` ——
 是这五个标记无法给出答案时的诚实输出。
 
-### vp_ok（副溶血性弧菌 O:K，MIT，安装即带 typing）
+### vpa_ok（副溶血性弧菌 O:K，MIT，安装即带 typing）
 
-`vp_ok` 把 [indexofire/vpautils](https://github.com/indexofire/vpautils) 的两份副溶血
+`vpa_ok` 把 [indexofire/vpautils](https://github.com/indexofire/vpautils) 的两份副溶血
 性弧菌血清型参考——`OAgc.gbk`（32 个 O 抗原基因簇位点）和 `CPSgc.gbk`（163 个荚膜多
-糖位点）——合并为一个 `kind: cluster` 数据库。它是 `ecoli_dec`/`lm_doumith` 模式的
-纯内置数据库：没有提供商、没有 source URL、没有 `gapit db fetch vp_ok`。自带的
-三 scheme typing 资产（`src/gapit/data/dbs/vp_ok/typing.json`，由
+糖位点）——合并为一个 `kind: cluster` 数据库。它是 `ecoli_dec`/`lmo_sero` 模式的
+纯内置数据库：没有提供商、没有 source URL、没有 `gapit db fetch vpa_ok`。自带的
+三 scheme typing 资产（`src/gapit/data/dbs/vpa_ok/typing.json`，由
 `scripts/generate_vp_typing.py` 可复现生成）随之一并安装，筛查随之渲染
 `gapit.cluster/2`，按文件给出 `o_group`、`k_group` 与组合出的
 `serotype` `"{o_group}:{k_group}"`（回退 OUT/KUT）——一次扫描即得 O:K 血清型：
 
 ```console
-$ gapit screen RIMD.fna --db vp_ok --format json
+$ gapit screen RIMD.fna --db vpa_ok --format json
 {"schema": "gapit.cluster/2", ..., "phenotypes": {"o_group": {"phenotype": "O3"},
  "k_group": {"phenotype": "K6"}, "serotype": {"phenotype": "O3:K6"}}}
 ```
@@ -407,7 +422,7 @@ O3:K6（逐位点调参见规则 notes）。
 ## 检查数据库新鲜度
 
 `gapit db outdated` 报告每个已安装数据库相对于过期阈值的年龄。对装满的数据
-目录（输出裁剪到二十三行中的三行）：
+目录（输出裁剪到二十四行中的三行）：
 ```console
 $ gapit db outdated --days 30
 NAME	FETCHED_AT	AGE_DAYS	STATUS
@@ -496,12 +511,12 @@ $ gapit db search "tet(M)" --field gene --exact --json | head -1
 
 ## 提供商
 
-gapit 自带十九个提供商。每一个——包括 `card` 和 `vfdb`——都在抓取时从上游下载：
-除上文八个通过审计、宽松许可的内置库之外，包里不内置任何内容，因为多家上游许可
+gapit 自带二十一个提供商。每一个——包括 `card` 和 `vfdb`——都在抓取时从上游下载：
+除上文七个通过审计、宽松许可的内置库之外，包里不内置任何内容，因为多家上游许可
 （CARD 的 McMaster 条款、VFDB 的 CC BY-NC、
-Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发。七个 kaptive 提供商是
-**基因簇**数据库（抓取时经基因簇管线构建，见下文 Kaptive 提供商一节）；另一个
-基因簇数据库——带 typing 的 `vp_ok`——仅有内置库（见上文 vp_ok 一节）。
+Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发。八个提供商是**基因簇**数据库
+（抓取时经基因簇管线构建）：七个 Kaptive 提供商（见下文 Kaptive 提供商一节）和
+`vch_oagc`；带 typing 的 `vpa_ok` 仅有内置库（见上文 vpa_ok 一节）。
 
 | 名称 | 维护方 | 内容 | dbtype |
 |---|---|---|---|
@@ -509,6 +524,8 @@ Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发。七个 kaptive
 | `card` | McMaster University | CARD protein homolog resistance models | nucl |
 | `resfinder` | DTU CGE | CGE ResFinder acquired resistance genes | nucl |
 | `argannot` | IHU Méditerranée-Infection | ARG-ANNOT acquired resistance genes | nucl |
+| `nme_sero` | MDU-PHL | 脑膜炎奈瑟菌血清群 + ctrA + sodC 内参（非 MLST）；见 [nme_sero.zh.md](./nme_sero.zh.md) | nucl |
+| `vch_oagc` | gapit(Hangzhou CDC) | 霍乱弧菌 O 抗原基因簇（190 个 OL locus + ompW 内参；cluster，NCBI efetch） | nucl |
 | `plasmidfinder` | DTU CGE | CGE PlasmidFinder replicons | nucl |
 | `megares` | MEG Lab | MEGARes antimicrobial resistance genes | nucl |
 | `ecoh` | Holt lab (srst2) | E. coli O and H antigens (srst2 EcOH) | nucl |
@@ -681,7 +698,7 @@ manifest，来自 plasmidfinder 数据库：
   "upstream_version": "",
   "tool": {
     "name": "gapit",
-    "version": "0.6.5"
+    "version": "0.6.6"
   },
   "makeblastdb_version": "blastn: 2.17.0+",
   "minimap2_version": "2.31-r1302"
@@ -706,7 +723,7 @@ manifest，来自 plasmidfinder 数据库：
 | `minimap2_version` | string | 构建环境中的 minimap2 版本（reads 模式在内存中建索引，不生成 `.mmi`） |
 
 `records.jsonl` 和 manifest 是文件契约。它们从不出现在 stdout，也未注册到
-`gapit schema`（stdio/列表文档 `dblist`、`dboutdated`、`datadir` 已注册）。
+`gapit schema`（stdio/列表文档 `dblist`、`dbsetup`、`dboutdated`、`datadir`、`dbinfo` 已注册）。
 
 ### floors.json — 按基因设置一致性下限 {#floorsjson}
 
@@ -911,7 +928,7 @@ gapit: BLAST index built (nucl)
 ### 手动（abricate 风格）路径
 
 推荐走 `db build`，但任何 abricate 格式的数据目录也能原样使用：把 `--datadir` 指向
-含 `<name>/sequences`（带 `~~~` 表头的核苷酸 FASTA）的目录，跑一次 `gapit setupdb`
+含 `<name>/sequences`（带 `~~~` 表头的核苷酸 FASTA）的目录，跑一次 `gapit db setup`
 建 BLAST 索引。分子类型启发式沿用 abricate，决定 nucl 还是 prot。
 
 用一个复制进临时数据目录的三基因微型数据库端到端演示：
@@ -921,15 +938,15 @@ $ ls /tmp/opencode/gapit-own-db/db/tinyamr
 sequences
 $ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr /tmp/opencode/gapit-own-db/gap.fa
 Processing: /tmp/opencode/gapit-own-db/gap.fa
-{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gapit-own-db/db/tinyamr/sequences is not indexed, please try: gapit setupdb","context":{"db":"/tmp/opencode/gapit-own-db/db/tinyamr/sequences"}}
-$ gapit setupdb --datadir /tmp/opencode/gapit-own-db/db
+{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gapit-own-db/db/tinyamr/sequences is not indexed, please try: gapit db setup","context":{"db":"/tmp/opencode/gapit-own-db/db/tinyamr/sequences"}}
+$ gapit db setup --datadir /tmp/opencode/gapit-own-db/db
 Indexed tinyamr (3 sequences, nucl)
 $ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr /tmp/opencode/gapit-own-db/gap.fa
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 /tmp/opencode/gapit-own-db/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
 ```
 
-`gapit setupdb` 为每个含有可读 `sequences` 文件的子目录建索引，当它们全部具备
+`gapit db setup` 为每个含有可读 `sequences` 文件的子目录建索引，当它们全部具备
 `sequences.nin` 或 `sequences.pin` 时退出 0。
 
 ### reads 模式与遗留数据目录

@@ -47,7 +47,7 @@ $ gapit db fetch ncbi --force
 
 解析顺序：命令行 `--datadir`，然后 `$GAPIT_DATADIR`，然后
 `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db`。`gapit db path` 只打印路径、
-不创建；`gapit db list` 与 `gapit setupdb` 会自动创建缺失的根目录；
+不创建；`gapit db list` 与 `gapit db setup` 会自动创建缺失的根目录；
 `db outdated`、`db search` 等严格查询仍要求它存在，否则以 `DATADIR_NOT_FOUND`
 （退出码 4）失败。若要把数据库放进当前激活的 conda 环境，可设置
 `GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"`（home 默认值能跨环境重建保留，并被所有
@@ -59,7 +59,7 @@ $ gapit db fetch ncbi --force
 过期时，全部重建：
 
 ```console
-$ gapit setupdb
+$ gapit db setup
 ```
 
 只有 gapit 原生输出是单向的（abricate 读不了 `gapit/v1` 数据库）。
@@ -156,8 +156,8 @@ CLI 显式参数 > `screen.json` > 全局默认值。内置 `cje_cps` 使用 MAP
 ## 数据库适用哪些许可证？
 
 gapit 本身以 MIT 许可。七个经过审计、许可宽松的内置库随 wheel 发布（公有领域的
-`ecoli_dec`、`lm_doumith` 面板，`ncbi`、`resfinder`、`ecoh`
-快照，以及 MIT 的 `vp_ok` typed-cluster 快照），首次使用时物化进数据目录；其余每个提供商
+`ecoli_dec`、`lmo_sero` 面板，`ncbi`、`resfinder`、`ecoh`
+快照，以及 MIT 的 `vpa_ok` typed-cluster 快照），首次使用时物化进数据目录；其余每个提供商
 都在抓取时从上游下载，内容保留其原始许可证（CARD 的 McMaster 非商业条款、VFDB 的
 CC BY-NC、CGE、Kaptive 的 GPL-3.0 等），gapit 不重新授权。声明了许可证的提供商会在
 `gapit db list --json` 中暴露它。细节见 SPEC.md §9 与数据库指南的

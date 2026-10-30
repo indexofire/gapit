@@ -66,7 +66,7 @@ def ensure_datadir(cli_value: Path | None) -> Path:
     """Resolve the datadir and mkdir it when absent (fresh-machine bootstrap).
 
     Write paths (``db fetch``, ``db build``, ``db list`` catalog bootstrap,
-    ``setupdb``) create a missing root; every path that actually consumes an
+    ``db setup``) create a missing root; every path that actually consumes an
     installed database still requires it via :func:`resolve_datadir`.
     """
     root = datadir_path(cli_value)

@@ -247,7 +247,12 @@ class TestEngineSamples:
             line for line in debug_run.stderr.splitlines() if line.startswith("gapit: run:")
         ]
         assert argv_lines and "-x asm20" in argv_lines[0] and "--cs" in argv_lines[0]
-        assert debug_run.stdout == plain_run.stdout
+        # JSON carries created_at; two invocations may cross a second boundary.
+        debug_doc = json.loads(debug_run.stdout)
+        plain_doc = json.loads(plain_run.stdout)
+        debug_doc.pop("created_at", None)
+        plain_doc.pop("created_at", None)
+        assert debug_doc == plain_doc
 
 
 class TestFormats:

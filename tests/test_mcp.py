@@ -17,6 +17,7 @@ from gapit.mcp import serve
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
 SUMMARY = Path(__file__).parent / "data" / "summary"
+TYPING_DATA = Path(__file__).parent / "data" / "typing"
 
 runner = CliRunner()
 
@@ -102,10 +103,11 @@ def test_notifications_get_no_response() -> None:
     assert responses[0]["id"] == 1
 
 
-def test_tools_list_advertises_ten_tools_with_schemas() -> None:
-    """Given tools/list, When served, Then exactly screen/screen_reads/
-    summary/schema/db_list/db_path/db_fetch/db_build/db_search/db_outdated, each with
-    an object inputSchema carrying properties + required."""
+def test_tools_list_advertises_twelve_tools_with_schemas() -> None:
+    """Given tools/list, When served, Then exactly the five analysis tools
+    (screen/screen_reads/summary/typing/schema) and seven database tools
+    (db_list/db_path/db_setup/db_fetch/db_build/db_search/db_outdated),
+    each with an object inputSchema carrying properties + required."""
     (response,) = exchange({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
     tools = response["result"]["tools"]
     assert sorted(tool["name"] for tool in tools) == [
@@ -115,10 +117,12 @@ def test_tools_list_advertises_ten_tools_with_schemas() -> None:
         "db_outdated",
         "db_path",
         "db_search",
+        "db_setup",
         "schema",
         "screen",
         "screen_reads",
         "summary",
+        "typing",
     ]
     by_name = {tool["name"]: tool for tool in tools}
     for tool in by_name.values():
@@ -130,9 +134,15 @@ def test_tools_list_advertises_ten_tools_with_schemas() -> None:
     assert by_name["screen"]["inputSchema"]["properties"]["db"] == {"type": "string"}
     assert by_name["screen_reads"]["inputSchema"]["required"] == ["r1", "db"]
     assert by_name["summary"]["inputSchema"]["required"] == ["files"]
+    assert by_name["typing"]["inputSchema"]["required"] == ["table"]
     assert by_name["schema"]["inputSchema"]["required"] == ["name"]
     assert by_name["db_build"]["inputSchema"]["required"] == ["name", "fasta"]
     assert by_name["db_search"]["inputSchema"]["required"] == ["term"]
+    assert by_name["db_setup"]["inputSchema"]["required"] == []
+    assert by_name["db_setup"]["inputSchema"]["properties"]["names"] == {
+        "type": "array",
+        "items": {"type": "string"},
+    }
 
 
 def test_schema_call_returns_report_schema_text() -> None:
@@ -276,6 +286,64 @@ def test_summary_call_returns_summary_json() -> None:
     assert len(document["rows"]) == 2
 
 
+def _typed_datadir(tmp_path: Path) -> Path:
+    """Build the markers fixture db with its two-scheme typing document."""
+    datadir = tmp_path / "typed"
+    result = runner.invoke(
+        app,
+        [
+            "db",
+            "build",
+            "markers",
+            str(TYPING_DATA / "markers.fa"),
+            "--typing",
+            str(TYPING_DATA / "typing_markers_v2.json"),
+            "--datadir",
+            str(datadir),
+        ],
+    )
+    assert result.exit_code == 0, result.stderr
+    return datadir
+
+
+def _screen_table() -> str:
+    header = (
+        "#FILE\tSEQUENCE\tSTART\tEND\tSTRAND\tGENE\tCOVERAGE\tCOVERAGE_MAP\tGAPS\t"
+        "%COVERAGE\t%IDENTITY\tDATABASE\tACCESSION\tPRODUCT\tRESISTANCE"
+    )
+    rows = [
+        "s.fa\tc1\t1\t90\t+\tmarker_a\t1-90/90\t===============\t0/0\t"
+        "100.00\t100.00\tmarkers\t-\t-\t-",
+        "s.fa\tc1\t1\t90\t+\tmarker_c\t1-90/90\t===============\t0/0\t"
+        "100.00\t100.00\tmarkers\t-\t-\t-",
+    ]
+    return "\n".join((header, *rows)) + "\n"
+
+
+def test_typing_call_returns_typing_result(tmp_path: Path) -> None:
+    """Given a screen table naming a typed database, When the MCP typing
+    tool runs, Then it returns gapit.typing_result/1 with the expected call."""
+    datadir = _typed_datadir(tmp_path)
+    (response,) = exchange(tool_call("typing", {"table": _screen_table(), "datadir": str(datadir)}))
+    assert response["result"]["isError"] is False
+    document = json.loads(response["result"]["content"][0]["text"])
+    assert document["schema"] == "gapit.typing_result/1"
+    call = document["files"][0]["phenotypes"]["pathotype"]
+    assert call["phenotype"] == "EHEC"
+    assert call["confidence"] == "high"
+
+
+def test_db_setup_call_returns_receipt(datadir: Path) -> None:
+    """Given an installed datadir, When db_setup runs with no_bundles, Then
+    it returns the gapit.dbsetup/1 receipt for the indexed databases."""
+    (response,) = exchange(tool_call("db_setup", {"datadir": str(datadir), "no_bundles": True}))
+    assert response["result"]["isError"] is False
+    document = json.loads(response["result"]["content"][0]["text"])
+    assert document["schema"] == "gapit.dbsetup/1"
+    assert document["materialized"] == []
+    assert [entry["db"] for entry in document["databases"]] == ["tinyamr"]
+
+
 def test_db_list_call_lists_providers(datadir: Path) -> None:
     (response,) = exchange(tool_call("db_list", {}))
     assert response["result"]["isError"] is False
@@ -305,7 +373,7 @@ def test_malformed_line_is_ignored_and_loop_continues() -> None:
         {"jsonrpc": "2.0", "id": 3, "method": "tools/list"},
     )
     assert len(responses) == 1
-    assert len(responses[0]["result"]["tools"]) == 10
+    assert len(responses[0]["result"]["tools"]) == 12
 
 
 def test_eof_terminates_cleanly() -> None:
@@ -330,7 +398,7 @@ def test_cli_mcp_subcommand_streams_protocol_lines() -> None:
     responses = [json.loads(line) for line in result.stdout.splitlines()]
     assert [response["id"] for response in responses] == [1, 2]
     assert responses[0]["result"]["serverInfo"]["name"] == "gapit"
-    assert len(responses[1]["result"]["tools"]) == 10
+    assert len(responses[1]["result"]["tools"]) == 12
 
 
 def test_db_path_tool_returns_the_datadir_document(tmp_path: Path) -> None:

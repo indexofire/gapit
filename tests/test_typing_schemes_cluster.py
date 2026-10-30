@@ -6,7 +6,7 @@ Two researched cluster-database schemes as validated example documents
 cluster_match rules plus the ``{o_group}:{k_group}`` compose scheme) and
 the V. cholerae O1/O139 serogroup + ogawa/inaba subserotype panel (wbeT
 single-SNP biology). A cluster database renders gapit.cluster/2 when its
-typing document holds more than one scheme — so the vp_ok cookbook
+typing document holds more than one scheme — so the vpa_ok cookbook
 document installs as ONE merged database (every scheme called, the
 compose rendered from its ingredients) — while single-scheme documents
 (v1 or one-scheme v2) keep the byte-frozen gapit.cluster/1 surface: the
@@ -111,20 +111,20 @@ def screen_json(datadir: Path, db: str, sample: Path) -> dict[str, Any]:
 
 @pytest.fixture(scope="module")
 def vp_dbs(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    """The vp_ok panel as two databases (o_group and k_group schemes)."""
+    """The vpa_ok panel as two databases (o_group and k_group schemes)."""
     datadir = tmp_path_factory.mktemp("schemes_vp")
-    build_cluster_db(datadir, "vp_o", "vp_ok.gbk", split_scheme(datadir, "vp_ok", "o_group"))
-    build_cluster_db(datadir, "vp_k", "vp_ok.gbk", split_scheme(datadir, "vp_ok", "k_group"))
+    build_cluster_db(datadir, "vp_o", "vpa_ok.gbk", split_scheme(datadir, "vpa_ok", "o_group"))
+    build_cluster_db(datadir, "vp_k", "vpa_ok.gbk", split_scheme(datadir, "vpa_ok", "k_group"))
     return datadir
 
 
 @pytest.fixture(scope="module")
-def vp_ok_db(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    """The whole three-scheme vp_ok cookbook document as ONE merged
+def vpa_ok_db(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """The whole three-scheme vpa_ok cookbook document as ONE merged
     database — the gapit.cluster/2 install (its gene ids are already
     unique, so build-time resolution is a no-op)."""
-    datadir = tmp_path_factory.mktemp("schemes_vp_ok")
-    build_cluster_db(datadir, "vp_ok", "vp_ok.gbk", SCHEMES / "vp_ok.json")
+    datadir = tmp_path_factory.mktemp("schemes_vpa_ok")
+    build_cluster_db(datadir, "vpa_ok", "vpa_ok.gbk", SCHEMES / "vpa_ok.json")
     return datadir
 
 
@@ -133,10 +133,13 @@ def vc_dbs(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """The cholerae panel as two databases (serogroup and subserotype
     schemes over the same wbe/wbm/wbc loci)."""
     datadir = tmp_path_factory.mktemp("schemes_vc")
-    for scheme_name in ("serogroup", "subserotype"):
+    for db_name, scheme_name in (
+        ("vch_serogroup", "serogroup"),
+        ("vc_subserotype", "subserotype"),
+    ):
         build_cluster_db(
             datadir,
-            f"vc_{scheme_name}",
+            db_name,
             "cholerae.gbk",
             split_scheme(datadir, "cholerae", scheme_name),
         )
@@ -144,8 +147,8 @@ def vc_dbs(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 
 class TestMergedVpOkCluster2:
-    def test_full_vp_ok_document_builds_one_merged_db(self, tmp_path: Path) -> None:
-        """Given the three-scheme vp_ok document on a cluster build, When
+    def test_full_vpa_ok_document_builds_one_merged_db(self, tmp_path: Path) -> None:
+        """Given the three-scheme vpa_ok document on a cluster build, When
         built, Then exit 0 — the multi-scheme install renders
         gapit.cluster/2 (the /1 one-scheme guard is gone; compose now runs
         natively on the cluster path)."""
@@ -156,23 +159,23 @@ class TestMergedVpOkCluster2:
             [
                 "db",
                 "build",
-                "vp_ok",
-                str(SCHEMES / "vp_ok.gbk"),
+                "vpa_ok",
+                str(SCHEMES / "vpa_ok.gbk"),
                 "--datadir",
                 str(datadir),
                 "--typing",
-                str(SCHEMES / "vp_ok.json"),
+                str(SCHEMES / "vpa_ok.json"),
             ],
         )
         assert result.exit_code == 0, result.stderr
 
-    def test_merged_db_screens_as_cluster2(self, vp_ok_db: Path, tmp_path: Path) -> None:
-        """Given the merged vp_ok database and the vp_typed sample, When
+    def test_merged_db_screens_as_cluster2(self, vpa_ok_db: Path, tmp_path: Path) -> None:
+        """Given the merged vpa_ok database and the vp_typed sample, When
         screened as JSON, Then the document is gapit.cluster/2 with the
         phenotypes keys in document order (o_group, k_group, serotype),
         serotype the composed {o}:{k} of its ingredients (the fallbacks
         flow through — the sample shares no locus with this panel)."""
-        document = screen_json(vp_ok_db, "vp_ok", DATA_TYPING / "vp_typed.fa")
+        document = screen_json(vpa_ok_db, "vpa_ok", DATA_TYPING / "vp_typed.fa")
         phenotypes = document["files"][0]["phenotypes"]
 
         assert document["schema"] == "gapit.cluster/2"
@@ -181,19 +184,19 @@ class TestMergedVpOkCluster2:
         assert phenotypes["serotype"]["phenotype"] == f"{o}:{k}"
 
     def test_merged_db_best_block_carries_no_phenotype_keys(
-        self, vp_ok_db: Path, tmp_path: Path
+        self, vpa_ok_db: Path, tmp_path: Path
     ) -> None:
-        """Given the merged vp_ok database and a sample carrying the
+        """Given the merged vpa_ok database and a sample carrying the
         OL3_or_O13 + KL6 loci, When screened as JSON, Then the best block
         exists, calls the locus, and carries NO phenotype keys — /2 moves
         every typing call into the phenotypes map."""
-        loci = loci_of(vp_ok_db, "vp_ok")
+        loci = loci_of(vpa_ok_db, "vpa_ok")
         sample = write_sample(
             tmp_path,
             "vp_o3k6",
             [("ctg_o", loci["OL3_or_O13"]), ("ctg_k", loci["KL6"])],
         )
-        document = screen_json(vp_ok_db, "vp_ok", sample)
+        document = screen_json(vpa_ok_db, "vpa_ok", sample)
         best = document["files"][0]["best"]
 
         assert best is not None
@@ -201,14 +204,14 @@ class TestMergedVpOkCluster2:
         assert "phenotype" not in best
         assert "phenotype_detail" not in best
 
-    def test_mixed_sample_falls_back_through_compose(self, vp_ok_db: Path) -> None:
+    def test_mixed_sample_falls_back_through_compose(self, vpa_ok_db: Path) -> None:
         """Given the vp_mixed sample (gene-path wzx/wzy fragments sharing
-        no vp_ok locus), When screened against the merged db, Then there
+        no vpa_ok locus), When screened against the merged db, Then there
         is no best call — the cluster engine's no-call row, the /1 split
         twin of the unrelated-sample test — while every scheme still
         evaluates: both groups fall back low and serotype composes the
         fallback pair OUT:KUT."""
-        document = screen_json(vp_ok_db, "vp_ok", DATA_TYPING / "vp_mixed.fa")
+        document = screen_json(vpa_ok_db, "vpa_ok", DATA_TYPING / "vp_mixed.fa")
         file_doc = document["files"][0]
 
         assert file_doc["best"] is None
@@ -289,7 +292,7 @@ class TestVpOk:
 class TestCholerae:
     @staticmethod
     def samples(vc_dbs: Path, tmp_path: Path) -> dict[str, Path]:
-        loci = loci_of(vc_dbs, "vc_serogroup")
+        loci = loci_of(vc_dbs, "vch_serogroup")
         inaba_wbe = mutate(loci["wbe"], *[1300 + i * 5 for i in range(10)])
         return {
             "vc_ogawa": write_sample(tmp_path, "vc_ogawa", [("ctg_wbe", loci["wbe"])]),
@@ -303,7 +306,7 @@ class TestCholerae:
         both databases, Then the serogroup calls O1 and the subserotype
         calls ogawa through the intact wbeT determinant."""
         sample = self.samples(vc_dbs, tmp_path)["vc_ogawa"]
-        assert screen_json(vc_dbs, "vc_serogroup", sample)["files"][0]["best"]["phenotype"] == "O1"
+        assert screen_json(vc_dbs, "vch_serogroup", sample)["files"][0]["best"]["phenotype"] == "O1"
         detail = screen_json(vc_dbs, "vc_subserotype", sample)["files"][0]["best"][
             "phenotype_detail"
         ]
@@ -315,7 +318,7 @@ class TestCholerae:
         the serogroup still calls O1 while the subserotype calls inaba
         through the negative-wbeT rule."""
         sample = self.samples(vc_dbs, tmp_path)["vc_inaba"]
-        serogroup = screen_json(vc_dbs, "vc_serogroup", sample)["files"][0]["best"]
+        serogroup = screen_json(vc_dbs, "vch_serogroup", sample)["files"][0]["best"]
         assert serogroup["phenotype"] == "O1"
         assert serogroup["coverage_pct"] == 100.0
         subserotype = screen_json(vc_dbs, "vc_subserotype", sample)["files"][0]["best"]
@@ -326,7 +329,7 @@ class TestCholerae:
         """Given the wbm locus, When screened, Then the serogroup calls
         O139 and surfaces the wbfZ junction-gene trap note."""
         sample = self.samples(vc_dbs, tmp_path)["vc_o139"]
-        best = screen_json(vc_dbs, "vc_serogroup", sample)["files"][0]["best"]
+        best = screen_json(vc_dbs, "vch_serogroup", sample)["files"][0]["best"]
         assert best["phenotype"] == "O139"
         assert "never on wbfZ alone" in best["phenotype_detail"]["notes"][0]
 
@@ -335,7 +338,7 @@ class TestCholerae:
         screened, Then every rule scores below cutoff (key genes missing)
         and the serogroup falls back to non-O1/non-O139."""
         sample = self.samples(vc_dbs, tmp_path)["vc_wbc"]
-        best = screen_json(vc_dbs, "vc_serogroup", sample)["files"][0]["best"]
+        best = screen_json(vc_dbs, "vch_serogroup", sample)["files"][0]["best"]
         assert best["locus"] == "wbc"
         assert best["phenotype"] == "non-O1/non-O139"
         assert best["phenotype_detail"]["score"] < 0.9
@@ -381,17 +384,17 @@ class TestGoldens:
         ) == (GOLDEN / "cluster_vc_inaba.tsv").read_text(encoding="utf-8")
 
     @pytest.mark.parametrize("sample", ["vp_o3k6", "vp_none"])
-    def test_merged_vp_ok_goldens(
-        self, vp_ok_db: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, sample: str
+    def test_merged_vpa_ok_goldens(
+        self, vpa_ok_db: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, sample: str
     ) -> None:
-        """Given the merged vp_ok database and the O3:K6 / no-coverage
+        """Given the merged vpa_ok database and the O3:K6 / no-coverage
         samples, When rendered in all three formats at the pinned now,
         Then each output is byte-identical to its committed cluster/2
         golden (called phenotypes vs all-fallback through compose; the
         null-best row keeps the /1 dashes with the packed PHENOTYPES
         cell)."""
         if sample == "vp_o3k6":
-            loci = loci_of(vp_ok_db, "vp_ok")
+            loci = loci_of(vpa_ok_db, "vpa_ok")
             sample_path = write_sample(
                 tmp_path,
                 sample,
@@ -400,10 +403,10 @@ class TestGoldens:
         else:
             sample_path = write_sample(tmp_path, sample, [("ctg", "ACGT" * 300)])
         monkeypatch.chdir(sample_path.parent)
-        (database,) = [entry for entry in discover_databases(vp_ok_db) if entry.name == "vp_ok"]
+        (database,) = [entry for entry in discover_databases(vpa_ok_db) if entry.name == "vpa_ok"]
         typing_document = load_typing(database)
         assert typing_document is not None
-        params = ClusterParams(db="vp_ok")
+        params = ClusterParams(db="vpa_ok")
         report = screen_cluster_file(
             Path(f"{sample}.fa"), database, load_features(database), params
         )
