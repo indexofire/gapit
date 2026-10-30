@@ -99,14 +99,14 @@ VFDB 的 CC BY-NC、Kaptive 的 GPL-3.0——禁止随 MIT 许可的包再分发
 环境共享）。
 
 ```bash
-gapit db fetch all         # installs the default set (card, vfdb) into the default datadir
+gapit db fetch -d all         # installs the default set (card, vfdb) into the default datadir
 ```
 
 同样的安装动作放进一个临时数据目录，看看 fetch 会打印什么。进度行走 stderr，每个
 数据库一行 JSON 回执走 stdout：
 
 ```console
-$ gapit db fetch all --datadir /tmp/gapit-docs/dd
+$ gapit db fetch -d all --datadir /tmp/gapit-docs/dd
 gapit: downloaded 1 source file(s)
 gapit: read 6059 records from card
 gapit: generated /tmp/gapit-docs/dd/card/sequences
@@ -170,5 +170,5 @@ pip install --upgrade gapit
 conda update blast minimap2
 ```
 
-数据库内容不会随代码更新：重新运行 `gapit db fetch <name> --force`，从上游重建
+数据库内容不会随代码更新：重新运行 `gapit db fetch -d <name> --force`，从上游重建
 已安装的数据库。

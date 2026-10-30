@@ -105,7 +105,7 @@ $ for name in $(gapit db list -n); do gapit db setup -d "$name"; done
 "内置数据库（即装即用）"一节）：物化前为 `bundled`，物化后为 `installed (N)`。
 其中三个（`ecoh`、`ncbi`、`resfinder`）同时是注册表
 提供商 —— 这类名字只渲染一次，位于内置区（绝不会重复出现一条注册表 `available`
-行），`gapit db fetch <name>` 仍是它们的上游刷新路径；`vpa_ok` 仅有内置库
+行），`gapit db fetch -d <name>` 仍是它们的上游刷新路径；`vpa_ok` 仅有内置库
 （无提供商、无 fetch）。目录之外装进数据目录的数据库
 同样会列出：排在内置区之后、按名称排序 —— `db build` 产物（基因与 cluster
 两类都是）以及无 manifest 的目录（abricate 风格或 `db install` 落盘的字节）以
@@ -301,8 +301,7 @@ gapit.typing/2 构建产出的已解析 `sequences` + `features.json` 形式入�
 归档副本逐字节验证；vpa_ok 在本地存在真实 vpautils GenBank 文件时，对着
 `gapit db build` 重建的结果逐字节验证
 —— 含 `features.json`、含基因 id 解析）。随着上游持续更新，wheel 副本会逐渐滞后：
-提供商背景的内置名（`ecoh`、`ncbi`、`resfinder`）用 `gapit db fetch
-<name>`（单独使用，或加 `--force` 覆盖已物化副本）重新下载**最新**上游内容
+提供商背景的内置名（`ecoh`、`ncbi`、`resfinder`）用 `gapit db fetch -d <name>`（单独使用，或加 `--force` 覆盖已物化副本）重新下载**最新**上游内容
 并重建数据目录里的库 —— 这是刷新路径；`vpa_ok` 没有提供商，刷新意味着新的
 已解析快照随 wheel 版本发布。`bundled.json` 记录快照日期备查。
 （v1 的 `db outdated` 仍以 manifest 为准：报告的是已装内容的物化/抓取时间，
@@ -399,7 +398,7 @@ table.tsv`。
 `vpa_ok` 把 [indexofire/vpautils](https://github.com/indexofire/vpautils) 的两份副溶血
 性弧菌血清型参考——`OAgc.gbk`（32 个 O 抗原基因簇位点）和 `CPSgc.gbk`（163 个荚膜多
 糖位点）——合并为一个 `kind: cluster` 数据库。它是 `ecoli_dec`/`lmo_sero` 模式的
-纯内置数据库：没有提供商、没有 source URL、没有 `gapit db fetch vpa_ok`。自带的
+纯内置数据库：没有提供商、没有 source URL、没有 `gapit db fetch -d vpa_ok`。自带的
 三 scheme typing 资产（`src/gapit/data/dbs/vpa_ok/typing.json`，由
 `scripts/generate_vp_typing.py` 可复现生成）随之一并安装，筛查随之渲染
 `gapit.cluster/2`，按文件给出 `o_group`、`k_group` 与组合出的
@@ -560,7 +559,7 @@ Kaptive）。数据库名（NAME）就是 Kaptive v3 数据库文档中的**官�
 在 v1 不抓取它（未来 `typing.json` 的来源）。
 
 数据库内容是 **GPL-3.0**，而 gapit 是 MIT，所以任何 kaptive 内容都不内置：
-`gapit db fetch kpsc_k`（以及其余六个关键字）在抓取时下载 GenBank 文件，并
+`gapit db fetch -d kpsc_k`（以及其余六个关键字）在抓取时下载 GenBank 文件，并
 经基因簇流水线构建 `kind: cluster` 数据库。manifest 记录上游 URL、
 `GPL-3.0 (database content)` 许可证和引用说明。它们不带 typing 模型（表型判定保持
 null）；你得到 kaptive 风格的最佳位点判定，之后可以用 `gapit db build --typing`
@@ -570,19 +569,19 @@ null）；你得到 kaptive 风格的最佳位点判定，之后可以用 `gapit
 
 ### 默认集合
 
-`gapit db fetch all` 安装默认集合：先 `card` 后 `vfdb`。与其他所有提供商一
+`gapit db fetch -d all` 安装默认集合：先 `card` 后 `vfdb`。与其他所有提供商一
 样，它从上游下载、变换记录、并在本地构建 `sequences` 和 BLAST 索引——因此索引永远
 与你机器上实际安装的 BLAST 版本匹配。需要网络。不带参数的 `gapit db fetch`
-只打印命令帮助：多库下载必须显式指定（`all` 或单个 NAME），绝不因省略参数而隐式
-触发。
+只打印命令帮助：多库下载必须显式指定（`all` 或一个/多个 NAME），绝不因省略 `-s`
+而隐式触发。
 
 ### 抓取指定数据库
 
-`gapit db fetch <name>` 对单个数据库跑完整流水线。下面是安装 `card`
+`gapit db fetch -d NAME [NAME ...]` 对一个或多个数据库跑完整流水线。下面是安装 `card`
 （stderr 进度行，随后 stdout 一行 JSON 回执）：
 
 ```console
-$ gapit db fetch --datadir /tmp/opencode/gapit-dbs-demo card
+$ gapit db fetch -d card --datadir /tmp/opencode/gapit-dbs-demo
 gapit: downloaded 1 source file(s)
 gapit: read 6059 records from card
 gapit: generated /tmp/opencode/gapit-dbs-demo/card/sequences
@@ -602,7 +601,7 @@ gapit: BLAST index built (nucl)
 前就会被拒绝：
 
 ```console
-$ gapit db fetch nosuchdb
+$ gapit db fetch -d nosuchdb
 {"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
 ```
 
@@ -611,14 +610,14 @@ $ gapit db fetch nosuchdb
 已有的数据库目录永远不会被静默覆盖。不带参数重新抓取会以退出码 4 失败：
 
 ```console
-$ gapit db fetch --datadir /tmp/opencode/gapit-dbs-demo card
+$ gapit db fetch -d card --datadir /tmp/opencode/gapit-dbs-demo
 {"schema":"gapit.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database card (use --force)","context":{"db":"card"}}
 ```
 
 `--force` 删除后原地重建：
 
 ```console
-$ gapit db fetch --datadir /tmp/opencode/gapit-dbs-demo --force card
+$ gapit db fetch -d card --datadir /tmp/opencode/gapit-dbs-demo --force
 {"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/opencode/gapit-dbs-demo/card"}
 ```
 

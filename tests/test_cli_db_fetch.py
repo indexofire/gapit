@@ -1,4 +1,4 @@
-"""CLI integration tests: `gapit db fetch NAME` (provider path) + `db list`.
+"""CLI integration tests: `gapit db fetch -d NAME` (provider path) + `db list`.
 
 Offline by construction: ``gapit.db_ops.REGISTRY`` is monkeypatched down to
 two synthetic Providers whose source_urls point at a ``file://`` fasta fixture
@@ -46,10 +46,14 @@ def last_envelope(stderr: str) -> ErrorEnvelope:
     return envelope_adapter.validate_json(lines[-1])
 
 
-def syn_transform(workdir: Path) -> Iterable[Record]:
-    """Load the downloaded upstream fasta and yield Records (db = SYN)."""
-    for fasta in iter_fasta(workdir / "upstream.fa"):
-        yield Record(db=SYN, gene=fasta.id, sequence=fasta.sequence)
+def make_transform(db_name: str):
+    """Load the downloaded upstream fasta and yield Records for db_name."""
+
+    def transform(workdir: Path) -> Iterable[Record]:
+        for fasta in iter_fasta(workdir / "upstream.fa"):
+            yield Record(db=db_name, gene=fasta.id, sequence=fasta.sequence)
+
+    return transform
 
 
 def patch_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
@@ -68,7 +72,7 @@ def patch_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
                 vendor="Synthetica",
                 source_urls=(url,),
                 dbtype="nucl",
-                transform=syn_transform,
+                transform=make_transform(SYN),
             ),
             OTHER: Provider(
                 name=OTHER,
@@ -76,7 +80,7 @@ def patch_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
                 vendor="Example Org",
                 source_urls=(url,),
                 dbtype="nucl",
-                transform=syn_transform,
+                transform=make_transform(OTHER),
             ),
         },
     )
@@ -86,12 +90,12 @@ def patch_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 
 def fetch(*extra: str) -> Result:
-    return runner.invoke(app, ["db", "fetch", *extra])
+    return runner.invoke(app, ["db", "fetch", "-d", *extra])
 
 
 def test_db_fetch_builds_provider_database(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Given a registry provider backed by a file:// fasta, When
-    `db fetch NAME --datadir D`, Then exit 0, stdout is a one-line JSON
+    `db fetch -d NAME --datadir D`, Then exit 0, stdout is a one-line JSON
     receipt (db/records/dbtype/destination) naming D, and the database
     artifacts exist under D (the --datadir flag is respected)."""
     datadir = patch_registry(tmp_path, monkeypatch)
@@ -106,6 +110,46 @@ def test_db_fetch_builds_provider_database(tmp_path: Path, monkeypatch: pytest.M
     }
     for name in ("sequences", "sequences.nin", "gapit-manifest.json"):
         assert (db_dir / name).is_file(), name
+
+
+def test_db_fetch_accepts_multiple_names_in_one_command(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given two fetchable providers, When db fetch -d names both, Then both
+    install and stdout carries one receipt per database in argument order."""
+    datadir = patch_registry(tmp_path, monkeypatch)
+    result = fetch(SYN, OTHER, "--datadir", str(datadir))
+    assert result.exit_code == 0, result.stderr
+    receipts = [json.loads(line) for line in result.stdout.splitlines()]
+    assert [receipt["db"] for receipt in receipts] == [SYN, OTHER]
+    for name in (SYN, OTHER):
+        assert (datadir / name / "gapit-manifest.json").is_file()
+
+
+def test_db_fetch_without_db_flag_is_usage_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given a positional NAME without -d, When db fetch runs, Then exit 2
+    and no provider is installed (the -d/--db selector is mandatory)."""
+    datadir = patch_registry(tmp_path, monkeypatch)
+    result = runner.invoke(app, ["db", "fetch", SYN, "--datadir", str(datadir)])
+    assert result.exit_code == 2
+    envelope = last_envelope(result.stderr)
+    assert envelope.code == "USAGE_ERROR"
+    assert "-d/--db" in envelope.message
+    assert not (datadir / SYN).exists()
+
+
+def test_db_fetch_db_flag_without_name_is_usage_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given -d without a following NAME, When db fetch runs, Then exit 2
+    with the selector's missing-NAME usage error."""
+    result = runner.invoke(app, ["db", "fetch", "-d"])
+    assert result.exit_code == 2
+    envelope = last_envelope(result.stderr)
+    assert envelope.code == "USAGE_ERROR"
+    assert "requires an argument" in envelope.message
 
 
 def test_db_fetch_unknown_provider_is_usage_error(
@@ -128,7 +172,7 @@ def test_db_fetch_unknown_provider_is_usage_error(
 def test_db_fetch_refuses_overwrite_without_force(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given an already-fetched database, When `db fetch NAME` runs again
+    """Given an already-fetched database, When `db fetch -d NAME` runs again
     without --force, Then exit 4 with a DB_ALREADY_EXISTS envelope and nothing
     on stdout."""
     datadir = patch_registry(tmp_path, monkeypatch)
@@ -144,7 +188,7 @@ def test_db_fetch_refuses_overwrite_without_force(
 def test_db_fetch_force_rebuilds_existing_database(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given an already-fetched database, When `db fetch NAME --force` runs,
+    """Given an already-fetched database, When `db fetch -d NAME --force` runs,
     Then exit 0 with a fresh receipt for the same record count."""
     datadir = patch_registry(tmp_path, monkeypatch)
     assert fetch(SYN, "--datadir", str(datadir)).exit_code == 0
@@ -157,7 +201,7 @@ def test_db_fetch_creates_missing_nested_datadir(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given a --datadir whose nested path does not exist yet (fresh
-    machine), When `db fetch NAME`, Then exit 0 with the receipt naming the
+    machine), When `db fetch -d NAME`, Then exit 0 with the receipt naming the
     created datadir and the database artifacts land under it — not a
     DATADIR_NOT_FOUND refusal (Wave E bootstrap gap)."""
     datadir = patch_registry(tmp_path, monkeypatch)
@@ -170,7 +214,7 @@ def test_db_fetch_creates_missing_nested_datadir(
 
 def test_db_fetch_debug_echoes_index_argv(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Given a registry provider backed by a file:// fasta, When
-    `db fetch NAME --debug`, Then exit 0 with the SAME one-line stdout
+    `db fetch -d NAME --debug`, Then exit 0 with the SAME one-line stdout
     receipt as a plain fetch, the makeblastdb argv line is echoed to stderr
     (`gapit: run:`), and no `minimap2 -d` line appears (no .mmi is built)."""
     datadir = patch_registry(tmp_path, monkeypatch)
@@ -354,7 +398,7 @@ def test_db_list_tty_renders_rich_table_not_tsv(
 
 def test_db_fetch_all_installs_default_dbs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Given a registry whose card+vfdb providers point at a file:// fasta,
-    When `db fetch all`, Then both defaults install in DEFAULT_DBS order
+    When `db fetch -d all`, Then both defaults install in DEFAULT_DBS order
     over the download path with one JSON receipt line per db on stdout."""
     source = tmp_path / "upstream.fa"
     source.write_text(UPSTREAM_FASTA, encoding="utf-8")
@@ -368,7 +412,7 @@ def test_db_fetch_all_installs_default_dbs(tmp_path: Path, monkeypatch: pytest.M
                 vendor="Synthetica",
                 source_urls=(url,),
                 dbtype="nucl",
-                transform=syn_transform,
+                transform=make_transform(name),
             )
             for name in ("card", "vfdb")
         },
@@ -389,7 +433,7 @@ def test_db_fetch_all_installs_default_dbs(tmp_path: Path, monkeypatch: pytest.M
 def test_db_fetch_from_source_flag_is_rejected(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given any registry, When `db fetch NAME --from-source`, Then the
+    """Given any registry, When `db fetch -d NAME --from-source`, Then the
     command is a usage error (exit 2, nothing on stdout) — the flag was
     removed with the bundled snapshots it used to bypass."""
     datadir = patch_registry(tmp_path, monkeypatch)

@@ -13,7 +13,7 @@ GenBank file directly (URL verified 2026-09-30):
 The repo also ships a ``.toml`` metadata file with upstream identity
 thresholds; it is NOT fetched in v1 — a future typing.json source. The
 database content is GPL-3.0, so NOTHING is bundled with gapit (MIT):
-`gapit db fetch ab_o` downloads the gbk at fetch time and builds a
+`gapit db fetch -d ab_o` downloads the gbk at fetch time and builds a
 kind-cluster database. No typing model: `gapit screen --db ab_o` reports
 best-locus (OC…) calls, phenotype null. Cite Kaptive when you use results.
 """

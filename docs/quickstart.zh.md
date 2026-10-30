@@ -227,7 +227,7 @@ FILE	BEST_LOCUS	TYPE	PHENOTYPE	COVERAGE	IDENTITY	PRESENT	PARTIAL	MISSING_IDS
 
 `PHENOTYPE` 为 `-` 表示没有表型越过规范的 cutoff，或两个表型打平在歧义容差之内
 （把两个位点一起筛查，K101/K102 打平正是这种情况）。七个 kaptive 提供商
-（`gapit db fetch kpsc_k`、`kpsc_o`、`kosc_k`、`kosc_o`、`ab_k`、`ab_o`、
+（`gapit db fetch -d kpsc_k`、`kpsc_o`、`kosc_k`、`kosc_o`、`ab_k`、`ab_o`、
 `ecoli_kps`）会以同样的方式安装真实的
 Kaptive 位点数据库。完整细节见[筛查](./screen.md)与[数据库](./databases.md)。
 

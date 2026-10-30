@@ -116,12 +116,12 @@ def test_real_registry_carries_the_seven_kaptive_providers() -> None:
 def test_fetch_builds_cluster_database(
     kaptive_registry: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given the file:// kaptive fixture, When `db fetch kpsc_k`, Then
+    """Given the file:// kaptive fixture, When `db fetch -d kpsc_k`, Then
     exit 0 with a receipt counting the fixture's loci and the database
     carries every cluster artifact — locus FASTA, features.json, index,
     manifest kind cluster — but NO records.jsonl and NO typing.json
     (phenotype stays null until a typing spec exists)."""
-    result = runner.invoke(app, ["db", "fetch", "kpsc_k", "--datadir", str(kaptive_registry)])
+    result = runner.invoke(app, ["db", "fetch", "-d", "kpsc_k", "--datadir", str(kaptive_registry)])
     assert result.exit_code == 0, result.stderr
     db_dir = kaptive_registry / "kpsc_k"
     assert json.loads(result.stdout) == {
@@ -146,7 +146,7 @@ def test_fetch_manifest_carries_provenance(kaptive_registry: Path) -> None:
     """Given a fetched kaptive database, When its manifest is read, Then it
     declares kind cluster, the upstream source URL, the database-content
     license, and the citation note."""
-    result = runner.invoke(app, ["db", "fetch", "kpsc_o", "--datadir", str(kaptive_registry)])
+    result = runner.invoke(app, ["db", "fetch", "-d", "kpsc_o", "--datadir", str(kaptive_registry)])
     assert result.exit_code == 0, result.stderr
     manifest = read_manifest(kaptive_registry / "kpsc_o" / "gapit-manifest.json")
     assert manifest.kind == "cluster"
@@ -182,7 +182,8 @@ def test_fetched_kaptive_db_screens_as_cluster(
         },
     )
     assert (
-        runner.invoke(app, ["db", "fetch", "ecoli_kps", "--datadir", str(datadir)]).exit_code == 0
+        runner.invoke(app, ["db", "fetch", "-d", "ecoli_kps", "--datadir", str(datadir)]).exit_code
+        == 0
     )
     locus = "".join(
         line.strip()
@@ -212,7 +213,7 @@ def test_fetched_kaptive_db_screens_as_cluster(
 def test_fetch_refuses_overwrite_and_force_rebuilds(kaptive_registry: Path) -> None:
     """Given an already-fetched kaptive database, When fetched again without
     --force, Then DB_ALREADY_EXISTS; with --force the rebuild succeeds."""
-    args = ["db", "fetch", "ab_k", "--datadir", str(kaptive_registry)]
+    args = ["db", "fetch", "-d", "ab_k", "--datadir", str(kaptive_registry)]
     assert runner.invoke(app, args).exit_code == 0
     again = runner.invoke(app, args)
     assert again.exit_code == 4
@@ -226,7 +227,9 @@ def test_db_list_marks_kaptive_providers_cluster_kind(kaptive_registry: Path) ->
     `db list --json`, Then fetched and unfetched kaptive entries alike carry
     kind cluster (gene providers stay gene)."""
     assert (
-        runner.invoke(app, ["db", "fetch", "kosc_k", "--datadir", str(kaptive_registry)]).exit_code
+        runner.invoke(
+            app, ["db", "fetch", "-d", "kosc_k", "--datadir", str(kaptive_registry)]
+        ).exit_code
         == 0
     )
     result = runner.invoke(app, ["db", "list", "--datadir", str(kaptive_registry), "--json"])

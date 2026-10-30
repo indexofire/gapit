@@ -59,36 +59,47 @@ from gapit.errors import usage_fail
 from gapit.formats.csvutil import tsv_cell
 
 
+@click.option(
+    "--db",
+    "-d",
+    "selected",
+    multiple=True,
+    metavar="NAME",
+    help="Database name(s) to fetch; repeat -d for multiple names.",
+)
 @click.argument(
-    "name",
+    "extra_names",
+    nargs=-1,
     required=False,
-    help=("Database name (see: gapit db list), or 'all' for the default set (card, vfdb)."),
+    help="Additional database names (same as repeating -d).",
 )
 @datadir_option()
 @click.option("--force", "-f", is_flag=True, help="Overwrite the database if it already exists.")
 @quiet_option()
 @click.option("--debug", "-v", is_flag=True, help="Echo external command lines to stderr.")
 def db_fetch_command(
-    name: str | None,
+    selected: tuple[str, ...],
+    extra_names: tuple[str, ...],
     datadir: Path | None,
     force: bool,
     quiet: bool,
     debug: bool,
 ) -> None:
-    """Fetch and build database(s) into <datadir>/NAME.
+    """Fetch and build the selected database(s) into <datadir>/NAME.
 
-    NAME 'all' installs every database in DEFAULT_DBS order; each success
-    prints its own one-line JSON receipt to stdout (stdout purity: receipts
-    are data).
+    ``-d/--db NAME [NAME ...]`` is required. NAME ``all`` expands to the
+    default set (card, vfdb); each success prints its own one-line JSON
+    receipt to stdout (stdout purity: receipts are data).
     """
 
     def run() -> None:
-        # Bare `db fetch` prints help (no_args_is_help); only a flags-present
-        # invocation with no NAME reaches this guard.
-        if name is None:
-            usage_fail("db fetch requires a database NAME or 'all' (see: gapit db list)")
+        if not selected:
+            usage_fail(
+                "db fetch requires -d/--db NAME... (NAME 'all' = default set; see: gapit db list)"
+            )
+        names = (*selected, *extra_names)
         for _receipt in perform_fetch(
-            name,
+            list(names),
             datadir,
             force=force,
             quiet=quiet,

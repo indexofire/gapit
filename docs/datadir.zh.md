@@ -171,7 +171,7 @@ gapit db list
 
 **版本漂移。** 环境 A 的 wheel 可能带比 datadir 更新的内置快照。`db list` 显示安装状态，但
 `db outdated` 不会比较 wheel 内置快照与已安装副本。升级某个环境的 gapit 后，要么显式刷新
-（`gapit db fetch <name> --force`），要么使用项目级 datadir。
+（`gapit db fetch -d <name> --force`），要么使用项目级 datadir。
 
 **命名冲突。** 两个环境构建同名自定义库时，没有 `--force` 不会静默覆盖，但 `--force` 会影响
 所有共享该 datadir 的环境。使用唯一名字或显式项目 datadir。
@@ -241,7 +241,7 @@ ENV GAPIT_DATADIR=/opt/gapit/db
 gapit db path [--json]      # 解析 datadir，不创建
 gapit db list [--json]      # 目录清单 + 安装状态；会引导创建根目录
 gapit db setup              # 引导 + 物化 + 建索引
-gapit db fetch NAME         # provider 下载/构建
+gapit db fetch -d NAME         # provider 下载/构建
 gapit db build NAME INPUT   # 自定义 gene 或 cluster 数据库
 gapit db outdated           # 已安装库年龄（严格；要求 datadir）
 ```

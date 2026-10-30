@@ -113,7 +113,7 @@ wheel-shipped [bundled](#bundled-databases-install-time-ready) databases, alphab
 `bundled` before materialization, `installed (N)` after. Three of them (`ecoh`, `ncbi`,
 `resfinder`) are also registry providers — such names render
 exactly once, in the bundled section (never as a duplicate registry `available` row), and
-`gapit db fetch <name>` remains their fresh-upstream update path; `vpa_ok` is bundled-only
+`gapit db fetch -d <name>` remains their fresh-upstream update path; `vpa_ok` is bundled-only
 (no provider, no fetch). Databases installed
 into the datadir outside the catalog also appear, after the bundled section and sorted by
 name: `db build` products (gene and cluster kinds alike) and manifest-less directories
@@ -325,7 +325,7 @@ byte-identity for `resfinder` against a pinned copy of the upstream archive, and
 `vpa_ok` against a `gapit db build` over the real vpautils GenBank files when local
 copies exist — `features.json` included, gene-id resolution included).
 The wheel copy therefore drifts as upstream curation moves on: for the provider-backed
-names (`ecoh`, `ncbi`, `resfinder`) `gapit db fetch <name>`
+names (`ecoh`, `ncbi`, `resfinder`) `gapit db fetch -d <name>`
 (alone, or with `--force` to overwrite a materialized copy) re-downloads the **latest**
 upstream content and rebuilds the datadir database — the freshness path. `vpa_ok` has no
 provider: a refresh means a new resolved snapshot riding a wheel release.
@@ -440,7 +440,7 @@ honest answer for everything the five markers cannot resolve.
 O-antigen gene cluster loci) and `CPSgc.gbk` (163 capsular polysaccharide loci) —
 into ONE merged `kind: cluster` database. It is a PURE built-in bundled database in
 the `ecoli_dec`/`lmo_sero` pattern: no provider, no source URLs, no
-`gapit db fetch vpa_ok`. The committed three-scheme typing asset
+`gapit db fetch -d vpa_ok`. The committed three-scheme typing asset
 (`src/gapit/data/dbs/vpa_ok/typing.json`, generated reproducibly by
 `scripts/generate_vp_typing.py`) installs with it, so screening renders
 `gapit.cluster/2` with per-file phenotypes `o_group`, `k_group`, and the composed
@@ -620,7 +620,7 @@ curation rather than a frozen release. Those repos also ship `.toml` metadata wi
 identity thresholds; gapit does not fetch it in v1 (a future `typing.json` source).
 
 The database content is **GPL-3.0**, while gapit is MIT — so nothing kaptive is ever
-bundled: `gapit db fetch kpsc_k` (and the other six keywords) downloads the GenBank file at
+bundled: `gapit db fetch -d kpsc_k` (and the other six keywords) downloads the GenBank file at
 fetch time and builds a `kind: cluster` database through the cluster pipeline. The manifest
 records the upstream URL, the `GPL-3.0 (database content)` license, and the citation note.
 No typing model ships with them (phenotype calls stay null); you get kaptive-style best
@@ -631,20 +631,20 @@ locus calls, and you can later install your own `typing.json` semantics by rebui
 
 ### The default set
 
-`gapit db fetch all` installs the default set, `card` then `vfdb`. Like every
+`gapit db fetch -d all` installs the default set, `card` then `vfdb`. Like every
 provider it downloads from upstream, transforms the records, and builds `sequences` plus
 the BLAST index locally — so the index always matches the BLAST version actually
 installed on your machine. Network access is required. A bare `gapit db fetch` prints the
-command help: a multi-database download is always named explicitly (`all` or a single
-NAME), never implied by an omitted argument.
+command help: a multi-database download is always named explicitly (`all` or one or
+more NAMEs), never implied by an omitted `-s`.
 
 ### Fetching a named database
 
-`gapit db fetch <name>` runs the full pipeline for one database. Here is `card`
+`gapit db fetch -d NAME [NAME ...]` runs the full pipeline for one or more databases. Here is `card`
 (stderr progress lines, then a one-line JSON receipt on stdout):
 
 ```console
-$ gapit db fetch --datadir /tmp/opencode/gapit-dbs-demo card
+$ gapit db fetch -d card --datadir /tmp/opencode/gapit-dbs-demo
 gapit: downloaded 1 source file(s)
 gapit: read 6059 records from card
 gapit: generated /tmp/opencode/gapit-dbs-demo/card/sequences
@@ -664,7 +664,7 @@ Every database downloads from its upstream source at fetch time, so fetches need
 access. Unknown names are rejected before the datadir is even resolved:
 
 ```console
-$ gapit db fetch nosuchdb
+$ gapit db fetch -d nosuchdb
 {"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
 ```
 
@@ -674,14 +674,14 @@ An existing database directory is never overwritten silently. Refetching without
 fails with exit 4:
 
 ```console
-$ gapit db fetch --datadir /tmp/opencode/gapit-dbs-demo card
+$ gapit db fetch -d card --datadir /tmp/opencode/gapit-dbs-demo
 {"schema":"gapit.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database card (use --force)","context":{"db":"card"}}
 ```
 
 `--force` deletes and rebuilds in place:
 
 ```console
-$ gapit db fetch --datadir /tmp/opencode/gapit-dbs-demo --force card
+$ gapit db fetch -d card --datadir /tmp/opencode/gapit-dbs-demo --force
 {"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/opencode/gapit-dbs-demo/card"}
 ```
 

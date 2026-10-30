@@ -16,7 +16,7 @@ and antigen allele IDs to an external finetyping pipeline.
 ## Install
 
 ```bash
-gapit db fetch nme_sero
+gapit db fetch -d nme_sero
 gapit db list | grep nme_sero
 gapit db info -d nme_sero
 ```

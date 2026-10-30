@@ -79,18 +79,19 @@ def test_screen_flag_without_files_keeps_usage_error() -> None:
     assert HELP_SENTINEL not in _normalized(result)
 
 
-def test_db_fetch_flag_without_name_is_usage_error(
+def test_db_fetch_flag_without_select_is_usage_error(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given `db fetch --datadir D` with no NAME, When run, Then exit 2 with
-    a USAGE_ERROR envelope asking for a NAME or `all` — flags present means
-    help does not fire, and the default-set download is never implied."""
+    """Given `db fetch --datadir D` without -s/NAME, When run, Then exit 2
+    with a USAGE_ERROR envelope asking for -d/--db NAME... — flags
+    present means help does not fire, and no download is implied."""
     monkeypatch.setattr("gapit.db_ops.REGISTRY", {})
     result = runner.invoke(app, ["db", "fetch", "--datadir", str(tmp_path)])
     assert result.exit_code == 2
     assert "gapit.error" in result.stderr
     assert "USAGE_ERROR" in result.stderr
     assert "all" in result.stderr
+    assert "-d/--db" in result.stderr
     assert HELP_SENTINEL not in _normalized(result)
 
 

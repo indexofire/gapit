@@ -170,7 +170,7 @@ PROVIDER = Provider(
             " gapit screens nucleotide sequences at --minid/--mincov (80/80 by default), so a"
             " hit means 'homolog present', not 'CARD model passed its own cutoff'.",
             "The database is a point-in-time snapshot of a continuously updated resource;"
-            " `gapit db fetch card` is the freshness path. Cite the CARD version from its"
+            " `gapit db fetch -d card` is the freshness path. Cite the CARD version from its"
             " manifest/upstream release, not just the paper.",
             "CARD content is licensed for non-commercial use with redistribution prohibited,"
             " which is why nothing rides the wheel — every install downloads at fetch time.",

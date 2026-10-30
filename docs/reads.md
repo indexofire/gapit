@@ -114,7 +114,7 @@ time — replacing the per-sample `Screening sample …`/`Detected N present gen
 it runs. Piped or redirected stderr and `--quiet` keep the plain notes byte-identically.
 The bar never touches stdout: streaming bytes are identical with it on or off, and the
 lazy `#SAMPLE` header still leads. The contig path ([./screen.md](./screen.md)) and
-`gapit db fetch all` carry the same bar.
+`gapit db fetch -d all` carry the same bar.
 
 The single-sample `--r1`/`--r2` path differs on two points: no `--jobs`, and its Markdown
 frontmatter keeps the `files:`/`genes_found:` totals (its tsv default renders the same

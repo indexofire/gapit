@@ -237,7 +237,7 @@ FILE	BEST_LOCUS	TYPE	PHENOTYPE	COVERAGE	IDENTITY	PRESENT	PARTIAL	MISSING_IDS
 
 `PHENOTYPE` is `-` when no phenotype clears the spec's cutoff or two tie inside its
 ambiguity margin (screen both loci at once and the K101/K102 tie does exactly that).
-The seven kaptive providers (`gapit db fetch kpsc_k`, `kpsc_o`, `kosc_k`, `kosc_o`,
+The seven kaptive providers (`gapit db fetch -d kpsc_k`, `kpsc_o`, `kosc_k`, `kosc_o`,
 `ab_k`, `ab_o`, `ecoli_kps`) install
 real Kaptive locus databases the same way. Full detail in
 [Screening](./screen.md#cluster-databases-kind-cluster) and

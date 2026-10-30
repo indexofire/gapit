@@ -65,7 +65,7 @@ gapit screen contigs.fa --db ncbi --format md
 gapit screen isolates.fa --db ecoli_dec --output dec.tsv
 gapit typing dec.tsv
 # 脑膜炎奈瑟菌：血清群 + ctrA + sodC 内参（不含 MLST）
-gapit db fetch nme_sero
+gapit db fetch -d nme_sero
 gapit screen isolate.fna -d nme_sero
 
 # 筛查 FASTQ reads；--read-type 选择 minimap2 preset
@@ -76,8 +76,8 @@ gapit screen --r1 ont_reads.fastq.gz --db ncbi --read-type map-ont --format json
 gapit summary *.tsv
 
 # 数据库：七个随 wheel 内置、开箱即用；其余在 fetch 时从上游下载
-gapit db fetch all         # 默认集合（card、vfdb）
-gapit db fetch ncbi
+gapit db fetch -d all         # 默认集合（card、vfdb）
+gapit db fetch -d ncbi
 gapit db list
 gapit db outdated                # 标记超过过期阈值的数据库
 gapit db search "tet(M)"         # 在所有已安装数据库中查找基因
@@ -110,7 +110,7 @@ sodC，非 MLST）——另有七个经过内容来源审计的库随包内置�
 （MAPQ 20、depth 5、10% lpxA 相对深度）。同一套 `screen.json`（`gapit.screen/1`）
 机制允许任何数据库声明自己的 reads/contigs 阈值，因此不会把一套全局参数强加给扩增子
 长度不同的 panel。若干上游许可（CARD 的 McMaster 条款、VFDB 的 CC BY-NC、Kaptive 的
-GPL-3.0）禁止随 MIT 许可的发行版再分发，所以其他内容都按需抓取——`db fetch <name>`
+GPL-3.0）禁止随 MIT 许可的发行版再分发，所以其他内容都按需抓取——`db fetch -d <name>`
 会从最新上游刷新由提供商支持的内置库名（`ecoh`、`ncbi`、`resfinder`）。数据库结构、
 datadir 共享、conda/Docker 指南和安全注意事项见[数据目录](docs/datadir.zh.md)。
 

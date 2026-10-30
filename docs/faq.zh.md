@@ -38,7 +38,7 @@ $ echo $?
 用 `--force` 覆盖旧库重新抓取：
 
 ```console
-$ gapit db fetch ncbi --force
+$ gapit db fetch -d ncbi --force
 ```
 
 不带 `--force`，抓进已存在的数据库会失败而不是覆盖。

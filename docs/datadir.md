@@ -187,7 +187,7 @@ reference content across envs. It is **not** an isolation or security boundary.
 **Version skew.** Environment A may ship a newer bundled snapshot than the datadir
 already contains. `db list` shows installed state, but `db outdated` does not compare a
 wheel's bundled snapshot with the installed copy. After upgrading gapit in one env,
-either refresh explicitly (`gapit db fetch <name> --force`) or use a per-project datadir.
+either refresh explicitly (`gapit db fetch -d <name> --force`) or use a per-project datadir.
 
 **Name collisions.** Two envs building the same custom name do not silently overwrite
 without `--force`, but `--force` affects every env sharing the datadir. Use unique names
@@ -263,7 +263,7 @@ a project datadir instead.
 gapit db path [--json]      # resolved datadir, no creation
 gapit db list [--json]      # catalog + install state; bootstraps root
 gapit db setup              # bootstrap + materialize + index
-gapit db fetch NAME         # provider download/build
+gapit db fetch -d NAME         # provider download/build
 gapit db build NAME INPUT   # custom gene or cluster database
 gapit db outdated           # installed DB age (strict; requires datadir)
 ```

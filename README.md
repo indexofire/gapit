@@ -69,7 +69,7 @@ gapit screen contigs.fa --db ncbi --format md
 gapit screen isolates.fa --db ecoli_dec --output dec.tsv
 gapit typing dec.tsv
 # Neisseria meningitidis: serogroup + ctrA + sodC control (no MLST)
-gapit db fetch nme_sero
+gapit db fetch -d nme_sero
 gapit screen isolate.fna -d nme_sero
 
 # Screen FASTQ reads; --read-type picks the minimap2 preset
@@ -80,8 +80,8 @@ gapit screen --r1 ont_reads.fastq.gz --db ncbi --read-type map-ont --format json
 gapit summary *.tsv
 
 # Databases: seven ship in-wheel and work instantly; the rest download from upstream on fetch
-gapit db fetch all         # default set (card, vfdb)
-gapit db fetch ncbi
+gapit db fetch -d all         # default set (card, vfdb)
+gapit db fetch -d ncbi
 gapit db list
 gapit db outdated                # flag databases older than the staleness threshold
 gapit db search "tet(M)"         # look up genes across every installed database
@@ -119,7 +119,7 @@ reads/contigs thresholds, so one global parameter set is not forced onto panels 
 different amplicon lengths. Several
 upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0) forbid
 redistribution inside an MIT-licensed distribution, so everything else is fetch-on-demand
-— and `db fetch <name>` refreshes the provider-backed bundled names (`ecoh`, `ncbi`,
+— and `db fetch -d <name>` refreshes the provider-backed bundled names (`ecoh`, `ncbi`,
 `resfinder`) from the latest upstream. For the database anatomy, datadir sharing,
 conda/Docker guidance, and security notes, see [Data directory](docs/datadir.md).
 

@@ -208,7 +208,7 @@ rich 进度条 —— 转轮、当前文件基名、进度条、M/N 计数、百
 `─` 作为视觉分隔：表头正下方一条、样本块之间各一条、最后一个样本结束后一条
 （`--noheader` 只抑制表头下方那条）。CSV、JSON、Markdown、管道输出以及
 `--output FILE` 永远不会包含分隔线，机器可读字节保持不变。位置参数 FASTQ 通配符批量
-（[./reads.zh.md](./reads.zh.md)）与 `gapit db fetch all` 使用同一条进度条。
+（[./reads.zh.md](./reads.zh.md)）与 `gapit db fetch -d all` 使用同一条进度条。
 
 ### typed 基因数据库：判定是第二条命令
 

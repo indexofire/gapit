@@ -250,7 +250,7 @@ def test_reads_bar_keeps_streaming_header_first_and_suppresses_notes(
 def test_fetch_bar_advances_per_db_and_keeps_receipts(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given `db fetch all` over two offline (file://) providers, When
+    """Given `db fetch -d all` over two offline (file://) providers, When
     fetched with the bar active vs quiet, Then the receipts carry the same
     (db, records, dbtype) and the captured bar advances 2/2."""
     provider = REGISTRY["resfinder"]

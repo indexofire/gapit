@@ -106,14 +106,14 @@ set `GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"` (the home default survives enviro
 rebuilds and is shared by every env).
 
 ```bash
-gapit db fetch all         # installs the default set (card, vfdb) into the default datadir
+gapit db fetch -d all         # installs the default set (card, vfdb) into the default datadir
 ```
 
 The same install into a scratch datadir, so you can see what a fetch prints. Progress
 lines go to stderr, one JSON receipt per database to stdout:
 
 ```console
-$ gapit db fetch all --datadir /tmp/gapit-docs/dd
+$ gapit db fetch -d all --datadir /tmp/gapit-docs/dd
 gapit: downloaded 1 source file(s)
 gapit: read 6059 records from card
 gapit: generated /tmp/gapit-docs/dd/card/sequences
@@ -178,5 +178,5 @@ pip install --upgrade gapit
 conda update blast minimap2
 ```
 
-Database content does not update with the code: re-run `gapit db fetch <name> --force`
+Database content does not update with the code: re-run `gapit db fetch -d <name> --force`
 to rebuild an installed database from upstream.

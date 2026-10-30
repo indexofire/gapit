@@ -15,7 +15,7 @@ gMLST 数据库，抗原等位基因 ID 交给外部分型流程。
 ## 安装
 
 ```bash
-gapit db fetch nme_sero
+gapit db fetch -d nme_sero
 gapit db list | grep nme_sero
 gapit db info -d nme_sero
 ```

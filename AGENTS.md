@@ -213,7 +213,7 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   provider module, no `db fetch`; vpautils OAgc+CPSgc merged content, MIT
   (GPL/NC content is never bundled) — materialized into the datadir on first use via
   `bundled.py` (gene bundles replay the gene pipeline, the cluster bundle the cluster
-  pipeline), with `db fetch <name>` the fresh-upstream refresh path for the
+  pipeline), with `db fetch -d <name>` the fresh-upstream refresh path for the
   provider-backed bundled names (ecoh, ncbi, resfinder); what may
   ride the wheel is governed by the §6 policy),
   database listing (`gapit db list`, whose TYPING column reads `command` for gene-kind

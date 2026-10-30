@@ -108,7 +108,7 @@ def perform_setup(
             if name in providers:
                 if not fetch:
                     raise DatabaseError(
-                        f"database {name!r} is not installed; run: gapit db fetch {name}",
+                        f"database {name!r} is not installed; run: gapit db fetch -d {name}",
                         code="DATABASE_NOT_FOUND",
                         context={"db": name, "datadir": str(root)},
                     )

@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **`gapit db fetch` now requires `-d/--db` and accepts multiple names.**
+  The old positional form (`gapit db fetch NAME`) is a usage error; use
+  `gapit db fetch -d NAME [NAME ...]` to fetch one or more databases in one
+  command (for example `gapit db fetch -d card vfdb`). `all` still expands to
+  the default set, and duplicate names collapse.
+
 ## [0.6.6] - 2026-10-30
 
 ### Added

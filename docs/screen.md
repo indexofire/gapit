@@ -214,7 +214,7 @@ full-width `─` rules as visual separators: one directly below the header, one 
 blocks, and one after the last sample (`--noheader` suppresses the header rule only). CSV,
 JSON, Markdown, piped output, and `--output FILE` never contain a rule: machine-readable
 bytes stay unchanged. The positional-FASTQ wildcard batch
-([./reads.md](./reads.md)) and `gapit db fetch all` carry the same bar.
+([./reads.md](./reads.md)) and `gapit db fetch -d all` carry the same bar.
 
 ### Typed gene databases: designation is a second command
 

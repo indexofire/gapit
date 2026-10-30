@@ -582,7 +582,7 @@ def test_resfinder_snapshot_is_byte_identical_to_a_fetch_build(
     fetch_dd = tmp_path / "fetch-dd"
     fetch_dd.mkdir()
     fetched = runner.invoke(
-        app, ["db", "fetch", "resfinder", "--datadir", str(fetch_dd), "--quiet"]
+        app, ["db", "fetch", "-d", "resfinder", "--datadir", str(fetch_dd), "--quiet"]
     )
     assert fetched.exit_code == 0, fetched.stderr
     assert json.loads(fetched.stdout)["records"] == SNAPSHOTS["resfinder"]
@@ -601,7 +601,7 @@ def test_resfinder_snapshot_is_byte_identical_to_a_fetch_build(
 def test_db_fetch_remains_the_refresh_path_for_a_bundled_name(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given a materialized resfinder bundle, When `db fetch resfinder`
+    """Given a materialized resfinder bundle, When `db fetch -d resfinder`
     (file:// provider), Then the first call refuses (DB_ALREADY_EXISTS — a
     materialized bundle is an installed database) and --force overwrites it
     with the fresh upstream build: the manifest drops its bundled source
@@ -618,12 +618,12 @@ def test_db_fetch_remains_the_refresh_path_for_a_bundled_name(
     manifest_path = datadir / "resfinder" / "gapit-manifest.json"
     assert read_manifest(manifest_path).source == "bundled"
 
-    refusal = runner.invoke(app, ["db", "fetch", "resfinder", "--datadir", str(datadir)])
+    refusal = runner.invoke(app, ["db", "fetch", "-d", "resfinder", "--datadir", str(datadir)])
     assert refusal.exit_code == 4
     assert json.loads(refusal.stderr)["code"] == "DB_ALREADY_EXISTS"
 
     refresh = runner.invoke(
-        app, ["db", "fetch", "resfinder", "--datadir", str(datadir), "--force", "--quiet"]
+        app, ["db", "fetch", "-d", "resfinder", "--datadir", str(datadir), "--force", "--quiet"]
     )
     assert refresh.exit_code == 0, refresh.stderr
     assert read_manifest(manifest_path).source is None

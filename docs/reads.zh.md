@@ -104,7 +104,7 @@ $ gapit screen -d ecoli_dec *.gz
 逐样本的 `Screening sample …`/`Detected N present genes` 提示。stderr 被管道或重定向、
 以及 `--quiet` 时，保持与今天逐字节相同的纯文本提示。进度条绝不触碰 stdout：开与关的
 流式字节完全一致，惰性的 `#SAMPLE` 表头依然最先发出。contig 路径
-（[./screen.zh.md](./screen.zh.md)）与 `gapit db fetch all` 使用同一条进度条。
+（[./screen.zh.md](./screen.zh.md)）与 `gapit db fetch -d all` 使用同一条进度条。
 
 单样本的 `--r1`/`--r2` 路径在两点上不同：不接受 `--jobs`，其 Markdown
 frontmatter 保留 `files:`/`genes_found:` 运行总计（它的 tsv 默认渲染同一张表，

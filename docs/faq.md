@@ -43,7 +43,7 @@ $ echo $?
 Refetch over the old one with `--force`:
 
 ```console
-$ gapit db fetch ncbi --force
+$ gapit db fetch -d ncbi --force
 ```
 
 Without `--force`, fetching into an existing database fails instead of

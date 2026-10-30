@@ -29,7 +29,7 @@ from gapit.providers.cluster_common import ClusterProvider, fetch_cluster_provid
 from gapit.providers.common import Dbtype, fetch_provider
 from gapit.records import read_manifest
 
-# `gapit db fetch all` installs these, in order — the two headline
+# `gapit db fetch -d all` installs these, in order — the two headline
 # databases (AMR + virulence). Like every provider they download on fetch:
 # card (McMaster) and vfdb (CC BY-NC) licenses forbid redistribution.
 DEFAULT_DBS = ("card", "vfdb")
@@ -111,7 +111,7 @@ class DbListDocument(BaseModel, frozen=True):
 
 
 def perform_fetch(
-    name: str,
+    names: str | Sequence[str],
     datadir: Path | None,
     *,
     force: bool = False,
@@ -119,9 +119,11 @@ def perform_fetch(
     debug: bool = False,
     emit: Callable[[ProviderReceipt], None] | None = None,
 ) -> Iterator[ProviderReceipt]:
-    """Fetch database(s) into <datadir>/NAME — the shared CLI + MCP
-    path. NAME ``all`` installs every database in DEFAULT_DBS order; each
-    receipt yields as its install completes (streaming, like the CLI's
+    """Fetch database(s) into <datadir>/NAME — the shared CLI + MCP path.
+
+    ``names`` is one NAME or a sequence of NAMEs; ``all`` expands to
+    DEFAULT_DBS order. Duplicate names collapse (first occurrence wins).
+    Each receipt yields as its install completes (streaming, like the CLI's
     per-db stdout lines). On an interactive stderr the batch rides the
     shared progress bar; under --quiet / non-TTY stderr the no-op shim
     keeps today's byte-identical behavior.
@@ -162,9 +164,18 @@ def perform_fetch(
             destination=str(db_dir),
         )
 
-    names = DEFAULT_DBS if name == FETCH_ALL else (name,)
-    with screen_progress(names, quiet=quiet, description="Fetching") as (bar, task_id):
-        for provider_name in names:
+    requested = (names,) if isinstance(names, str) else tuple(names)
+    if not requested:
+        raise UsageError("db fetch requires at least one database NAME", code="USAGE_ERROR")
+    expanded: list[str] = []
+    for name in requested:
+        if name == FETCH_ALL:
+            expanded.extend(DEFAULT_DBS)
+        else:
+            expanded.append(name)
+    selected = tuple(dict.fromkeys(expanded))
+    with screen_progress(selected, quiet=quiet, description="Fetching") as (bar, task_id):
+        for provider_name in selected:
             if task_id is not None:
                 bar.describe(provider_name)
             receipt = fetch_one(provider_name)
