@@ -323,7 +323,7 @@ def test_db_list_bootstraps_a_missing_datadir(
     assert missing.is_dir()
     document = json.loads(text)
     assert document["schema"] == "gapit.dblist/1"
-    assert any(entry["name"] == "ecoh" for entry in document["providers"])
+    assert any(entry["name"] == "cje_cps" for entry in document["providers"])
 
 
 def test_db_list_surfaces_locally_built_databases(

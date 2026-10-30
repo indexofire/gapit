@@ -203,19 +203,17 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   The MCP `typing` tool accepts the screen table text and returns the same document.
 - **DB acquisition** `[gapit-extension]`: `gapit db fetch|path|list|info|search|outdated|build|install|rename|setup` —
   database fetch from the provider catalog (every provider downloads from upstream at fetch
-  time — nothing catalog-side is bundled inside the wheel beyond the sanctioned exceptions,
-  a license-compliance requirement: CARD/VFDB terms are non-commercial and Kaptive is GPL,
-  so none of those may ride an MIT distribution; the sanctioned exceptions are the seven
-  content-provenance-audited bundles under `src/gapit/data/dbs/` — the public-domain
-  `ecoli_dec`, `lmo_sero`, and `cje_cps` panels, three permissively licensed
-  provider snapshots (`ncbi` public domain, `resfinder` Apache-2.0, `ecoh` BSD-3-Clause),
-  and the MIT `vpa_ok` typed cluster snapshot — a pure built-in in the ecoli_dec/lmo_sero pattern: no
-  provider module, no `db fetch`; vpautils OAgc+CPSgc merged content, MIT
-  (GPL/NC content is never bundled) — materialized into the datadir on first use via
-  `bundled.py` (gene bundles replay the gene pipeline, the cluster bundle the cluster
-  pipeline), with `db fetch -d <name>` the fresh-upstream refresh path for the
-  provider-backed bundled names (ecoh, ncbi, resfinder); what may
-  ride the wheel is governed by the §6 policy),
+  time — nothing catalog-side is bundled inside the wheel beyond the sanctioned exceptions.
+  No provider snapshot rides the wheel, even when its upstream license permits it: CARD/VFDB
+  terms are non-commercial, Kaptive is GPL, and provider content carries provenance risk
+  beyond the license text. The sanctioned exceptions are the four gapit-curated bundles
+  under `src/gapit/data/dbs/` — the public-domain `ecoli_dec`, `lmo_sero`, and `cje_cps`
+  panels plus the MIT `vpa_ok` typed cluster snapshot — a pure built-in in the
+  ecoli_dec/lmo_sero pattern: no provider module, no `db fetch`; vpautils OAgc+CPSgc merged
+  content, MIT (GPL/NC content is never bundled) — materialized into the datadir on first
+  use via `bundled.py` (gene bundles replay the gene pipeline, the cluster bundle the
+  cluster pipeline); a bundled refresh means a new snapshot riding a wheel release. What
+  may ride the wheel is governed by the §6 policy),
   database listing (`gapit db list`, whose TYPING column reads `command` for gene-kind
   databases designated by `gapit typing`, `integrated` for cluster-kind databases whose
   phenotype rides `gapit screen`, and `-` for screen-only databases), per-database `db info -d NAME` (provenance + literature
@@ -267,14 +265,19 @@ Materialization is kind-aware: gene bundles replay the gene-build pipeline, clus
 bundles the cluster-build pipeline (`bundled_cluster.py` rebuilds from the committed
 locus FASTA + resolved feature table — gene ids stay snapshot-resolved, the typing spec
 re-validates against them).
-Bundling stays the exception, not the pattern: the other providers fetch from upstream at
-`db fetch` time. Every new bundle passes two gates, in order:
+Bundling stays the exception, not the pattern: every provider fetches from upstream at
+`db fetch` time. Third-party provider snapshots are never bundled, even under a
+permissive license — the wheel carries gapit-curated content only. Every new bundle
+passes three gates, in order:
 
-1. **License gate** (hard, independent of location): only public-domain or permissive
+1. **Curation gate** (hard): the content must be gapit-owned or gapit-curated from
+   public-domain sources. A snapshot of a third-party provider database (ncbi, card,
+   ecoh, resfinder, ...) does not qualify, regardless of its license.
+2. **License gate** (hard, independent of location): only public-domain or permissive
    content (PD, Apache-2.0, BSD, MIT), provenance-audited. GPL (Kaptive) and
    non-commercial terms (CARD, VFDB) never ride the MIT distribution — moving files
    cannot fix this.
-2. **Size gate** (budget): the bundled-root total stays ≤ 30 MiB, mechanically enforced by
+3. **Size gate** (budget): the bundled-root total stays ≤ 30 MiB, mechanically enforced by
    `tests/test_bundled.py` (every `pip install gapit` re-downloads all bundles; PyPI caps
    one file at 100 MiB).
 

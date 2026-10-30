@@ -12,7 +12,7 @@ contig 文件，以 TSV 和 JSON 两种形式读结果，用内置 DEC 面板判
 
 夹具数据库 `tests/data/db/tinyamr` 里有三个短 AMR 基因：`tetA`、`blaTEM-1` 和
 `sul1`。把它复制进一个临时数据目录，剩下的交给 `gapit db setup` 引导：它会物化
-wheel 内置的七个数据库（零网络——包括第 4 节要用来分型的 `ecoli_dec`）并构建全部
+wheel 内置的四个数据库（零网络——包括第 4 节要用来分型的 `ecoli_dec`）并构建全部
 BLAST 索引，无需手跑 `makeblastdb`：
 
 ```bash
@@ -25,12 +25,13 @@ gapit db setup
 全部进度走 stderr；一次运行的输出（有删节）：
 
 ```console
-gapit: materializing bundled database ecoh (597 records) into /tmp/gapit-quickstart/db
-gapit: materializing bundled database ecoli_dec (17 records) into /tmp/gapit-quickstart/db
+gapit: materializing bundled database cje_cps (42 records) into /tmp/gapit-quickstart/db
+gapit: materializing bundled database ecoli_dec (16 records) into /tmp/gapit-quickstart/db
 gapit: materializing bundled database lmo_sero (5 records) into /tmp/gapit-quickstart/db
+gapit: materializing bundled database vpa_ok (195 loci) into /tmp/gapit-quickstart/db
 ...
-Indexed ecoli_dec (17 sequences, nucl)
-Indexed tinyamr (3 sequences, nucl)
+gapit: indexed ecoli_dec (16 sequences, nucl)
+gapit: indexed tinyamr (3 sequences, nucl)
 ```
 
 `gapit db list` 展示数据库目录和安装状态（下面有删节；`--json` 返回
@@ -41,10 +42,10 @@ Indexed tinyamr (3 sequences, nucl)
 $ gapit db list
 NAME	DESCRIPTION	STATUS	DBTYPE	TYPING	PROVIDER
 argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée-Infection
-ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	installed (8373)	nucl	-	NCBI
+cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	installed (42)	nucl	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
 ```
 
-（共二十五个目录数据库：七个内置库在这个数据目录里已显示 `installed`，其余仅可
+（共二十五个目录数据库：四个内置库在这个数据目录里已显示 `installed`，其余仅可
 抓取的注册表条目在 `gapit db fetch` 之前显示 `available`。）
 
 ## 2. 筛查一个 contig 文件

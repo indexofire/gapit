@@ -63,7 +63,7 @@ argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée
 bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	available	prot	-	University of Gothenburg
 card	CARD protein homolog resistance models	available	nucl	-	McMaster University
 cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
-ecoh	E. coli O and H antigens (srst2 EcOH)	bundled	nucl	-	Holt lab (srst2)
+ecoh	E. coli O and H antigens (srst2 EcOH)	available	nucl	-	Holt lab (srst2)
 ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	command	gapit-curated (public-domain sources)
 ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	-	Kaptive (Gladstone lab)
 ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	-	PHAC-NML
@@ -73,10 +73,10 @@ kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	-	Kaptive 
 kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
 lmo_sero	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	command	gapit-curated (public-domain INSDC sources)
 megares	MEGARes antimicrobial resistance genes	available	nucl	-	MEG Lab
-ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	bundled	nucl	-	NCBI
+ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	available	nucl	-	NCBI
 nme_sero	Neisseria meningitidis serogroup + ctrA + sodC control (non-MLST)	available	nucl	command	MDU-PHL
 plasmidfinder	CGE PlasmidFinder replicons	available	nucl	-	DTU CGE
-resfinder	CGE ResFinder acquired resistance genes	bundled	nucl	-	DTU CGE
+resfinder	CGE ResFinder acquired resistance genes	available	nucl	-	DTU CGE
 upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	-	FordeGenomics
 vch_oagc	Vibrio cholerae O-antigen gene clusters (OAGC; 190 OL loci) + ompW species control	available	nucl	integrated	gapit(Hangzhou CDC)
 vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	-	USTC (VFDB)
@@ -108,13 +108,12 @@ optional designation works, if the database carries a `typing.json`:
 - `-` — no typing scheme; screen-only.
 
 STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`
-exists, with N the record count, otherwise `available`. The last seven rows are the
-wheel-shipped [bundled](#bundled-databases-install-time-ready) databases, alphabetical:
-`bundled` before materialization, `installed (N)` after. Three of them (`ecoh`, `ncbi`,
-`resfinder`) are also registry providers — such names render
-exactly once, in the bundled section (never as a duplicate registry `available` row), and
-`gapit db fetch -d <name>` remains their fresh-upstream update path; `vpa_ok` is bundled-only
-(no provider, no fetch). Databases installed
+exists, with N the record count, otherwise `available`. The four
+wheel-shipped [bundled](#bundled-databases-install-time-ready) databases — `cje_cps`,
+`ecoli_dec`, `lmo_sero`, `vpa_ok` — are gapit-curated, with no provider and no fetch path:
+they read `bundled` before materialization and `installed (N)` after. Every provider,
+including `ecoh`, `ncbi`, and `resfinder`, is fetch-on-demand and reads `available` until
+`gapit db fetch -d <name>` installs it. Databases installed
 into the datadir outside the catalog also appear, after the bundled section and sorted by
 name: `db build` products (gene and cluster kinds alike) and manifest-less directories
 (abricate-style or `db install` bytes) render with PROVIDER `local`, the record count
@@ -253,7 +252,7 @@ first use), or `available` (fetch-time download). An unknown name is exit 4
 `DATABASE_NOT_FOUND`; a broken sidecar is exit 4 `DBINFO_MALFORMED`.
 
 **Every catalog database is documented.** The `db info` page is not limited to the
-bundled panels: each of the twenty providers declares its own literature reference and
+bundled panels: each of the twenty-one providers declares its own literature reference and
 interpretation caveats in its provider module, and the bundled panels carry theirs in
 `bundled.json`, so `gapit db info -d card`, `-d resfinder`, `-d kpsc_k` and friends all
 answer with a citation and the limits you must respect (CARD model cutoffs vs gapit's
@@ -283,19 +282,18 @@ wheel's notes without rebuilding anything.
 
 Most databases download from upstream at `db fetch` time because their licenses forbid
 redistribution (see [Providers](#providers)). A small set of **bundled** databases ships
-inside the gapit wheel instead — seven databases whose content provenance was audited
-record-by-record (public-domain sources, or Apache-2.0 / BSD-3-Clause / MIT panels;
-GPL and non-commercial content never rides the wheel). Nothing to download, nothing to
-accept: a bundled database works out of the box.
+inside the gapit wheel instead — four gapit-curated databases whose content provenance
+was audited record-by-record (public-domain sources plus the MIT `vpa_ok` panel). The
+policy is stricter than "the license permits it": third-party provider snapshots
+(`ncbi`, `card`, `ecoh`, `resfinder`, ...) never ride the wheel, because their
+redistribution terms and provenance carry risk that the MIT package should not shoulder.
+Nothing to download, nothing to accept: a bundled database works out of the box.
 
 | Name | Content | Snapshot | Typed |
 |---|---|---|---|
 | `cje_cps` | C. jejuni Penner capsule multiplex PCR panel (37 records: 36 CPS amplicons + `lpxA` control) | 2026-10-27 | `gapit.typing/2` (scheme `penner_cps`) |
-| `ecoh` | E. coli O and H antigens (597 records, srst2 EcOH) | 2026-10-02 | — |
 | `ecoli_dec` | Diarrheagenic E. coli marker panel (16 records, GB 4789.6 + risk-monitoring designation) | 2026-10-02 | `gapit.typing/2` (schemes `gb4789_6`, `risk_monitoring`) |
 | `lmo_sero` | Listeria monocytogenes serogrouping (5 records, Doumith 2004 markers) | 2026-10-03 | `gapit.typing/2` (scheme `doumith_serogroup`) |
-| `ncbi` | NCBI AMRFinderPlus curated AMR (8373 records) | 2026-10-02 | — |
-| `resfinder` | CGE ResFinder acquired resistance genes (3206 records) | 2026-10-02 | — |
 | `vpa_ok` | V. parahaemolyticus O and K antigen loci (195 loci, vpautils OAgc+CPSgc; cluster kind) | 2026-10-12 | `gapit.typing/2` (schemes `o_group`, `k_group`, `serotype`) |
 
 **License provenance.** Every `ecoli_dec` record was re-sourced from primary
@@ -305,34 +303,23 @@ and replaced during the 2026-10 audit, and the byte-identical `estA4` (J03311.1)
 `estA3` (M18346.1) — one `sth` gene, one sequence — was dropped by the build pipeline's
 exact-duplicate dedup in the 2026-10 rebuild, leaving 16 records. The `lmo_sero` panel was extracted the same
 way from public-domain INSDC records (accessions in each header; reverse-complement
-markers strand-corrected, `lmo0737` verified 100% against EGD-e). The three provider
-snapshots (`ecoh`, `ncbi`, `resfinder`) passed the 2026-10
-content-level audit across **all** records: NCBI AMRFinderPlus content is public
-domain (US government work), the CGE ResFinder database is Apache-2.0, and srst2's EcOH
-is BSD-3-Clause — all three permit
-redistribution inside the MIT-licensed wheel. The `vpa_ok` cluster snapshot is
+markers strand-corrected, `lmo0737` verified 100% against EGD-e). The `vpa_ok` cluster snapshot is
 MIT-licensed vpautils content (lab-curated loci, Bakta-annotated, via
 [indexofire/vpautils](https://github.com/indexofire/vpautils)); it ships as the
 resolved `sequences` + `features.json` pair a completed gapit.typing/2 build
 produces. The `cje_cps` panel is assembled from the GenBank accessions the source paper
 lists (public-domain INSDC records; the paper itself is CC0), so it clears the same gate.
 A regression test pins that no `VF*` / `VFDB` / `ARO:` tags appear in any
-of the seven bundles' headers.
+of the four bundles' headers.
 
 **Snapshots are point-in-time.** Each snapshot's `sequences` file is byte-for-byte what
-the upstream content produces on the snapshot date (a regression test proves the
-byte-identity for `resfinder` against a pinned copy of the upstream archive, and for
-`vpa_ok` against a `gapit db build` over the real vpautils GenBank files when local
-copies exist — `features.json` included, gene-id resolution included).
-The wheel copy therefore drifts as upstream curation moves on: for the provider-backed
-names (`ecoh`, `ncbi`, `resfinder`) `gapit db fetch -d <name>`
-(alone, or with `--force` to overwrite a materialized copy) re-downloads the **latest**
-upstream content and rebuilds the datadir database — the freshness path. `vpa_ok` has no
-provider: a refresh means a new resolved snapshot riding a wheel release.
-`bundled.json`
-records the snapshot date for reference. (`db outdated` stays manifest-based in v1:
-it reports the materialization/fetch time of what is installed, not bundled-vs-upstream
-drift — comparing the wheel snapshots against latest upstream is future work.)
+the curated build produces on the snapshot date (a regression test proves the
+byte-identity for `vpa_ok` against a `gapit db build` over the real vpautils GenBank files
+when local copies exist — `features.json` included, gene-id resolution included).
+Bundled databases have no provider and no `db fetch` path: a refresh means a new snapshot
+riding a wheel release. `bundled.json` records the snapshot date for reference.
+(`db outdated` stays manifest-based in v1: it reports the materialization/fetch time of
+what is installed, not bundled-vs-upstream drift.)
 
 **How materialization works.** The first `gapit screen ... --db <bundled-name>` against
 a datadir that does not hold the database builds it there automatically — one stderr note
@@ -559,11 +546,13 @@ unknown `--db NAME` is a usage error (exit 2) listing what is installed.
 
 ## Providers
 
-Twenty-one providers ship with gapit. Every one of them — `card` and `vfdb` included —
-downloads from its upstream source at fetch time: with the exception of the seven
-audited, permissively licensed bundles above, nothing is bundled inside the package,
-because several upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's
-GPL-3.0) forbid redistribution inside an MIT-licensed distribution. Eight providers
+Twenty-one providers ship with gapit. Every one of them — `card`, `ncbi`, and `vfdb`
+included — downloads from its upstream source at fetch time. No provider snapshot is
+bundled: only the four gapit-curated, permissively licensed bundles above ride the
+package. Several upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's
+GPL-3.0) forbid redistribution inside an MIT-licensed distribution, and even
+permissively licensed provider snapshots carry provenance risk, so they stay
+fetch-on-demand. Eight providers
 are **cluster** databases (built through the cluster pipeline at fetch time): the seven
 Kaptive providers ([Kaptive providers](#kaptive-providers-gpl-downloaded-on-fetch)) and
 `vch_oagc`; the typed `vpa_ok` is bundled-only

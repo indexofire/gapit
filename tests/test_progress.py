@@ -11,7 +11,7 @@ import os
 import re
 import shutil
 import sys
-from dataclasses import replace
+from collections.abc import Iterable
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -29,8 +29,10 @@ from rich.progress import (
 import gapit.progress
 from gapit.db import make_blast_db
 from gapit.db_ops import ProviderReceipt, perform_fetch
+from gapit.fasta import iter_fasta
 from gapit.progress import IdleBatch, make_progress, screen_progress
-from gapit.providers import REGISTRY
+from gapit.providers.common import Provider
+from gapit.records import Record
 from gapit.screening import OutputFormat, run_screen
 from gapit.screening_reads_positional import run_screen_reads_positional
 
@@ -38,7 +40,6 @@ FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
 READS_DB_DIR = Path(__file__).parent / "data" / "reads_db"
 READS = Path(__file__).parent / "data" / "reads"
-RESFINDER_ZIP = Path(__file__).parent / "data" / "bundled_differential" / "resfinder" / "HEAD.zip"
 
 
 @pytest.fixture()
@@ -68,6 +69,25 @@ def tty_console() -> Console:
 def pipe_console() -> Console:
     """A recording console that fakes piped (non-TTY) stderr."""
     return Console(file=io.StringIO(), record=True, force_terminal=False, width=100)
+
+
+def synthetic_provider(tmp_path: Path, name: str) -> Provider:
+    """A tiny offline provider whose source is a local FASTA fixture."""
+    source = tmp_path / f"{name}.fa"
+    source.write_text(">tetA\n" + "ACGTAG" * 10 + "\n", encoding="utf-8")
+
+    def transform(workdir: Path) -> Iterable[Record]:
+        for record in iter_fasta(workdir / source.name):
+            yield Record(db=name, gene=record.id, sequence=record.sequence)
+
+    return Provider(
+        name=name,
+        description=f"synthetic {name} provider for progress tests",
+        vendor="Synthetica",
+        source_urls=(source.as_uri(),),
+        dbtype="nucl",
+        transform=transform,
+    )
 
 
 def test_make_progress_uses_gmlst_columns_on_stderr() -> None:
@@ -253,10 +273,10 @@ def test_fetch_bar_advances_per_db_and_keeps_receipts(
     """Given `db fetch -d all` over two offline (file://) providers, When
     fetched with the bar active vs quiet, Then the receipts carry the same
     (db, records, dbtype) and the captured bar advances 2/2."""
-    provider = REGISTRY["resfinder"]
-    local = replace(provider, source_urls=(RESFINDER_ZIP.as_uri(),))
-    monkeypatch.setattr("gapit.db_ops.REGISTRY", {"resfinder": local, "resfinder2": local})
-    monkeypatch.setattr("gapit.db_ops.DEFAULT_DBS", ("resfinder", "resfinder2"))
+    first = synthetic_provider(tmp_path, "synone")
+    second = synthetic_provider(tmp_path, "syntwo")
+    monkeypatch.setattr("gapit.db_ops.REGISTRY", {first.name: first, second.name: second})
+    monkeypatch.setattr("gapit.db_ops.DEFAULT_DBS", (first.name, second.name))
 
     quiet_dd = tmp_path / "quiet-dd"
     quiet_dd.mkdir()
@@ -272,7 +292,7 @@ def test_fetch_bar_advances_per_db_and_keeps_receipts(
         return [(receipt.db, receipt.records, str(receipt.dbtype)) for receipt in receipts]
 
     assert shape(bar_receipts) == shape(quiet_receipts)
-    assert [receipt.db for receipt in bar_receipts] == ["resfinder", "resfinder2"]
+    assert [receipt.db for receipt in bar_receipts] == ["synone", "syntwo"]
     bar_text = sink.export_text(clear=False)
     assert "Fetching" in bar_text and "2/2" in bar_text
 
@@ -326,15 +346,15 @@ def test_fetch_emit_callback_runs_inside_the_bar(
 ) -> None:
     """Given perform_fetch(emit=...), When receipt lines are emitted, Then the
     same receipts are yielded and the callback sees every database."""
-    provider = REGISTRY["resfinder"]
-    local = replace(provider, source_urls=(RESFINDER_ZIP.as_uri(),))
-    monkeypatch.setattr("gapit.db_ops.REGISTRY", {"resfinder": local, "resfinder2": local})
-    monkeypatch.setattr("gapit.db_ops.DEFAULT_DBS", ("resfinder", "resfinder2"))
+    first = synthetic_provider(tmp_path, "synone")
+    second = synthetic_provider(tmp_path, "syntwo")
+    monkeypatch.setattr("gapit.db_ops.REGISTRY", {first.name: first, second.name: second})
+    monkeypatch.setattr("gapit.db_ops.DEFAULT_DBS", (first.name, second.name))
     datadir = tmp_path / "dd"
     datadir.mkdir()
     emitted: list[ProviderReceipt] = []
     received = list(perform_fetch("all", datadir, quiet=True, emit=emitted.append))
-    assert [r.db for r in emitted] == ["resfinder", "resfinder2"]
+    assert [r.db for r in emitted] == ["synone", "syntwo"]
     assert emitted == received
 
 

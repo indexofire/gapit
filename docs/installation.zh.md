@@ -10,8 +10,8 @@ conda 代管二进制），或者用 [pixi](https://pixi.sh) 从 git 克隆安�
 pip install gapit
 ```
 
-wheel 里打包了 Python 包和 `gapit`/`gapit-mcp` console script，外加七个经过审计、
-许可宽松的数据库内置包，首次使用时物化进数据目录（见数据库指南的
+wheel 里打包了 Python 包和 `gapit`/`gapit-mcp` console script，外加四个经过审计、
+许可宽松、由 gapit 策划的数据库内置包，首次使用时物化进数据目录（见数据库指南的
 [内置数据库一节](./databases.zh.md)）；其余每个提供商都在抓取时从
 上游下载，因为多家上游许可禁止再分发。它也**不**打包
 BLAST+ 和 minimap2：请先装好它们（见下文 "外部二进制" 一节，例如
@@ -88,8 +88,8 @@ gapit 会调用 BLAST+（`blastn`、`blastx`、`makeblastdb`、`blastdbcmd`）�
 `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db`）里至少有一个数据库。全新安装时，
 `gapit db path` 显示生效位置，`gapit db list` 在任何数据库
 存在之前就能工作（它会自动创建数据目录并列出目录清单），`gapit db setup` 会创建数据
-目录并物化内置数据库。七个经过审计、许可宽松的数据库随 wheel 发布且无需网络：对某个
-内置库名的第一次筛查会自动物化它，`gapit db setup` 则一次性物化全部七个。其余每个
+目录并物化内置数据库。四个经过审计、许可宽松的数据库随 wheel 发布且无需网络：对某个
+内置库名的第一次筛查会自动物化它，`gapit db setup` 则一次性物化全部四个。其余每个
 提供商都在抓取时从上游下载（需要网络），因为多家上游许可——CARD 的 McMaster 条款、
 VFDB 的 CC BY-NC、Kaptive 的 GPL-3.0——禁止随 MIT 许可的包再分发。完整的数据库表与
 内置库说明见[数据库](./databases.zh.md)。

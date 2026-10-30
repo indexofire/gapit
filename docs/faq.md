@@ -175,12 +175,12 @@ PATH.
 
 ## What licenses apply to the databases?
 
-gapit itself is MIT-licensed. Six audited, permissively licensed bundles ship inside
-the wheel (the public-domain `ecoli_dec` and `lmo_sero` panels, the `ncbi`,
-`resfinder`, `ecoh` snapshots — Apache-2.0 / BSD-3-Clause / MIT — and
+gapit itself is MIT-licensed. Four gapit-curated, permissively licensed bundles ship
+inside the wheel (the public-domain `cje_cps`, `ecoli_dec`, and `lmo_sero` panels plus
 the MIT typed-cluster snapshot `vpa_ok`) and
-materialize into the datadir on first use; every other provider downloads from upstream
-at fetch time, and the content keeps its original
+materialize into the datadir on first use; every provider — `ncbi`, `card`, `ecoh`,
+`resfinder`, and the rest — downloads from upstream at fetch time, and the content keeps
+its original
 licenses (CARD's McMaster non-commercial terms, VFDB's CC BY-NC,
 CGE, Kaptive's GPL-3.0, and so on); gapit does not relicense it. Providers that pin a
 license expose it in `gapit db list --json`. Details in SPEC.md §9 and the
@@ -190,6 +190,7 @@ license expose it in `gapit db list --json`. Details in SPEC.md §9 and the
 
 Write a provider module and fetch it by name: every provider downloads from its
 upstream source at fetch time, transforms the records, and builds locally. Nothing
-beyond the seven audited bundles ships in the wheel (upstream licenses such as CARD's or
-VFDB's forbid redistribution inside an MIT-licensed distribution). The header format,
+beyond the four gapit-curated bundles ships in the wheel (upstream licenses such as
+CARD's or VFDB's forbid redistribution inside an MIT-licensed distribution, and provider
+snapshots carry provenance risk beyond the license text). The header format,
 transforms, and build pipeline are specified in SPEC.md §11.

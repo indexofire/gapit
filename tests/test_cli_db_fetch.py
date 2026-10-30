@@ -241,7 +241,7 @@ def test_db_list_bootstraps_a_missing_datadir(tmp_path: Path) -> None:
     assert missing.is_dir()
     lines = result.stdout.splitlines()
     assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER"
-    assert any(line.startswith("ecoh\t") and "\tbundled\t" in line for line in lines)
+    assert any(line.startswith("cje_cps\t") and "\tbundled\t" in line for line in lines)
 
 
 def test_db_list_bootstraps_a_missing_datadir_json(tmp_path: Path) -> None:
@@ -255,7 +255,7 @@ def test_db_list_bootstraps_a_missing_datadir_json(tmp_path: Path) -> None:
     assert missing.is_dir()
     document = json.loads(result.stdout)
     assert document["schema"] == "gapit.dblist/1"
-    assert any(entry["name"] == "ecoh" for entry in document["providers"])
+    assert any(entry["name"] == "cje_cps" for entry in document["providers"])
 
 
 def test_db_list_text_shows_installed_state(
@@ -364,13 +364,10 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
         "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER\n"
         "cje_cps\tCampylobacter jejuni Penner capsule (CPS) multiplex PCR panel\tbundled"
         "\tnucl\tcommand\tgapit-curated (Poly 2015; CC0 + NCBI public domain)\n"
-        "ecoh\tE. coli O and H antigens (srst2 EcOH)\tbundled\tnucl\t-\tHolt lab (srst2)\n"
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
         "\tbundled\tnucl\tcommand\tgapit-curated (public-domain sources)\n"
         "lmo_sero\tListeria monocytogenes serogrouping (Doumith 2004)\tbundled\tnucl\t"
         "command\tgapit-curated (public-domain INSDC sources)\n"
-        "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\t-\tNCBI\n"
-        "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\t-\tDTU CGE\n"
         f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\t-\tSynthetica\n"
         f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\t-\tExample Org\n"
         "vpa_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
@@ -449,8 +446,8 @@ def test_db_list_json_surfaces_provider_licenses(tmp_path: Path) -> None:
     Then the gapit.dblist/1 entries carry a license field exactly for the
     providers/bundles that pin one — card (McMaster terms), vfdb + ecoli_vf
     (CC BY-NC), the seven kaptive cluster providers (GPL), and the bundled
-    content licenses — and omit it for the rest; every entry also names its
-    upstream maintainer in vendor."""
+    vpa_ok content license — and omit it for the rest; every entry also names
+    its upstream maintainer in vendor."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
 
@@ -462,8 +459,9 @@ def test_db_list_json_surfaces_provider_licenses(tmp_path: Path) -> None:
     assert by_name["vfdb"]["license"] == "CC BY-NC 4.0 (non-commercial)"
     assert by_name["ecoli_vf"]["license"] == "CC BY-NC 4.0 (VFDB-derived content)"
     assert by_name["kpsc_k"]["license"] == "GPL-3.0 (database content)"
-    assert by_name["ncbi"]["license"] == "Public domain (NCBI AMRFinderPlus)"
+    assert by_name["vpa_ok"]["license"] == "MIT (database content)"
     assert "license" not in by_name["argannot"]
+    assert "license" not in by_name["ncbi"]
     assert by_name["kpsc_k"]["vendor"] == "Kaptive (klebgenomics)"
     assert by_name["ab_k"]["vendor"] == "Kaptive (Kenyon lab)"
     assert by_name["ecoli_kps"]["vendor"] == "Kaptive (Gladstone lab)"

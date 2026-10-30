@@ -1,24 +1,23 @@
 """Bundled databases: discovery, materialization, and the DEC matrix.
 
-The wheel ships seven license-clean bundles — the typed ecoli_dec,
-lmo_sero, and cje_cps panels, three provider snapshots
-(ecoh, ncbi, resfinder; public domain / Apache-2.0 / BSD-3-Clause), and
-the typed vpa_ok cluster snapshot (MIT, a pure built-in — no provider
-behind it). These tests pin the install-time-ready
-contract — discovery from the package data dir, auto-materialization on
-first screen (idempotent, quiet-respecting, fresh-datadir bootstrapping,
-kind-aware: gene bundles replay the gene pipeline, the cluster bundle the
-cluster pipeline), the db list bundled → installed transition, the
-per-snapshot screen smoke tests, the resfinder snapshot↔fetch differential
-(file:// provider URL), and the fetch-refresh path (the vpa_ok
-snapshot↔`db build` differential lives in test_vpa_ok.py). The lmo_sero
-serogrouping matrix lives in test_lmo_sero.py. Real binaries through the
+The wheel ships four license-clean, gapit-curated bundles — the typed
+ecoli_dec, lmo_sero, and cje_cps panels plus the typed vpa_ok cluster
+snapshot (MIT, a pure built-in). Provider-backed databases (ecoh, ncbi,
+resfinder, card, ...) are fetch-on-demand only: their upstream content
+carries licensing/provenance risk that a wheel snapshot should not
+shoulder. These tests pin the install-time-ready contract — discovery
+from the package data dir, auto-materialization on first screen
+(idempotent, quiet-respecting, fresh-datadir bootstrapping, kind-aware:
+gene bundles replay the gene pipeline, the cluster bundle the cluster
+pipeline), the db list bundled → installed transition, and the per-bundle
+screen smoke tests. The vpa_ok snapshot↔`db build` differential lives in
+test_vpa_ok.py; the lmo_sero serogrouping matrix lives in
+test_lmo_sero.py. Real binaries through the
 CLI surface (test_cli_db_setup.py conventions).
 """
 
 import json
 import re
-from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -29,7 +28,6 @@ from gapit.cli import app
 from gapit.dbcodec import decode_seqid
 from gapit.errors import DatabaseError
 from gapit.fasta import iter_fasta
-from gapit.providers import REGISTRY
 from gapit.records import read_manifest
 from gapit.screening import find_database
 
@@ -39,10 +37,6 @@ GOLDEN = Path(__file__).parent / "golden"
 S1 = TYPING / "dec_s1_aggR_pic_uidA.fasta"
 S2 = TYPING / "dec_s2_pic_astA_uidA.fasta"
 S3 = TYPING / "dec_s3_stx2a_escV_aggR_uidA.fasta"
-
-# The three provider snapshots: name -> committed record count (pins the
-# wheel content against accidental regeneration).
-SNAPSHOTS = {"ecoh": 597, "ncbi": 8373, "resfinder": 3206}
 
 # The typed cluster snapshot: committed LOCUS count (its records are loci).
 VPA_OK_LOCI = 195
@@ -56,8 +50,6 @@ BUDGET_BYTES = 30 * 1024 * 1024
 # 2026-10) — no VFG/VF id, no VFDB mention, no ARO accession, anywhere in
 # any bundle's headers.
 _RED_FLAG = re.compile(r"VF\d+|VFDB|VFG|ARO:", re.IGNORECASE)
-
-RESFINDER_ZIP = Path(__file__).parent / "data" / "bundled_differential" / "resfinder" / "HEAD.zip"
 
 runner = CliRunner()
 
@@ -133,20 +125,12 @@ def screen_db(sample: Path, datadir: Path, name: str, *extra: str) -> Result:
 
 def test_bundled_discovery_finds_all_bundled() -> None:
     """Given the wheel's data dir, When bundled databases are discovered,
-    Then exactly the seven license-clean bundles ship in name order — six
+    Then exactly the four gapit-curated bundles ship in name order — three
     gene-kind plus the vpa_ok cluster-kind — each metadata parses
     (vendor/dbtype/kind/snapshot date), ecoli_dec/lmo_sero/cje_cps carry
     their typing documents, and vpa_ok carries typing, features table, and
-    content license while the provider snapshots carry none of them."""
-    assert bundled_names() == [
-        "cje_cps",
-        "ecoh",
-        "ecoli_dec",
-        "lmo_sero",
-        "ncbi",
-        "resfinder",
-        "vpa_ok",
-    ]
+    content license."""
+    assert bundled_names() == ["cje_cps", "ecoli_dec", "lmo_sero", "vpa_ok"]
     by_name = {database.name: database for database in bundled_databases()}
     cje_cps = by_name["cje_cps"]
     assert cje_cps.metadata.vendor.startswith("gapit-curated (Poly 2015")
@@ -169,17 +153,6 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert lmo_sero.metadata.dbtype == "nucl"
     assert lmo_sero.metadata.snapshotted == "2026-10-03"
     assert lmo_sero.typing_path is not None
-    vendors = {
-        "ecoh": "Holt lab (srst2)",
-        "ncbi": "NCBI",
-        "resfinder": "DTU CGE",
-    }
-    for name, vendor in vendors.items():
-        assert by_name[name].metadata.vendor == vendor
-        assert by_name[name].metadata.dbtype == "nucl"
-        assert by_name[name].metadata.kind == "gene"
-        assert by_name[name].typing_path is None
-        assert by_name[name].floors_path is None
     vpa_ok = by_name["vpa_ok"]
     assert vpa_ok.metadata.kind == "cluster"
     assert vpa_ok.metadata.vendor == "gapit-curated (vpasero)"
@@ -189,8 +162,8 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert vpa_ok.features_path is not None
     assert by_name["ecoli_dec"].features_path is None
     assert find_bundled("ecoli_dec") is not None
-    assert find_bundled("ncbi") is not None
     assert find_bundled("vpa_ok") is not None
+    assert find_bundled("ncbi") is None
     assert find_bundled("card") is None
 
 
@@ -198,7 +171,7 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     """Given every bundled panel, When every header is inspected, Then no VF
     tag, VFDB marker, or ARO accession appears anywhere — the DEC lesson
     from the license audit (2 VFDB records hid past header-spotting) is
-    locked mechanically across all seven bundles (record counts pinned;
+    locked mechanically across all four bundles (record counts pinned;
     the vpa_ok cluster snapshot's bare locus ids are trivially clean)."""
     typed_counts = {
         "cje_cps": 42,
@@ -209,10 +182,7 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     for bundled in bundled_databases():
         text = bundled.sequences_path.read_text(encoding="utf-8")
         headers = [line for line in text.splitlines() if line.startswith(">")]
-        if bundled.name in typed_counts:
-            assert len(headers) == typed_counts[bundled.name]
-        else:
-            assert len(headers) == SNAPSHOTS[bundled.name]
+        assert len(headers) == typed_counts[bundled.name]
         for header in headers:
             assert _RED_FLAG.search(header) is None, header
 
@@ -471,168 +441,6 @@ def test_typing_genes_column_lists_sorted_present_genes(tmp_path: Path) -> None:
     assert len(hybrid) == 2 and len(headline) == 2
     assert [line.split("\t")[3] for line in hybrid] == ["aggR;escV;stx2a;uidA"] * 2
     assert [line.split("\t")[3] for line in headline] == ["astA;pic;uidA"] * 2
-
-
-# ------------------------------------------------- provider snapshot bundles --
-
-
-@pytest.mark.parametrize(("db_name", "db_records"), sorted(SNAPSHOTS.items()))
-def test_snapshot_materializes_and_screens_zero_network(
-    tmp_path: Path, db_name: str, db_records: int
-) -> None:
-    """Given a fresh EMPTY datadir and a sample derived from the bundle's own
-    sequences, When screening --db <snapshot>, Then the bundle materializes
-    (note carries the committed record count), the manifest certifies
-    source=bundled with no typing document, and every sampled gene is called
-    at 100% identity and coverage — the zero-network headline proof."""
-    sample = tmp_path / "sample.fa"
-    expected = sample_from_bundle(db_name, sample)
-    datadir = tmp_path / "datadir"
-    datadir.mkdir()
-
-    result = screen_db(sample, datadir, db_name)
-
-    assert result.exit_code == 0, result.stderr
-    assert f"materializing bundled database {db_name} ({db_records} records)" in result.stderr
-    manifest = read_manifest(datadir / db_name / "gapit-manifest.json")
-    assert manifest.n_records == db_records
-    assert manifest.source == "bundled"
-    assert manifest.typing_schema is None
-    assert not (datadir / db_name / "typing.json").exists()
-    rows = [line.split("\t") for line in result.stdout.splitlines()[1:]]
-    called = {row[5] for row in rows}
-    assert expected <= called
-    assert all(row[9] == "100.00" for row in rows if row[5] in expected)
-    assert all(row[10] == "100.00" for row in rows if row[5] in expected)
-
-
-def test_db_list_merges_registry_bundled_names_into_one_row(tmp_path: Path) -> None:
-    """Given an empty datadir and the REAL registry, When `db list`, Then
-    each bundled provider name renders exactly ONCE — as a bundled row
-    (STATUS bundled, vendor from bundled.json) in the globally NAME-sorted
-    listing, never as a duplicate registry available row — while a
-    NON-bundled registry row keeps its exact registry bytes
-    (ecoh/ncbi/resfinder: the bundled row replaces their registry rows;
-    vpa_ok is bundled-only, with no registry row to replace); after one
-    ecoh screen that row flips to installed (597) and the JSON
-    entry carries source=bundled."""
-    datadir = tmp_path / "datadir"
-    datadir.mkdir()
-
-    before = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
-    assert before.exit_code == 0
-    lines = before.stdout.splitlines()
-    by_name = {line.split("\t")[0]: line for line in lines[1:]}
-    expected_bundled = {
-        "ecoh": "ecoh\tE. coli O and H antigens (srst2 EcOH)\tbundled\tnucl\t-\tHolt lab (srst2)",
-        "ecoli_dec": "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 +"
-        " risk-monitoring designation)\tbundled\tnucl\tcommand\t"
-        "gapit-curated (public-domain sources)",
-        "lmo_sero": "lmo_sero\tListeria monocytogenes serogrouping (Doumith 2004)\tbundled\t"
-        "nucl\tcommand\tgapit-curated (public-domain INSDC sources)",
-        "ncbi": "ncbi\tNCBI AMRFinderPlus (reference finder) curated AMR\tbundled\tnucl\t-\tNCBI",
-        "resfinder": "resfinder\tCGE ResFinder acquired resistance genes\tbundled\tnucl\t-\t"
-        "DTU CGE",
-        "vpa_ok": "vpa_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\t"
-        "bundled\tnucl\tintegrated\tgapit-curated (vpasero)",
-    }
-    for name, row in expected_bundled.items():
-        assert by_name[name] == row, name
-    for name in (*SNAPSHOTS, "vpa_ok"):
-        assert sum(line.startswith(f"{name}\t") for line in lines) == 1, name
-    assert (
-        by_name["card"] == "card\tCARD protein homolog resistance models\tavailable\tnucl\t-\t"
-        "McMaster University"
-    )
-    names = [line.split("\t")[0] for line in lines[1:]]
-    assert names == sorted(names)
-
-    sample = tmp_path / "sample.fa"
-    sample_from_bundle("ecoh", sample)
-    assert screen_db(sample, datadir, "ecoh", "--quiet").exit_code == 0
-
-    after = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
-    assert after.exit_code == 0
-    assert (
-        "ecoh\tE. coli O and H antigens (srst2 EcOH)\tinstalled (597)\tnucl\t-\t"
-        "Holt lab (srst2)" in after.stdout
-    )
-
-    as_json = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
-    providers = json.loads(as_json.stdout)["providers"]
-    by_name = [entry["name"] for entry in providers]
-    assert by_name.count("ecoh") == 1
-    entry = {entry["name"]: entry for entry in providers}["ecoh"]
-    assert entry["source"] == "bundled"
-    assert entry["installed"] is True
-    assert entry["records"] == 597
-
-
-def test_resfinder_snapshot_is_byte_identical_to_a_fetch_build(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Given the wheel's resfinder snapshot and a file:// copy of the exact
-    upstream HEAD.zip it was produced from, When one datadir is built by
-    `db fetch` (the provider pipeline) and another by bundled
-    materialization, Then both sequences files are BYTE-identical and carry
-    the same record count — the snapshot is precisely what fetch installs."""
-    provider = replace(REGISTRY["resfinder"], source_urls=(RESFINDER_ZIP.as_uri(),))
-    monkeypatch.setattr("gapit.db_ops.REGISTRY", {"resfinder": provider})
-
-    fetch_dd = tmp_path / "fetch-dd"
-    fetch_dd.mkdir()
-    fetched = runner.invoke(
-        app, ["db", "fetch", "-d", "resfinder", "--datadir", str(fetch_dd), "--quiet"]
-    )
-    assert fetched.exit_code == 0, fetched.stderr
-    assert json.loads(fetched.stdout)["records"] == SNAPSHOTS["resfinder"]
-
-    sample = tmp_path / "sample.fa"
-    sample_from_bundle("resfinder", sample)
-    bundle_dd = tmp_path / "bundle-dd"
-    bundle_dd.mkdir()
-    assert screen_db(sample, bundle_dd, "resfinder", "--quiet").exit_code == 0
-
-    fetched_sequences = fetch_dd / "resfinder" / "sequences"
-    bundled_sequences = bundle_dd / "resfinder" / "sequences"
-    assert bundled_sequences.read_bytes() == fetched_sequences.read_bytes()
-
-
-def test_db_fetch_remains_the_refresh_path_for_a_bundled_name(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Given a materialized resfinder bundle, When `db fetch -d resfinder`
-    (file:// provider), Then the first call refuses (DB_ALREADY_EXISTS — a
-    materialized bundle is an installed database) and --force overwrites it
-    with the fresh upstream build: the manifest drops its bundled source
-    stamp while `db list` keeps the row in the bundled section (wheel
-    membership) as installed — the snapshot is point-in-time, fetch is the
-    freshness path."""
-    provider = replace(REGISTRY["resfinder"], source_urls=(RESFINDER_ZIP.as_uri(),))
-    monkeypatch.setattr("gapit.db_ops.REGISTRY", {"resfinder": provider})
-    datadir = tmp_path / "datadir"
-    datadir.mkdir()
-    sample = tmp_path / "sample.fa"
-    sample_from_bundle("resfinder", sample)
-    assert screen_db(sample, datadir, "resfinder", "--quiet").exit_code == 0
-    manifest_path = datadir / "resfinder" / "gapit-manifest.json"
-    assert read_manifest(manifest_path).source == "bundled"
-
-    refusal = runner.invoke(app, ["db", "fetch", "-d", "resfinder", "--datadir", str(datadir)])
-    assert refusal.exit_code == 4
-    assert json.loads(refusal.stderr)["code"] == "DB_ALREADY_EXISTS"
-
-    refresh = runner.invoke(
-        app, ["db", "fetch", "-d", "resfinder", "--datadir", str(datadir), "--force", "--quiet"]
-    )
-    assert refresh.exit_code == 0, refresh.stderr
-    assert read_manifest(manifest_path).source is None
-
-    listing = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
-    entry = {entry["name"]: entry for entry in json.loads(listing.stdout)["providers"]}["resfinder"]
-    assert entry["source"] == "bundled"
-    assert entry["installed"] is True
-    assert entry["records"] == SNAPSHOTS["resfinder"]
 
 
 # ------------------------------------------------------- typed cluster bundle --

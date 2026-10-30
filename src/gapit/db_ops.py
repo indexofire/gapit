@@ -292,9 +292,8 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
     dbtype) from ``bundled.json``; installed state and record count from a
     materialized manifest under the datadir. A bundle whose directory exists
     but never finished materializing (no manifest) lists as not installed —
-    the next screen or `db setup` rebuilds it. A bundled name that is also a
-    registry provider (ncbi, resfinder, ...) appears ONLY here: the bundled
-    row replaces its registry row so one name is always one row."""
+    the next screen or `db setup` rebuilds it. Bundled names are gapit-curated
+    only; provider-backed names (ncbi, resfinder, ...) never appear here."""
     entries: list[DbListEntry] = []
     for database in bundled:
         manifest_path = root / database.name / "gapit-manifest.json"

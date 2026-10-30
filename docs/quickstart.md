@@ -13,7 +13,7 @@ Run everything from the repo root with the gapit environment on PATH
 
 The fixture db at `tests/data/db/tinyamr` holds three short AMR genes: `tetA`,
 `blaTEM-1`, and `sul1`. Copy it into a temp datadir and let `gapit db setup` bootstrap
-the rest: it materializes the seven bundled databases that ship in the wheel (zero
+the rest: it materializes the four bundled databases that ship in the wheel (zero
 network — including `ecoli_dec`, which you will type with in section 4) and indexes
 everything, no `makeblastdb` by hand:
 
@@ -27,12 +27,13 @@ gapit db setup
 All progress goes to stderr; one run prints (trimmed):
 
 ```console
-gapit: materializing bundled database ecoh (597 records) into /tmp/gapit-quickstart/db
-gapit: materializing bundled database ecoli_dec (17 records) into /tmp/gapit-quickstart/db
+gapit: materializing bundled database cje_cps (42 records) into /tmp/gapit-quickstart/db
+gapit: materializing bundled database ecoli_dec (16 records) into /tmp/gapit-quickstart/db
 gapit: materializing bundled database lmo_sero (5 records) into /tmp/gapit-quickstart/db
+gapit: materializing bundled database vpa_ok (195 loci) into /tmp/gapit-quickstart/db
 ...
-Indexed ecoli_dec (17 sequences, nucl)
-Indexed tinyamr (3 sequences, nucl)
+gapit: indexed ecoli_dec (16 sequences, nucl)
+gapit: indexed tinyamr (3 sequences, nucl)
 ```
 
 `gapit db list` shows the database catalog and install state (trimmed below; `--json`
@@ -44,10 +45,10 @@ is usable:
 $ gapit db list
 NAME	DESCRIPTION	STATUS	DBTYPE	TYPING	PROVIDER
 argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée-Infection
-ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	installed (8373)	nucl	-	NCBI
+cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	installed (42)	nucl	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
 ```
 
-(twenty-five catalog databases in total: the seven bundled ones now read `installed` in
+(twenty-five catalog databases in total: the four bundled ones now read `installed` in
 this datadir, the rest read `available` until you `gapit db fetch` them)
 
 ## 2. Screen a contig file

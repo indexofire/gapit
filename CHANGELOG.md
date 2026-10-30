@@ -10,6 +10,16 @@
   command (for example `gapit db fetch -d card vfdb`). `all` still expands to
   the default set, and duplicate names collapse.
 
+### Removed
+
+- **Bundled provider snapshots are gone.** `ecoh`, `ncbi`, and `resfinder` no
+  longer ship inside the wheel. Their upstream licenses permit redistribution,
+  but provider snapshots carry provenance risk that a gapit release should not
+  own — so every provider is fetch-on-demand only. The bundled set is now the
+  four gapit-curated databases `cje_cps`, `ecoli_dec`, `lmo_sero`, and
+  `vpa_ok`; `db setup` materializes those four, and `db list` shows the removed
+  names as `available` until `gapit db fetch -d NAME` installs them.
+
 ## [0.6.6] - 2026-10-30
 
 ### Added

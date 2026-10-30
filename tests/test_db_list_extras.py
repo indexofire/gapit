@@ -106,7 +106,7 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
     tmp_path: Path,
 ) -> None:
     """Given an empty datadir (no local extras), When `db list --json`, Then
-    the only source fields in the document are the eight bundled rows
+    the only source fields in the document are the four bundled rows
     (alphabetical, source=bundled, not installed, vendor from bundled.json)
     — registry entries stay field-free and the extension remains additive."""
     datadir = tmp_path / "datadir"
@@ -119,11 +119,8 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
     with_source = [entry for entry in providers if "source" in entry]
     assert [(entry["name"], entry["source"]) for entry in with_source] == [
         ("cje_cps", "bundled"),
-        ("ecoh", "bundled"),
         ("ecoli_dec", "bundled"),
         ("lmo_sero", "bundled"),
-        ("ncbi", "bundled"),
-        ("resfinder", "bundled"),
         ("vpa_ok", "bundled"),
     ]
     for entry in with_source:
@@ -190,7 +187,7 @@ def test_db_list_json_surfaces_a_bundled_content_license(tmp_path: Path) -> None
     assert entries["vpa_ok"].license == "MIT (database content)"
     assert entries["vpa_ok"].typing is True
     assert entries["vpa_ok"].kind == "cluster"
-    assert entries["ecoh"].typing is False
+    assert entries["cje_cps"].typing is True
 
 
 def test_db_list_flags_a_locally_built_typed_gene_database(tmp_path: Path) -> None:

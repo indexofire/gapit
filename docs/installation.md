@@ -12,8 +12,8 @@ pip install gapit
 ```
 
 The wheel bundles the Python package and the `gapit`/`gapit-mcp` console scripts, plus
-seven audited, permissively licensed database bundles that materialize into the datadir on
-first use (see
+four audited, permissively licensed, gapit-curated database bundles that materialize into
+the datadir on first use (see
 [Bundled databases](./databases.md#bundled-databases-install-time-ready)); every other
 provider downloads from upstream at fetch time, because several upstream licenses forbid
 redistribution. It does **not** bundle BLAST+ or minimap2 either — install
@@ -93,9 +93,9 @@ Screening needs at least one database in the datadir (`$GAPIT_DATADIR`, then
 `gapit db path` shows the effective location, `gapit db list` works before any database
 exists (it bootstraps the datadir and lists the catalog), and `gapit db setup` creates the
 datadir and materializes the bundled databases.
-Seven audited, permissively licensed databases ship inside the wheel and need no network:
+Four audited, permissively licensed databases ship inside the wheel and need no network:
 the first screen against a bundled name materializes it automatically, and `gapit db setup`
-materializes all seven at once. Every other provider downloads from upstream when fetched
+materializes all four at once. Every other provider downloads from upstream when fetched
 (network required), because several
 upstream licenses — CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0 — forbid
 redistribution inside an MIT-licensed package. See [Databases](./databases.md) for the

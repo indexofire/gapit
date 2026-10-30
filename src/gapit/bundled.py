@@ -13,18 +13,16 @@ from the committed locus FASTA + resolved feature table via
 network, so a bundled database is ready at install time with no
 ``db fetch``.
 
-Only public-domain / permissive content may live here (the wheel is MIT):
-PD, Apache-2.0, BSD, MIT — never GPL or non-commercial terms; everything
-else stays download-on-fetch in the provider catalog. The three provider
-snapshots (ncbi, resfinder, ecoh) are point-in-time copies
-of exactly what ``db fetch`` would install (gapit/v1 headers, produced by
-the provider pipeline itself); the typed cluster snapshot vpa_ok is a pure
-built-in (no provider behind it) carrying the resolved gapit.features/1
-table a completed /2 build produced; ``db fetch <name>`` remains the
-freshness path for the provider-backed bundled names and overwrites the
-datadir copy with the latest upstream content. The gene
-build pipeline re-headers any bundled FASTA into gapit/v1 like a custom
-build, so both header styles round-trip.
+Only gapit-curated content with clean provenance may live here (the wheel
+is MIT): our own panels and public-domain / permissive sources, never GPL,
+non-commercial, or third-party provider snapshots whose redistribution terms
+are uncertain. Every provider database — ncbi, card, ecoh, resfinder, ... —
+is fetch-on-demand only, even when its upstream license would permit a
+snapshot. The typed cluster snapshot vpa_ok is a pure built-in (no provider
+behind it) carrying the resolved gapit.features/1 table a completed /2
+build produced; a refresh means a new snapshot riding a wheel release.
+The gene build pipeline re-headers any bundled FASTA into gapit/v1 like a
+custom build, so header styles round-trip.
 
 Bundling is the exception, not the pattern, and every new bundle clears
 two gates in order (the full policy lives in AGENTS.md §6): the license

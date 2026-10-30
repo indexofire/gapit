@@ -79,7 +79,7 @@ gapit screen --r1 ont_reads.fastq.gz --db ncbi --read-type map-ont --format json
 # Summarize report tables into a gene presence/absence matrix
 gapit summary *.tsv
 
-# Databases: seven ship in-wheel and work instantly; the rest download from upstream on fetch
+# Databases: four ship in-wheel and work instantly; every provider downloads from upstream on fetch
 gapit db fetch -d all         # default set (card, vfdb)
 gapit db fetch -d ncbi
 gapit db list
@@ -100,27 +100,25 @@ A database is a directory under the datadir, resolved from `--datadir`, then
 `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`
 (use `gapit db path` to inspect it). On a fresh install
 `gapit db list` bootstraps the datadir and lists the catalog (bundled rows ready for
-first use); `gapit db setup` creates it and materializes all seven bundled databases.
+first use); `gapit db setup` creates it and materializes all four bundled databases.
 Twenty-five databases are
 built into the catalog — thirteen gene providers, eight cluster providers, and
-seven bundled snapshots (`cje_cps`, `ecoh`, `ecoli_dec`, `lmo_sero`, `ncbi`, `resfinder`,
-`vpa_ok`; `ecoh`/`ncbi`/`resfinder` are also provider names). Every
+four bundled snapshots (`cje_cps`, `ecoli_dec`, `lmo_sero`, `vpa_ok`). Every
 provider builds on `gapit db fetch`,
-which downloads from upstream — including `nme_sero` (N. meningitidis serogroup + ctrA + sodC, non-MLST) — and seven content-provenance-audited ones also ship inside
-the package (`ecoli_dec`, `lmo_sero` plus the `ncbi`, `resfinder`,
-`ecoh` snapshots — public domain / Apache-2.0 /
-BSD-3-Clause / MIT — and the MIT typed-cluster snapshot `vpa_ok`), materialized into the
-datadir on first use with zero network; the
-bundled `ecoli_dec` additionally carries per-gene identity floors (`floors.json`, `pic`
-at 90%) that both engines apply before presence calls, and `cje_cps` ships floors plus
-per-database `screen.json` defaults (MAPQ 20, depth 5, 10% lpxA relative depth). The
-same `screen.json` (`gapit.screen/1`) mechanism lets any database declare its own
-reads/contigs thresholds, so one global parameter set is not forced onto panels of
-different amplicon lengths. Several
+which downloads from upstream — including `nme_sero` (N. meningitidis serogroup + ctrA + sodC, non-MLST). The bundled set is gapit-curated and provenance-clean only:
+the public-domain `ecoli_dec`, `lmo_sero`, and `cje_cps` panels plus the MIT
+typed-cluster snapshot `vpa_ok`, materialized into the datadir on first use with zero
+network. The bundled `ecoli_dec` additionally carries per-gene identity floors
+(`floors.json`, `pic` at 90%) that both engines apply before presence calls, and
+`cje_cps` ships floors plus per-database `screen.json` defaults (MAPQ 20, depth 5, 10%
+lpxA relative depth). The same `screen.json` (`gapit.screen/1`) mechanism lets any
+database declare its own reads/contigs thresholds, so one global parameter set is not
+forced onto panels of different amplicon lengths. Several
 upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0) forbid
-redistribution inside an MIT-licensed distribution, so everything else is fetch-on-demand
-— and `db fetch -d <name>` refreshes the provider-backed bundled names (`ecoh`, `ncbi`,
-`resfinder`) from the latest upstream. For the database anatomy, datadir sharing,
+redistribution inside an MIT-licensed distribution, and provider snapshots carry
+provenance risk beyond the license text — so every provider (`ncbi`, `card`, `ecoh`,
+`resfinder`, ...) is fetch-on-demand: `db fetch -d <name>` installs the latest upstream
+content. For the database anatomy, datadir sharing,
 conda/Docker guidance, and security notes, see [Data directory](docs/datadir.md).
 
 | Name | Content | dbtype |
@@ -234,6 +232,7 @@ roadmap (the current architecture lives in `AGENTS.md`, `SPEC.md`, and `docs/dat
 
 gapit is MIT-licensed. It is a behavioral reimplementation of abricate (GPL-2.0) and
 copies no Perl code; abricate itself remains GPL-2.0. The only database content inside
-the package is the seven audited, permissively licensed bundles under `src/gapit/data/dbs/`
+the package is the four audited, permissively licensed, gapit-curated bundles under
+`src/gapit/data/dbs/`
 (public domain / Apache-2.0 / BSD-3-Clause / MIT); every other provider downloads from
 upstream at fetch time, under its own license (SPEC.md §9).

@@ -61,34 +61,28 @@ def patch_synthetic_provider(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
 
 def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
     """Given the fixture, When db setup runs and then databases are listed,
-    Then exit 0, all seven bundled databases materialize (one stderr note
+    Then exit 0, all four bundled databases materialize (one stderr note
     each, alphabetical — vpa_ok's counting loci) alongside tinyamr's Indexed
-    line, and the listing carries all eight databases."""
+    line, and the listing carries all five databases."""
     datadir = make_datadir(tmp_path)
     setup = runner.invoke(app, ["db", "setup", "--datadir", str(datadir)])
     assert setup.exit_code == 0
     stderr_lines = setup.stderr.splitlines()
-    assert stderr_lines[:6] == [
+    assert stderr_lines[:3] == [
         f"gapit: materializing bundled database {name} ({records} records) into {datadir}"
         for name, records in (
             ("cje_cps", 42),
-            ("ecoh", 597),
             ("ecoli_dec", 16),
             ("lmo_sero", 5),
-            ("ncbi", 8373),
-            ("resfinder", 3206),
         )
     ]
-    assert stderr_lines[6:7] == [
+    assert stderr_lines[3:4] == [
         f"gapit: materializing bundled database vpa_ok (195 loci) into {datadir}",
     ]
-    assert stderr_lines[7:] == [
+    assert stderr_lines[4:] == [
         "gapit: indexed cje_cps (42 sequences, nucl)",
-        "gapit: indexed ecoh (597 sequences, nucl)",
         "gapit: indexed ecoli_dec (16 sequences, nucl)",
         "gapit: indexed lmo_sero (5 sequences, nucl)",
-        "gapit: indexed ncbi (8373 sequences, nucl)",
-        "gapit: indexed resfinder (3206 sequences, nucl)",
         "gapit: indexed tinyamr (3 sequences, nucl)",
         "gapit: indexed vpa_ok (195 sequences, nucl)",
     ]
@@ -96,15 +90,12 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
     infos = list_databases(datadir, reindex=False)
     assert [info.name for info in infos] == [
         "cje_cps",
-        "ecoh",
         "ecoli_dec",
         "lmo_sero",
-        "ncbi",
-        "resfinder",
         "tinyamr",
         "vpa_ok",
     ]
-    tinyamr = infos[6]
+    tinyamr = infos[3]
     assert tinyamr.n_sequences == 3
     assert tinyamr.dbtype == "nucl"
     assert re.fullmatch(r"\d{4}-[A-Za-z]{3}-\d{2}", tinyamr.date)

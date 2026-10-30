@@ -75,7 +75,7 @@ gapit screen --r1 ont_reads.fastq.gz --db ncbi --read-type map-ont --format json
 # 把报告表汇总成基因存在/缺失矩阵
 gapit summary *.tsv
 
-# 数据库：七个随 wheel 内置、开箱即用；其余在 fetch 时从上游下载
+# 数据库：四个随 wheel 内置、开箱即用；每个提供商都在 fetch 时从上游下载
 gapit db fetch -d all         # 默认集合（card、vfdb）
 gapit db fetch -d ncbi
 gapit db list
@@ -96,22 +96,21 @@ contig 筛查沿用 abricate 默认值（`--minid 80`、`--mincov 80`）。reads
 `$GAPIT_DATADIR`，然后 `$XDG_DATA_HOME/gapit/db`，最后
 `~/.local/share/gapit/db`（可用 `gapit db path` 查看）。全新安装时，
 `gapit db list` 会引导创建 datadir 并列出目录清单（内置库行在首次使用前即可见）；
-`gapit db setup` 会创建 datadir 并物化全部七个内置数据库。
+`gapit db setup` 会创建 datadir 并物化全部四个内置数据库。
 
-目录中共有二十五个数据库——十三个基因库提供商、八个基因簇提供商，以及七个内置快照
-（`cje_cps`、`ecoh`、`ecoli_dec`、`lmo_sero`、`ncbi`、`resfinder`、`vpa_ok`；
-其中 `ecoh`/`ncbi`/`resfinder` 同时也是提供商名）。每个提供商都通过
+目录中共有二十五个数据库——十三个基因库提供商、八个基因簇提供商，以及四个内置快照
+（`cje_cps`、`ecoli_dec`、`lmo_sero`、`vpa_ok`）。每个提供商都通过
 `gapit db fetch` 构建，从上游下载——包括 `nme_sero`（脑膜炎奈瑟菌血清群 + ctrA +
-sodC，非 MLST）——另有七个经过内容来源审计的库随包内置（`ecoli_dec`、`lmo_sero`
-以及 `ncbi`、`resfinder`、`ecoh` 快照——公共领域 / Apache-2.0 / BSD-3-Clause / MIT——
-以及 MIT 的 typed-cluster 快照 `vpa_ok`），首次使用时物化进 datadir，零网络；内置
-`ecoli_dec` 还携带逐基因一致性下限（`floors.json`，`pic` 为 90%），两个引擎在做存在
-判定前都会应用；`cje_cps` 则同时携带 floors 和每数据库的 `screen.json` 默认值
-（MAPQ 20、depth 5、10% lpxA 相对深度）。同一套 `screen.json`（`gapit.screen/1`）
-机制允许任何数据库声明自己的 reads/contigs 阈值，因此不会把一套全局参数强加给扩增子
-长度不同的 panel。若干上游许可（CARD 的 McMaster 条款、VFDB 的 CC BY-NC、Kaptive 的
-GPL-3.0）禁止随 MIT 许可的发行版再分发，所以其他内容都按需抓取——`db fetch -d <name>`
-会从最新上游刷新由提供商支持的内置库名（`ecoh`、`ncbi`、`resfinder`）。数据库结构、
+sodC，非 MLST）。内置集合只包含 gapit 自有或来源清晰的库：公共领域的 `ecoli_dec`、
+`lmo_sero`、`cje_cps` panel，以及 MIT 的 typed-cluster 快照 `vpa_ok`，首次使用时
+物化进 datadir，零网络。内置 `ecoli_dec` 还携带逐基因一致性下限（`floors.json`，
+`pic` 为 90%），两个引擎在做存在判定前都会应用；`cje_cps` 则同时携带 floors 和
+每数据库的 `screen.json` 默认值（MAPQ 20、depth 5、10% lpxA 相对深度）。同一套
+`screen.json`（`gapit.screen/1`）机制允许任何数据库声明自己的 reads/contigs 阈值，
+因此不会把一套全局参数强加给扩增子长度不同的 panel。若干上游许可（CARD 的 McMaster
+条款、VFDB 的 CC BY-NC、Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发，而且
+提供商快照还有许可证文本之外的来源风险——所以每个提供商（`ncbi`、`card`、`ecoh`、
+`resfinder` 等）都按需抓取：`db fetch -d <name>` 安装最新上游内容。数据库结构、
 datadir 共享、conda/Docker 指南和安全注意事项见[数据目录](docs/datadir.zh.md)。
 
 | 名称 | 内容 | dbtype |
@@ -215,6 +214,6 @@ gseek 需要 Python 3.12，可通过 pixi `default` 环境（`py312` feature）�
 ## 许可证
 
 gapit 使用 MIT 许可。它是 abricate（GPL-2.0）的行为重实现，不复制任何 Perl 代码；
-abricate 本身仍为 GPL-2.0。包内唯一的数据库内容是 `src/gapit/data/dbs/` 下七个经过
-审计、许可宽松的内置库（公共领域 / Apache-2.0 / BSD-3-Clause / MIT）；其他每个提供商
-都在抓取时从上游下载，遵循其各自许可证（SPEC.md §9）。
+abricate 本身仍为 GPL-2.0。包内唯一的数据库内容是 `src/gapit/data/dbs/` 下四个经过
+审计、许可宽松且由 gapit 策划的内置库（公共领域 / MIT）；每个提供商都在抓取时从
+上游下载，遵循其各自许可证（SPEC.md §9）。
