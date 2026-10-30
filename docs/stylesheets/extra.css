@@ -1,0 +1,16 @@
+/*
+ * Horizontal-navigation layout: the top tab bar carries the primary pages,
+ * page content sits on the left, and the right-hand TOC remains. The primary
+ * sidebar stays as the drawer on tablet/mobile widths, where the tab bar is
+ * hidden.
+ */
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary {
+    display: none;
+  }
+}
+
+/* Section landing pages: keep the card grid aligned with the content column. */
+.md-typeset .grid.cards > ul > li {
+  border-radius: 0.4rem;
+}

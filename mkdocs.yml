@@ -9,9 +9,18 @@ strict: true
 
 theme:
   name: material
+  # Desktop: top tabs carry the primary pages, page content sits on the left,
+  # and the right-hand TOC remains. The primary sidebar is hidden by
+  # stylesheets/extra.css; tablet/mobile keep the drawer navigation.
   features:
-    - navigation.top
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.indexes
+    - navigation.path
     - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
     - content.code.copy
   palette:
     primary: orange
@@ -34,44 +43,66 @@ plugins:
           build: true
           nav_translations:
             Home: 首页
+            Getting started: 快速上手
             Installing gapit: 安装 gapit
             Quickstart: 快速开始
+            User guide: 使用指南
             Screening: 筛查
             Contigs: contig 筛查
             Reads (FASTQ): reads（FASTQ）筛查
             Summarizing reports: 汇总报告
-            Databases: 数据库
-            Data directory: 数据目录
+            Outputs: 输出
             Custom databases: 自定义数据库
             Typing schemes: 分型方案
-            Outputs: 输出
+            Meningococcal serogroup typing (nme_sero): 脑膜炎奈瑟菌血清群分型（nme_sero）
+            Databases: 数据库
+            Database catalog: 数据库目录
+            Data directory: 数据目录
+            Interfaces: 接口
+            gseek engine: gseek 引擎
             MCP server: MCP 服务器
             gapit for agents: 面向 agent 的 gapit
             FAQ: 常见问题
-            gseek engine: gseek 引擎
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   - attr_list
+  - md_in_html
   - tables
   - fenced_code
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
   - toc:
       permalink: true
 
 nav:
   - Home: index.md
-  - Installing gapit: installation.md
-  - Quickstart: quickstart.md
-  - Screening:
-      - Contigs: screen.md
-      - Reads (FASTQ): reads.md
-  - Summarizing reports: summary.md
-  - Databases: databases.md
-  - Data directory: datadir.md
-  - Custom databases: custom-db.md
-  - Typing schemes: typing.md
-  - Meningococcal serogroup typing (nme_sero): nme_sero.md
-  - Outputs: outputs.md
-  - gseek engine: gseek-engine.md
-  - MCP server: mcp.md
-  - gapit for agents: agents.md
+  - Getting started:
+      - start/index.md
+      - Installing gapit: installation.md
+      - Quickstart: quickstart.md
+  - User guide:
+      - guide/index.md
+      - Screening:
+          - Contigs: screen.md
+          - Reads (FASTQ): reads.md
+      - Summarizing reports: summary.md
+      - Outputs: outputs.md
+      - Custom databases: custom-db.md
+      - Typing schemes: typing.md
+      - Meningococcal serogroup typing (nme_sero): nme_sero.md
+  - Databases:
+      - db/index.md
+      - Database catalog: databases.md
+      - Data directory: datadir.md
+  - Interfaces:
+      - interfaces/index.md
+      - gseek engine: gseek-engine.md
+      - MCP server: mcp.md
+      - gapit for agents: agents.md
   - FAQ: faq.md
