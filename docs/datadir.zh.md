@@ -30,6 +30,7 @@ gapit 刻意把**工具环境**和**数据库状态**分开。本页说明数据
 ├── features.json              # 位点/基因表（cluster 库）
 ├── typing.json                # 可选：gapit.typing/1 或 /2 规则
 ├── floors.json                # 可选：按基因的 reads 一致性下限
+├── sequences.asm20.mmi        # cluster 库：预建的 minimap2 asm20 索引
 └── sequences.n* / sequences.p* / sequences.nhr ...   # BLAST 索引
 ```
 
@@ -38,7 +39,9 @@ gapit 刻意把**工具环境**和**数据库状态**分开。本页说明数据
 `~~~` 分隔的 header。gapit 两种都能读。
 
 BLAST 索引（核酸 `.nin/.nsq/.nhr`，蛋白 `.pin/.psq/.phr`）是生成物，不是源数据。索引缺失或
-过期时，`gapit db setup` 或正常构建流程会重建。
+过期时，`gapit db setup` 或正常构建流程会重建。cluster 数据库还会携带
+`sequences.asm20.mmi` minimap2 target 索引，`db setup` 同样会刷新它；legacy cluster
+筛查在索引新鲜时使用它。
 
 `gapit-manifest.json` 最后写入，用于认证产物（`sha256`、`n_records`、`dbtype`、`kind`、
 `source`、`typing_schema`、许可证、工具版本）。发现和列表会使用它，但为了兼容 abricate，

@@ -8,6 +8,11 @@
 无需 BLAST 索引：minimap2 在内存中为数据库的 `sequences` FASTA 建索引。数据库：
 [./databases.md](./databases.md)。contig 模式：[./screen.md](./screen.md)。
 
+**本模式不支持基因簇（cluster）数据库。** 对 `kind: cluster` 数据库使用
+`--r1/--r2` 或 `--aligner minimap2` 会被拒绝；基因簇筛查只接受 assembly FASTA
+（[原因](./screen.zh.md#cluster-input)）。请先把 reads 组装成 assembly 再筛查；
+基因数据库仍然使用本页描述的 reads 模式。
+
 ## 调用方式
 
 ```text

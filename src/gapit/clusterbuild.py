@@ -25,7 +25,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Literal
 
-from gapit.db import make_blast_db
+from gapit.db import make_blast_db, make_minimap2_index
 from gapit.dbbuild import optional_tool_version_line, sha256_file, tool_version_line
 from gapit.errors import DatabaseError
 from gapit.fasta import iter_fasta
@@ -222,6 +222,7 @@ def build_cluster_database(
     sha256 = sha256_file(sequences_path)
     make_blast_db(sequences_path, name, dbtype="nucl", debug=debug)
     note(quiet, "BLAST index built (nucl)")
+    make_minimap2_index(sequences_path, "asm20", debug=debug)
     manifest = Manifest(
         name=name,
         source_urls=tuple(source_urls),

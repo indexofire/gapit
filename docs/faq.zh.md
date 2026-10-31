@@ -73,6 +73,14 @@ $ gapit db setup
 minimap2 基因簇引擎，每文件报告一个最佳位点判定，附逐基因判定，typed 数据库上还有
 表型。细节：`./screen.md` 和 `./databases.md`。
 
+## 可以用 FASTQ 筛查基因簇数据库吗？
+
+v1 不支持。基因簇筛查只接受 assembly FASTA；对 `kind: cluster` 数据库使用
+`--r1/--r2` 或 `--aligner minimap2` 会返回用法错误。locus 覆盖度/一致性阈值是在
+assembly 上校准的，而几十到上百 kb、富含重复的 locus 需要 reads 专用 preset、深度/
+MAPQ 过滤和真实数据校准。请先把 reads 组装成 assembly 再筛查；基因数据库仍然保留
+reads 模式。原因见 `./screen.zh.md#cluster-input`。
+
 ## 如何判定致病型或血清群？
 
 基因数据库上的判定是两阶段的：先用 typed 数据库筛查，再把结果表读回来。内置的

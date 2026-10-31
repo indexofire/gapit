@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from gapit.db_txn import TXN_PREFIX, database_lock
 from gapit.errors import DatabaseError, DependencyError, InputError, UsageError
-from gapit.fasta import iter_fasta
+from gapit.fasta import iter_fasta, iter_fasta_headers
 from gapit.proctools import run_tool
 
 IDSEP = "~~~"
@@ -171,6 +171,56 @@ def make_blast_db(
             os.replace(index_file, sequences_path.parent / index_file.name)
 
 
+def minimap2_target_names_safe(sequences_path: Path) -> bool:
+    """Whether every target name survives minimap2's ``.mmi`` index.
+
+    minimap2 replaces names longer than 255 characters with numeric sequence
+    indices in ``.mmi``; a cluster DB with such ids must keep using the FASTA
+    target so the locus ids in PAF stay stable.
+    """
+    return all(len(seqid) <= 255 for seqid, _ in iter_fasta_headers(sequences_path))
+
+
+def make_minimap2_index(
+    sequences_path: Path, preset: str = "asm20", *, debug: bool = False
+) -> Path | None:
+    """Build/replace the ``sequences.<preset>.mmi`` target index.
+
+    Cluster DBs can use a prebuilt minimap2 index in legacy mode; without it
+    every input file reindexes the locus FASTA in memory. The index is
+    derived data (``db setup`` rebuilds it) and optional: when minimap2 is
+    absent, or any target name exceeds minimap2's 255-character index limit
+    (the index would replace names with numeric ids), return None and let
+    legacy fall back to the FASTA target. A minimap2 present but failing to
+    index is a build error, not a silent fallback — the same binary is
+    required to screen the DB.
+    """
+    if shutil.which("minimap2") is None:
+        return None
+    if not minimap2_target_names_safe(sequences_path):
+        return None
+    target = sequences_path.parent / f"{sequences_path.name}.{preset}.mmi"
+    with tempfile.TemporaryDirectory(dir=sequences_path.parent, prefix=".gapit-mmi.") as tmp:
+        temp = Path(tmp) / target.name
+        argv = ["minimap2", "-x", preset, "-d", str(temp), str(sequences_path)]
+        if debug:
+            print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
+        result = run_tool(argv)
+        if result.returncode != 0:
+            raise DatabaseError(
+                f"minimap2 failed to build the {preset} index for {sequences_path.name}:"
+                f" {result.stderr.strip()}",
+                code="MINIMAP2_INDEX_FAILED",
+            )
+        if not temp.is_file():
+            raise DatabaseError(
+                f"minimap2 produced no {preset} index for {sequences_path.name}",
+                code="MINIMAP2_INDEX_FAILED",
+            )
+        os.replace(temp, target)
+    return target
+
+
 _SEQUENCES_RE = re.compile(r"([\d,]+)\s+sequences;")
 _TITLE_RE = re.compile(r"^Database:[ \t]*(.*)$", re.MULTILINE)
 _DATE_RE = re.compile(r"Date:\s*([A-Za-z]{3})\s+(\d{1,2}),\s+(\d{4})")
@@ -288,6 +338,8 @@ def list_databases(
                     dbtype=_manifest_dbtype(database.path),
                     debug=debug,
                 )
+                if database.kind == "cluster":
+                    make_minimap2_index(database.sequences_path, "asm20", debug=debug)
         sequences = database.sequences_path
         index_exists = any(
             (sequences.parent / f"{sequences.name}{suffix}").exists() for suffix in (".nin", ".pin")

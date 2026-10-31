@@ -152,7 +152,7 @@ def run_screen(
     inputs = _resolve_inputs(files, fofn)
     database = find_database(resolve_screen_datadir(datadir, db_name), db_name, quiet=quiet)
     if database.kind == "cluster":
-        reject_gene_engine_flags(minid, mincov, merge_fragments, jobs, aligner)
+        reject_gene_engine_flags(minid, mincov, merge_fragments, aligner)
         return run_cluster_screen(
             inputs,
             database,
@@ -164,6 +164,7 @@ def run_screen(
             debug=debug,
             emit=emit,
             stdout_emit=stdout_emit,
+            jobs=jobs,
         )
     reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
     params = ScreeningParams(

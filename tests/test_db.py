@@ -4,7 +4,12 @@ from pathlib import Path
 
 import pytest
 
-from gapit.db import discover_databases, list_databases, parse_blastdbcmd_info
+from gapit.db import (
+    discover_databases,
+    list_databases,
+    minimap2_target_names_safe,
+    parse_blastdbcmd_info,
+)
 from gapit.errors import DatabaseError
 
 # Captured verbatim from `blastdbcmd -info -db <fixture>/sequences` (BLAST+ 2.17,
@@ -50,6 +55,18 @@ def test_parse_prot_sample() -> None:
     assert info.dbtype == "prot"
     assert info.title == "Protein AMR db"
     assert info.date == "2026-Jan-05"
+
+
+def test_minimap2_target_names_safe_respects_the_index_limit(tmp_path: Path) -> None:
+    """Given target names at/below and above minimap2's 255-character .mmi
+    limit, When checked, Then only the short-name FASTA is index-safe (the
+    long-name DB must keep using the FASTA target to preserve PAF ids)."""
+    short = tmp_path / "short.fa"
+    short.write_text(f">{'a' * 255}\nACGT\n", encoding="utf-8")
+    long = tmp_path / "long.fa"
+    long.write_text(f">{'a' * 256}\nACGT\n", encoding="utf-8")
+    assert minimap2_target_names_safe(short) is True
+    assert minimap2_target_names_safe(long) is False
 
 
 def write_sequences(db_dir: Path, content: str = ">s\nACGT\n") -> Path:

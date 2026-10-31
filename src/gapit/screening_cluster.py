@@ -11,6 +11,9 @@ output), a multi-scheme document calls every scheme into the /2 phenotypes
 map; untyped databases render the stage-2 output unchanged.
 """
 
+import os
+from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -49,7 +52,7 @@ _CLUSTER_DEFAULTS = (90.0, 90.0, 96.0)
 
 
 def reject_gene_engine_flags(
-    minid: float, mincov: float, merge_fragments: bool, jobs: int, aligner: AlignerEnum | None
+    minid: float, mincov: float, merge_fragments: bool, aligner: AlignerEnum | None
 ) -> None:
     """The shared db-kind guard (CLI and MCP): any non-default gene-engine
     flag against a cluster database is a usage error naming the cluster
@@ -61,8 +64,6 @@ def reject_gene_engine_flags(
         )
     if merge_fragments:
         usage_fail("--merge-fragments is not available with a cluster database")
-    if jobs != 1:
-        usage_fail("--jobs is not available with a cluster database")
     if aligner is not None:
         usage_fail(
             "--aligner is not available with a cluster database"
@@ -141,17 +142,27 @@ def run_cluster_screen(
     debug: bool = False,
     emit: Emit | None = None,
     stdout_emit: bool = False,
+    jobs: int = 1,
 ) -> str:
     """Cluster-engine orchestration beside the gene path: screen each input
-    file in order and render (json/md/tsv via formats.cluster*). The db's
-    typing.json is reference-validated once up front (TYPING_UNKNOWN_GENE)
-    and picks the renderer variant: untyped and single-scheme dbs render
-    gapit.cluster/1 (byte-frozen), multi-scheme dbs render gapit.cluster/2.
-    With ``emit``, chunks stream in document order — tsv/csv/md per
-    completed file (md leads with its static frontmatter; each file's
-    section carries its own summary row); json is a single document emitted
-    at the end. Chunk concatenation is byte-identical to the buffered
-    return value."""
+    file in order and render (json/md/tsv via formats.cluster*). ``jobs``
+    screens N assemblies concurrently, each worker running its own minimap2
+    against the shared locus FASTA; stdout still emits in input order
+    (head-of-line, file i waits for files 1..i). The db's typing.json is
+    reference-validated once up front (TYPING_UNKNOWN_GENE) and picks the
+    renderer variant: untyped and single-scheme dbs render gapit.cluster/1
+    (byte-frozen), multi-scheme dbs render gapit.cluster/2. With ``emit``,
+    chunks stream in document order — tsv/csv/md per completed file (md
+    leads with its static frontmatter; each file's section carries its own
+    summary row); json is a single document emitted at the end. Chunk
+    concatenation is byte-identical to the buffered return value."""
+    if jobs < 1:
+        usage_fail(f"--jobs must be >= 1: got {jobs}")
+    cpu_count = os.cpu_count()
+    if not quiet and cpu_count is not None and jobs * params.threads > cpu_count:
+        click.echo(
+            f"--jobs {jobs} --threads {params.threads} oversubscribes {cpu_count} cpus", err=True
+        )
     features = load_features(database)
     typing_document = load_typing(database)
     v2_document = (
@@ -168,6 +179,16 @@ def run_cluster_screen(
             path, database, features, typing_document, params, quiet=quiet, debug=debug
         )
 
+    def iter_reports() -> Iterator[ClusterReport]:
+        # Each worker owns one minimap2 subprocess. executor.map yields in
+        # input order, so rendering and ``emit`` stay head-of-line exactly
+        # like the sequential path (a failing file raises at its position).
+        if jobs == 1:
+            yield from (screen_one(path) for path in files)
+            return
+        with ThreadPoolExecutor(max_workers=jobs) as executor:
+            yield from executor.map(screen_one, files)
+
     chunks: list[str] = []
 
     def sink(chunk: str) -> None:
@@ -177,7 +198,7 @@ def run_cluster_screen(
                 emit(chunk)
 
     if output_format is OutputFormat.json:
-        reports = [screen_one(path) for path in files]
+        reports = list(iter_reports())
         if v2_document is not None:
             sink(render_cluster2_json(reports, params, now=datetime.now(UTC)))
         else:
@@ -189,11 +210,11 @@ def run_cluster_screen(
             # Static frontmatter leads; each file's section (its own summary
             # row + gene table) streams the moment the file completes.
             sink(cluster_md_head(params, now=datetime.now(UTC)))
-        for path in files:
+        for report in iter_reports():
             if v2_document is not None:
-                sink(cluster2_md_file_chunk(screen_one(path), v2_document))
+                sink(cluster2_md_file_chunk(report, v2_document))
             else:
-                sink(cluster_md_file_chunk(screen_one(path), typed=typed))
+                sink(cluster_md_file_chunk(report, typed=typed))
     else:
         csv = output_format is OutputFormat.csv
         if v2_document is not None:
@@ -202,15 +223,11 @@ def run_cluster_screen(
             if separator and not noheader:
                 sink(separator)
             first = True
-            for path in files:
+            for report in iter_reports():
                 if not first and separator:
                     sink(separator)
                 first = False
-                sink(
-                    cluster2_tsv_file_chunk(
-                        screen_one(path), csv=csv, nopath=nopath, document=v2_document
-                    )
-                )
+                sink(cluster2_tsv_file_chunk(report, csv=csv, nopath=nopath, document=v2_document))
             if separator:
                 sink(separator)
         else:
@@ -219,11 +236,11 @@ def run_cluster_screen(
             if separator and not noheader:
                 sink(separator)
             first = True
-            for path in files:
+            for report in iter_reports():
                 if not first and separator:
                     sink(separator)
                 first = False
-                sink(cluster_tsv_file_chunk(screen_one(path), csv=csv, nopath=nopath, typed=typed))
+                sink(cluster_tsv_file_chunk(report, csv=csv, nopath=nopath, typed=typed))
             if separator:
                 sink(separator)
     return "".join(chunks)

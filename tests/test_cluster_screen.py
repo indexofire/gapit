@@ -10,6 +10,7 @@ Real minimap2 + makeblastdb from the pixi env (test_cli_reads.py recipe).
 """
 
 import json
+import os
 import shutil
 from datetime import UTC, datetime
 from io import StringIO
@@ -247,6 +248,7 @@ class TestEngineSamples:
             line for line in debug_run.stderr.splitlines() if line.startswith("gapit: run:")
         ]
         assert argv_lines and "-x asm20" in argv_lines[0] and "--cs" in argv_lines[0]
+        assert "sequences.asm20.mmi" in argv_lines[0]
         # JSON carries created_at; two invocations may cross a second boundary.
         debug_doc = json.loads(debug_run.stdout)
         plain_doc = json.loads(plain_run.stdout)
@@ -387,7 +389,6 @@ class TestKindGuards:
             (["--minid", "85"], "--min-gene-cov/--min-gene-id"),
             (["--mincov", "85"], "--min-gene-cov/--min-gene-id"),
             (["--merge-fragments"], "--merge-fragments is not available with a cluster database"),
-            (["--jobs", "2"], "--jobs is not available with a cluster database"),
             (["--aligner", "blastn"], "--aligner is not available with a cluster database"),
             (["--min-gene-cov", "150"], "--min-gene-cov must be in [0, 100]"),
         ],
@@ -469,6 +470,79 @@ class TestKindGuards:
             ],
         )
         self._usage(result, "--min-gene-cov/--min-gene-id/--min-cluster-cov apply to cluster")
+
+
+class TestJobs:
+    """File-level concurrency on the cluster path: same output, head-of-line."""
+
+    def _screen(self, cluster_db: Path, files: list[Path], *extra: str) -> Result:
+        return runner.invoke(
+            app,
+            [
+                "screen",
+                *(str(path) for path in files),
+                "--db",
+                DB,
+                "--datadir",
+                str(cluster_db),
+                "--nopath",
+                *extra,
+            ],
+        )
+
+    def test_jobs_3_output_matches_jobs_1(self, cluster_db: Path, tmp_path: Path) -> None:
+        """Given four cluster samples, When screened --jobs 1 vs --jobs 3,
+        Then stdout is byte-identical (head-of-line input order)."""
+        samples = _write_samples(cluster_db, tmp_path)
+        files = [samples[name] for name in ("exact", "fragmented", "partial", "unrelated")]
+        sequential = self._screen(cluster_db, files, "--jobs", "1", "--quiet")
+        parallel = self._screen(cluster_db, files, "--jobs", "3", "--quiet")
+        assert sequential.exit_code == 0, sequential.stderr
+        assert parallel.exit_code == 0, parallel.stderr
+        assert parallel.stdout == sequential.stdout
+
+    def test_jobs_stderr_chatter_multiset_matches(
+        self, cluster_db: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Given several samples, When --jobs 1 vs --jobs 3, Then stderr
+        carries the same Processing/Best-locus lines as a multiset; only
+        their interleaving may differ."""
+        monkeypatch.setattr(os, "cpu_count", lambda: 64)
+        samples = _write_samples(cluster_db, tmp_path)
+        files = [samples[name] for name in ("exact", "fragmented", "partial")]
+        sequential = self._screen(cluster_db, files, "--jobs", "1")
+        parallel = self._screen(cluster_db, files, "--jobs", "3")
+        assert sequential.exit_code == 0, sequential.stderr
+        assert parallel.exit_code == 0, parallel.stderr
+        assert sorted(parallel.stderr.splitlines()) == sorted(sequential.stderr.splitlines())
+
+    def test_jobs_oversubscription_note(
+        self, cluster_db: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Given --jobs 2 on a one-cpu machine, When cluster screening runs,
+        Then the shared oversubscription note fires once and --quiet
+        suppresses it."""
+        monkeypatch.setattr(os, "cpu_count", lambda: 1)
+        samples = _write_samples(cluster_db, tmp_path)
+        files = [samples["exact"], samples["fragmented"]]
+        result = self._screen(cluster_db, files, "--jobs", "2", "--threads", "1")
+        assert result.exit_code == 0, result.stderr
+        assert "--jobs 2 --threads 1 oversubscribes 1 cpus" in result.stderr
+        assert result.stderr.count("oversubscribes") == 1
+
+        quiet = self._screen(cluster_db, files, "--jobs", "2", "--threads", "1", "--quiet")
+        assert quiet.exit_code == 0, quiet.stderr
+        assert quiet.stderr == ""
+
+    def test_jobs_zero_is_a_usage_error(self, cluster_db: Path, tmp_path: Path) -> None:
+        """Given --jobs 0, When cluster screening runs, Then the shared
+        validation exits 2 before any minimap2 invocation."""
+        sample = _write_samples(cluster_db, tmp_path)["exact"]
+        result = self._screen(cluster_db, [sample], "--jobs", "0")
+        assert result.exit_code == 2
+        envelope = json.loads(result.stderr.splitlines()[-1])
+        assert envelope["code"] == "USAGE_ERROR"
+        assert envelope["message"] == "--jobs must be >= 1: got 0"
 
 
 class TestSchema:

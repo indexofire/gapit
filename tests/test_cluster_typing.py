@@ -356,6 +356,31 @@ class TestEvalValidation:
         assert "gapit: run:" not in result.stderr  # failed before any minimap2 invocation
 
 
+class TestJobs:
+    def test_typed_cluster_jobs_matches_sequential(
+        self, typed_db: Path, samples: dict[str, Path]
+    ) -> None:
+        """Given a typed cluster db, When two assemblies are screened with
+        --jobs 1 vs --jobs 2, Then the PHENOTYPE-bearing TSV is byte-identical
+        (typing evaluation is per-file and thread-safe)."""
+        files = [samples["exact"], samples["both"]]
+        args = [
+            "screen",
+            *(str(path) for path in files),
+            "--db",
+            DB,
+            "--datadir",
+            str(typed_db),
+            "--quiet",
+        ]
+        sequential = runner.invoke(app, [*args, "--jobs", "1"])
+        parallel = runner.invoke(app, [*args, "--jobs", "2"])
+        assert sequential.exit_code == 0, sequential.stderr
+        assert parallel.exit_code == 0, parallel.stderr
+        assert "PHENOTYPE" in sequential.stdout.splitlines()[0]
+        assert parallel.stdout == sequential.stdout
+
+
 def _build_typed(tmp_path: Path, fixture: str, *, tag: str | None = None) -> Path:
     """Build the screening fixture db with one typing spec (test helper;
     one datadir per fixture/tag so combined-fixture tests never collide)."""

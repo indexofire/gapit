@@ -169,11 +169,11 @@ def _reject_reads_only_flags(
     "-j",
     default=1,
     help=(
-        "Screen N input files concurrently (contig files, or the wildcard"
-        " FASTQ path's samples; gapit extension; output order is always"
-        " input order). Each worker runs its own aligner against the"
-        " shared db — BLAST mmaps the index and minimap2 holds it in"
-        " memory, so concurrent readers are fine."
+        "Screen N input files concurrently (contig files, cluster-db"
+        " assemblies, or the wildcard FASTQ path's samples; gapit"
+        " extension; output order is always input order). Each worker runs"
+        " its own aligner against the shared db — BLAST mmaps the index and"
+        " minimap2 holds it in memory, so concurrent readers are fine."
     ),
 )
 @click.option(

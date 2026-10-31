@@ -1087,6 +1087,15 @@ locus (plain headers — abricate cannot read these), `features.json` is the
 declares `kind: cluster`, and there is no `records.jsonl`. Screening dispatches to the
 minimap2 cluster engine ([screen.md](./screen.md#cluster-databases-kind-cluster)).
 
+Cluster screening takes **assembly FASTA only**: `--r1/--r2` and `--aligner minimap2` are
+rejected for a cluster database, and FASTQ must be assembled first. The reads-mode
+gene-presence path remains available for gene databases. Rationale and thresholds:
+[screen.md](./screen.md#cluster-input).
+
+The build also writes a `sequences.asm20.mmi` minimap2 target index (when minimap2 is on
+PATH); `db setup` refreshes it. Legacy cluster screening uses that index when fresh, while
+gseek maintains its own cache.
+
 ### typing.json — declarative phenotype scoring
 
 `--typing FILE` installs a validated `gapit.typing/1` or `gapit.typing/2` document into

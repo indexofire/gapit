@@ -9,6 +9,11 @@ differs from the contig pipeline's identity/coverage floors, while the output-fo
 Requires no BLAST indexing: minimap2 indexes the db `sequences` FASTA in memory. Databases:
 [./databases.md](./databases.md). Contig mode: [./screen.md](./screen.md).
 
+**Cluster databases are not supported in this mode.** `--r1/--r2` and `--aligner minimap2`
+reject a `kind: cluster` database; cluster screening takes assembly FASTA only
+([why](./screen.md#cluster-input)). Assemble the reads first, then screen the assembly; a
+gene database keeps the reads mode described here.
+
 ## Invocation
 
 ```text

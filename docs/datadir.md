@@ -31,6 +31,7 @@ A database is a **directory under the datadir**, one subdirectory per database n
 ├── features.json              # locus/gene table (cluster databases)
 ├── typing.json                # optional gapit.typing/1 or /2 rules
 ├── floors.json                # optional per-gene identity floors
+├── sequences.asm20.mmi        # cluster DBs: prebuilt minimap2 asm20 index
 └── sequences.n* / sequences.p* / sequences.nhr ...   # BLAST index
 ```
 
@@ -41,7 +42,9 @@ gapit can read both.
 
 The BLAST index (`.nin/.nsq/.nhr` for nucleotide, `.pin/.psq/.phr` for protein) is a
 generated artifact, not source data. A missing or stale index is rebuilt by
-`gapit db setup` or by the normal build pipeline.
+`gapit db setup` or by the normal build pipeline. Cluster databases additionally carry a
+`sequences.asm20.mmi` minimap2 target index, which `db setup` also refreshes; legacy
+cluster screening uses it when fresh.
 
 `gapit-manifest.json` is written **last**. It certifies the artifacts (`sha256`,
 `n_records`, `dbtype`, `kind`, `source`, `typing_schema`, licenses, tool versions).

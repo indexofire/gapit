@@ -979,6 +979,13 @@ gapit: BLAST index built (nucl)
 自省）；manifest 声明 `kind: cluster`；没有 `records.jsonl`。筛查分发到 minimap2
 基因簇引擎（[screen.md](./screen.md)）。
 
+基因簇筛查只接受 **assembly FASTA**：对 cluster 数据库使用 `--r1/--r2` 或
+`--aligner minimap2` 会被拒绝，FASTQ 必须先组装。基因数据库的 reads 模式仍然可用。
+原因与阈值见 [screen.zh.md](./screen.zh.md#cluster-input)。
+
+构建时（minimap2 在 PATH 上）还会写出 `sequences.asm20.mmi` target 索引，`db setup`
+会刷新它。legacy cluster 筛查在索引新鲜时使用它，gseek 则维护自己的缓存。
+
 ### typing.json：声明式表型评分
 
 `--typing FILE` 把一份经过校验的 `gapit.typing/1` 或 `gapit.typing/2` 文档安装进数据库成为

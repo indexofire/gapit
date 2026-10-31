@@ -66,6 +66,7 @@ ERROR_CODES: frozenset[str] = frozenset(
         "MANIFEST_MALFORMED",
         "METADATA_MALFORMED",
         "MINIMAP2_FAILED",
+        "MINIMAP2_INDEX_FAILED",
         "MISSING_DEPENDENCY",
         "PAF_PARSE_FAILED",
         "PROVIDER_EMPTY",

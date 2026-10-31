@@ -320,6 +320,13 @@ Growth tiers past the budget — split rather than inflate the ceiling:
   The default path does **not** merge overlapping intervals (frozen baseline behavior;
   the opt-in `--merge-fragments` cross-contic extension in `fragments.py` is the sanctioned
   exception).
+- **Cluster databases** are GBK/GFF-built locus panels screened by minimap2 `asm20` on
+  assembly FASTA only. `--r1/--r2` and `--aligner minimap2` are usage errors against a
+  cluster database (assemble FASTQ first): locus coverage/identity thresholds are
+  assembly-calibrated, and read mapping to repeat-rich multi-kilobase loci needs a
+  read-specific preset, depth/MAPQ filtering, and truth-set calibration. Cluster builds
+  (and `db setup`) write the `sequences.asm20.mmi` target index; legacy uses it when
+  fresh, gseek keeps its own content-addressed cache.
 - Key computed fields: `%COVERAGE = 100*(length-gaps)/slen` (filtered unrounded, displayed
   `%.2f`), `%IDENTITY` (BLAST pident, never post-filtered), `COVERAGE_MAP` (15-char minimap),
   `GAPS`. Exact formulas, the dedup rule, and the minimap arithmetic live in `SPEC.md` — they

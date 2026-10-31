@@ -26,8 +26,8 @@ targeted usage error pointing at `--db`.
 | `--datadir` | `-D` | path | `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db` | Database directory. |
 | `--minid` | `-i` | float | `80.0` | Minimum %identity, `0 < x <= 100`. Enforced inside BLAST via `-perc_identity`. |
 | `--mincov` | `-c` | float | `80.0` | Minimum %coverage, `0 <= x <= 100`. Post-filter on the unrounded float. |
-| `--threads` | `-t` | int | `1` | BLAST worker threads (passed to `-num_threads`). |
-| `--jobs` | `-j` | int | `1` | Screen N input files concurrently. Output order is always input order. |
+| `--threads` | `-t` | int | `1` | Alignment worker threads (BLAST `-num_threads` / minimap2 `-t`). |
+| `--jobs` | `-j` | int | `1` | Screen N input files concurrently (gene contigs, cluster assemblies, or wildcard reads samples). Output order is always input order. |
 | `--merge-fragments` | `-m` | flag | off | Merge gene fragments split across contigs (gapit extension; see below). |
 | `--fofn` | `-F` | path | none | File of filenames; replaces the positional FILEs. |
 | `--quiet` | `-q` | flag | off | Silence stderr diagnostics. |
@@ -373,10 +373,32 @@ How it works:
   file's **best call** when its coverage reaches `--min-cluster-cov` (default 96, a
   kaptive-style confidence floor). Below the floor no call is made.
 
-Guards (usage errors, exit 2): `--minid`/`--mincov`/`--merge-fragments`/`--jobs`/`--aligner`
+### Input: assembly FASTA only (no FASTQ) {#cluster-input}
+
+Cluster screening takes **assembly FASTA** only. `--r1/--r2` and `--aligner minimap2`
+are usage errors against a cluster database: v1 has no calibrated reads path.
+
+The reason is the locus itself, not a missing flag. Cluster loci are often tens to hundreds
+of kilobases and repeat-rich; the locus coverage/identity thresholds are calibrated on
+contiguous assembly evidence, where a complete locus gives a stable breadth. Read mapping
+needs a different minimap2 preset, depth/MAPQ filtering, multi-mapping handling, and
+read-specific thresholds calibrated against known serotypes before a breadth call is
+trustworthy. Assemble the reads first, then screen the assembly; gene databases keep their
+reads mode (`--r1/--r2` against a gene database).
+
+`--jobs N` screens N assemblies concurrently: each worker runs its own minimap2 `asm20`
+against the shared locus FASTA (`--threads` applies per invocation), and stdout stays in
+input order (head-of-line — file i waits for files 1..i). The usual `--jobs × --threads`
+oversubscription note applies.
+
+A cluster build writes a `sequences.asm20.mmi` target index; `db setup` refreshes it.
+Legacy uses that index when it is fresh and falls back to the FASTA (reindexing per input)
+otherwise. gseek manages its own content-addressed index cache.
+
+Guards (usage errors, exit 2): `--minid`/`--mincov`/`--merge-fragments`/`--aligner`
 are gene-engine options and are rejected on cluster databases; the three `--min-gene-*`/
 `--min-cluster-cov` flags are cluster-only and rejected elsewhere, including reads mode
-(cluster screening is assembly-FASTA only in v1).
+(cluster screening is assembly-FASTA only in v1 — see [Input](#cluster-input)).
 
 ### Phenotype calls (`typing.json`)
 

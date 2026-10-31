@@ -24,8 +24,8 @@
 | `--datadir` | `-D` | path | `$GAPIT_DATADIR`，然后 `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db` | 数据库目录。 |
 | `--minid` | `-i` | float | `80.0` | 最小一致性百分比，`0 < x <= 100`。在 BLAST 内部通过 `-perc_identity` 强制执行。 |
 | `--mincov` | `-c` | float | `80.0` | 最小覆盖度百分比，`0 <= x <= 100`。对未取整的浮点值做后置过滤。 |
-| `--threads` | `-t` | int | `1` | BLAST 工作线程数（传给 `-num_threads`）。 |
-| `--jobs` | `-j` | int | `1` | 并发筛查 N 个输入文件。输出顺序始终是输入顺序。 |
+| `--threads` | `-t` | int | `1` | 比对工作线程数（BLAST `-num_threads` / minimap2 `-t`）。 |
+| `--jobs` | `-j` | int | `1` | 并发筛查 N 个输入文件（基因 contig、基因簇 assembly 或通配符 reads 样本）。输出顺序始终是输入顺序。 |
 | `--merge-fragments` | `-m` | 开关 | 关闭 | 合并被 contig 边界拆开的基因片段（gapit 扩展；见下文）。 |
 | `--fofn` | `-F` | path | 无 | 文件名列表文件；取代位置参数 FILE。 |
 | `--quiet` | `-q` | 开关 | 关闭 | 静默 stderr 诊断。 |
@@ -355,10 +355,30 @@ cluster 功能引入前逐字节一致。
   `--min-cluster-cov`（默认 96，kaptive 风格的置信下限）时成为该文件的最佳判定。
   低于下限则不做判定。
 
-守卫（用法错误，退出码 2）：`--minid`/`--mincov`/`--merge-fragments`/`--jobs`/`--aligner`
+### 输入：仅支持 assembly FASTA（不支持 FASTQ） {#cluster-input}
+
+基因簇筛查只接受 **assembly FASTA**。对 cluster 数据库使用 `--r1/--r2` 或
+`--aligner minimap2` 都是用法错误：v1 没有经过校准的 reads 路径。
+
+原因在 locus 本身，而不是少了一个 flag。基因簇位点常有几十到上百 kb，且富含重复
+序列；locus 覆盖度/一致性阈值是在连续 assembly 证据上校准的，完整 locus 才能给出
+稳定的 breadth。reads 比对需要不同的 minimap2 preset、深度/MAPQ 过滤、多重比对处理，
+以及用已知血清型校准过的 reads 专用阈值，breadth 判定才可信。请先把 reads 组装成
+assembly，再筛查 assembly；基因数据库仍然保留 reads 模式（对 gene 数据库使用
+`--r1/--r2`）。
+
+`--jobs N` 会并发筛查 N 个 assembly：每个 worker 对共享的 locus FASTA 运行自己的
+minimap2 `asm20`（`--threads` 作用于每次调用），stdout 仍按输入顺序输出（队头阻塞：
+第 i 个文件等文件 1..i）。常规的 `--jobs × --threads` 超订提示同样生效。
+
+cluster 构建会写出 `sequences.asm20.mmi` target 索引，`db setup` 会刷新它。legacy 在
+索引新鲜时直接使用，否则回退到 FASTA（每个输入重新建索引）。gseek 管理自己的内容
+寻址索引缓存。
+
+守卫（用法错误，退出码 2）：`--minid`/`--mincov`/`--merge-fragments`/`--aligner`
 是基因引擎参数，在基因簇数据库上会被拒绝；三个 `--min-gene-*`/
 `--min-cluster-cov` 参数是 cluster 专属，在其他地方一律拒绝，包括 reads 模式
-（v1 中基因簇筛查只接受 assembly FASTA）。
+（v1 中基因簇筛查只接受 assembly FASTA——见[输入](#cluster-input)）。
 
 ### 表型判定（`typing.json`）
 

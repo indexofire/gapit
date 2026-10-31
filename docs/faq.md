@@ -82,6 +82,15 @@ minimap2 cluster engine and reports one best-locus call per file, with
 per-gene verdicts and, on typed databases, a phenotype. Details:
 `./screen.md` and `./databases.md`.
 
+## Can I screen a cluster database with FASTQ?
+
+Not in v1. Cluster screening takes assembly FASTA only; `--r1/--r2` and
+`--aligner minimap2` return a usage error for a `kind: cluster` database. The locus
+coverage/identity thresholds are assembly-calibrated, and repeat-rich multi-kilobase loci
+need read-specific presets, depth/MAPQ filters, and truth-set calibration. Assemble the
+reads first, then screen the assembly; gene databases keep their reads mode. Rationale:
+`./screen.md#cluster-input`.
+
 ## How do I designate a pathotype or serogroup?
 
 Designation is two-stage on gene databases: screen with a typed database, then read

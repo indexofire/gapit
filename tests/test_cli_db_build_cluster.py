@@ -74,6 +74,7 @@ def test_db_build_gbk_creates_cluster_artifacts(tmp_path: Path) -> None:
     assert manifest.n_records == 2
     assert manifest.dbtype == "nucl"
     assert (db_dir / "sequences.nin").is_file()
+    assert (db_dir / "sequences.asm20.mmi").is_file()
     assert not (db_dir / "records.jsonl").exists()
     assert not (db_dir / "typing.json").exists()
 

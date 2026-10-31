@@ -14,7 +14,7 @@ import threading
 from collections.abc import Iterator
 from pathlib import Path
 
-from gapit.db import Database
+from gapit.db import Database, minimap2_target_names_safe
 from gapit.errors import DependencyError, GapitError
 from gapit.gseek_engine import engine, iter_paf_gseek
 from gapit.paf import PafRecord, Preset, parse_paf_row
@@ -66,6 +66,28 @@ def _iter_minimap2(argv: list[str], r1: Path) -> Iterator[PafRecord]:
         )
 
 
+def _legacy_target(database: Database, read_type: Preset) -> Path:
+    """The minimap2 target: a fresh prebuilt asm20 index when present.
+
+    Cluster DBs build ``sequences.asm20.mmi`` (and ``db setup`` refreshes
+    it); using it avoids reindexing the locus FASTA for every assembly.
+    Stale/missing indexes fall back to the FASTA so legacy always works.
+    """
+    if read_type != "asm20":
+        return database.sequences_path
+    index = database.path / f"{database.sequences_path.name}.asm20.mmi"
+    try:
+        if (
+            index.is_file()
+            and index.stat().st_mtime_ns >= database.sequences_path.stat().st_mtime_ns
+            and minimap2_target_names_safe(database.sequences_path)
+        ):
+            return index
+    except OSError:
+        pass
+    return database.sequences_path
+
+
 def _iter_legacy(
     lanes: list[tuple[Path, Path | None]],
     database: Database,
@@ -76,6 +98,7 @@ def _iter_legacy(
     nm_tags: bool = False,
 ) -> Iterator[PafRecord]:
     """The original subprocess path; kept as the legacy/shadow oracle."""
+    target = _legacy_target(database, read_type)
     for r1, r2 in lanes:
         argv = [
             "minimap2",
@@ -96,7 +119,7 @@ def _iter_legacy(
         # Input paths go to argv absolutized: an absolute path starts with
         # "/" and can never parse as a minimap2 option, so a query file
         # named "-d" cannot make minimap2 dump an index over its mate path.
-        argv += [str(database.sequences_path.absolute()), str(r1.absolute())]
+        argv += [str(target.absolute()), str(r1.absolute())]
         if r2 is not None:
             argv.append(str(r2.absolute()))
         if debug:
