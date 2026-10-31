@@ -66,8 +66,12 @@ pixi 的 `default` 环境（启用 `py312` feature）使用 Python 3.12，并包
   按进程复用同一个 `ToolResolver`/`Executor`/`IndexStore`（`PATH` 或 `GSEEK_*` 变化会
   重建会话），因此两层都不会逐文件重复探测所有 BLAST 二进制。如果安装的 gseek 暴露
   预计算 refs/外部 DB 钩子，bridge 只哈希一次 target，并让 gseek 直接用 gapit 现有的
-  BLAST DB；较旧版本仍使用自己的索引。即便如此，大量小规模基因查询通常仍是 legacy
-  更轻。
+  BLAST DB；较旧版本仍使用自己的索引。如果 gseek 还暴露 `align_many` 且所有输入都是
+  FASTA，gapit 会把文件合并为一次调用（按 `--jobs` 拆成至多 N 个 chunk），摊销
+  process/index 初始化；在带新 batch 选项的 gseek 上，gapit 还会跳过 query 输入哈希
+  和 gseek 的 canonical 排序，因为它自己会折叠并排序 hits。否则仍逐文件执行。
+- **reads 与 cluster minimap2。** 有 `iter_align` 时，gseek bridge 直接流式产出 PAF
+  记录给 gapit 的 breadth/cluster 计算，不再先由 `gseek.align` materialize。
 - **基因簇 minimap2（assembly 模式）。** cluster 构建（以及 `db setup`）会写出
   `<db>/sequences.asm20.mmi`；legacy 在索引新鲜时直接使用它，不再为每个文件重建 locus
   FASTA 索引。gseek 则在 `~/.cache/gseek` 维护自己的内容寻址 `.mmi`，所以两条路径都能

@@ -11,6 +11,7 @@ from click.testing import CliRunner, Result
 
 from gapit.cli import app
 from gapit.db import make_blast_db
+from gapit.gseek_engine import batch_supported
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
@@ -34,6 +35,47 @@ def datadir(tmp_path: Path) -> Path:
 def screen(datadir: Path, *extra: str) -> Result:
     """Invoke `gapit screen ... --db tinyamr --datadir <dd> [extra]`."""
     return runner.invoke(app, ["screen", "--db", "tinyamr", "--datadir", str(datadir), *extra])
+
+
+@pytest.mark.skipif(not batch_supported(), reason="gseek batch API unavailable")
+def test_gseek_batch_stdout_matches_legacy(datadir: Path) -> None:
+    """Given several FASTA inputs, When gseek's batch path screens them, Then
+    stdout is byte-identical to the legacy per-file path (batch only changes
+    execution, not the report)."""
+    files = [str(path) for path in SIX_FILES]
+    legacy = runner.invoke(
+        app,
+        ["screen", "--db", "tinyamr", "--datadir", str(datadir), "--nopath", *files],
+        env={"GAPIT_ENGINE": "legacy"},
+    )
+    batch = runner.invoke(
+        app,
+        ["screen", "--db", "tinyamr", "--datadir", str(datadir), "--nopath", *files],
+        env={"GAPIT_ENGINE": "gseek"},
+    )
+    assert legacy.exit_code == 0, legacy.stderr
+    assert batch.exit_code == 0, batch.stderr
+    assert batch.stdout == legacy.stdout
+
+
+@pytest.mark.skipif(not batch_supported(), reason="gseek batch API unavailable")
+def test_gseek_batch_jobs_4_stdout_matches_legacy(datadir: Path) -> None:
+    """Given --jobs 4, When the gseek batch path splits inputs into chunks,
+    Then stdout still matches legacy in input order."""
+    files = [str(path) for path in SIX_FILES]
+    legacy = runner.invoke(
+        app,
+        ["screen", "--db", "tinyamr", "--datadir", str(datadir), "--nopath", "--jobs", "4", *files],
+        env={"GAPIT_ENGINE": "legacy"},
+    )
+    batch = runner.invoke(
+        app,
+        ["screen", "--db", "tinyamr", "--datadir", str(datadir), "--nopath", "--jobs", "4", *files],
+        env={"GAPIT_ENGINE": "gseek"},
+    )
+    assert legacy.exit_code == 0, legacy.stderr
+    assert batch.exit_code == 0, batch.stderr
+    assert batch.stdout == legacy.stdout
 
 
 def test_jobs_4_stdout_identical_to_jobs_1(datadir: Path) -> None:

@@ -66,6 +66,36 @@ _TARGET_REFS: dict[tuple[Path, int, int], tuple[InputRef, ...]] = {}
 _TARGET_REFS_LOCK = threading.Lock()
 
 
+def batch_supported() -> bool:
+    """Whether the optional gseek package exposes the batch API."""
+    try:
+        return supports_batch(_gseek())
+    except DependencyError:
+        return False
+
+
+def supports_batch(gseek: object) -> bool:
+    """Whether gseek exposes the multi-query API with per-file annotation."""
+    align_many = getattr(gseek, "align_many", None)
+    if not callable(align_many):
+        return False
+    try:
+        return "annotate_batch" in inspect.signature(align_many).parameters
+    except (TypeError, ValueError):
+        return False
+
+
+def _supports_batch_option(gseek: object, option: str) -> bool:
+    """Whether the installed align_many accepts an optional keyword."""
+    align_many = getattr(gseek, "align_many", None)
+    if not callable(align_many):
+        return False
+    try:
+        return option in inspect.signature(align_many).parameters
+    except (TypeError, ValueError):
+        return False
+
+
 def supports_api_refs(gseek: object) -> bool:
     """Whether the installed gseek accepts precomputed query/target refs."""
     align = getattr(gseek, "align", None)
@@ -206,6 +236,10 @@ class _GseekResult(Protocol):
 
 class _GseekModule(Protocol):
     def align(self, **kwargs: object) -> _GseekResult: ...
+
+    def iter_align(self, **kwargs: object) -> Iterable[_GseekRecord]: ...
+
+    def align_many(self, **kwargs: object) -> _GseekResult: ...
 
 
 def engine() -> _LegacyEngine | Engine:
@@ -443,6 +477,113 @@ def run_blast_gseek(
     return [_blast_row(record, protein=dbtype == "prot") for record in result.records]
 
 
+def run_blast_many_gseek(
+    queries: Sequence[Path],
+    database: Database,
+    params: ScreeningParams,
+    *,
+    dbtype: Literal["nucl", "prot"],
+    debug: bool = False,
+) -> list[list[BlastRow]] | None:
+    """Batch several FASTA queries through gseek.align_many.
+
+    Returns one row list per input path in input order, or None when the
+    installed gseek lacks the batch API (gapit then falls back to per-file
+    screening). The records carry gseek's ``batch_index`` tag after the API
+    restores the original query ids, which is what lets us split them back.
+    """
+    gseek = _gseek()
+    if not supports_batch(gseek):
+        return None
+    gseek_params: dict[str, object] = {
+        "task": "blastx-fast" if dbtype == "prot" else "blastn",
+        "evalue": 1e-20,
+        "max_target_seqs": 10000,
+        "culling_limit": 1,
+    }
+    if dbtype == "prot":
+        gseek_params["seg"] = False
+    else:
+        gseek_params["dust"] = False
+        gseek_params["min_identity"] = params.minid
+    target_refs = cached_target_refs(database) if supports_api_refs(gseek) else None
+    index_policy = "auto"
+    if _supports_external_blast_db() and blast_db_ready(database):
+        gseek_params["db"] = str(database.sequences_path.absolute())
+        index_policy = "none"
+    session = _session()
+    session_kwargs: dict[str, object] = {}
+    if session is not None:
+        session_kwargs = {
+            "resolver": session.resolver,
+            "executor": session.executor,
+            "store": session.store,
+        }
+    ref_kwargs: dict[str, object] = {}
+    if target_refs is not None:
+        ref_kwargs["target_refs"] = target_refs
+    batch_kwargs: dict[str, object] = {}
+    if _supports_batch_option(gseek, "compute_inputs"):
+        # gapit consumes records, not gseek's input provenance; skip the full
+        # query-file hash when the newer batch API allows it.
+        batch_kwargs["compute_inputs"] = False
+    if _supports_batch_option(gseek, "sort_records"):
+        # report_from_rows() performs gapit's own stable hit ordering.
+        batch_kwargs["sort_records"] = False
+    if debug:
+        print(
+            f"gapit: gseek batch blast: db={database.name} files={len(queries)} dbtype={dbtype}",
+            file=sys.stderr,
+        )
+    from gseek.errors import ToolNotFoundError
+
+    try:
+        result = gseek.align_many(
+            backend="blast",
+            queries=queries,
+            target=database.sequences_path,
+            params=gseek_params,
+            threads=params.threads,
+            index=index_policy,
+            annotate_batch=True,
+            **session_kwargs,
+            **ref_kwargs,
+            **batch_kwargs,
+        )
+    except ToolNotFoundError as exc:
+        binary = "blastx" if dbtype == "prot" else "blastn"
+        raise DependencyError(
+            f"required binary not found on PATH: {binary}",
+            code="MISSING_DEPENDENCY",
+            context={"binary": binary, "backend": "blast"},
+        ) from exc
+    except Exception as exc:
+        raise GapitError(
+            f"gseek BLAST batch failed: {exc}",
+            code="GSEEK_FAILED",
+            context={"backend": "blast"},
+        ) from exc
+    groups: list[list[BlastRow]] = [[] for _ in queries]
+    for record in result.records:
+        raw_index = record.tags.get("batch_index")
+        try:
+            index = int(raw_index) if raw_index is not None else -1
+        except ValueError as exc:
+            raise GapitError(
+                "gseek batch record has a non-integer batch_index",
+                code="GSEEK_RECORD_INVALID",
+                context={"batch_index": str(raw_index)},
+            ) from exc
+        if index < 0 or index >= len(groups):
+            raise GapitError(
+                "gseek batch record has an out-of-range batch_index",
+                code="GSEEK_RECORD_INVALID",
+                context={"batch_index": str(raw_index)},
+            )
+        groups[index].append(_blast_row(record, protein=dbtype == "prot"))
+    return groups
+
+
 def iter_paf_gseek(
     lanes: Sequence[tuple[Path, Path | None]],
     database: Database,
@@ -460,6 +601,7 @@ def iter_paf_gseek(
     gseek = _gseek()
     from gseek.errors import ToolNotFoundError
 
+    supports_stream = callable(getattr(gseek, "iter_align", None))
     supports_refs = supports_api_refs(gseek)
     target_refs = cached_target_refs(database) if supports_refs else None
     ref_kwargs: dict[str, object] = {}
@@ -488,18 +630,35 @@ def iter_paf_gseek(
                 file=sys.stderr,
             )
         try:
-            result = gseek.align(
-                backend="minimap2",
-                query=query,
-                target=database.sequences_path,
-                paired=r2 is not None,
-                params=gseek_params,
-                threads=threads,
-                index=_minimap2_index_policy(database),
-                record_manifest=False,
-                **session_kwargs,
-                **ref_kwargs,
-            )
+            if supports_stream:
+                records = gseek.iter_align(
+                    backend="minimap2",
+                    query=query,
+                    target=database.sequences_path,
+                    paired=r2 is not None,
+                    params=gseek_params,
+                    threads=threads,
+                    index=_minimap2_index_policy(database),
+                    **session_kwargs,
+                    **ref_kwargs,
+                )
+                for record in records:
+                    yield _paf_record(record)
+            else:
+                result = gseek.align(
+                    backend="minimap2",
+                    query=query,
+                    target=database.sequences_path,
+                    paired=r2 is not None,
+                    params=gseek_params,
+                    threads=threads,
+                    index=_minimap2_index_policy(database),
+                    record_manifest=False,
+                    **session_kwargs,
+                    **ref_kwargs,
+                )
+                for record in result.records:
+                    yield _paf_record(record)
         except ToolNotFoundError as exc:
             raise DependencyError(
                 "required binary not found on PATH: minimap2",
@@ -512,13 +671,13 @@ def iter_paf_gseek(
                 code="GSEEK_FAILED",
                 context={"backend": "minimap2"},
             ) from exc
-        for record in result.records:
-            yield _paf_record(record)
 
 
 __all__ = [
+    "batch_supported",
     "engine",
     "engine_mode",
     "iter_paf_gseek",
     "run_blast_gseek",
+    "run_blast_many_gseek",
 ]

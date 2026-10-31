@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gapit"
-version = "0.6.6"
+version = "0.6.7"
 description = "Mass screening of contigs and reads for known genes — agent-first Python reimplementation of abricate"
 readme = "README.md"
 authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]
@@ -40,7 +40,7 @@ gapit = "gapit.cli:app"
 gapit-mcp = "gapit.mcp:main"
 
 [project.optional-dependencies]
-gseek = ["gseek>=0.10.2"]
+gseek = ["gseek>=0.10.3"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gapit"]

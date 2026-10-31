@@ -2,9 +2,9 @@
 # Field sources: version/license/python/deps mirror pyproject.toml exactly; the
 # external binaries mirror pixi.toml's conda dependencies. sha256 below hashes
 # the official PyPI sdist (verified against the release-workflow upload log).
-# sha256 of dist/gapit-0.6.6.tar.gz built from this tree.
+# sha256 of dist/gapit-0.6.7.tar.gz built from this tree.
 {% set name = "gapit" %}
-{% set version = "0.6.6" %}
+{% set version = "0.6.7" %}
 
 package:
   name: {{ name|lower }}
@@ -12,7 +12,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 41f4526508c892309c87a4e85a6acf2b4a7daa1606366db8d04212796995f194
+  sha256: 4d05ce53c53f6a7bef2d0fd80a1f5b4f055a064776faf19ef3212d2d19d2fbab
 
 build:
   number: 0

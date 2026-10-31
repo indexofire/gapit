@@ -19,4 +19,4 @@ dependencies:
   - minimap2>=2.24
   - pip
   - pip:
-      - gapit>=0.6.6
+      - gapit>=0.6.7

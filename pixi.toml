@@ -3,7 +3,7 @@ authors = ["indexofire <indexofire@gmail.com>"]
 channels = ["conda-forge", "bioconda"]
 name = "gapit"
 platforms = ["linux-64"]
-version = "0.6.6"
+version = "0.6.7"
 
 [tasks]
 lint = "ruff check"
@@ -46,6 +46,9 @@ mkdocs-static-i18n = ">=1.2"
 
 # Optional alignment engine for every supported Python (3.12).
 [feature.gseek.pypi-dependencies]
+# The package extra (pyproject.toml) requires >=0.10.3. The dev environment
+# keeps the last published wheel (0.10.2) so the fallback path stays covered
+# until the 0.10.3 release is on PyPI; regenerate the lock then.
 gseek = ">=0.10.2"
 
 [environments]

@@ -923,13 +923,13 @@ packages:
   timestamp: 1694615932610
 - pypi: ./
   name: gapit
-  version: 0.6.6
-  sha256: b08ab1d3d179cac457113dfe1f66bd0aa3159314844c7a1c8c84983e6a232d10
+  version: 0.6.7
+  sha256: e4066a887728723609a30d91144d2f0ffa9c4294cd8792ededcac59b9819cd9c
   requires_dist:
   - click>=8.2
   - pydantic>=2.7
   - rich>=13
-  - gseek>=0.10.2 ; extra == 'gseek'
+  - gseek>=0.10.3 ; extra == 'gseek'
   requires_python: '>=3.12,<3.13'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/gawk-5.4.1-h0a3468a_0.conda
   sha256: 0ae20399bc13d1097237cf29653c1f2dd68e37f08b47a9b3cab76f97556a6bfa

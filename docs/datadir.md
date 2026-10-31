@@ -226,7 +226,7 @@ docker run --rm -it \
   --user "$(id -u):$(id -g)" \
   -v gapit-data:/data/gapit \
   -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.6 gapit db list
+  gapit:0.6.7 gapit db list
 ```
 
 For CI, mount or cache a workspace directory and pin versions:
@@ -235,7 +235,7 @@ For CI, mount or cache a workspace directory and pin versions:
 docker run --rm \
   -v "$PWD/.gapit-db:/data/gapit" \
   -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.6 gapit screen sample.fna --db ecoli_dec
+  gapit:0.6.7 gapit screen sample.fna --db ecoli_dec
 ```
 
 You can bake reference databases into an image for **read-only** screening:

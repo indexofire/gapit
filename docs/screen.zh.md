@@ -9,7 +9,7 @@
 
 ## 选项
 
-转写自 `gapit screen --help`（gapit 0.6.6）。标记为 *reads 模式* 的参数只在传入
+转写自 `gapit screen --help`（gapit 0.6.7）。标记为 *reads 模式* 的参数只在传入
 `--r1`/`--r2` 时生效，记录在 [./reads.md](./reads.md)。
 
 每个选项都接受 **短** 列给出的单横线短形式（例如 `--db` 的 `-d`）；长形式仍是规范写法，
@@ -111,7 +111,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.6"
+    "version": "0.6.7"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {
@@ -194,7 +194,8 @@ tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00
 ```
 
 用 `--jobs 2` 时两个文件并发筛查，但 stdout 仍按输入顺序排列，输出与串行运行完全
-一致。
+一致。在 gseek 模式且输入全为 FASTA 时，gapit 会把工作合并为至多 `--jobs` 个 chunk
+（每个 chunk 一次 aligner 调用）；输出顺序仍是输入顺序。
 
 ### 长批量任务的进度条
 

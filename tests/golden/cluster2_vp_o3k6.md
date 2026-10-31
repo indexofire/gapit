@@ -1,6 +1,6 @@
 ---
 schema: gapit.cluster/2
-tool: gapit 0.6.6
+tool: gapit 0.6.7
 created_at: 2026-10-01T12:00:00Z
 db: vpa_ok
 preset: asm20

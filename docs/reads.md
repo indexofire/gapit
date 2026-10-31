@@ -128,7 +128,7 @@ table, one chunk for the one sample).
 ## Options
 
 Reads mode runs through the same `gapit screen` command; these are the flags that apply
-(transcribed from `gapit screen --help`, gapit 0.6.6). Contig-mode flags not listed here
+(transcribed from `gapit screen --help`, gapit 0.6.7). Contig-mode flags not listed here
 (`--minid`, `--mincov`, `--fofn`, `--noheader`, `--nopath`) do not apply; `--jobs` applies
 to the wildcard path only.
 
@@ -350,7 +350,7 @@ The short-read fixture behaves the same with one calibration: `sr` soft-clipping
 $ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format md --quiet
 ---
 schema: gapit.reads/2
-tool: gapit 0.6.6
+tool: gapit 0.6.7
 created_at: 2026-09-20T14:23:33Z
 db: homologs
 read_type: map-ont
@@ -452,7 +452,7 @@ $ gapit screen --r1 tetx_full.fq --db tinyreads --format json
   "schema": "gapit.reads/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.6"
+    "version": "0.6.7"
   },
   "created_at": "2026-09-19T01:12:25Z",
   "params": {
@@ -547,7 +547,7 @@ $ gapit screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --q
 $ gapit screen --r1 tetx_full.fq --db tinyreads --format md
 ---
 schema: gapit.reads/1
-tool: gapit 0.6.6
+tool: gapit 0.6.7
 created_at: 2026-09-19T01:12:25Z
 db: tinyreads
 read_type: sr
@@ -649,7 +649,7 @@ Detected 2 present genes in /tmp/gapit-demo/assembly.fa
   "schema": "gapit.reads/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.6"
+    "version": "0.6.7"
   },
   "created_at": "2026-09-19T14:23:00Z",
   "params": {
@@ -708,7 +708,7 @@ cost of allele-level precision. That trade suggests a two-stage workflow over ma
    pipeline, which applies the identity and coverage floors at abricate parity.
 
 Real numbers, one K. pneumoniae RefSeq assembly (GCF_000240185.1, 5.3 Mb, `--db ncbi`,
-single-threaded, gapit 0.6.6):
+single-threaded, gapit 0.6.7):
 
 ```console
 $ # Stage 1: survey, ~0.9 s

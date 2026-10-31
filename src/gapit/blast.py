@@ -4,6 +4,7 @@ import re
 import shlex
 import subprocess
 import sys
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Literal
 
@@ -240,6 +241,36 @@ def run_blastn(
     return switch.run(legacy_rows, gseek_rows)
 
 
+def report_from_rows(
+    rows: Iterable[BlastRow],
+    query: Path,
+    database: Database,
+    params: ScreeningParams,
+    *,
+    merge_fragments: bool = False,
+) -> Report:
+    """Fold typed BLAST rows into one sorted Report.
+
+    Shared by the per-file and batch gseek paths; the caller owns the BLAST
+    run and the per-run ``ensure_blast``/dbtype gates.
+    """
+    floors = gene_floors(database)
+    if merge_fragments:
+        hits, partials = process_rows_with_partials(
+            rows, mincov=params.mincov, default_db=params.db
+        )
+        if floors is not None:
+            hits = apply_hit_floors(hits, floors)
+            partials = apply_hit_floors(partials, floors)
+        hits = merge_fragment_hits(hits, partials, mincov=params.mincov)
+    else:
+        hits = process_rows(rows, mincov=params.mincov, default_db=params.db)
+        if floors is not None:
+            hits = apply_hit_floors(hits, floors)
+    ordered = sorted(hits, key=lambda hit: (hit.sequence, hit.start))
+    return Report(file=str(query), hits=tuple(ordered))
+
+
 def screen_file(
     query: Path,
     database: Database,
@@ -257,18 +288,4 @@ def screen_file(
     are folded into one hit per gene when their union coverage reaches mincov.
     """
     rows = run_blastn(query, database, params, dbtype=dbtype, debug=debug)
-    floors = gene_floors(database)
-    if merge_fragments:
-        hits, partials = process_rows_with_partials(
-            rows, mincov=params.mincov, default_db=params.db
-        )
-        if floors is not None:
-            hits = apply_hit_floors(hits, floors)
-            partials = apply_hit_floors(partials, floors)
-        hits = merge_fragment_hits(hits, partials, mincov=params.mincov)
-    else:
-        hits = process_rows(rows, mincov=params.mincov, default_db=params.db)
-        if floors is not None:
-            hits = apply_hit_floors(hits, floors)
-    ordered = sorted(hits, key=lambda hit: (hit.sequence, hit.start))
-    return Report(file=str(query), hits=tuple(ordered))
+    return report_from_rows(rows, query, database, params, merge_fragments=merge_fragments)

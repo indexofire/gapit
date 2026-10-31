@@ -78,8 +78,14 @@ database kind:
   starts a fresh session), so neither layer re-probes every BLAST binary per file. When
   the installed gseek exposes the precomputed-ref/external-DB hooks, the bridge hashes the
   target once and points gseek at gapit's existing BLAST DB; older gseek versions keep
-  their own index. Even so, legacy is usually the leaner path for many small
-  gene-screening queries.
+  their own index. If gseek also exposes `align_many` and every input is FASTA, gapit
+  batches them into one invocation (split into at most `--jobs` chunks), which amortizes
+  process/index setup across queries. On a gseek build with the newer batch options,
+  gapit skips query-input hashing and gseek's canonical sort because it folds and orders
+  hits itself. Otherwise the bridge stays per-file.
+- **Reads and cluster minimap2.** The gseek bridge uses `iter_align` when available, so
+  PAF records flow straight into gapit's breadth/cluster math instead of being
+  materialized by `gseek.align`.
 - **Cluster minimap2 (assembly mode).** A cluster build (and `db setup`) writes
   `<db>/sequences.asm20.mmi`; legacy uses that prebuilt index when it is fresh, so it does
   not reindex the locus FASTA per file. gseek keeps its own content-addressed `.mmi` under

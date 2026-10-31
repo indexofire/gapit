@@ -9,7 +9,7 @@ Database setup is covered in [./databases.md](./databases.md); a full walk-throu
 
 ## Options
 
-Transcribed from `gapit screen --help` (gapit 0.6.6). Flags marked *reads mode* apply only when
+Transcribed from `gapit screen --help` (gapit 0.6.7). Flags marked *reads mode* apply only when
 you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 
 Every option also accepts the single-dash short form listed in the **Short** column (e.g.
@@ -115,7 +115,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gapit",
-    "version": "0.6.6"
+    "version": "0.6.7"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {
@@ -198,7 +198,9 @@ tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00
 ```
 
 With `--jobs 2` the two files are screened concurrently but stdout stays in input order, so the
-output is identical to the sequential run.
+output is identical to the sequential run. In gseek mode with all-FASTA inputs, gapit
+batches the work into at most `--jobs` chunks (one aligner invocation per chunk); output
+order is still input order.
 
 ### Progress bar on long batch runs
 

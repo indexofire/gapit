@@ -26,6 +26,7 @@ from gapit.formats.md import md_report_chunk, md_report_preamble
 from gapit.formats.tsv import tsv_file_chunk, tsv_preamble
 from gapit.progress import screen_progress, terminal_rule
 from gapit.report import Report, ScreeningParams
+from gapit.screening_batch import screen_batch
 from gapit.screening_cluster import (
     reject_cluster_engine_flags,
     reject_gene_engine_flags,
@@ -193,15 +194,34 @@ def run_screen(
             click.echo(f"Found {len(report.hits)} genes in {path}", err=True)
         return report
 
+    batch_reports: list[Report] | None = None
+    batch_checked = False
+
     def iter_reports() -> Iterator[Report]:
         # Subprocess-bound work (GIL irrelevant); executor.map yields
         # positionally, so reports stay in input order (SPEC.md §4) and a
         # failing file raises at its position, like the sequential loop.
+        nonlocal batch_checked, batch_reports
+
         def tracked(seq: Iterator[Report]) -> Iterator[Report]:
             for report in seq:  # advance per completed file, input order
                 bar.advance()
                 yield report
 
+        if not batch_checked:
+            batch_checked = True
+            batch_reports = screen_batch(
+                inputs,
+                database,
+                params,
+                dbtype=dbtype,
+                debug=debug,
+                merge_fragments=merge_fragments,
+                jobs=jobs,
+            )
+        if batch_reports is not None:
+            yield from tracked(iter(batch_reports))
+            return
         if jobs == 1:
             yield from tracked(screen_one(path) for path in inputs)
             return

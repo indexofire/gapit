@@ -2,7 +2,14 @@
 
 ## [Unreleased]
 
+## [0.6.7] - 2026-10-31
+
 ### Changed
+
+- **The optional gseek engine now requires `gseek>=0.10.3`.** It gains
+  streaming `iter_align`, multi-query `align_many`, precomputed refs, and the
+  batch options. In batch mode gapit skips query-input hashing and gseek's
+  canonical sort because it folds and orders hits itself.
 
 - **`gapit db fetch` now requires `-d/--db` and accepts multiple names.**
   The old positional form (`gapit db fetch NAME`) is a usage error; use
