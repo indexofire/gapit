@@ -39,7 +39,7 @@ gapit 要求 Python >= 3.12，所有支持的环境都包含 gseek：
 pip install "gapit[gseek]"
 ```
 
-pixi 的 `default` 环境（启用 `py312` feature）使用 Python 3.12，并包含 `gseek>=0.9.1`。
+pixi 的 `default` 环境（启用 `py312` feature）使用 Python 3.12，并包含 `gseek>=0.10.2`。
 没有 gseek 时，`GAPIT_ENGINE=gseek` 会抛类型化的 `MISSING_DEPENDENCY` 错误；
 `legacy` 和所有现有命令不受影响。
 
@@ -55,6 +55,30 @@ pixi 的 `default` 环境（启用 `py312` feature）使用 Python 3.12，并包
 - `shadow` 同时跑两套，记录粗粒度差异，并返回 legacy 结果；
 - legacy 是 parity 基准，也是 gseek 不可用时的回退；
 - 数据库构建、typing、格式、MCP 与 CLI 行为 **不** 经过 gseek。
+
+## 性能特征
+
+两套引擎优化的环节不同，所以哪个更快取决于数据库类型：
+
+- **基因 BLAST（contig 模式）。** legacy 直接用数据库已有的 BLAST 索引逐文件调用
+  `blastn`/`blastx`。gseek 在 `~/.cache/gseek` 下维护自己的内容寻址 BLAST 索引，并且
+  每个查询仍要做规划/解析。gseek >= 0.10.2 只探测当前任务需要的工具版本；bridge 还会
+  按进程复用同一个 `ToolResolver`/`Executor`/`IndexStore`（`PATH` 或 `GSEEK_*` 变化会
+  重建会话），因此两层都不会逐文件重复探测所有 BLAST 二进制。如果安装的 gseek 暴露
+  预计算 refs/外部 DB 钩子，bridge 只哈希一次 target，并让 gseek 直接用 gapit 现有的
+  BLAST DB；较旧版本仍使用自己的索引。即便如此，大量小规模基因查询通常仍是 legacy
+  更轻。
+- **基因簇 minimap2（assembly 模式）。** cluster 构建（以及 `db setup`）会写出
+  `<db>/sequences.asm20.mmi`；legacy 在索引新鲜时直接使用它，不再为每个文件重建 locus
+  FASTA 索引。gseek 则在 `~/.cache/gseek` 维护自己的内容寻址 `.mmi`，所以两条路径都能
+  跨文件复用索引；gseek 每次调用仍有规划开销。没有预建索引时，legacy 回退到 FASTA
+  target，并逐文件在内存中重建。在有新鲜索引的数据库上，legacy 可以与 gseek 持平甚至
+  更快；没有索引时，多文件运行通常 gseek 更快。
+- **缓存冷热。** gseek 第一次运行要建索引，后续运行复用缓存。索引 key 包含 target
+  内容、语义参数、adapter 版本和工具版本；`GSEEK_CACHE_DIR` 可以改变缓存位置，诊断
+  陈旧索引时可以直接删除。
+- **`--jobs`。** 每个 worker 有自己的 aligner 进程，但 gseek 会话和索引缓存是共享的。
+  比较两种引擎时请使用热缓存，并保持相同的 `--threads`/`--jobs`。
 
 ## 验证
 

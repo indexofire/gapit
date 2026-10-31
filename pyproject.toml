@@ -40,7 +40,7 @@ gapit = "gapit.cli:app"
 gapit-mcp = "gapit.mcp:main"
 
 [project.optional-dependencies]
-gseek = ["gseek>=0.9.1"]
+gseek = ["gseek>=0.10.2"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gapit"]

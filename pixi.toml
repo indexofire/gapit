@@ -46,7 +46,7 @@ mkdocs-static-i18n = ">=1.2"
 
 # Optional alignment engine for every supported Python (3.12).
 [feature.gseek.pypi-dependencies]
-gseek = ">=0.9.1"
+gseek = ">=0.10.2"
 
 [environments]
 default = ["py312", "gseek"]

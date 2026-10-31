@@ -13,9 +13,12 @@ from gapit import blast, minimap2_run
 from gapit.db import Database
 from gapit.errors import DependencyError
 from gapit.gseek_engine import (
+    blast_db_ready,
+    cached_target_refs,
     engine_mode,
     iter_paf_gseek,
     run_blast_gseek,
+    supports_api_refs,
 )
 from gapit.paf import PafRecord
 from gapit.report import ScreeningParams
@@ -107,6 +110,63 @@ def test_blast_mapping_preserves_blast_coordinates(
     assert row.stitle == "abc product"
     assert fake.kwargs["threads"] == 2
     assert fake.kwargs["record_manifest"] is False
+
+
+def test_gseek_session_reuses_resolver_across_files(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given two BLAST queries in one process, When both go through gseek,
+    Then the bridge reuses the same ToolResolver — avoiding the per-file
+    blastn/makeblastdb (and optional BLAST tool) version probes that made the
+    gene path slower than legacy."""
+    pytest.importorskip("gseek")
+    fake = _FakeGseek([_Record()])
+    monkeypatch.setattr("gapit.gseek_engine._gseek", lambda: fake)
+    db = _database(tmp_path)
+    run_blast_gseek(">contig1\nACGT\n", db, ScreeningParams(db="test"), dbtype="nucl")
+    first = fake.kwargs["resolver"]
+    run_blast_gseek(">contig1\nACGT\n", db, ScreeningParams(db="test"), dbtype="nucl")
+    assert fake.kwargs["resolver"] is first
+
+
+def testcached_target_refs_are_cached_until_the_file_changes(tmp_path: Path) -> None:
+    """Given an unchanged target, When the bridge needs refs twice, Then it
+    reuses the same InputRef tuple; touching the file invalidates the cache."""
+    pytest.importorskip("gseek")
+    db = _database(tmp_path)
+    db.sequences_path.write_text(">target\nACGT\n", encoding="utf-8")
+    first = cached_target_refs(db)
+    second = cached_target_refs(db)
+    assert first is not None and first is second
+    db.sequences_path.write_text(">target\nACGTACGT\n", encoding="utf-8")
+    third = cached_target_refs(db)
+    assert third is not None and third is not first
+
+
+def testblast_db_ready_detects_the_index_prefix(tmp_path: Path) -> None:
+    """Given a sequences file with/without a BLAST index, When checked, Then
+    the external-db optimization is enabled only when the prefix exists."""
+    db = _database(tmp_path)
+    db.sequences_path.write_text(">target\nACGT\n", encoding="utf-8")
+    assert blast_db_ready(db) is False
+    (tmp_path / "sequences.nin").touch()
+    assert blast_db_ready(db) is True
+
+
+def testsupports_api_refs_checks_the_align_signature() -> None:
+    """Given an align() without target_refs, When probed, Then the bridge does
+    not pass the newer keyword (gseek 0.10.2 compatibility)."""
+
+    class OldGseek:
+        def align(self, **kwargs: object) -> object:
+            return kwargs
+
+    class NewGseek:
+        def align(self, *, target_refs: object = None) -> object:
+            return target_refs
+
+    assert supports_api_refs(OldGseek()) is False
+    assert supports_api_refs(NewGseek()) is True
 
 
 def test_blast_mapping_reverse_and_protein_params(

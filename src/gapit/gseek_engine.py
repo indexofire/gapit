@@ -13,12 +13,14 @@ imports gseek; only a ``gseek``/``shadow`` call does.
 from __future__ import annotations
 
 import importlib
+import inspect
 import logging
 import os
 import sys
 import tempfile
 import threading
 from collections.abc import Callable, Iterable, Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol, TypeVar, cast
 
@@ -28,6 +30,9 @@ from gapit.report import ScreeningParams
 
 if TYPE_CHECKING:
     from gseek.compat import Engine
+    from gseek.execution import Executor, ToolResolver
+    from gseek.index import IndexStore
+    from gseek.model import InputRef
 
     from gapit.blast import BlastRow
     from gapit.paf import PafRecord
@@ -36,6 +41,118 @@ _LOGGER = logging.getLogger("gapit.gseek")
 _ENGINE_ENV = "GAPIT_ENGINE"
 _VALID_MODES = frozenset({"legacy", "gseek", "shadow"})
 T = TypeVar("T")
+
+
+@dataclass(frozen=True)
+class _GseekSession:
+    """Process-wide gseek tool/index cache.
+
+    ``gseek.align`` builds a fresh ``ToolResolver`` per call unless one is
+    supplied. Its BLAST adapter probes every declared binary (including the
+    optional blastp/blastx/tblastn/tblastx) by running ``-version``; with one
+    call per input file that dominated the gene path. Reusing these objects
+    across files also keeps the content-addressed index cache warm.
+    """
+
+    resolver: ToolResolver
+    executor: Executor
+    store: IndexStore
+    env_key: tuple[tuple[str, str], ...]
+
+
+_session_cache: _GseekSession | None = None
+_SESSION_LOCK = threading.Lock()
+_TARGET_REFS: dict[tuple[Path, int, int], tuple[InputRef, ...]] = {}
+_TARGET_REFS_LOCK = threading.Lock()
+
+
+def supports_api_refs(gseek: object) -> bool:
+    """Whether the installed gseek accepts precomputed query/target refs."""
+    align = getattr(gseek, "align", None)
+    if not callable(align):
+        return False
+    try:
+        return "target_refs" in inspect.signature(align).parameters
+    except (TypeError, ValueError):
+        return False
+
+
+def _supports_external_blast_db() -> bool:
+    """Whether the installed BLAST adapter accepts ``params['db']``.
+
+    This is a version capability, not a private-API dependency in the normal
+    path: gseek <= 0.10.2 has no such parameter and the bridge simply keeps
+    its old index/subject behavior.
+    """
+    try:
+        blast_adapter = importlib.import_module("gseek.adapters.blast")
+    except ImportError:
+        return False
+    allowed = cast("frozenset[str]", getattr(blast_adapter, "_ALLOWED_PARAMS", frozenset[str]()))
+    return "db" in allowed
+
+
+def cached_target_refs(database: Database) -> tuple[InputRef, ...] | None:
+    """One content ref for the database target, cached by file identity.
+
+    Consecutive per-file gseek calls otherwise re-hash the same target for
+    the index key/manifest. Database files are immutable between builds, so
+    (path, mtime_ns, size) is a safe cache key; a rebuild changes it.
+    """
+    path = database.sequences_path
+    try:
+        stat = path.stat()
+    except OSError:
+        return None
+    key = (path, stat.st_mtime_ns, stat.st_size)
+    with _TARGET_REFS_LOCK:
+        cached = _TARGET_REFS.get(key)
+        if cached is not None:
+            return cached
+    try:
+        from gseek.provenance import input_ref
+        from gseek.types import InputKind
+    except ImportError:
+        return None
+    ref = input_ref(path, kind=InputKind.FASTA, compute_records=False)
+    refs = (ref,)
+    with _TARGET_REFS_LOCK:
+        for old_key in [entry for entry in _TARGET_REFS if entry[0] == path and entry != key]:
+            del _TARGET_REFS[old_key]
+        _TARGET_REFS[key] = refs
+    return refs
+
+
+def blast_db_ready(database: Database) -> bool:
+    """Whether the gene database already carries a BLAST index prefix."""
+    path = database.sequences_path
+    return any((path.parent / f"{path.name}{suffix}").exists() for suffix in (".nin", ".pin"))
+
+
+def _session() -> _GseekSession | None:
+    """The shared gseek resolver/executor/store, or None without gseek.
+
+    The env key includes PATH and every GSEEK_* variable, so a test or caller
+    that changes tool discovery starts a fresh resolver rather than reusing
+    stale probes. No gseek import happens in legacy mode.
+    """
+    try:
+        from gseek.execution import Executor, ToolResolver
+        from gseek.index import IndexStore
+    except ImportError:
+        return None
+    env_key = tuple(
+        sorted(
+            (key, value)
+            for key, value in os.environ.items()
+            if key in {"PATH", "HOME", "XDG_CACHE_HOME"} or key.startswith("GSEEK_")
+        )
+    )
+    global _session_cache
+    with _SESSION_LOCK:
+        if _session_cache is None or _session_cache.env_key != env_key:
+            _session_cache = _GseekSession(ToolResolver(), Executor(), IndexStore(), env_key)
+        return _session_cache
 
 
 class _LegacyMode:
@@ -276,6 +393,25 @@ def run_blast_gseek(
         query_path = Path(tmp) / "query.fasta"
         query_path.write_text(fasta_text, encoding="utf-8")
         gseek = _gseek()
+        supports_refs = supports_api_refs(gseek)
+        target_refs = cached_target_refs(database) if supports_refs else None
+        index_policy = "auto"
+        if _supports_external_blast_db() and blast_db_ready(database):
+            # The database already has a BLAST index (db build/fetch); use it
+            # instead of making gseek materialize and index a second copy.
+            gseek_params["db"] = str(database.sequences_path.absolute())
+            index_policy = "none"
+        session = _session()
+        session_kwargs: dict[str, object] = {}
+        if session is not None:
+            session_kwargs = {
+                "resolver": session.resolver,
+                "executor": session.executor,
+                "store": session.store,
+            }
+        ref_kwargs: dict[str, object] = {}
+        if target_refs is not None:
+            ref_kwargs["target_refs"] = target_refs
         from gseek.errors import ToolNotFoundError
 
         try:
@@ -286,8 +422,10 @@ def run_blast_gseek(
                 query_kind="fasta",
                 params=gseek_params,
                 threads=params.threads,
-                index="auto",
+                index=index_policy,
                 record_manifest=False,
+                **session_kwargs,
+                **ref_kwargs,
             )
         except ToolNotFoundError as exc:
             binary = "blastx" if dbtype == "prot" else "blastn"
@@ -322,6 +460,19 @@ def iter_paf_gseek(
     gseek = _gseek()
     from gseek.errors import ToolNotFoundError
 
+    supports_refs = supports_api_refs(gseek)
+    target_refs = cached_target_refs(database) if supports_refs else None
+    ref_kwargs: dict[str, object] = {}
+    if target_refs is not None:
+        ref_kwargs["target_refs"] = target_refs
+    session = _session()
+    session_kwargs: dict[str, object] = {}
+    if session is not None:
+        session_kwargs = {
+            "resolver": session.resolver,
+            "executor": session.executor,
+            "store": session.store,
+        }
     for r1, r2 in lanes:
         query = (r1,) if r2 is None else (r1, r2)
         gseek_params: dict[str, object] = {
@@ -346,6 +497,8 @@ def iter_paf_gseek(
                 threads=threads,
                 index=_minimap2_index_policy(database),
                 record_manifest=False,
+                **session_kwargs,
+                **ref_kwargs,
             )
         except ToolNotFoundError as exc:
             raise DependencyError(

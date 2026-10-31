@@ -45,7 +45,7 @@ gseek:
 pip install "gapit[gseek]"
 ```
 
-The pixi `default` environment (with the `py312` feature) uses Python 3.12 and includes `gseek>=0.9.1`. Without gseek, `GAPIT_ENGINE=gseek` raises a
+The pixi `default` environment (with the `py312` feature) uses Python 3.12 and includes `gseek>=0.10.2`. Without gseek, `GAPIT_ENGINE=gseek` raises a
 typed `MISSING_DEPENDENCY` error; `legacy` and all existing commands are
 unaffected.
 
@@ -64,6 +64,38 @@ This is a deliberate dual-path design:
 - legacy is the parity baseline and the fallback when gseek is unavailable;
 - database building, typing, formats, MCP, and CLI behavior are **not** routed
   through gseek.
+
+## Performance characteristics
+
+The two engines optimize different parts of the pipeline, so the faster one depends on the
+database kind:
+
+- **Gene BLAST (contig mode).** Legacy invokes `blastn`/`blastx` against the database's
+  existing BLAST index, once per input file. gseek maintains its own content-addressed
+  BLAST index under `~/.cache/gseek` and still plans/parses each query. gseek >= 0.10.2
+  probes only the tools the task needs; the bridge additionally reuses one
+  `ToolResolver`/`Executor`/`IndexStore` per process (a `PATH` or `GSEEK_*` change
+  starts a fresh session), so neither layer re-probes every BLAST binary per file. When
+  the installed gseek exposes the precomputed-ref/external-DB hooks, the bridge hashes the
+  target once and points gseek at gapit's existing BLAST DB; older gseek versions keep
+  their own index. Even so, legacy is usually the leaner path for many small
+  gene-screening queries.
+- **Cluster minimap2 (assembly mode).** A cluster build (and `db setup`) writes
+  `<db>/sequences.asm20.mmi`; legacy uses that prebuilt index when it is fresh, so it does
+  not reindex the locus FASTA per file. gseek keeps its own content-addressed `.mmi` under
+  `~/.cache/gseek`, so both paths can reuse an index across files; gseek's per-call
+  planning still costs something. Without a prebuilt index legacy falls back to the FASTA
+  target and rebuilds it in memory for every input. On a database with a fresh index legacy
+  can be competitive with, or faster than, gseek; without one, gseek usually wins
+  multi-file runs.
+- **Cache warmth.** The first gseek run pays the index build; later runs reuse the cache.
+  Index keys include target content, semantic parameters, adapter version, and tool
+  versions. `GSEEK_CACHE_DIR` relocates the cache; it is safe to delete when diagnosing
+  stale indexes.
+
+`--jobs` amplifies these effects: each worker has its own aligner process, while the
+gseek session and index cache are shared. Benchmark with warm caches and the same
+`--threads`/`--jobs` when comparing engines.
 
 ## Verification
 
