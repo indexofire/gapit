@@ -16,6 +16,7 @@ path's pre-write gate), and the screen-time /2 guard re-checks afterwards
 — belt and braces, like the fetch path.
 """
 
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -110,6 +111,8 @@ def materialize_cluster_bundle(
                 code="DB_ALREADY_EXISTS",
                 context={"db": name},
             )
+        if bundled.profile_path is not None:
+            shutil.copyfile(bundled.profile_path, build_dir / "cluster.json")
         build_cluster_database(
             build_dir,
             name=name,

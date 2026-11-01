@@ -62,7 +62,10 @@ $ gapit screen 1.fna --db ecoli_dec --quiet | gapit typing --quiet
 簇数据库会直接注释簇文档——单 scheme 数据库注释 `gapit.cluster/1`（仅限 typed 的 TSV
 `PHENOTYPE` 列、JSON/MD 中的 `best.phenotype` + `best.phenotype_detail`），多 scheme
 数据库渲染 `gapit.cluster/2`（每个 scheme 一个 call 装进 `phenotypes` 映射，TSV 为
-每方案的胜出位点证据列）。
+每方案的胜出位点证据列）。数据库 profile 还可以保留同家族 fallback 证据，并在
+cluster/2 的 `phenotypes` 中给出 `locus_status`（`known` / `unknown_locus` / `none`）
+和 `locus_confidence`（`typeable` / `untypeable`），从而区分 Kaptive 风格的
+`Typeable unknown (KLUxx)` 与“完全没有 locus”。
 
 ## 一份文档，两个引擎
 

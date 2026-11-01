@@ -29,6 +29,7 @@ from gapit.cluster_math import (
     locus_sort_key,
     parse_cs,
 )
+from gapit.cluster_profile import CoverageMode
 from gapit.db import Database
 from gapit.errors import DatabaseError, GapitError
 from gapit.gbfeatures import FeaturesDocument, LocusFeatures
@@ -45,9 +46,13 @@ class ClusterParams(BaseModel, frozen=True):
 
     db: str
     preset: str = "asm20"
+    coverage_mode: CoverageMode = "primary"
+    fallback_evidence: bool = False
     min_gene_cov: float = Field(default=90.0, ge=0.0, le=100.0)
     min_gene_id: float = Field(default=90.0, ge=0.0, le=100.0)
     min_cluster_cov: float = Field(default=96.0, ge=0.0, le=100.0)
+    locus_typeable_coverage: float | None = Field(default=None, ge=0.0, le=100.0)
+    locus_typeable_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     threads: int = Field(default=1, ge=1)
 
 
@@ -140,12 +145,16 @@ def load_typing(database: Database) -> TypingDocument | None:
     return read_typing_document(path) if path.is_file() else None
 
 
-def _runs_by_locus(rows: Iterable[PafRecord]) -> dict[str, tuple[list[tuple[CsRun, ...]], int]]:
-    """Primary rows grouped by target locus: each record's parsed cs runs
-    plus the first-seen tlen (the reads-mode denominator contract)."""
+def runs_by_locus(
+    rows: Iterable[PafRecord], *, coverage_mode: CoverageMode = "primary"
+) -> dict[str, tuple[list[tuple[CsRun, ...]], int]]:
+    """Rows grouped by target locus: each record's parsed cs runs plus the
+    first-seen tlen (the reads-mode denominator contract). Primary-only is
+    the historical default; ``primary_secondary`` is the opt-in Kaptive-style
+    union used by databases whose profile asks for it."""
     grouped: dict[str, tuple[list[tuple[CsRun, ...]], int]] = {}
     for row in rows:
-        if not row.is_primary:
+        if coverage_mode == "primary" and not row.is_primary:
             continue
         if row.cs is None:
             raise GapitError(
@@ -220,8 +229,9 @@ def screen_cluster_file(
     debug: bool = False,
 ) -> ClusterReport:
     """Screen one assembly file: one minimap2 asm20 --cs invocation (query =
-    the file's contigs, target = the locus FASTA), primary rows only, per-
-    gene/locus union math, ranked loci, best call above min_cluster_cov."""
+    the file's contigs, target = the locus FASTA), per-gene/locus union math,
+    ranked loci, best call above min_cluster_cov. Rows are primary-only unless
+    the database profile opts into ``primary_secondary`` coverage."""
     rows = iter_minimap2(
         [(query, None)],
         database,
@@ -230,7 +240,7 @@ def screen_cluster_file(
         debug=debug,
         nm_tags=True,
     )
-    grouped = _runs_by_locus(rows)
+    grouped = runs_by_locus(rows, coverage_mode=params.coverage_mode)
     stats = [
         _locus_call(locus, grouped[locus.id], params)
         for locus in features.loci

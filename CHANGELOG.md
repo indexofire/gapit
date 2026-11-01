@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Cluster databases can opt into a per-database `cluster.json` profile.**
+  `coverage_mode: primary_secondary` makes cluster coverage use the union of
+  minimap2 primary and secondary rows, and optional `min_gene_cov` /
+  `min_gene_id` / `min_cluster_cov` values supply database defaults while an
+  explicit non-default CLI threshold still wins. Databases without the profile
+  keep the historical primary-only behavior byte-for-byte. `fallback_evidence: true`
+  keeps the best same-family locus/coverage on an `OUT`/`KUT` call instead of
+  collapsing it to `-`. The bundled `vpa_ok` snapshot enables these options
+  and sets the gene-presence floor to 50% (Kaptive's gene-scoring default), so
+  its O-locus coverage is no longer underestimated by discarded secondary
+  alignments and KUT still reports the detected KL locus. The vpa_ok K scheme
+  now also carries locus-only `KUT` rules for `KLU61`–`KLU100` (new KLU loci
+  present in the updated snapshot), and cluster/2 calls expose `locus_status`
+  (`known` / `unknown_locus` / `none`) and `locus_confidence`
+  (`typeable` / `untypeable`, profile thresholds) so an unknown KLU locus is not
+  confused with no locus. Other cluster databases are unchanged until they opt in.
+
 ## [0.6.7] - 2026-10-31
 
 ### Changed

@@ -152,6 +152,7 @@ def test_rename_cluster_database_copies_artifacts_and_restamps_manifest(
     assert not (datadir / "vpa_ok").exists()
     assert (datadir / "vpa_renamed" / "sequences").read_bytes() == sequences_bytes
     assert (datadir / "vpa_renamed" / "features.json").is_file()
+    assert (datadir / "vpa_renamed" / "cluster.json").is_file()
     manifest = read_manifest(datadir / "vpa_renamed" / "gapit-manifest.json")
     assert (manifest.name, manifest.kind, manifest.header_format) == (
         "vpa_renamed",

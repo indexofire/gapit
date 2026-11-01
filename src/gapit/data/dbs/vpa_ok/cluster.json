@@ -1,0 +1,8 @@
+{
+  "schema": "gapit.cluster_profile/1",
+  "coverage_mode": "primary_secondary",
+  "fallback_evidence": true,
+  "min_gene_cov": 50.0,
+  "locus_typeable_coverage": 50.0,
+  "locus_typeable_identity": 90.0
+}

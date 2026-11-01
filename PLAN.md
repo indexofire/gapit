@@ -247,6 +247,15 @@ consumes abricate-built datadirs.
 > (`O_LOCUS/O_COVERAGE/...`); JSON `phenotypes` gains additive `winner_*` fields. /2
 > shipped in 0.5.5 days earlier with no downstream adoption; /1 and typing_result/1
 > stay byte-frozen.
+>
+> **vpa_ok per-database cluster profile (2026-11-02):** a cluster db may carry
+> `cluster.json` (`gapit.cluster_profile/1`) to opt into primary+secondary coverage
+> (Kaptive-style union), same-family fallback evidence, and a gene-coverage floor.
+> `vpa_ok` enables them and gains locus-only `KUT` rules for `KLU61`–`KLU100`;
+> profile-enabled cluster/2 calls add
+> the optional `locus_status` (`known` / `unknown_locus` / `none`) and
+> `locus_confidence` (`typeable` / `untypeable`) fields. /1 and
+> profile-less cluster dbs stay byte-frozen; additive schema only, no version bump.
 
 ## Milestones
 

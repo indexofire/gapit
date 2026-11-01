@@ -28,6 +28,7 @@ ERROR_CODES: frozenset[str] = frozenset(
         "BUNDLED_MALFORMED",
         "BUNDLED_NOT_FOUND",
         "CHECKSUM_MISMATCH",
+        "CLUSTER_PROFILE_MALFORMED",
         "CS_MISSING",
         "CS_PARSE_FAILED",
         "DATABASE_MISMATCH",

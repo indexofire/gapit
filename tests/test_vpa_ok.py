@@ -77,6 +77,14 @@ def test_committed_asset_holds_three_schemes() -> None:
         for rule in scheme["rules"]:
             assert rule["model"] == "cluster_match"
             assert all("_" in gene for gene in rule["key_genes"]["genes"])
+    # The updated snapshot carries KLU61-KLU100; the K scheme must retain
+    # locus-only KUT rules for every one of them.
+    covered = {
+        rule["key_genes"]["genes"][0].split("_", 1)[0]
+        for rule in k_group["rules"]
+        if rule["phenotype"] == "KUT" and rule["key_genes"]["genes"]
+    }
+    assert {f"KLU{number}" for number in range(61, 101)} <= covered
 
 
 def loci_fasta(destination: Path, *loci: str) -> None:
@@ -137,3 +145,39 @@ def test_bundle_is_byte_identical_to_a_db_build(tmp_path: Path) -> None:
         assert (bundle_dd / "vpa_ok" / artifact).read_bytes() == (
             build_dd / "vpa_ok" / artifact
         ).read_bytes(), artifact
+
+
+def test_klu_locus_rule_reports_unknown_locus(tmp_path: Path) -> None:
+    """Given a KLU carrier, When screened against the bundled vpa_ok, Then
+    the locus-only KUT rule keeps the detected locus and coverage: Kaptive's
+    "Typeable unknown" is distinguishable from "no K locus"."""
+    sample = tmp_path / "klu61.fna"
+    loci_fasta(sample, "KLU61")
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    result = runner.invoke(
+        app,
+        [
+            "screen",
+            str(sample),
+            "--db",
+            "vpa_ok",
+            "--datadir",
+            str(datadir),
+            "--format",
+            "json",
+            "--quiet",
+        ],
+    )
+    assert result.exit_code == 0, result.stderr
+    call = json.loads(result.stdout)["files"][0]["phenotypes"]["k_group"]
+    assert (call["phenotype"], call["locus_status"], call["winner_locus"]) == (
+        "KUT",
+        "unknown_locus",
+        "KLU61",
+    )
+    assert call["locus_confidence"] == "typeable"
+    assert call["winner_coverage_pct"] == pytest.approx(100.0)
+    o_call = json.loads(result.stdout)["files"][0]["phenotypes"]["o_group"]
+    assert o_call["locus_status"] == "none"
+    assert o_call["locus_confidence"] == "untypeable"

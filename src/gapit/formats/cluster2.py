@@ -17,11 +17,12 @@ locus's evidence (``<P>_LOCUS``, ``<P>_COVERAGE``, ``<P>_IDENTITY``,
 ``<P>_PRESENT``, ``<P>_PARTIAL``, ``<P>_MISSING`` where ``<P>`` is the
 uppercased scheme name minus a trailing ``_GROUP``, so ``o_group``
 renders ``O_GROUP`` then ``O_LOCUS``). Fallback calls render the
-fallback string with ``-`` evidence; ambiguous calls render ``-`` in the
-call column. For vpa_ok the header is ``FILE  SEROTYPE  O_GROUP  O_LOCUS
-… K_MISSING`` — the composed serotype leads. Single-scheme and untyped
-databases keep byte-identical gapit.cluster/1 (formats/cluster.py).
-Registered in the schema registry as ``cluster2``.
+fallback string with ``-`` evidence unless the database profile enables
+``fallback_evidence`` (then the best same-family locus fills it);
+ambiguous calls render ``-`` in the call column. For vpa_ok the header is
+``FILE  SEROTYPE  O_GROUP  O_LOCUS … K_MISSING`` — the composed serotype leads.
+Single-scheme and untyped databases keep byte-identical gapit.cluster/1
+(formats/cluster.py). Registered in the schema registry as ``cluster2``.
 """
 
 from collections import Counter
@@ -105,7 +106,16 @@ def render_cluster2_json(
     phenotypes map still carries every scheme's call)."""
     document = Cluster2Document(
         created_at=utc_timestamp(now),
-        params=ClusterParamsDocument(**params.model_dump()),
+        params=ClusterParamsDocument(
+            **params.model_dump(
+                exclude={
+                    "coverage_mode",
+                    "fallback_evidence",
+                    "locus_typeable_coverage",
+                    "locus_typeable_identity",
+                }
+            )
+        ),
         files=[
             Cluster2FileDocument(
                 file=report.file,

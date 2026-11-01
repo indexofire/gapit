@@ -17,8 +17,9 @@ and then removes the old one:
 
 Both branches write through :func:`gapit.db_txn.staged_database`, so a failure
 while building the new name leaves the old database fully intact; the source
-directory is removed only after the target is published. Typing/floors/feature
-sidecars travel along unchanged: they reference gene or locus ids, not names.
+directory is removed only after the target is published. Typing/floors/feature/
+cluster-profile sidecars travel along unchanged: they reference gene or locus
+ids, not names.
 """
 
 import shutil
@@ -42,7 +43,7 @@ from gapit.proctools import note
 from gapit.records import Manifest, read_manifest, write_manifest
 
 # Sidecars a database may carry; all of them reference ids, never the db name.
-_SIDECARS = (*SIDECARS, "features.json")
+_SIDECARS = (*SIDECARS, "features.json", "cluster.json")
 
 
 class RenameReceipt(BaseModel, frozen=True):

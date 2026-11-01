@@ -112,6 +112,12 @@ class BundledDatabase(BaseModel, frozen=True):
         features = self.path / "features.json"
         return features if features.is_file() else None
 
+    @property
+    def profile_path(self) -> Path | None:
+        """The optional gapit.cluster_profile/1 sidecar for cluster bundles."""
+        profile = self.path / "cluster.json"
+        return profile if profile.is_file() else None
+
 
 def bundled_databases() -> list[BundledDatabase]:
     """Every bundled database, sorted by name. A directory qualifies when it

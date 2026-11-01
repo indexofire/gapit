@@ -27,6 +27,7 @@ from gapit.cluster import (
     load_typing,
     screen_cluster_file,
 )
+from gapit.cluster_profile import load_cluster_profile
 from gapit.db import Database
 from gapit.engines import AlignerEnum, Emit, OutputFormat
 from gapit.errors import usage_fail
@@ -80,12 +81,33 @@ def reject_cluster_engine_flags(
         usage_fail("--min-gene-cov/--min-gene-id/--min-cluster-cov apply to cluster databases only")
 
 
+def _profile_threshold(cli_value: float, default: float, profile_value: float | None) -> float:
+    """Database profile default unless the caller changed the CLI flag.
+
+    The CLI has no explicit "unset" state (its default is the historical
+    threshold), so a profile value applies only while the CLI value still
+    equals that default. An explicit non-default flag always wins.
+    """
+    return profile_value if cli_value == default and profile_value is not None else cli_value
+
+
 def resolve_cluster_params(
-    db: str, min_gene_cov: float, min_gene_id: float, min_cluster_cov: float, threads: int
+    database: Database,
+    min_gene_cov: float,
+    min_gene_id: float,
+    min_cluster_cov: float,
+    threads: int,
 ) -> ClusterParams:
-    """Usage-gated constructor: each cluster threshold is range-checked with
-    its CLI flag name before the model is built (threads is validated
-    upstream together with the gene-path checks)."""
+    """Usage-gated constructor: resolve the database profile first, then
+    range-check each effective threshold with its CLI flag name before the
+    model is built (threads is validated upstream together with the
+    gene-path checks)."""
+    profile = load_cluster_profile(database.path)
+    min_gene_cov = _profile_threshold(min_gene_cov, _CLUSTER_DEFAULTS[0], profile.min_gene_cov)
+    min_gene_id = _profile_threshold(min_gene_id, _CLUSTER_DEFAULTS[1], profile.min_gene_id)
+    min_cluster_cov = _profile_threshold(
+        min_cluster_cov, _CLUSTER_DEFAULTS[2], profile.min_cluster_cov
+    )
     for flag, value in (
         ("--min-gene-cov", min_gene_cov),
         ("--min-gene-id", min_gene_id),
@@ -94,10 +116,14 @@ def resolve_cluster_params(
         if not 0.0 <= value <= 100.0:
             usage_fail(f"{flag} must be in [0, 100]: got {value}")
     return ClusterParams(
-        db=db,
+        db=database.name,
+        coverage_mode=profile.coverage_mode,
+        fallback_evidence=profile.fallback_evidence,
         min_gene_cov=min_gene_cov,
         min_gene_id=min_gene_id,
         min_cluster_cov=min_cluster_cov,
+        locus_typeable_coverage=profile.locus_typeable_coverage,
+        locus_typeable_identity=profile.locus_typeable_identity,
         threads=threads,
     )
 
@@ -121,7 +147,17 @@ def _screen_one(
     report = screen_cluster_file(path, database, features, params, debug=debug)
     if document is not None:
         if uses_cluster_v2(document):
-            report = report.model_copy(update={"phenotypes": evaluate_cluster2(report, document)})
+            report = report.model_copy(
+                update={
+                    "phenotypes": evaluate_cluster2(
+                        report,
+                        document,
+                        fallback_evidence=params.fallback_evidence,
+                        typeable_coverage=params.locus_typeable_coverage,
+                        typeable_identity=params.locus_typeable_identity,
+                    )
+                }
+            )
         else:
             report = evaluate_typing(report, document.schemes[0])
     if not quiet:

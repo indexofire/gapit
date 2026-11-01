@@ -396,6 +396,18 @@ table.tsv`。
 `gapit.cluster/2`，按文件给出 `o_group`、`k_group` 与组合出的
 `serotype` `"{o_group}:{k_group}"`（回退 OUT/KUT）——一次扫描即得 O:K 血清型：
 
+> **cluster profile。** cluster 数据库可携带 `cluster.json`
+> （`gapit.cluster_profile/1`）选择不同的 cluster 引擎契约。当前使用
+> `coverage_mode: "primary_secondary"`，用 minimap2 primary + secondary 的并集
+> 计算 locus coverage，而不是历史的 primary-only；`fallback_evidence: true` 在
+> `OUT`/`KUT` 时仍保留同家族的最佳 locus 和 coverage，不再把 locus 折叠成 `-`；
+> cluster/2 的 `phenotypes` 条目同时给出 `locus_status` = `known` /
+> `unknown_locus` / `none`，以及可选的 `locus_confidence` = `typeable` /
+> `untypeable`（由 `locus_typeable_coverage` / `locus_typeable_identity` 定义）。
+> 可选阈值字段只在对应 CLI 仍是历史默认值时提供数据库默认值。`vpa_ok` 自带该
+> profile（Kaptive 风格 coverage + 50% gene-coverage floor + 50/90 typeable floors
+> + fallback evidence），其他 cluster 数据库没有 profile，保持历史行为逐字节不变。
+
 ```console
 $ gapit screen RIMD.fna --db vpa_ok --format json
 {"schema": "gapit.cluster/2", ..., "phenotypes": {"o_group": {"phenotype": "O3"},
@@ -405,9 +417,10 @@ $ gapit screen RIMD.fna --db vpa_ok --format json
 数据库内容为 **MIT**（经 vpautils，Bakta 注释），与 kaptive 提供商不同，许可上可再
 分发——已解析快照作为内置库之一随 wheel 发布（入轮产物 8.3 MiB，在 30 MiB 预算
 内），首次使用即零网络物化。入轮 typing 规格按位点重新计算序列唯一关键基因
-（变异体折叠：OL4V1 → O4、KL20V1 → K20；未定型的 OLU*/KLU* 位点不设规则，回退
-OUT/KUT），并且该资产在构建与物化时对位点做校验——上游 GBK 漂移会以
-`TYPING_UNKNOWN_GENE` 失败，而不是静默安装。已用真实基因组校准，RIMD 2210633 锁定
+（变异体折叠：OL4V1 → O4、KL20V1 → K20；未定型的 OLU* 位点不设规则，KLU61–KLU100
+则带 locus-only KUT 规则，使回退时仍保留检出的 locus），并且该资产在构建与物化时
+对位点做校验——上游 GBK 漂移会以 `TYPING_UNKNOWN_GENE` 失败，而不是静默安装。
+已用真实基因组校准，RIMD 2210633 锁定
 O3:K6（逐位点调参见规则 notes）。
 
 ## 检查数据库新鲜度

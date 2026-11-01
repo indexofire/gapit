@@ -160,6 +160,7 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert vpa_ok.metadata.license == "MIT (database content)"
     assert vpa_ok.typing_path is not None
     assert vpa_ok.features_path is not None
+    assert vpa_ok.profile_path is not None
     assert by_name["ecoli_dec"].features_path is None
     assert find_bundled("ecoli_dec") is not None
     assert find_bundled("vpa_ok") is not None
@@ -477,12 +478,18 @@ def test_screen_auto_materializes_bundled_cluster_database(tmp_path: Path) -> No
     assert bundled is not None and bundled.typing_path is not None
     assert (db_dir / "typing.json").read_bytes() == bundled.typing_path.read_bytes()
     assert (db_dir / "features.json").is_file()
+    assert bundled.profile_path is not None
+    assert (db_dir / "cluster.json").read_bytes() == bundled.profile_path.read_bytes()
     assert (db_dir / "sequences.nin").is_file()
     report = json.loads(result.stdout)
     assert report["schema"] == "gapit.cluster/2"
     phenotypes = report["files"][0]["phenotypes"]
     assert phenotypes["o_group"]["phenotype"] == "O3"
     assert phenotypes["k_group"]["phenotype"] == "K6"
+    assert phenotypes["o_group"]["locus_status"] == "known"
+    assert phenotypes["k_group"]["locus_status"] == "known"
+    assert phenotypes["o_group"]["locus_confidence"] == "typeable"
+    assert phenotypes["k_group"]["locus_confidence"] == "typeable"
     assert phenotypes["serotype"]["phenotype"] == "O3:K6"
 
 

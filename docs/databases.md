@@ -318,8 +318,25 @@ byte-identity for `vpa_ok` against a `gapit db build` over the real vpautils Gen
 when local copies exist — `features.json` included, gene-id resolution included).
 Bundled databases have no provider and no `db fetch` path: a refresh means a new snapshot
 riding a wheel release. `bundled.json` records the snapshot date for reference.
+
 (`db outdated` stays manifest-based in v1: it reports the materialization/fetch time of
 what is installed, not bundled-vs-upstream drift.)
+
+**Cluster profiles.** A cluster database may carry a small `cluster.json`
+(`gapit.cluster_profile/1`) that opts into a different cluster-engine contract.
+`coverage_mode: "primary_secondary"` computes locus coverage from the union of minimap2
+primary and secondary rows instead of the historical primary-only set, and
+`fallback_evidence: true` keeps the best same-family locus and coverage on an `OUT`/`KUT`
+call, so "no phenotype" is distinguishable from "no locus"; the cluster/2 `phenotypes`
+entries then carry `locus_status` = `known`, `unknown_locus`, or `none`. Optional
+`min_gene_cov` / `min_gene_id` / `min_cluster_cov` fields supply database defaults when the
+corresponding CLI flag is left at its historical default; `locus_typeable_coverage` /
+`locus_typeable_identity` add the Kaptive-style `locus_confidence` =
+`typeable` / `untypeable`. `vpa_ok` ships this profile (Kaptive-style coverage, a 50%
+gene-coverage floor, 50/90 typeable floors, and fallback evidence), so its O-locus calls
+use the same alignment evidence as Kaptive and KUT still names the detected KL locus.
+Other cluster databases have no profile and keep the historical primary-only behavior
+byte-for-byte.
 
 **How materialization works.** The first `gapit screen ... --db <bundled-name>` against
 a datadir that does not hold the database builds it there automatically — one stderr note
@@ -445,9 +462,10 @@ kaptive providers it is license-clean for redistribution — a resolved snapshot
 inside the wheel as one of the bundled databases (8.3 MiB committed artifacts, within
 the 30 MiB budget), and first use materializes it with zero network. The
 typing rules recompute sequence-unique key genes per locus (variants fold: OL4V1 →
-O4, KL20V1 → K20; untyped OLU*/KLU* loci get no rule and fall back to OUT/KUT), and
-the asset validates against the loci at build and materialization time — a drifted
-upstream GBK fails `TYPING_UNKNOWN_GENE` instead of installing silently. Calibrated
+O4, KL20V1 → K20; untyped OLU* loci get no rule, while KLU61–KLU100 carry locus-only
+KUT rules so the detected locus survives the fallback), and the asset validates against
+the loci at build and materialization time — a drifted upstream GBK fails
+`TYPING_UNKNOWN_GENE` instead of installing silently. Calibrated
 against real genomes with RIMD 2210633 locked to O3:K6 (see the rule notes for the
 documented per-locus tuning).
 

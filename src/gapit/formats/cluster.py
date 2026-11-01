@@ -153,7 +153,16 @@ def render_cluster_json(
     document = ClusterDocument(
         created_at=utc_timestamp(now),
         # field-for-field mirror of ClusterParams (engine telemetry contract)
-        params=ClusterParamsDocument(**params.model_dump()),
+        params=ClusterParamsDocument(
+            **params.model_dump(
+                exclude={
+                    "coverage_mode",
+                    "fallback_evidence",
+                    "locus_typeable_coverage",
+                    "locus_typeable_identity",
+                }
+            )
+        ),
         files=[
             ClusterFileDocument(
                 file=report.file,

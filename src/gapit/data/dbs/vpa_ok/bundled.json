@@ -6,7 +6,7 @@
   "kind": "cluster",
   "snapshotted": "2026-10-12",
   "license": "MIT (database content)",
-  "note": "vpautils OAgc.gbk + CPSgc.gbk (Bakta-annotated, MIT), concatenated in source_urls order and built through the cluster pipeline with the committed gapit.typing/2 asset; gene ids resolved at snapshot time (first-use materialization replays the build without re-resolving)",
+  "note": "vpautils OAgc.gbk + CPSgc.gbk (Bakta-annotated, MIT), concatenated in source_urls order and built through the cluster pipeline with the committed gapit.typing/2 asset; gene ids resolved at snapshot time (first-use materialization replays the build without re-resolving). cluster.json opts into primary+secondary coverage, a 50% gene-coverage floor, 50/90 typeable floors, and fallback evidence.",
   "guidance": {
     "references": [
       {
@@ -22,7 +22,7 @@
     ],
     "caveats": [
       "O3 and O13 share gene content and cannot be separated from sequence, so the call is the combined label O3/O13 by design.",
-      "Variants fold into their base antigen (OL4V1 -> O4, KL20V1 -> K20); untyped OLU*/KLU* loci get no rule and fall back to OUT/KUT, which means 'not in this panel', not 'not typeable'.",
+      "Variants fold into their base antigen (OL4V1 -> O4, KL20V1 -> K20); untyped OLU* loci get no rule and fall back to OUT, while KLU61-KLU100 carry locus-only KUT rules so the detected KLU locus and coverage survive. OUT/KUT means 'not in this panel' or 'unknown KLU type'; KUT with a reported KL locus is not the same as no locus detected.",
       "Locus matching is Kaptive-style (coverage/identity/key genes), not agglutination; novel or recombinant loci below the 95/95 floors fall back rather than being forced to the nearest type.",
       "The O:K composition is only as good as its ingredients: a KUT fallback yields 'O3:KUT', which names the O antigen and states that the K antigen is unresolved."
     ]

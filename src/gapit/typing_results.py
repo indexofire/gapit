@@ -95,7 +95,11 @@ class SchemeCall(BaseModel, frozen=True):
     set. The ``winner_*`` members (additive, cluster/2 only) flatten the
     winning cluster_match locus's evidence — set together or not at all
     (None on gate/fallback calls, compose schemes, and the whole gene
-    path) and serialized only when ``winner_locus`` is set."""
+    path) and serialized only when ``winner_locus`` is set. ``locus_status``
+    (cluster/2 profile runs only) distinguishes a known phenotype, a detected
+    locus with no known phenotype (``unknown_locus``), and no locus at all.
+    ``locus_confidence`` (profile runs with typeable thresholds) mirrors
+    Kaptive's Typeable/Untypeable split over the same evidence."""
 
     phenotype: str | None
     score: float
@@ -110,6 +114,8 @@ class SchemeCall(BaseModel, frozen=True):
     winner_present: int | None = None
     winner_partial: int | None = None
     winner_missing: tuple[str, ...] | None = None
+    locus_status: Literal["known", "unknown_locus", "none"] | None = None
+    locus_confidence: Literal["typeable", "untypeable"] | None = None
 
     @model_serializer
     def _serialize(self) -> dict[str, object]:
@@ -132,6 +138,10 @@ class SchemeCall(BaseModel, frozen=True):
             data["winner_present"] = self.winner_present
             data["winner_partial"] = self.winner_partial
             data["winner_missing"] = list(self.winner_missing or ())
+        if self.locus_status is not None:
+            data["locus_status"] = self.locus_status
+        if self.locus_confidence is not None:
+            data["locus_confidence"] = self.locus_confidence
         return data
 
 

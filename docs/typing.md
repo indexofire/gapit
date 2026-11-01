@@ -72,6 +72,10 @@ typed cluster database annotates the cluster document directly — a single-sche
 annotates `gapit.cluster/1` (the typed-only `PHENOTYPE` TSV column, `best.phenotype` +
 `best.phenotype_detail` in JSON/MD), and a multi-scheme db renders `gapit.cluster/2`
 (one call per scheme in a `phenotypes` map, per-scheme winner-evidence TSV columns).
+A database profile may additionally preserve same-family fallback evidence and emit
+`locus_status` (`known` / `unknown_locus` / `none`) plus `locus_confidence`
+(`typeable` / `untypeable`) in the cluster/2 phenotypes map, so a Kaptive-style
+`Typeable unknown (KLUxx)` is not confused with no locus.
 
 ## One document, two engines
 

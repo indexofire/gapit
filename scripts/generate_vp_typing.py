@@ -8,8 +8,10 @@ emits the three-scheme document installed by the vp_ok cluster bundle
 (o_group + k_group + serotype compose). Support helpers (homology pass,
 name pairing, JSON/split writers) live in scripts/vp_typing_support.py.
 
-Method (per typed locus OL*/KL*; OLU*/KLU* get no rule — the OUT/KUT
-fallbacks own them):
+Method (per typed locus OL*/KL*; this generator emits no rule for OLU*/KLU* — the
+OUT/KUT fallbacks own them. After generating, run
+``scripts/add_vpa_klu_rules.py`` to add locus-only KUT rules for KLU61-KLU100, so
+the updated snapshot's unknown K loci keep their detected-locus evidence):
 
 - genes are keyed by their build-time RESOLVED ids (resolve_gene_ids,
   exactly what a gapit.cluster/2 build runs), so key-gene references
@@ -32,6 +34,7 @@ Usage:
         --output src/gapit/data/dbs/vp_ok/typing.json \
         --matrix scripts/vp_rules_matrix.tsv \
         [--calibration-dir DIR]
+    python scripts/add_vpa_klu_rules.py
 
 The committed scripts/vp_rules_matrix.tsv carries the development-matrix
 HARD flags (loci whose every CDS has a close cross-locus homolog) — the

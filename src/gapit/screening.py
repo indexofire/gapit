@@ -157,7 +157,7 @@ def run_screen(
         return run_cluster_screen(
             inputs,
             database,
-            resolve_cluster_params(db_name, min_gene_cov, min_gene_id, min_cluster_cov, threads),
+            resolve_cluster_params(database, min_gene_cov, min_gene_id, min_cluster_cov, threads),
             output_format=output_format,
             noheader=noheader,
             nopath=nopath,
