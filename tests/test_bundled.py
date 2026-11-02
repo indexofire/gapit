@@ -1,7 +1,7 @@
 """Bundled databases: discovery, materialization, and the DEC matrix.
 
 The wheel ships four license-clean, gapit-curated bundles — the typed
-ecoli_dec, lmo_sero, and cje_cps panels plus the typed vpa_ok cluster
+eco_dec, lmo_sero, and cje_cps panels plus the typed vpa_ok cluster
 snapshot (MIT, a pure built-in). Provider-backed databases (ecoh, ncbi,
 resfinder, card, ...) are fetch-on-demand only: their upstream content
 carries licensing/provenance risk that a wheel snapshot should not
@@ -56,7 +56,7 @@ runner = CliRunner()
 
 def screen(sample: Path, datadir: Path, *extra: str) -> Result:
     return runner.invoke(
-        app, ["screen", str(sample), "--db", "ecoli_dec", "--datadir", str(datadir), *extra]
+        app, ["screen", str(sample), "--db", "eco_dec", "--datadir", str(datadir), *extra]
     )
 
 
@@ -70,7 +70,7 @@ def phenotypes(sample: Path, datadir: Path, tmp_path: Path) -> dict[str, object]
             "screen",
             str(sample),
             "--db",
-            "ecoli_dec",
+            "eco_dec",
             "--datadir",
             str(datadir),
             "-o",
@@ -85,7 +85,7 @@ def phenotypes(sample: Path, datadir: Path, tmp_path: Path) -> dict[str, object]
     )
     assert result.exit_code == 0, result.stderr
     document = json.loads(result.stdout)
-    assert document["db"] == "ecoli_dec"
+    assert document["db"] == "eco_dec"
     return {name: call["phenotype"] for name, call in document["files"][0]["phenotypes"].items()}
 
 
@@ -127,10 +127,10 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     """Given the wheel's data dir, When bundled databases are discovered,
     Then exactly the four gapit-curated bundles ship in name order — three
     gene-kind plus the vpa_ok cluster-kind — each metadata parses
-    (vendor/dbtype/kind/snapshot date), ecoli_dec/lmo_sero/cje_cps carry
+    (vendor/dbtype/kind/snapshot date), eco_dec/lmo_sero/cje_cps carry
     their typing documents, and vpa_ok carries typing, features table, and
     content license."""
-    assert bundled_names() == ["cje_cps", "ecoli_dec", "lmo_sero", "vpa_ok"]
+    assert bundled_names() == ["cje_cps", "eco_dec", "lmo_sero", "vpa_ok"]
     by_name = {database.name: database for database in bundled_databases()}
     cje_cps = by_name["cje_cps"]
     assert cje_cps.metadata.vendor.startswith("gapit-curated (Poly 2015")
@@ -140,13 +140,13 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert cje_cps.typing_path is not None
     assert cje_cps.floors_path is not None
     assert cje_cps.screen_path is not None
-    ecoli_dec = by_name["ecoli_dec"]
-    assert ecoli_dec.metadata.vendor == "gapit-curated (public-domain sources)"
-    assert ecoli_dec.metadata.dbtype == "nucl"
-    assert ecoli_dec.metadata.kind == "gene"
-    assert ecoli_dec.metadata.snapshotted == "2026-10-02"
-    assert ecoli_dec.typing_path is not None
-    assert ecoli_dec.floors_path is not None
+    eco_dec = by_name["eco_dec"]
+    assert eco_dec.metadata.vendor == "gapit-curated (public-domain sources)"
+    assert eco_dec.metadata.dbtype == "nucl"
+    assert eco_dec.metadata.kind == "gene"
+    assert eco_dec.metadata.snapshotted == "2026-10-02"
+    assert eco_dec.typing_path is not None
+    assert eco_dec.floors_path is not None
     lmo_sero = by_name["lmo_sero"]
     assert lmo_sero.metadata.description == "Listeria monocytogenes serogrouping (Doumith 2004)"
     assert lmo_sero.metadata.vendor == "gapit-curated (public-domain INSDC sources)"
@@ -162,8 +162,8 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert vpa_ok.features_path is not None
     assert vpa_ok.profile_path is not None
     assert vpa_ok.gene_families_path is not None
-    assert by_name["ecoli_dec"].features_path is None
-    assert find_bundled("ecoli_dec") is not None
+    assert by_name["eco_dec"].features_path is None
+    assert find_bundled("eco_dec") is not None
     assert find_bundled("vpa_ok") is not None
     assert find_bundled("ncbi") is None
     assert find_bundled("card") is None
@@ -177,7 +177,7 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     the vpa_ok cluster snapshot's bare locus ids are trivially clean)."""
     typed_counts = {
         "cje_cps": 42,
-        "ecoli_dec": 16,
+        "eco_dec": 16,
         "lmo_sero": 5,
         "vpa_ok": VPA_OK_LOCI,
     }
@@ -219,15 +219,15 @@ def test_find_database_tolerates_concurrent_first_use(
 
     monkeypatch.setattr("gapit.screening.materialize_bundled", wins_the_race)
 
-    database = find_database(datadir, "ecoli_dec", quiet=True)
+    database = find_database(datadir, "eco_dec", quiet=True)
 
-    assert database.name == "ecoli_dec"
-    assert database.sequences_path == datadir / "ecoli_dec" / "sequences"
+    assert database.name == "eco_dec"
+    assert database.sequences_path == datadir / "eco_dec" / "sequences"
 
 
 def test_screen_auto_materializes_on_fresh_empty_datadir(tmp_path: Path) -> None:
     """Given a fresh EMPTY datadir and no prior fetch, When screening
-    against the bundled ecoli_dec, Then the database materializes into the
+    against the bundled eco_dec, Then the database materializes into the
     datadir first (one stderr note), the screen finds the panel genes, and
     the manifest certifies a bundled-source typed gene database."""
     datadir = tmp_path / "datadir"
@@ -236,10 +236,10 @@ def test_screen_auto_materializes_on_fresh_empty_datadir(tmp_path: Path) -> None
     result = screen(S1, datadir)
 
     assert result.exit_code == 0, result.stderr
-    assert f"gapit: materializing bundled database ecoli_dec (16 records) into {datadir}" in (
+    assert f"gapit: materializing bundled database eco_dec (16 records) into {datadir}" in (
         result.stderr
     )
-    db_dir = datadir / "ecoli_dec"
+    db_dir = datadir / "eco_dec"
     manifest = read_manifest(db_dir / "gapit-manifest.json")
     assert manifest.n_records == 16
     assert manifest.source == "bundled"
@@ -253,14 +253,14 @@ def test_screen_auto_materializes_on_fresh_empty_datadir(tmp_path: Path) -> None
 
 
 def test_screen_is_idempotent_and_quiet_suppresses_the_note(tmp_path: Path) -> None:
-    """Given a materialized ecoli_dec, When screening again, Then no rebuild
+    """Given a materialized eco_dec, When screening again, Then no rebuild
     happens (no materializing note, manifest bytes unchanged); with --quiet
     even the first materialization note is silent."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
     first = screen(S1, datadir)
     assert first.exit_code == 0, first.stderr
-    manifest_path = datadir / "ecoli_dec" / "gapit-manifest.json"
+    manifest_path = datadir / "eco_dec" / "gapit-manifest.json"
     before = manifest_path.read_bytes()
 
     second = screen(S2, datadir)
@@ -274,7 +274,7 @@ def test_screen_is_idempotent_and_quiet_suppresses_the_note(tmp_path: Path) -> N
     silent = screen(S1, other, "--quiet")
     assert silent.exit_code == 0, silent.stderr
     assert silent.stderr == ""
-    assert (other / "ecoli_dec" / "gapit-manifest.json").is_file()
+    assert (other / "eco_dec" / "gapit-manifest.json").is_file()
 
 
 def test_screen_bootstraps_a_missing_datadir_for_bundled(tmp_path: Path) -> None:
@@ -285,7 +285,7 @@ def test_screen_bootstraps_a_missing_datadir_for_bundled(tmp_path: Path) -> None
     missing = tmp_path / "does" / "not" / "exist"
     result = screen(S1, missing)
     assert result.exit_code == 0, result.stderr
-    assert (missing / "ecoli_dec" / "gapit-manifest.json").is_file()
+    assert (missing / "eco_dec" / "gapit-manifest.json").is_file()
 
     other = tmp_path / "also-missing"
     failure = runner.invoke(app, ["screen", str(S1), "--db", "card", "--datadir", str(other)])
@@ -294,7 +294,7 @@ def test_screen_bootstraps_a_missing_datadir_for_bundled(tmp_path: Path) -> None
 
 
 def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
-    """Given an empty datadir, When `db list`, Then ecoli_dec renders as a
+    """Given an empty datadir, When `db list`, Then eco_dec renders as a
     bundled row (vendor from bundled.json, STATUS bundled) between the
     registry rows and any local extras; after one screen the same row reads
     installed (16) and the JSON entry flips installed/source stays bundled."""
@@ -304,9 +304,9 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     before = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert before.exit_code == 0
     lines = before.stdout.splitlines()
-    bundled_rows = [line for line in lines if line.startswith("ecoli_dec\t")]
+    bundled_rows = [line for line in lines if line.startswith("eco_dec\t")]
     assert bundled_rows == [
-        "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
+        "eco_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
         "\tbundled\tnucl\tgene\tcommand\tgapit-curated (public-domain sources)"
     ]
     bundled_all = set(bundled_names())
@@ -322,22 +322,22 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     after = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert after.exit_code == 0
     assert (
-        "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
+        "eco_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
         "\tinstalled (16)\tnucl\tgene\tcommand\tgapit-curated (public-domain sources)"
         in after.stdout
     )
 
     as_json = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
     entry = {
-        e["name"]: e for e in json.loads(as_json.stdout)["providers"] if e["name"] == "ecoli_dec"
-    }["ecoli_dec"]
+        e["name"]: e for e in json.loads(as_json.stdout)["providers"] if e["name"] == "eco_dec"
+    }["eco_dec"]
     assert entry["source"] == "bundled"
     assert entry["installed"] is True
     assert entry["records"] == 16
 
 
 def test_dec_designation_matrix_against_the_bundled_database(tmp_path: Path) -> None:
-    """Given the bundled ecoli_dec (typed gapit.typing/2), When the three
+    """Given the bundled eco_dec (typed gapit.typing/2), When the three
     DEC matrix samples run the two-stage pipeline (screen -o table, then
     typing table), Then the dual-scheme calls hold — the equivalence lock
     with the inline engine's former calls: aggR+pic → EAEC/EAEC, pic+astA
@@ -353,7 +353,7 @@ def test_dec_designation_matrix_against_the_bundled_database(tmp_path: Path) -> 
 
 
 def test_typed_screen_golden_hybrid_and_headline(tmp_path: Path) -> None:
-    """Given the bundled ecoli_dec and the hybrid + headline samples, When
+    """Given the bundled eco_dec and the hybrid + headline samples, When
     screened as the DEFAULT format (multi-file, --nopath), Then the output
     is the pure frozen 15-column abricate table — typed and untyped gene
     databases screen byte-identically (the inverted former
@@ -367,7 +367,7 @@ def test_typed_screen_golden_hybrid_and_headline(tmp_path: Path) -> None:
             str(S3),
             str(S2),
             "--db",
-            "ecoli_dec",
+            "eco_dec",
             "--datadir",
             str(datadir),
             "--nopath",
@@ -375,7 +375,7 @@ def test_typed_screen_golden_hybrid_and_headline(tmp_path: Path) -> None:
         ],
     )
     assert result.exit_code == 0, result.stderr
-    assert result.stdout == (GOLDEN / "ecoli_dec_typed.tsv").read_text(encoding="utf-8")
+    assert result.stdout == (GOLDEN / "eco_dec_typed.tsv").read_text(encoding="utf-8")
     for line in result.stdout.splitlines():
         assert len(line.split("\t")) == 15
 
@@ -395,7 +395,7 @@ def test_typing_golden_hybrid_and_headline(tmp_path: Path) -> None:
             str(S3),
             str(S2),
             "--db",
-            "ecoli_dec",
+            "eco_dec",
             "--datadir",
             str(datadir),
             "--nopath",
@@ -407,7 +407,7 @@ def test_typing_golden_hybrid_and_headline(tmp_path: Path) -> None:
     assert screened.exit_code == 0, screened.stderr
     result = runner.invoke(app, ["typing", str(table), "--datadir", str(datadir), "--quiet"])
     assert result.exit_code == 0, result.stderr
-    assert result.stdout == (GOLDEN / "ecoli_dec_typing.tsv").read_text(encoding="utf-8")
+    assert result.stdout == (GOLDEN / "eco_dec_typing.tsv").read_text(encoding="utf-8")
 
 
 def test_typing_genes_column_lists_sorted_present_genes(tmp_path: Path) -> None:
@@ -425,7 +425,7 @@ def test_typing_genes_column_lists_sorted_present_genes(tmp_path: Path) -> None:
             str(S3),
             str(S2),
             "--db",
-            "ecoli_dec",
+            "eco_dec",
             "--datadir",
             str(datadir),
             "--nopath",

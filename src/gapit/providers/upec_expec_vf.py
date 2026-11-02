@@ -94,7 +94,7 @@ PROVIDER = Provider(
             "ExPEC virulence profiles overlap with commensal E. coli: no single marker"
             " separates ExPEC from avirulent isolates, so report the profile, not a verdict.",
             "The panel is curated for urinary/extraintestinal pathotypes; diarrheagenic"
-            " markers belong to ecoli_dec.",
+            " markers belong to eco_dec.",
         ),
     ),
 )

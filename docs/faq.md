@@ -94,8 +94,8 @@ reads first, then screen the assembly; gene databases keep their reads mode. Rat
 ## How do I designate a pathotype or serogroup?
 
 Designation is two-stage on gene databases: screen with a typed database, then read
-the table back. The bundled `ecoli_dec` panel carries the dual-scheme DEC designation:
-`gapit screen -d ecoli_dec sample.fna -o result.tsv`, then `gapit typing result.tsv`
+the table back. The bundled `eco_dec` panel carries the dual-scheme DEC designation:
+`gapit screen -d eco_dec sample.fna -o result.tsv`, then `gapit typing result.tsv`
 — or pipe one straight into the other. Cluster databases are the exception: their
 designation is integrated into the screen itself (the `PHENOTYPE` column). Details:
 `./typing.md`.
@@ -142,7 +142,7 @@ Reads mode: `./reads.md`.
 
 Yes: when every positional file is FASTQ, `gapit screen` enters reads mode and
 auto-pairs samples from the filenames (`_R1`/`_R2`, `_1`/`_2` conventions), so
-`gapit screen -d ecoli_dec *.fq.gz -j 4` screens all samples concurrently with one
+`gapit screen -d eco_dec *.fq.gz -j 4` screens all samples concurrently with one
 command. Mixing FASTA and FASTQ positionals is a usage error; the pairing conventions
 and the per-sample output are documented in `./reads.md`.
 
@@ -152,7 +152,7 @@ A database-side `floors.json` (`gapit.floors/1`) declares a minimum alignment id
 per gene for reads-mode and contig-mode presence: alignments below the floor are dropped before
 breadth and depth are aggregated, so a close-but-not-exact homolog no longer over-calls
 the gene. The real case that motivated it: the SPATE-homolog `pic` in the bundled
-`ecoli_dec` panel read about 86.6% identity at 97.6% breadth and crossed the 90%
+`eco_dec` panel read about 86.6% identity at 97.6% breadth and crossed the 90%
 presence threshold, while the blastn contig path correctly rejected it; the shipped
 floor (`pic` at 90) makes reads mode agree. Install one with `gapit db build --floors
 FILE` or by dropping the file into the db directory; a database without one screens
@@ -185,7 +185,7 @@ PATH.
 ## What licenses apply to the databases?
 
 gapit itself is MIT-licensed. Four gapit-curated, permissively licensed bundles ship
-inside the wheel (the public-domain `cje_cps`, `ecoli_dec`, and `lmo_sero` panels plus
+inside the wheel (the public-domain `cje_cps`, `eco_dec`, and `lmo_sero` panels plus
 the MIT typed-cluster snapshot `vpa_ok`) and
 materialize into the datadir on first use; every provider — `ncbi`, `card`, `ecoh`,
 `resfinder`, and the rest — downloads from upstream at fetch time, and the content keeps

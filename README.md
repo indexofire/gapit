@@ -65,8 +65,8 @@ gapit screen contigs.fa --db ncbi --format json
 gapit screen contigs.fa --db ncbi --format md
 
 # Two-stage designation: screen writes the gene table, typing designates from it
-# (typed gene databases — the bundled ecoli_dec carries the dual-scheme DEC panel)
-gapit screen isolates.fa --db ecoli_dec --output dec.tsv
+# (typed gene databases — the bundled eco_dec carries the dual-scheme DEC panel)
+gapit screen isolates.fa --db eco_dec --output dec.tsv
 gapit typing dec.tsv
 # Neisseria meningitidis: serogroup + ctrA + sodC control (no MLST)
 gapit db fetch -d nme_sero
@@ -103,12 +103,12 @@ A database is a directory under the datadir, resolved from `--datadir`, then
 first use); `gapit db setup` creates it and materializes all four bundled databases.
 Twenty-five databases are
 built into the catalog — thirteen gene providers, eight cluster providers, and
-four bundled snapshots (`cje_cps`, `ecoli_dec`, `lmo_sero`, `vpa_ok`). Every
+four bundled snapshots (`cje_cps`, `eco_dec`, `lmo_sero`, `vpa_ok`). Every
 provider builds on `gapit db fetch`,
 which downloads from upstream — including `nme_sero` (N. meningitidis serogroup + ctrA + sodC, non-MLST). The bundled set is gapit-curated and provenance-clean only:
-the public-domain `ecoli_dec`, `lmo_sero`, and `cje_cps` panels plus the MIT
+the public-domain `eco_dec`, `lmo_sero`, and `cje_cps` panels plus the MIT
 typed-cluster snapshot `vpa_ok`, materialized into the datadir on first use with zero
-network. The bundled `ecoli_dec` additionally carries per-gene identity floors
+network. The bundled `eco_dec` additionally carries per-gene identity floors
 (`floors.json`, `pic` at 90%) that both engines apply before presence calls, and
 `cje_cps` ships floors plus per-database `screen.json` defaults (MAPQ 20, depth 5, 10%
 lpxA relative depth). The same `screen.json` (`gapit.screen/1`) mechanism lets any
@@ -130,7 +130,7 @@ conda/Docker guidance, and security notes, see [Data directory](docs/datadir.md)
 | `plasmidfinder` | CGE PlasmidFinder replicons | nucl |
 | `megares` | MEGARes antimicrobial resistance genes | nucl |
 | `ecoh` | E. coli O and H antigens (srst2 EcOH) | nucl |
-| `ecoli_dec` | Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation) | nucl |
+| `eco_dec` | Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation) | nucl |
 | `vfdb` | VFDB virulence factors (set A, nucleotide) | nucl |
 | `ecoli_vf` | E. coli virulence factors | nucl |
 | `lmo_sero` | Listeria monocytogenes serogrouping (Doumith 2004) | nucl |
@@ -151,7 +151,7 @@ ecoli_kps) fetch the Kaptive antigen-locus references at install time (GPL-3.0 c
 nothing is bundled — cite Kaptive/Wyres et al. 2020 for results). The typed cluster
 bundle `vpa_ok`
 merges the vpasero OAgc + CPSgc references (MIT) into one bundled db — a pure built-in in
-the ecoli_dec/lmo_sero pattern, no `db fetch` — where a single
+the eco_dec/lmo_sero pattern, no `db fetch` — where a single
 `gapit screen --db vpa_ok` renders gapit.cluster/2 with `o_group`, `k_group`, and the
 composed `serotype` O:K call (RIMD 2210633 → O3:K6), working straight after
 `pip install gapit` with zero network.

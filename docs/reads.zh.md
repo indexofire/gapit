@@ -37,7 +37,7 @@ gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map
 展开直接交给 `screen`，由 gapit 推断样本：
 
 ```console
-$ gapit screen -d ecoli_dec *.gz
+$ gapit screen -d eco_dec *.gz
 ```
 
 当**每个**位置参数文件都是 FASTQ —— 扩展名是 `.fastq`/`.fq`（可带 `.gz`/`.gzip`），或扩展名
@@ -410,12 +410,12 @@ schema 为 `gapit.floors/1`（用 `gapit schema floors` 内省）：
   读取。详见
   [databases.zh.md](./databases.zh.md#floorsjson)。
 
-## 实战示例：`pic` 的 SPATE 假阳性（内置 `ecoli_dec`）
+## 实战示例：`pic` 的 SPATE 假阳性（内置 `eco_dec`）
 
 分离株 26ECO0084 携带一个与面板 `pic` 基因约 86.6% 一致的 SPATE 家族同源序列。
 reads 模式下，该同源序列的比对仍覆盖了基因长度的 97.59%，广度判存在因此报出了
 `pic`——而 blastn contig 管线在默认 80% 一致性下限处正确地把它过滤掉了。于是内置
-的 `ecoli_dec` 携带了仅一条下限的 `floors.json`：
+的 `eco_dec` 携带了仅一条下限的 `floors.json`：
 
 ```json
 {"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}

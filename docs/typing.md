@@ -17,7 +17,7 @@ Gene-kind designation is a two-stage pipeline (the rightsholder design): **`gapi
 detects genes, `gapit typing` designates from the results.**
 
 ```console
-$ gapit screen contigs.fa --db ecoli_dec --output result.tsv --quiet
+$ gapit screen contigs.fa --db eco_dec --output result.tsv --quiet
 $ gapit typing result.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 contigs.fa	gb4789_6	EHEC	escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
@@ -41,7 +41,7 @@ reads/2's `IDENTITY%` column and each rule's `identity_floor` is enforced.
 The two stages also compose straight through a pipe — the canonical one-liner:
 
 ```console
-$ gapit screen 1.fna --db ecoli_dec --quiet | gapit typing --quiet
+$ gapit screen 1.fna --db eco_dec --quiet | gapit typing --quiet
 ```
 
 `gapit typing` reads its table from stdin whenever stdin is not a terminal (piped or
@@ -357,7 +357,7 @@ declaration order):
   (最新食品安全风险监测方案): aggR is mandatory — pic/astA alone are insufficient. A
   pic+astA isolate without aggR is `EAEC` under gb4789_6 and `non-DEC` under
   risk_monitoring — the headline divergence between the two schemes, locked by the
-  `ecoli_dec_typing` golden (both calls in one `gapit.typing_result/1` document; the
+  `eco_dec_typing` golden (both calls in one `gapit.typing_result/1` document; the
   bundled database carries the same document).
 - `EPEC_atypical` is declared *after* EHEC/STEC so stx-positive isolates never land there;
   escV+/bfpB−/stx− isolates fall through the typical-EPEC rule onto it.

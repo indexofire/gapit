@@ -84,7 +84,7 @@ reads 模式。原因见 `./screen.zh.md#cluster-input`。
 ## 如何判定致病型或血清群？
 
 基因数据库上的判定是两阶段的：先用 typed 数据库筛查，再把结果表读回来。内置的
-`ecoli_dec` 面板携带双方案 DEC 判定：`gapit screen -d ecoli_dec sample.fna -o
+`eco_dec` 面板携带双方案 DEC 判定：`gapit screen -d eco_dec sample.fna -o
 result.tsv`，然后 `gapit typing result.tsv`——或者直接用管道把一步送进另一步。基因
 簇数据库是例外：其判定集成在筛查本身（`PHENOTYPE` 列）。细节：`./typing.md`。
 
@@ -125,7 +125,7 @@ reads 模式：`./reads.md`。
 ## 能用通配符一次筛查多个 FASTQ 文件吗？
 
 能：当所有位置参数文件都是 FASTQ 时，`gapit screen` 进入 reads 模式，并按文件名
-（`_R1`/`_R2`、`_1`/`_2` 约定）自动配对样本，所以 `gapit screen -d ecoli_dec *.fq.gz
+（`_R1`/`_R2`、`_1`/`_2` 约定）自动配对样本，所以 `gapit screen -d eco_dec *.fq.gz
 -j 4` 一条命令就能并发筛查全部样本。FASTA 与 FASTQ 位置参数混用是用法错误；配对
 约定与按样本输出见 `./reads.md`。
 
@@ -133,7 +133,7 @@ reads 模式：`./reads.md`。
 
 数据库侧的 `floors.json`（`gapit.floors/1`）为 reads 模式和 contig 模式的存在判定
 声明每个基因的最小比对一致性：低于下限的比对在广度/深度聚合之前被丢弃，于是"接近但不完全相同"
-的同源基因不再过量判定。催生它的真实案例：内置 `ecoli_dec` 面板中的 SPATE 同源基因
+的同源基因不再过量判定。催生它的真实案例：内置 `eco_dec` 面板中的 SPATE 同源基因
 `pic` 在约 86.6% 一致性、97.6% 广度时越过了 90% 存在阈值，而 blastn contig 路径
 正确地拒绝了它；随库发布的下限（`pic` 90）让 reads 模式与之一致。用 `gapit db
 build --floors FILE` 安装，或直接把文件放进数据库目录；没有该文件的数据库筛查输出
@@ -164,7 +164,7 @@ CLI 显式参数 > `screen.json` > 全局默认值。内置 `cje_cps` 使用 MAP
 ## 数据库适用哪些许可证？
 
 gapit 本身以 MIT 许可。四个由 gapit 策划、许可宽松的内置库随 wheel 发布（公有领域的
-`cje_cps`、`ecoli_dec`、`lmo_sero` 面板，以及 MIT 的 `vpa_ok` typed-cluster
+`cje_cps`、`eco_dec`、`lmo_sero` 面板，以及 MIT 的 `vpa_ok` typed-cluster
 快照），首次使用时物化进数据目录；每个提供商——`ncbi`、`card`、`ecoh`、
 `resfinder` 以及其余所有提供商——都在抓取时从上游下载，内容保留其原始许可证（CARD 的 McMaster 非商业条款、VFDB 的
 CC BY-NC、CGE、Kaptive 的 GPL-3.0 等），gapit 不重新授权。声明了许可证的提供商会在

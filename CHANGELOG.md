@@ -19,6 +19,11 @@
 
 ### Changed
 
+- **Bundled `ecoli_dec` renamed to `eco_dec`.** The bundle directory, `bundled.json`
+  name, `sequences` headers, and `records.jsonl` db fields all use `eco_dec` now.
+  Installed legacy copies can be migrated with
+  `gapit db rename ecoli_dec eco_dec`.
+
 - **`gapit db list` gains a KIND column.** The TSV/rich table now distinguishes
   `gene` from `cluster` databases explicitly; the `gapit.dblist/1` JSON already
   carried `kind`. TYPING remains the designation-mode column
@@ -62,7 +67,7 @@
   longer ship inside the wheel. Their upstream licenses permit redistribution,
   but provider snapshots carry provenance risk that a gapit release should not
   own — so every provider is fetch-on-demand only. The bundled set is now the
-  four gapit-curated databases `cje_cps`, `ecoli_dec`, `lmo_sero`, and
+  four gapit-curated databases `cje_cps`, `eco_dec`, `lmo_sero`, and
   `vpa_ok`; `db setup` materializes those four, and `db list` shows the removed
   names as `available` until `gapit db fetch -d NAME` installs them.
 
@@ -421,7 +426,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   rich table renders with uniformly thin rule lines (was a heavy header separator).
 
 - **`upec_expec_vf` no longer rides the wheel** — it returns to pure fetch-on-demand in
-  the provider catalog; the sanctioned bundled set is `ecoh`, `ecoli_dec`, `lmo_sero`,
+  the provider catalog; the sanctioned bundled set is `ecoh`, `eco_dec`, `lmo_sero`,
   `ncbi`, `resfinder`, `vpa_ok`.
 
 ## [0.5.4] - 2026-10-03
@@ -451,7 +456,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- **Bundled `ecoli_dec` regenerated 17 → 16 records (the 26ECO0094 `sth` divergence).**
+- **Bundled `eco_dec` regenerated 17 → 16 records (the 26ECO0094 `sth` divergence).**
   The panel carried `estA3` (M18346.1) and `estA4` (J03311.1) as byte-identical 219 bp
   `sth` sequences, so reads mode — which aggregates per record — reported two `sth` rows
   while the blastn contig path's `-culling_limit 1` kept one. Build-time dedup drops the
@@ -469,7 +474,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   examples now paste the real default `+`/`-` cells; schema rosters add `floors`
   (eleven documents) and the `gapit.dblist/1` field table gains `kind`; the database
   catalog is described as its real 21-row self (12 gene + 7 kaptive cluster + the
-  `ecoli_dec`/`lmo_sero` bundles); the quickstart gains a "Type your samples"
+  `eco_dec`/`lmo_sero` bundles); the quickstart gains a "Type your samples"
   tutorial (two-stage designation, the screen|typing pipe, wildcard-FASTQ auto-pairing)
   and uses `gapit setupdb` as the bootstrap path; `gapit screen` docs list
   `--min-identity`/`-I` and `--min-mapq`/`-M`; the `gapit db build` reference lists
@@ -498,7 +503,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   build NAME.fa --floors FILE` (gene builds only; cluster inputs reject it) installs a
   validated copy — every listed gene must exist in the FASTA (`FLOORS_UNKNOWN_GENE`),
   values in [0, 100] and structure per the schema (`FLOORS_MALFORMED`); dropping the
-  file into an existing db directory works too. The bundled `ecoli_dec` now ships
+  file into an existing db directory works too. The bundled `eco_dec` now ships
   `{"genes": {"pic": 90.0}}` (true `pic` ≥95%; `astA` deliberately unfloored — true
   alleles at 90.4–91% leave no margin), materialized with the bundle; MCP `screen_reads`
   inherits the gate through the shared use-case.
@@ -522,7 +527,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Illumina FASTQ wildcard support: `gapit screen -d ecoli_dec *.gz` screens a shell glob
+- **Illumina FASTQ wildcard support: `gapit screen -d eco_dec *.gz` screens a shell glob
   of reads without `--r1`/`--r2`** (rightsholder batch workflow). When every positional file
   is FASTQ — a `.fastq`/`.fq` (± `.gz`) extension, or content sniffed as FASTQ when the
   extension is ambiguous (via the existing `detect_read_kind`; known contig extensions and
@@ -564,7 +569,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   scheme rows so each call is auditable against the hits that drove it. JSON carries the same
   list as `files[].genes`.
 - **`gapit summary` reads its report table from stdin** — the pipe twin of `gapit typing`:
-  `gapit screen -d ecoli_dec *.fna --quiet | gapit summary` summarizes the batched screen
+  `gapit screen -d eco_dec *.fna --quiet | gapit summary` summarizes the batched screen
   output straight off the pipe (a piped table is one input, so dutch mode applies — one row
   per FILE value, byte-identical to summarizing the `-o`-written table). Stdin is read
   whenever stdin is not a terminal; a bare invocation at a terminal keeps printing help;
@@ -574,18 +579,18 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   reads stdin instead of the former USAGE_ERROR.
 
 - **`--db` now also answers to the word-style alias `-db`** (on `gapit screen` and
-  `gapit db search`): `-db ecoli_dec` parses exactly like `--db ecoli_dec`, matching the
+  `gapit db search`): `-db eco_dec` parses exactly like `--db eco_dec`, matching the
   tar-style single-dash habit that previously misparsed as `-d b` + a positional. The
-  space-separated form is the supported one — click binds an attached `-dbecoli_dec` to
-  `-d` with value `becoli_dec` (the original failure), which the new guard below catches.
+  space-separated form is the supported one — click binds an attached `-dbeco_dec` to
+  `-d` with value `beco_dec` (the original failure), which the new guard below catches.
 
 ### Fixed
 
 - **A positional argument that names a known database but is missing on disk now fails with
   a targeted usage error (exit 2)** instead of the generic INPUT_NOT_FOUND (exit 5) plus a
-  starved downstream pipe: `gapit screen -d b ecoli_dec X.fna` (the stripped `-db` misparse
-  shape) reports `input file not found: 'ecoli_dec' — it is a database NAME; screen takes
-  databases via --db/-d/-db (e.g. --db ecoli_dec), positional arguments are genome files`.
+  starved downstream pipe: `gapit screen -d b eco_dec X.fna` (the stripped `-db` misparse
+  shape) reports `input file not found: 'eco_dec' — it is a database NAME; screen takes
+  databases via --db/-d/-db (e.g. --db eco_dec), positional arguments are genome files`.
   Database names are matched against the provider catalog, bundled wheel content, and
   installed datadir databases; ordinary missing files keep today's INPUT_NOT_FOUND.
 
@@ -697,9 +702,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   data rows `TYPING_NO_DATA` (a screened-no-hits file has no rows — the database is only
   knowable from them), a database without a `typing.json` `TYPING_NO_SCHEME`, and a cluster
   database `TYPING_CLUSTER_DB` (its typing is integrated in `gapit screen`). Equivalence is
-  locked end to end: the DEC matrix, serotyping fixtures, and the bundled `ecoli_dec`
+  locked end to end: the DEC matrix, serotyping fixtures, and the bundled `eco_dec`
   assert the command's calls equal the calls the inline engine produced before the move,
-  with new goldens (`typing_markers.*`, `typing_serotyping.tsv`, `ecoli_dec_typing.tsv`).
+  with new goldens (`typing_markers.*`, `typing_serotyping.tsv`, `eco_dec_typing.tsv`).
   The table also arrives on stdin: `gapit screen 1.fna --db NAME | gapit typing` types the
   piped output with no file arguments (stdin must not be a terminal — a bare invocation at
   a terminal still prints help), the explicit `gapit typing -` marker reads stdin even
@@ -735,7 +740,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   untouched. The use-cases gained an optional `emit: Callable[[str], None]` sink (default
   `None` = buffered return exactly as before, so MCP and library callers are unchanged).
 
-- **Bundled databases — four audited provider snapshots join `ecoli_dec` in the wheel
+- **Bundled databases — four audited provider snapshots join `eco_dec` in the wheel
   (five bundles total).** `ncbi` (8373 records, public domain), `resfinder` (3206,
   Apache-2.0), `ecoh` (597, BSD-3-Clause), and `upec_expec_vf` (77, MIT) now ship under
   `src/gapit/data/dbs/<name>/` as point-in-time snapshots produced by the `db fetch`
@@ -751,11 +756,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   non-bundled providers stay byte-identical. Wheel size 170 KiB → 1.5 MiB (+1.3 MiB for
   the four snapshots; their `sequences` are ~13 MiB uncompressed). `db outdated` stays
   manifest-based (bundled-vs-upstream staleness comparison is future work).
-- **Bundled databases — `ecoli_dec` ships install-time ready (zero-network first use).**
+- **Bundled databases — `eco_dec` ships install-time ready (zero-network first use).**
   A new mechanism (`gapit.bundled`) lets license-clean, public-domain databases ride the
   wheel under `src/gapit/data/dbs/<name>/` (`sequences` + optional `typing.json` +
   `bundled.json` metadata: name, description, vendor, dbtype). The first database to use
-  it is `ecoli_dec`: the 17-record diarrheagenic E. coli marker panel with the dual-scheme
+  it is `eco_dec`: the 17-record diarrheagenic E. coli marker panel with the dual-scheme
   `gapit.typing/2` designation (gb4789_6 + risk_monitoring) — after the 2026-10 provenance
   audit re-sourced all records to NCBI/DDBJ primary submissions. When `--db` names a
   bundled database that is absent from the datadir, the screen path materializes it first

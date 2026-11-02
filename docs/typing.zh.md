@@ -13,7 +13,7 @@
 从结果中获得型别。**
 
 ```console
-$ gapit screen contigs.fa --db ecoli_dec --output result.tsv --quiet
+$ gapit screen contigs.fa --db eco_dec --output result.tsv --quiet
 $ gapit typing result.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 contigs.fa	gb4789_6	EHEC	escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
@@ -36,7 +36,7 @@ reads 模式的表也可以直接输入：`gapit screen --r1/--r2 ... | gapit ty
 两个阶段也可以直接经管道衔接——规范一行式：
 
 ```console
-$ gapit screen 1.fna --db ecoli_dec --quiet | gapit typing --quiet
+$ gapit screen 1.fna --db eco_dec --quiet | gapit typing --quiet
 ```
 
 只要 stdin 不是终端（管道或重定向），`gapit typing` 就从 stdin 读取结果表；在终端
@@ -329,7 +329,7 @@ K_COVERAGE ...`）。历史 `/1` 安装——用同一 GBK
 - **`risk_monitoring`** 编码现行食品安全风险监测方案（最新食品安全风险监测方案）：
   aggR 为必备——仅有 pic/astA 不充分。携带 pic+astA 而无 aggR 的分离株在
   gb4789_6 下判 `EAEC`、在 risk_monitoring 下判 `non-DEC`——两个方案之间的标志性
-  分歧，由 `ecoli_dec_typing` golden 锁定（两条判定同处一份
+  分歧，由 `eco_dec_typing` golden 锁定（两条判定同处一份
   `gapit.typing_result/1` 文档；捆绑数据库携带同一份文档）。
 - `EPEC_atypical` 声明在 EHEC/STEC **之后**，stx 阳性分离株永远不会落入该规则；
   escV+/bfpB−/stx− 分离株越过典型 EPEC 规则后落到它上面。

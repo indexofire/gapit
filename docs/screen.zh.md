@@ -64,7 +64,7 @@ MB），经 stdin 喂给 blastn。如果归一化失败（不是序列文件）�
 
 归一化之前有一条例外：当**每个**位置参数文件都是 FASTQ（`.fastq`/`.fq` ± `.gz`，
 或扩展名含糊时按内容嗅探为 FASTQ）且未指定 `--aligner` 时，整条命令改走 reads 引
-擎 —— `gapit screen -d ecoli_dec *.gz` 把 glob 按自动配对的样本筛查，而不是当作
+擎 —— `gapit screen -d eco_dec *.gz` 把 glob 按自动配对的样本筛查，而不是当作
 contig。FASTA 与 FASTQ 位置参数混用是用法错误，错误信息点名 reads 文件。配对规则
 与按样本输出见 [./reads.md](./reads.md)。
 
@@ -213,14 +213,14 @@ rich 进度条 —— 转轮、当前文件基名、进度条、M/N 计数、百
 
 ### typed 基因数据库：判定是第二条命令
 
-当 `--db` 指向带 `typing.json` 构建的基因数据库（捆绑的 `ecoli_dec`，或任何
+当 `--db` 指向带 `typing.json` 构建的基因数据库（捆绑的 `eco_dec`，或任何
 `gapit db build --typing` 构建）时，筛查是纯基因检测：每种格式的输出都是逐字节相同
 的冻结 15 列 abricate 表——typed 与 untyped 基因数据库在筛查面上无法区分。判定来自
 两阶段流水线的第二阶段：用 `--output`（或重定向）写出结果表，再对它运行
 [`gapit typing`](./typing.zh.md#two-stage-workflow)——或者直接经管道送入，规范一行式：
 
 ```console
-$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --nopath --quiet
+$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db eco_dec --output dec.tsv --nopath --quiet
 $ gapit typing dec.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
@@ -233,7 +233,7 @@ dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	astA;pic;uidA	low	0.0000	STEC
 stdout 纯净：数据走管道，诊断信息走 stderr）：
 
 ```console
-$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db ecoli_dec --nopath --quiet | gapit typing --quiet
+$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db eco_dec --nopath --quiet | gapit typing --quiet
 ```
 
 只要 stdin 不是终端，`gapit typing` 就从中读取；`gapit typing -` 是显式 stdin
@@ -245,7 +245,7 @@ $ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db ecoli_dec --nopath --quiet
 [`gapit summary`](./summary.zh.md) 可以直接从管道读取并折叠成基因×文件存在矩阵：
 
 ```console
-$ gapit screen -d ecoli_dec *.fna --quiet | gapit summary
+$ gapit screen -d eco_dec *.fna --quiet | gapit summary
 ```
 
 基因簇数据库是例外：其判定集成在筛查本身（typed 基因簇 TSV 的 `PHENOTYPE` 列，

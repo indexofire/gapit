@@ -1,5 +1,5 @@
 {
-  "name": "ecoli_dec",
+  "name": "eco_dec",
   "description": "Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)",
   "vendor": "gapit-curated (public-domain sources)",
   "dbtype": "nucl",

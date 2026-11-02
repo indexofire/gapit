@@ -120,7 +120,7 @@ Select databases explicitly:
 gapit db setup                 # same as --all (kept for compatibility)
 gapit db setup -a              # all installed + bundled databases
 gapit db setup -d nme_sero   # only nme_sero
-gapit db setup -d ecoli_dec -d cje_cps
+gapit db setup -d eco_dec -d cje_cps
 ```
 
 `--all/-a` never fetches providers: it materializes missing bundled databases and
@@ -144,7 +144,7 @@ The JSON receipt names the bundles that were materialized, the providers that we
 fetched, and every database that was indexed:
 
 ```json
-{"schema":"gapit.dbsetup/1","datadir":"/path/to/db","materialized":["ecoli_dec"],"fetched":[],"databases":[{"db":"ecoli_dec","records":16,"dbtype":"nucl"}]}
+{"schema":"gapit.dbsetup/1","datadir":"/path/to/db","materialized":["eco_dec"],"fetched":[],"databases":[{"db":"eco_dec","records":16,"dbtype":"nucl"}]}
 ```
 
 Introspect it with `gapit schema dbsetup`.
@@ -235,7 +235,7 @@ For CI, mount or cache a workspace directory and pin versions:
 docker run --rm \
   -v "$PWD/.gapit-db:/data/gapit" \
   -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.7 gapit screen sample.fna --db ecoli_dec
+  gapit:0.6.7 gapit screen sample.fna --db eco_dec
 ```
 
 You can bake reference databases into an image for **read-only** screening:

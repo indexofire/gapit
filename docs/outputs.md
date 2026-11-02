@@ -106,14 +106,14 @@ alignment is gapped. An ungapped full-length alignment prints 15 `=` characters,
 
 ### Typed gene databases: designation is a second command
 
-A gene database carrying a `typing.json` (a **typed** database — the bundled `ecoli_dec` is
+A gene database carrying a `typing.json` (a **typed** database — the bundled `eco_dec` is
 the example) screens exactly like an untyped one: the frozen 15-column abricate table above,
 byte-for-byte, in every format. Designation is the second stage of the two-stage pipeline —
 [`gapit typing`](./typing.md#the-two-stage-designation-workflow) reads a screen result
 table and renders the calls (real output; `screen --output` wrote the table):
 
 ```console
-$ gapit screen dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --quiet
+$ gapit screen dec_s2_pic_astA_uidA.fasta --db eco_dec --output dec.tsv --quiet
 $ gapit typing dec.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	astA;pic;uidA	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
@@ -236,7 +236,7 @@ row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
   "tool": {"name": "gapit", "version": "0.6.7"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
-  "db": "ecoli_dec",
+  "db": "eco_dec",
   "files": [
     {
       "file": "dec_s2_pic_astA_uidA.fasta",
@@ -427,10 +427,10 @@ is suppressed so stdout carries only the receipt:
 {
   "schema": "gapit.dbsetup/1",
   "datadir": "/home/me/.local/share/gapit/db",
-  "materialized": ["ecoli_dec"],
+  "materialized": ["eco_dec"],
   "fetched": [],
   "databases": [
-    {"db": "ecoli_dec", "records": 16, "dbtype": "nucl"},
+    {"db": "eco_dec", "records": 16, "dbtype": "nucl"},
     {"db": "tinyamr", "records": 3, "dbtype": "nucl"}
   ]
 }

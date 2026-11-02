@@ -2,7 +2,7 @@
 
 Lives outside cli.py to keep that module small; cli.py registers it via
 ``register_summary_command``. The report table also arrives on stdin:
-``gapit screen -d ecoli_dec *.fna | gapit summary`` summarizes the piped
+``gapit screen -d eco_dec *.fna | gapit summary`` summarizes the piped
 output (a batched multi-FILE table is one input, so dutch mode applies),
 and the explicit ``-`` marker reads stdin even under a terminal (until
 EOF). A bare invocation at a terminal keeps the help-on-bare policy.

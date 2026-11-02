@@ -37,7 +37,7 @@ _YAML_PLAIN = re.compile(r"^[A-Za-z0-9_.-]+$")
 def yaml_scalar(value: str) -> str:
     """Render a YAML scalar, quoting only values that would change meaning.
 
-    Plain identifiers (db names such as ``ecoli_dec``) stay byte-identical;
+    Plain identifiers (db names such as ``eco_dec``) stay byte-identical;
     values containing spaces, colons, hashes, quotes, or newlines become a
     JSON-compatible double-quoted YAML scalar.
     """

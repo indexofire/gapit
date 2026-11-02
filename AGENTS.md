@@ -207,9 +207,9 @@ This is what distinguishes gapit from abricate. Treat it as a public API.
   No provider snapshot rides the wheel, even when its upstream license permits it: CARD/VFDB
   terms are non-commercial, Kaptive is GPL, and provider content carries provenance risk
   beyond the license text. The sanctioned exceptions are the four gapit-curated bundles
-  under `src/gapit/data/dbs/` — the public-domain `ecoli_dec`, `lmo_sero`, and `cje_cps`
+  under `src/gapit/data/dbs/` — the public-domain `eco_dec`, `lmo_sero`, and `cje_cps`
   panels plus the MIT `vpa_ok` typed cluster snapshot — a pure built-in in the
-  ecoli_dec/lmo_sero pattern: no provider module, no `db fetch`; vpautils OAgc+CPSgc merged
+  eco_dec/lmo_sero pattern: no provider module, no `db fetch`; vpautils OAgc+CPSgc merged
   content, MIT (GPL/NC content is never bundled) — materialized into the datadir on first
   use via `bundled.py` (gene bundles replay the gene pipeline, the cluster bundle the
   cluster pipeline); a bundled refresh means a new snapshot riding a wheel release. What

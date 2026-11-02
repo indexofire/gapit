@@ -60,14 +60,14 @@ tests/data/summary/sample_b.tsv	2	+	+
 输入**，于是 dutch 模式生效——每个 FILE 值一行，得到基因×文件存在矩阵：
 
 ```console
-$ gapit screen -d ecoli_dec *.fna --nopath --quiet | gapit summary
+$ gapit screen -d eco_dec *.fna --nopath --quiet | gapit summary
 #FILE	NUM_FOUND	aggR	astA	escV	pic	stx2a	uidA
 dec_s1_aggR_pic_uidA.fna	3	+	-	-	+	-	+
 dec_s2_pic_astA_uidA.fna	3	-	+	-	+	-	+
 dec_s3_stx2a_escV_aggR_uidA.fna	4	+	-	+	-	+	+
 ```
 
-这与先 `gapit screen -d ecoli_dec *.fna --output combined.tsv` 再
+这与先 `gapit screen -d eco_dec *.fna --output combined.tsv` 再
 `gapit summary combined.tsv` 打印的矩阵完全相同。规则：
 
 - **在终端里裸调用 `gapit summary` 仍打印帮助**（退出码 2）；挂着管道或重定向时改为

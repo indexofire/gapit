@@ -98,13 +98,13 @@ minimap 用 15 个字符格勾画比对落在基因的什么位置：
 
 ### typed 基因数据库：判定是第二条命令
 
-携带 `typing.json` 的基因数据库（**typed** 数据库 —— 捆绑的 `ecoli_dec` 即是示例）
+携带 `typing.json` 的基因数据库（**typed** 数据库 —— 捆绑的 `eco_dec` 即是示例）
 的筛查输出与 untyped 完全相同：上面冻结的 15 列 abricate 表，每种格式都逐字节一致。
 判定是两阶段流水线的第二阶段 —— [`gapit typing`](./typing.zh.md#two-stage-workflow)
 读取筛查结果表并渲染判定（真实输出；结果表由 `screen --output` 写出）：
 
 ```console
-$ gapit screen dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --quiet
+$ gapit screen dec_s2_pic_astA_uidA.fasta --db eco_dec --output dec.tsv --quiet
 $ gapit typing dec.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	astA;pic;uidA	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
@@ -223,7 +223,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
   "tool": {"name": "gapit", "version": "0.6.7"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
-  "db": "ecoli_dec",
+  "db": "eco_dec",
   "files": [
     {
       "file": "dec_s2_pic_astA_uidA.fasta",
@@ -409,10 +409,10 @@ stdout 只有回执：
 {
   "schema": "gapit.dbsetup/1",
   "datadir": "/home/me/.local/share/gapit/db",
-  "materialized": ["ecoli_dec"],
+  "materialized": ["eco_dec"],
   "fetched": [],
   "databases": [
-    {"db": "ecoli_dec", "records": 16, "dbtype": "nucl"},
+    {"db": "eco_dec", "records": 16, "dbtype": "nucl"},
     {"db": "tinyamr", "records": 3, "dbtype": "nucl"}
   ]
 }

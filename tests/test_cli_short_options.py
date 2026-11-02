@@ -182,14 +182,14 @@ def test_screen_db_word_style_alias_matches_long_form(datadir: Path) -> None:
     )
 
 
-def test_screen_db_word_style_alias_bundled_ecoli_dec_end_to_end(tmp_path: Path) -> None:
-    """Given the rightsholder repro (`-db ecoli_dec` on a DEC fixture, fresh
+def test_screen_db_word_style_alias_bundled_eco_dec_end_to_end(tmp_path: Path) -> None:
+    """Given the rightsholder repro (`-db eco_dec` on a DEC fixture, fresh
     datadir), When screened via the alias and via --db, Then both runs exit 0
     with byte-identical hit tables — the alias also survives the
     bundled-materialization first-use path."""
     contig = str(DATA / "typing" / "dec_s1_aggR_pic_uidA.fasta")
-    short = runner.invoke(app, ["screen", contig, "-db", "ecoli_dec", "-D", str(tmp_path)])
-    long = runner.invoke(app, ["screen", contig, "--db", "ecoli_dec", "--datadir", str(tmp_path)])
+    short = runner.invoke(app, ["screen", contig, "-db", "eco_dec", "-D", str(tmp_path)])
+    long = runner.invoke(app, ["screen", contig, "--db", "eco_dec", "--datadir", str(tmp_path)])
     assert short.exit_code == long.exit_code == 0, (short.stderr, long.stderr)
     assert short.stdout == long.stdout
     assert "aggR" in short.stdout
@@ -296,20 +296,20 @@ def test_screen_short_quiet_matches_long_form(datadir: Path) -> None:
 
 
 def test_screen_db_name_positional_is_targeted_usage_error(datadir: Path) -> None:
-    """Given the stripped repro shape (click eating `-db ecoli_dec` as
+    """Given the stripped repro shape (click eating `-db eco_dec` as
     `-d b` + positional), When run, Then exit 2 carries a USAGE_ERROR naming
     the database and the --db spelling — not INPUT_NOT_FOUND and a starved
     downstream pipe."""
     result = runner.invoke(
         app,
-        ["screen", "-d", "b", "ecoli_dec", str(CONTIGS / "sort.fa"), "-D", str(datadir)],
+        ["screen", "-d", "b", "eco_dec", str(CONTIGS / "sort.fa"), "-D", str(datadir)],
     )
     assert result.exit_code == 2
     envelope = json.loads(result.stderr)
     assert envelope["code"] == "USAGE_ERROR"
     assert "it is a database NAME" in envelope["message"]
-    assert "--db ecoli_dec" in envelope["message"]
-    assert envelope["context"]["database"] == "ecoli_dec"
+    assert "--db eco_dec" in envelope["message"]
+    assert envelope["context"]["database"] == "eco_dec"
     assert result.stdout == ""
 
 

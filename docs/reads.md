@@ -39,7 +39,7 @@ gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map
 shell's glob and let gapit infer the samples:
 
 ```console
-$ gapit screen -d ecoli_dec *.gz
+$ gapit screen -d eco_dec *.gz
 ```
 
 When **every** positional file is FASTQ — a `.fastq`/`.fq` extension (optionally `.gz`/`.gzip`), or
@@ -408,12 +408,12 @@ what identity a true allele must carry. That knowledge ships as an optional
   too; it is read at screening time. Details in
   [databases.md](./databases.md#floorsjson-per-gene-identity-floors).
 
-### Worked example: the `pic` SPATE false positive (bundled `ecoli_dec`)
+### Worked example: the `pic` SPATE false positive (bundled `eco_dec`)
 
 Isolate 26ECO0084 carries a SPATE-family homolog ~86.6% identical to the panel's `pic`
 gene. In reads mode the homolog's alignments still covered 97.59% of the gene length, so
 breadth-only presence called `pic` — while the blastn contig pipeline correctly dropped
-it at the default 80% identity floor. The bundled `ecoli_dec` therefore ships
+it at the default 80% identity floor. The bundled `eco_dec` therefore ships
 `floors.json` with a single floor:
 
 ```json

@@ -16,9 +16,10 @@ New database names describe the organism with a short code followed by a content
 | Genus | first three genus letters | `shi_serotype` (*Shigella*), `cam_cps` (*Campylobacter* genus-level capsule) |
 
 Use lowercase ASCII, underscores, and a content suffix (`_cps`, `_vf`, `_serogroup`,
-`_ok`, `_dec`). Existing published names (`cam`, `ecoh`, `ecoli_dec`, `lmo_sero`,
-`vpa_ok`, ...) are legacy identifiers: they stay stable for compatibility
-and are not renamed by this convention.
+`_ok`, `_dec`). The former `ecoli_dec` bundle is now `eco_dec` under this
+convention. Existing published names (`cam`, `ecoh`, `lmo_sero`, `vpa_ok`, ...)
+are legacy identifiers: they stay stable for compatibility and are not renamed
+by this convention.
 
 ## Where databases live
 
@@ -64,7 +65,7 @@ bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	avai
 card	CARD protein homolog resistance models	available	nucl	gene	-	McMaster University
 cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	gene	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
 ecoh	E. coli O and H antigens (srst2 EcOH)	available	nucl	gene	-	Holt lab (srst2)
-ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gene	command	gapit-curated (public-domain sources)
+eco_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gene	command	gapit-curated (public-domain sources)
 ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	cluster	-	Kaptive (Gladstone lab)
 ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	gene	-	PHAC-NML
 kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	cluster	-	Kaptive (klebgenomics)
@@ -112,7 +113,7 @@ database carries a `typing.json`:
 STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`
 exists, with N the record count, otherwise `available`. The four
 wheel-shipped [bundled](#bundled-databases-install-time-ready) databases — `cje_cps`,
-`ecoli_dec`, `lmo_sero`, `vpa_ok` — are gapit-curated, with no provider and no fetch path:
+`eco_dec`, `lmo_sero`, `vpa_ok` — are gapit-curated, with no provider and no fetch path:
 they read `bundled` before materialization and `installed (N)` after. Every provider,
 including `ecoh`, `ncbi`, and `resfinder`, is fetch-on-demand and reads `available` until
 `gapit db fetch -d <name>` installs it. Databases installed
@@ -294,11 +295,11 @@ Nothing to download, nothing to accept: a bundled database works out of the box.
 | Name | Content | Snapshot | Typed |
 |---|---|---|---|
 | `cje_cps` | C. jejuni Penner capsule multiplex PCR panel (37 records: 36 CPS amplicons + `lpxA` control) | 2026-10-27 | `gapit.typing/2` (scheme `penner_cps`) |
-| `ecoli_dec` | Diarrheagenic E. coli marker panel (16 records, GB 4789.6 + risk-monitoring designation) | 2026-10-02 | `gapit.typing/2` (schemes `gb4789_6`, `risk_monitoring`) |
+| `eco_dec` | Diarrheagenic E. coli marker panel (16 records, GB 4789.6 + risk-monitoring designation) | 2026-10-02 | `gapit.typing/2` (schemes `gb4789_6`, `risk_monitoring`) |
 | `lmo_sero` | Listeria monocytogenes serogrouping (5 records, Doumith 2004 markers) | 2026-10-03 | `gapit.typing/2` (scheme `doumith_serogroup`) |
 | `vpa_ok` | V. parahaemolyticus O and K antigen loci (195 loci, vpautils OAgc+CPSgc; cluster kind) | 2026-10-12 | `gapit.typing/2` (schemes `o_group`, `k_group`, `serotype`) |
 
-**License provenance.** Every `ecoli_dec` record was re-sourced from primary
+**License provenance.** Every `eco_dec` record was re-sourced from primary
 public-domain submissions (NCBI RefSeq/GenBank/DDBJ accessions, same alleles as the
 rightsholder panel); two VFDB-derived records found in the original panel were removed
 and replaced during the 2026-10 audit, and the byte-identical `estA4` (J03311.1) copy of
@@ -342,7 +343,7 @@ byte-for-byte.
 
 **How materialization works.** The first `gapit screen ... --db <bundled-name>` against
 a datadir that does not hold the database builds it there automatically — one stderr note
-(`gapit: materializing bundled database ecoli_dec (16 records) into <datadir>`,
+(`gapit: materializing bundled database eco_dec (16 records) into <datadir>`,
 silenced by `--quiet`), then the standard gene-build pipeline: `records.jsonl`, the
 `sequences` FASTA with gapit/v1 headers, the BLAST index, the `typing.json` copy when the
 bundle ships one, and a manifest stamped `source: "bundled"`. That pipeline — shared with
@@ -445,7 +446,7 @@ honest answer for everything the five markers cannot resolve.
 [indexofire/vpautils](https://github.com/indexofire/vpautils) — `OAgc.gbk` (32
 O-antigen gene cluster loci) and `CPSgc.gbk` (163 capsular polysaccharide loci) —
 into ONE merged `kind: cluster` database. It is a PURE built-in bundled database in
-the `ecoli_dec`/`lmo_sero` pattern: no provider, no source URLs, no
+the `eco_dec`/`lmo_sero` pattern: no provider, no source URLs, no
 `gapit db fetch -d vpa_ok`. The committed three-scheme typing asset
 (`src/gapit/data/dbs/vpa_ok/typing.json`, generated reproducibly by
 `scripts/generate_vp_typing.py`) installs with it, so screening renders
@@ -825,7 +826,7 @@ floor in the document and let the floor enforce the higher per-gene threshold.
 Built-in via
 `db build --floors` (next sections), or drop the file into an existing db directory; it
 is validated at screening time too (malformed content fails with `FLOORS_MALFORMED`,
-exit 4). The bundled `ecoli_dec` ships `{"genes": {"pic": 90.0}}` — the SPATE-homolog
+exit 4). The bundled `eco_dec` ships `{"genes": {"pic": 90.0}}` — the SPATE-homolog
 false-positive fix.
 
 ## Header formats and compatibility

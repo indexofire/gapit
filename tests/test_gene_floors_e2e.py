@@ -6,7 +6,7 @@ family-splitting over-call exactly like ``--min-identity 95`` would, but
 only for the floored gene; removing the sidecar restores the byte-identical
 floorless table (nothing about the CLI changed — the database did).
 
-Leg 2 — the motivating SPATE case on the bundled ecoli_dec: a pic panel
+Leg 2 — the motivating SPATE case on the bundled eco_dec: a pic panel
 sequence mutated to ~87% identity (26ECO0084: 97.59% breadth at 86.6%
 identity) is called present without floors and vanishes under the shipped
 {pic: 90} floor, while the unfloored true alleles in the same assembly
@@ -25,7 +25,7 @@ from gapit.fasta import iter_fasta
 
 READS2_DB = Path(__file__).parent / "data" / "reads2_db"
 READS2 = Path(__file__).parent / "data" / "reads2"
-BUNDLE = Path(__file__).parent.parent / "src" / "gapit" / "data" / "dbs" / "ecoli_dec"
+BUNDLE = Path(__file__).parent.parent / "src" / "gapit" / "data" / "dbs" / "eco_dec"
 
 runner = CliRunner()
 
@@ -98,7 +98,7 @@ def _mutate(sequence: str, divergence: float, seed: int) -> str:
 
 
 def test_pic_homolog_is_absent_with_floors_present_without(tmp_path: Path) -> None:
-    """Given the bundled ecoli_dec (ships floors.json {pic: 90}) and an
+    """Given the bundled eco_dec (ships floors.json {pic: 90}) and an
     assembly of a ~87%-identity pic homolog beside true uidA/aggR alleles,
     When screened in reads mode, Then pic is absent (sub-floor alignments
     dropped, breadth collapsed) while uidA/aggR stay present; after a
@@ -115,7 +115,7 @@ def test_pic_homolog_is_absent_with_floors_present_without(tmp_path: Path) -> No
     pic_id: str | None = None
     pic_seq: str | None = None
     for record in iter_fasta(BUNDLE / "sequences"):
-        gene = decode_seqid(record.id, default_db="ecoli_dec").gene
+        gene = decode_seqid(record.id, default_db="eco_dec").gene
         if gene == "pic" and pic_seq is None:
             pic_id, pic_seq = record.id, record.sequence
         elif gene in ("uidA", "aggR"):
@@ -126,11 +126,11 @@ def test_pic_homolog_is_absent_with_floors_present_without(tmp_path: Path) -> No
     with true_assembly.open("w", encoding="utf-8") as handle:
         for seqid, sequence in [(pic_id, pic_seq), *true_seqs]:
             handle.write(f">{seqid} true allele\n{sequence}\n")
-    screen_reads_tsv(datadir, true_assembly, "ecoli_dec")
-    assert (datadir / "ecoli_dec" / "floors.json").is_file()  # materialized with floors
+    screen_reads_tsv(datadir, true_assembly, "eco_dec")
+    assert (datadir / "eco_dec" / "floors.json").is_file()  # materialized with floors
 
     # True alleles are all present — the floor does not break true pic calls.
-    true_table = screen_reads_tsv(datadir, true_assembly, "ecoli_dec")
+    true_table = screen_reads_tsv(datadir, true_assembly, "eco_dec")
     assert tsv_genes(true_table) == {"pic", "uidA", "aggR"}
 
     homolog = tmp_path / "spate_like.fa"
@@ -139,9 +139,9 @@ def test_pic_homolog_is_absent_with_floors_present_without(tmp_path: Path) -> No
         for seqid, sequence in true_seqs:
             handle.write(f">{seqid} true allele\n{sequence}\n")
 
-    floored_table = screen_reads_tsv(datadir, homolog, "ecoli_dec")
+    floored_table = screen_reads_tsv(datadir, homolog, "eco_dec")
     assert tsv_genes(floored_table) == {"uidA", "aggR"}  # pic dropped by its floor
 
-    (datadir / "ecoli_dec" / "floors.json").unlink()
-    stripped_table = screen_reads_tsv(datadir, homolog, "ecoli_dec")
+    (datadir / "eco_dec" / "floors.json").unlink()
+    stripped_table = screen_reads_tsv(datadir, homolog, "eco_dec")
     assert tsv_genes(stripped_table) == {"pic", "uidA", "aggR"}  # the over-call returns

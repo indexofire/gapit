@@ -14,7 +14,7 @@ Run everything from the repo root with the gapit environment on PATH
 The fixture db at `tests/data/db/tinyamr` holds three short AMR genes: `tetA`,
 `blaTEM-1`, and `sul1`. Copy it into a temp datadir and let `gapit db setup` bootstrap
 the rest: it materializes the four bundled databases that ship in the wheel (zero
-network — including `ecoli_dec`, which you will type with in section 4) and indexes
+network — including `eco_dec`, which you will type with in section 4) and indexes
 everything, no `makeblastdb` by hand:
 
 ```bash
@@ -28,11 +28,11 @@ All progress goes to stderr; one run prints (trimmed):
 
 ```console
 gapit: materializing bundled database cje_cps (42 records) into /tmp/gapit-quickstart/db
-gapit: materializing bundled database ecoli_dec (16 records) into /tmp/gapit-quickstart/db
+gapit: materializing bundled database eco_dec (16 records) into /tmp/gapit-quickstart/db
 gapit: materializing bundled database lmo_sero (5 records) into /tmp/gapit-quickstart/db
 gapit: materializing bundled database vpa_ok (195 loci) into /tmp/gapit-quickstart/db
 ...
-gapit: indexed ecoli_dec (16 sequences, nucl)
+gapit: indexed eco_dec (16 sequences, nucl)
 gapit: indexed tinyamr (3 sequences, nucl)
 ```
 
@@ -137,13 +137,13 @@ The document carries `"schema": "gapit.report/1"`, so consumers can pin the cont
 
 Screening only detects genes. Designation (pathotype, serogroup) is a second command:
 `gapit screen` writes the gene table, `gapit typing` reads it back and scores the
-database's typing schemes. The bundled `ecoli_dec` panel carries the dual-scheme DEC
+database's typing schemes. The bundled `eco_dec` panel carries the dual-scheme DEC
 (diarrheagenic E. coli) designation. Use a test-fixture assembly as a stand-in for
 yours:
 
 ```bash
 cp tests/data/typing/dec_s3_stx2a_escV_aggR_uidA.fasta /tmp/gapit-quickstart/sample.fna
-gapit screen /tmp/gapit-quickstart/sample.fna -d ecoli_dec -o /tmp/gapit-quickstart/result.tsv -p -q
+gapit screen /tmp/gapit-quickstart/sample.fna -d eco_dec -o /tmp/gapit-quickstart/result.tsv -p -q
 gapit typing /tmp/gapit-quickstart/result.tsv -q
 ```
 
@@ -159,7 +159,7 @@ scheme's rule). The two stages also pipe straight into each other — screen's s
 typing's stdin:
 
 ```bash
-gapit screen /tmp/gapit-quickstart/sample.fna -d ecoli_dec -p -q | gapit typing -q
+gapit screen /tmp/gapit-quickstart/sample.fna -d eco_dec -p -q | gapit typing -q
 ```
 
 Reads work the same way through the wildcard path: when every positional file is FASTQ,
@@ -171,7 +171,7 @@ mkdir -p /tmp/gapit-quickstart/reads
 cp tests/data/reads/s1_1.fq.gz tests/data/reads/s1_2.fq.gz \
   tests/data/reads/s2_R1.fq.gz tests/data/reads/s2_R2.fq.gz /tmp/gapit-quickstart/reads/
 cd /tmp/gapit-quickstart/reads
-gapit screen -d ecoli_dec *.fq.gz -j 4
+gapit screen -d eco_dec *.fq.gz -j 4
 ```
 
 ```console

@@ -224,7 +224,7 @@ def test_schema_unknown_still_lists_summary() -> None:
 
 
 class TestStdinInput:
-    """The piped report table: `gapit screen -d ecoli_dec *.fna | gapit
+    """The piped report table: `gapit screen -d eco_dec *.fna | gapit
     summary` summarizes stdin with no file arguments; `-` is the explicit
     marker (it reads stdin even under a terminal, until EOF)."""
 
@@ -321,7 +321,7 @@ class TestStdinInput:
                 "screen",
                 *samples,
                 "--db",
-                "ecoli_dec",
+                "eco_dec",
                 "--datadir",
                 str(datadir),
                 "--nopath",
@@ -333,7 +333,7 @@ class TestStdinInput:
         assert to_file.exit_code == 0, to_file.stderr
         on_stdout = runner.invoke(
             app,
-            ["screen", *samples, "--db", "ecoli_dec", "--datadir", str(datadir), "--nopath", "-q"],
+            ["screen", *samples, "--db", "eco_dec", "--datadir", str(datadir), "--nopath", "-q"],
         )
         assert on_stdout.exit_code == 0, on_stdout.stderr
 

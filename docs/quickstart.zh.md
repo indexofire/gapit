@@ -12,7 +12,7 @@ contig 文件，以 TSV 和 JSON 两种形式读结果，用内置 DEC 面板判
 
 夹具数据库 `tests/data/db/tinyamr` 里有三个短 AMR 基因：`tetA`、`blaTEM-1` 和
 `sul1`。把它复制进一个临时数据目录，剩下的交给 `gapit db setup` 引导：它会物化
-wheel 内置的四个数据库（零网络——包括第 4 节要用来分型的 `ecoli_dec`）并构建全部
+wheel 内置的四个数据库（零网络——包括第 4 节要用来分型的 `eco_dec`）并构建全部
 BLAST 索引，无需手跑 `makeblastdb`：
 
 ```bash
@@ -26,11 +26,11 @@ gapit db setup
 
 ```console
 gapit: materializing bundled database cje_cps (42 records) into /tmp/gapit-quickstart/db
-gapit: materializing bundled database ecoli_dec (16 records) into /tmp/gapit-quickstart/db
+gapit: materializing bundled database eco_dec (16 records) into /tmp/gapit-quickstart/db
 gapit: materializing bundled database lmo_sero (5 records) into /tmp/gapit-quickstart/db
 gapit: materializing bundled database vpa_ok (195 loci) into /tmp/gapit-quickstart/db
 ...
-gapit: indexed ecoli_dec (16 sequences, nucl)
+gapit: indexed eco_dec (16 sequences, nucl)
 gapit: indexed tinyamr (3 sequences, nucl)
 ```
 
@@ -131,12 +131,12 @@ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
 ## 4. 给样本分型
 
 筛查只检测基因。判定（致病型、血清群）是第二条命令：`gapit screen` 写出基因表，
-`gapit typing` 读回该表并按数据库的分型方案打分。内置的 `ecoli_dec` 面板携带双方案
+`gapit typing` 读回该表并按数据库的分型方案打分。内置的 `eco_dec` 面板携带双方案
 的 DEC（致泻性大肠杆菌）判定。用一个测试夹具 assembly 代替你的样本：
 
 ```bash
 cp tests/data/typing/dec_s3_stx2a_escV_aggR_uidA.fasta /tmp/gapit-quickstart/sample.fna
-gapit screen /tmp/gapit-quickstart/sample.fna -d ecoli_dec -o /tmp/gapit-quickstart/result.tsv -p -q
+gapit screen /tmp/gapit-quickstart/sample.fna -d eco_dec -o /tmp/gapit-quickstart/result.tsv -p -q
 gapit typing /tmp/gapit-quickstart/result.tsv -q
 ```
 
@@ -151,7 +151,7 @@ sample.fna	risk_monitoring	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	.
 可以直接经管道衔接——screen 的 stdout 就是 typing 的 stdin：
 
 ```bash
-gapit screen /tmp/gapit-quickstart/sample.fna -d ecoli_dec -p -q | gapit typing -q
+gapit screen /tmp/gapit-quickstart/sample.fna -d eco_dec -p -q | gapit typing -q
 ```
 
 reads 走通配符路径也一样：当所有位置参数文件都是 FASTQ 时，样本按文件名自动配对
@@ -162,7 +162,7 @@ mkdir -p /tmp/gapit-quickstart/reads
 cp tests/data/reads/s1_1.fq.gz tests/data/reads/s1_2.fq.gz \
   tests/data/reads/s2_R1.fq.gz tests/data/reads/s2_R2.fq.gz /tmp/gapit-quickstart/reads/
 cd /tmp/gapit-quickstart/reads
-gapit screen -d ecoli_dec *.fq.gz -j 4
+gapit screen -d eco_dec *.fq.gz -j 4
 ```
 
 ```console

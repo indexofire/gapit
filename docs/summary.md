@@ -61,7 +61,7 @@ screen call over many assemblies writes one batched table (every row carries the
 input, so dutch mode applies — one row per FILE value, the gene×file presence matrix:
 
 ```console
-$ gapit screen -d ecoli_dec *.fna --nopath --quiet | gapit summary
+$ gapit screen -d eco_dec *.fna --nopath --quiet | gapit summary
 #FILE	NUM_FOUND	aggR	astA	escV	pic	stx2a	uidA
 dec_s1_aggR_pic_uidA.fna	3	+	-	-	+	-	+
 dec_s2_pic_astA_uidA.fna	3	-	+	-	+	-	+
@@ -69,7 +69,7 @@ dec_s3_stx2a_escV_aggR_uidA.fna	4	+	-	+	-	+	+
 ```
 
 The same matrix `gapit summary combined.tsv` prints after
-`gapit screen -d ecoli_dec *.fna --output combined.tsv`. Rules:
+`gapit screen -d eco_dec *.fna --output combined.tsv`. Rules:
 
 - **Bare `gapit summary` at a terminal keeps printing help** (exit 2); with a pipe or a
   redirect attached it reads stdin instead.

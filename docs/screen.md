@@ -67,7 +67,7 @@ file), gapit prints a `gapit.error/1` envelope on stderr and exits 5.
 
 One exception predates normalization: when **every** positional file is FASTQ (`.fastq`/`.fq`
 ± `.gz`, or content-sniffed FASTQ under an ambiguous extension) and no `--aligner` is given,
-the whole invocation routes to the reads engine — `gapit screen -d ecoli_dec *.gz` screens
+the whole invocation routes to the reads engine — `gapit screen -d eco_dec *.gz` screens
 the glob as auto-paired samples instead of contigs. Mixing FASTA and FASTQ positionals is a
 usage error naming the reads files. See [./reads.md](./reads.md) for the pairing
 conventions and the per-sample output.
@@ -220,7 +220,7 @@ bytes stay unchanged. The positional-FASTQ wildcard batch
 
 ### Typed gene databases: designation is a second command
 
-When `--db` names a gene database built with a `typing.json` (the bundled `ecoli_dec`, or
+When `--db` names a gene database built with a `typing.json` (the bundled `eco_dec`, or
 any `gapit db build --typing` build), screening is pure gene detection: the output is the
 frozen 15-column abricate table byte-identically in every format — typed and untyped gene
 databases are indistinguishable on the screen surface. Designations come from the
@@ -229,7 +229,7 @@ two-stage pipeline's second stage: write the table with `--output` (or redirect)
 straight in, the canonical one-liner:
 
 ```console
-$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db ecoli_dec --output dec.tsv --nopath --quiet
+$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db eco_dec --output dec.tsv --nopath --quiet
 $ gapit typing dec.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
@@ -242,7 +242,7 @@ The piped form skips the intermediate file entirely — screen's stdout is typin
 (stdout purity holds on both sides: data on the pipe, diagnostics on stderr):
 
 ```console
-$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db ecoli_dec --nopath --quiet | gapit typing --quiet
+$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db eco_dec --nopath --quiet | gapit typing --quiet
 ```
 
 `gapit typing` reads stdin whenever it is not a terminal; `gapit typing -` is the explicit
@@ -255,7 +255,7 @@ the whole batch), so [`gapit summary`](./summary.md) summarizes it straight off 
 into the gene×file presence matrix:
 
 ```console
-$ gapit screen -d ecoli_dec *.fna --quiet | gapit summary
+$ gapit screen -d eco_dec *.fna --quiet | gapit summary
 ```
 
 Cluster databases are the exception: their typing is integrated into the screen itself

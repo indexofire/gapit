@@ -15,8 +15,8 @@ gapit 数据库是一个参考基因目录，你用 contigs 和 reads 去筛查�
 | 属 | 属名前 3 个字母 | `shi_serotype`（*Shigella*）、`cam_cps`（*Campylobacter* 属级荚膜） |
 
 使用小写 ASCII、下划线和内容后缀（`_cps`、`_vf`、`_serogroup`、`_ok`、`_dec`）。
-已发布的旧名（`cam`、`ecoh`、`ecoli_dec`、`lmo_sero`、`vpa_ok` 等）
-是兼容性标识，不按此规则改名。
+原 `ecoli_dec` 内置库已按此规则改名为 `eco_dec`。已发布的旧名
+（`cam`、`ecoh`、`lmo_sero`、`vpa_ok` 等）是兼容性标识，不按此规则改名。
 
 ## 数据库存放在哪里
 
@@ -60,7 +60,7 @@ bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	avai
 card	CARD protein homolog resistance models	available	nucl	gene	-	McMaster University
 cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	gene	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
 ecoh	E. coli O and H antigens (srst2 EcOH)	available	nucl	gene	-	Holt lab (srst2)
-ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gene	command	gapit-curated (public-domain sources)
+eco_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gene	command	gapit-curated (public-domain sources)
 ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	cluster	-	Kaptive (Gladstone lab)
 ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	gene	-	PHAC-NML
 kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	cluster	-	Kaptive (klebgenomics)
@@ -104,7 +104,7 @@ $ for name in $(gapit db list -n); do gapit db setup -d "$name"; done
 
 当 `<datadir>/<name>/gapit-manifest.json` 存在时 STATUS 显示 `installed (N)`，N 是
 记录数，否则显示 `available`。四个随 wheel 发布的**内置数据库**
-—— `cje_cps`、`ecoli_dec`、`lmo_sero`、`vpa_ok`
+—— `cje_cps`、`eco_dec`、`lmo_sero`、`vpa_ok`
 —— 均由 gapit 策划，没有提供商、也没有 fetch 路径：物化前为 `bundled`，物化后为
 `installed (N)`。每个提供商（包括 `ecoh`、`ncbi`、`resfinder`）都按需抓取，在
 `gapit db fetch -d <name>` 安装前显示 `available`。目录之外装进数据目录的数据库
@@ -275,11 +275,11 @@ wheel 发布，因为它们的再分发条款和来源风险不应由 MIT 包承
 | 名称 | 内容 | 快照日期 | 分型 |
 |---|---|---|---|
 | `cje_cps` | 空肠弯曲菌 Penner 荚膜多重 PCR 面板（37 条记录：36 条 CPS 扩增子 + `lpxA` 对照） | 2026-10-27 | `gapit.typing/2`（方案 `penner_cps`） |
-| `ecoli_dec` | 致腹泻大肠杆菌标志基因面板（16 条记录，GB 4789.6 + 风险监测判定） | 2026-10-02 | `gapit.typing/2`（`gb4789_6`、`risk_monitoring` 双方案） |
+| `eco_dec` | 致腹泻大肠杆菌标志基因面板（16 条记录，GB 4789.6 + 风险监测判定） | 2026-10-02 | `gapit.typing/2`（`gb4789_6`、`risk_monitoring` 双方案） |
 | `lmo_sero` | 单核细胞增生李斯特菌血清群分型（5 条记录，Doumith 2004 标记） | 2026-10-03 | `gapit.typing/2`（方案 `doumith_serogroup`） |
 | `vpa_ok` | 副溶血性弧菌 O/K 抗原位点（195 个位点，vpautils OAgc+CPSgc；cluster 类） | 2026-10-12 | `gapit.typing/2`（`o_group`、`k_group`、`serotype` 三方案） |
 
-**许可证来源声明。** `ecoli_dec` 的每条记录都取自公共领域的一级提交（NCBI
+**许可证来源声明。** `eco_dec` 的每条记录都取自公共领域的一级提交（NCBI
 RefSeq/GenBank/DDBJ 收录号，与权利方面板等位相同）；2026-10 审计中发现原面板里
 混入的两条 VFDB 来源记录已被移除并替换；2026-10 重建时，构建管线的精确去重又丢弃了
 与 `estA3`（M18346.1）逐字节相同的 `estA4`（J03311.1）副本 —— 同一个 `sth` 基因、
@@ -303,7 +303,7 @@ gapit.typing/2 构建产出的已解析 `sequences` + `features.json` 形式入�
 
 **物化机制。** 第一次 `gapit screen ... --db <内置库名>` 发现数据目录里没有该库
 时，会自动构建它 —— stderr 一行提示（`gapit: materializing bundled database
-ecoli_dec (16 records) into <datadir>`，`--quiet` 可静默），随后走标准基因库
+eco_dec (16 records) into <datadir>`，`--quiet` 可静默），随后走标准基因库
 构建管线：`records.jsonl`、gapit/v1 头部的 `sequences`、BLAST 索引、（库自带时）
 `typing.json` 副本，以及盖上 `source: "bundled"` 的 manifest。该管线与
 `gapit db build` 共享，会在构建时丢弃精确重复的（基因, 序列）记录（保留首条；
@@ -391,7 +391,7 @@ table.tsv`。
 
 `vpa_ok` 把 [indexofire/vpautils](https://github.com/indexofire/vpautils) 的两份副溶血
 性弧菌血清型参考——`OAgc.gbk`（32 个 O 抗原基因簇位点）和 `CPSgc.gbk`（163 个荚膜多
-糖位点）——合并为一个 `kind: cluster` 数据库。它是 `ecoli_dec`/`lmo_sero` 模式的
+糖位点）——合并为一个 `kind: cluster` 数据库。它是 `eco_dec`/`lmo_sero` 模式的
 纯内置数据库：没有提供商、没有 source URL、没有 `gapit db fetch -d vpa_ok`。自带的
 三 scheme typing 资产（`src/gapit/data/dbs/vpa_ok/typing.json`，由
 `scripts/generate_vp_typing.py` 可复现生成）随之一并安装，筛查随之渲染
@@ -754,7 +754,7 @@ manifest，来自 plasmidfinder 数据库：
 因此把 `--minid` 设为文档中最低的 floor，让 floor 执行更高的逐基因阈值。通过
 `db build --floors` 安装（见下节），或把文件直接放进既有数据库目录；筛查时同样会
 校验（内容损坏以 `FLOORS_MALFORMED` 失败，exit 4）。
-内置的 `ecoli_dec` 携带 `{"genes": {"pic": 90.0}}`——SPATE 同源假阳性的修复。
+内置的 `eco_dec` 携带 `{"genes": {"pic": 90.0}}`——SPATE 同源假阳性的修复。
 
 ## 表头格式与兼容性
 

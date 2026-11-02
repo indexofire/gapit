@@ -110,7 +110,7 @@ entrypoint 和 agent 工作流。
 gapit db setup                 # 等同于 --all（保留兼容）
 gapit db setup -a              # 全部已安装 + 内置数据库
 gapit db setup -d nme_sero   # 只处理 nme_sero
-gapit db setup -d ecoli_dec -d cje_cps
+gapit db setup -d eco_dec -d cje_cps
 ```
 
 `--all/-a` 不会下载 provider：只物化缺失的内置库，并为所有已安装/内置数据库重建
@@ -131,7 +131,7 @@ provider 先走正常 `db fetch` 流程下载，再建索引。既未安装也�
 JSON 回执列出本次物化的内置库、下载的 provider 以及所有已建索引的数据库：
 
 ```json
-{"schema":"gapit.dbsetup/1","datadir":"/path/to/db","materialized":["ecoli_dec"],"fetched":[],"databases":[{"db":"ecoli_dec","records":16,"dbtype":"nucl"}]}
+{"schema":"gapit.dbsetup/1","datadir":"/path/to/db","materialized":["eco_dec"],"fetched":[],"databases":[{"db":"eco_dec","records":16,"dbtype":"nucl"}]}
 ```
 
 可用 `gapit schema dbsetup` 内省。
@@ -214,7 +214,7 @@ CI 中挂载或缓存 workspace 目录，并固定版本：
 docker run --rm \
   -v "$PWD/.gapit-db:/data/gapit" \
   -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.7 gapit screen sample.fna --db ecoli_dec
+  gapit:0.6.7 gapit screen sample.fna --db eco_dec
 ```
 
 可以为**只读**筛查把参考库烤进镜像：

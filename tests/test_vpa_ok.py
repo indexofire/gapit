@@ -1,6 +1,6 @@
 """vpa_ok suite: the committed typing asset and the bundle↔build differential.
 
-vpa_ok is a PURE built-in bundled database (the ecoli_dec/lmo_sero
+vpa_ok is a PURE built-in bundled database (the eco_dec/lmo_sero
 pattern): no provider module, no source URLs, no `db fetch` — the wheel's
 typed cluster snapshot materializes on first use and one screen renders
 gapit.cluster/2. These tests pin the committed gapit.typing/2 asset's

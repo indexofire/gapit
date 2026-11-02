@@ -73,8 +73,8 @@ def db_at(tmp_path: Path, floors_json: str | None) -> Database:
 # ------------------------------------------------------------ model + load --
 
 
-def test_model_roundtrips_the_ecoli_dec_document() -> None:
-    """Given the bundled ecoli_dec floors bytes, When parsed, Then the
+def test_model_roundtrips_the_eco_dec_document() -> None:
+    """Given the bundled eco_dec floors bytes, When parsed, Then the
     schema alias, null default, and the pic floor decode (and re-serialize
     by alias)."""
     floors = GeneFloors.model_validate_json(ECOLI_DEC_FLOORS)

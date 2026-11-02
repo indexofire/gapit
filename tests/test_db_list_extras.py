@@ -90,7 +90,7 @@ def test_db_list_json_marks_extras_local_and_keeps_registry_entries_untouched(
     entries sit inside providers with the additive source=local field (plus
     vendor local and the manifest kind), while every registry entry simply
     lacks the field — the absent-means-registry rule (the wheel's bundled
-    ecoli_dec row carries source=bundled and is excluded from that check)."""
+    eco_dec row carries source=bundled and is excluded from that check)."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
     fasta = tmp_path / "genes.fa"
@@ -135,7 +135,7 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
     with_source = [entry for entry in providers if "source" in entry]
     assert [(entry["name"], entry["source"]) for entry in with_source] == [
         ("cje_cps", "bundled"),
-        ("ecoli_dec", "bundled"),
+        ("eco_dec", "bundled"),
         ("lmo_sero", "bundled"),
         ("vpa_ok", "bundled"),
     ]
@@ -144,7 +144,7 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
         assert "records" not in entry
         assert entry["dbtype"] == "nucl"
     assert (
-        next(entry for entry in with_source if entry["name"] == "ecoli_dec")["vendor"]
+        next(entry for entry in with_source if entry["name"] == "eco_dec")["vendor"]
         == "gapit-curated (public-domain sources)"
     )
 

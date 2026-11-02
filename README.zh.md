@@ -61,8 +61,8 @@ gapit screen contigs.fa --db ncbi --format json
 gapit screen contigs.fa --db ncbi --format md
 
 # 两阶段判定：screen 写基因表，typing 从表中做判定
-# （带 typing 的基因数据库——内置 ecoli_dec 携带双方案 DEC panel）
-gapit screen isolates.fa --db ecoli_dec --output dec.tsv
+# （带 typing 的基因数据库——内置 eco_dec 携带双方案 DEC panel）
+gapit screen isolates.fa --db eco_dec --output dec.tsv
 gapit typing dec.tsv
 # 脑膜炎奈瑟菌：血清群 + ctrA + sodC 内参（不含 MLST）
 gapit db fetch -d nme_sero
@@ -99,11 +99,11 @@ contig 筛查沿用 abricate 默认值（`--minid 80`、`--mincov 80`）。reads
 `gapit db setup` 会创建 datadir 并物化全部四个内置数据库。
 
 目录中共有二十五个数据库——十三个基因库提供商、八个基因簇提供商，以及四个内置快照
-（`cje_cps`、`ecoli_dec`、`lmo_sero`、`vpa_ok`）。每个提供商都通过
+（`cje_cps`、`eco_dec`、`lmo_sero`、`vpa_ok`）。每个提供商都通过
 `gapit db fetch` 构建，从上游下载——包括 `nme_sero`（脑膜炎奈瑟菌血清群 + ctrA +
-sodC，非 MLST）。内置集合只包含 gapit 自有或来源清晰的库：公共领域的 `ecoli_dec`、
+sodC，非 MLST）。内置集合只包含 gapit 自有或来源清晰的库：公共领域的 `eco_dec`、
 `lmo_sero`、`cje_cps` panel，以及 MIT 的 typed-cluster 快照 `vpa_ok`，首次使用时
-物化进 datadir，零网络。内置 `ecoli_dec` 还携带逐基因一致性下限（`floors.json`，
+物化进 datadir，零网络。内置 `eco_dec` 还携带逐基因一致性下限（`floors.json`，
 `pic` 为 90%），两个引擎在做存在判定前都会应用；`cje_cps` 则同时携带 floors 和
 每数据库的 `screen.json` 默认值（MAPQ 20、depth 5、10% lpxA 相对深度）。同一套
 `screen.json`（`gapit.screen/1`）机制允许任何数据库声明自己的 reads/contigs 阈值，
@@ -122,7 +122,7 @@ datadir 共享、conda/Docker 指南和安全注意事项见[数据目录](docs/
 | `plasmidfinder` | CGE PlasmidFinder 复制子 | nucl |
 | `megares` | MEGARes 抗微生物耐药基因 | nucl |
 | `ecoh` | E. coli O 与 H 抗原（srst2 EcOH） | nucl |
-| `ecoli_dec` | 致泻性大肠埃希菌标记 panel（GB 4789.6 + 风险监测判定） | nucl |
+| `eco_dec` | 致泻性大肠埃希菌标记 panel（GB 4789.6 + 风险监测判定） | nucl |
 | `vfdb` | VFDB 毒力因子（set A，核酸） | nucl |
 | `ecoli_vf` | E. coli 毒力因子 | nucl |
 | `lmo_sero` | 单核细胞增生李斯特菌血清群（Doumith 2004） | nucl |
@@ -141,7 +141,7 @@ gapit 原生数据库使用 `gapit/v1` 表头格式（见 SPEC.md §11），abri
 评分），七个 Kaptive 基因簇数据库（kpsc_k、kpsc_o、kosc_k、kosc_o、ab_k、ab_o、
 ecoli_kps）在安装时抓取 Kaptive 抗原 locus 参考（GPL-3.0 内容，因此不内置——使用
 结果时请引用 Kaptive/Wyres et al. 2020）。带 typing 的基因簇内置库 `vpa_ok` 把
-vpasero 的 OAgc + CPSgc 参考（MIT）合并成一个内置库——这是 ecoli_dec/lmo_sero 模式
+vpasero 的 OAgc + CPSgc 参考（MIT）合并成一个内置库——这是 eco_dec/lmo_sero 模式
 的纯内置库，不需要 `db fetch`——单次 `gapit screen --db vpa_ok` 即可渲染
 `gapit.cluster/2`，给出 `o_group`、`k_group` 以及组合的 `serotype` O:K 判定
 （RIMD 2210633 → O3:K6），`pip install gapit` 后零网络即可工作。

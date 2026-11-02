@@ -18,7 +18,7 @@ from gapit.providers import REGISTRY
 def reject_db_name_positionals(files: list[Path] | None, datadir: Path | None) -> None:
     """Fail with a targeted usage error when a positional FILE is missing on
     disk but names a known database (provider catalog, bundled wheel content,
-    or datadir install) — e.g. click eating ``-db ecoli_dec`` as ``-d b`` plus
+    or datadir install) — e.g. click eating ``-db eco_dec`` as ``-d b`` plus
     a positional. Positionals that exist, or missing files no database
     answers to, pass through untouched (ordinary INPUT_NOT_FOUND)."""
     missing = [path for path in files or [] if not path.is_file()]

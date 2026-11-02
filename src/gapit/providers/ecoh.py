@@ -77,7 +77,7 @@ PROVIDER = Provider(
             " genes and cannot be separated by sequence.",
             "H antigen calls follow fliC similarity; phase variation or divergent alleles"
             " can leave H unresolved.",
-            "Serotype is not pathotype — pair with ecoli_dec for DEC designation.",
+            "Serotype is not pathotype — pair with eco_dec for DEC designation.",
         ),
     ),
 )

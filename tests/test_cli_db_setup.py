@@ -72,7 +72,7 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
         f"gapit: materializing bundled database {name} ({records} records) into {datadir}"
         for name, records in (
             ("cje_cps", 42),
-            ("ecoli_dec", 16),
+            ("eco_dec", 16),
             ("lmo_sero", 5),
         )
     ]
@@ -81,7 +81,7 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
     ]
     assert stderr_lines[4:] == [
         "gapit: indexed cje_cps (42 sequences, nucl)",
-        "gapit: indexed ecoli_dec (16 sequences, nucl)",
+        "gapit: indexed eco_dec (16 sequences, nucl)",
         "gapit: indexed lmo_sero (5 sequences, nucl)",
         "gapit: indexed tinyamr (3 sequences, nucl)",
         "gapit: indexed vpa_ok (195 sequences, nucl)",
@@ -90,7 +90,7 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
     infos = list_databases(datadir, reindex=False)
     assert [info.name for info in infos] == [
         "cje_cps",
-        "ecoli_dec",
+        "eco_dec",
         "lmo_sero",
         "tinyamr",
         "vpa_ok",
@@ -103,15 +103,15 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
 
 def test_setup_on_empty_datadir_materializes_bundled(tmp_path: Path) -> None:
     """Given an empty datadir, When db setup runs, Then exit 0 with the
-    bundled ecoli_dec materialized into it (manifest, typing, BLAST index)."""
+    bundled eco_dec materialized into it (manifest, typing, BLAST index)."""
     datadir = tmp_path / "empty"
     datadir.mkdir()
     setup = runner.invoke(app, ["db", "setup", "--datadir", str(datadir)])
     assert setup.exit_code == 0
-    assert "materializing bundled database ecoli_dec" in setup.stderr
-    assert "gapit: indexed ecoli_dec (16 sequences, nucl)" in setup.stderr
-    assert (datadir / "ecoli_dec" / "gapit-manifest.json").is_file()
-    assert (datadir / "ecoli_dec" / "typing.json").is_file()
+    assert "materializing bundled database eco_dec" in setup.stderr
+    assert "gapit: indexed eco_dec (16 sequences, nucl)" in setup.stderr
+    assert (datadir / "eco_dec" / "gapit-manifest.json").is_file()
+    assert (datadir / "eco_dec" / "typing.json").is_file()
 
 
 def test_setup_bootstraps_a_missing_datadir(
@@ -253,16 +253,16 @@ def test_setup_named_bundled_database_materializes_only_that(tmp_path: Path) -> 
     datadir = tmp_path / "empty"
     datadir.mkdir()
     result = runner.invoke(
-        app, ["db", "setup", "-d", "ecoli_dec", "--json", "--datadir", str(datadir)]
+        app, ["db", "setup", "-d", "eco_dec", "--json", "--datadir", str(datadir)]
     )
     assert result.exit_code == 0, result.stderr
     document = json.loads(result.stdout)
-    assert document["materialized"] == ["ecoli_dec"]
-    assert [entry["db"] for entry in document["databases"]] == ["ecoli_dec"]
+    assert document["materialized"] == ["eco_dec"]
+    assert [entry["db"] for entry in document["databases"]] == ["eco_dec"]
     visible = sorted(
         path.name for path in datadir.iterdir() if not path.name.startswith(".gapit-txn")
     )
-    assert visible == ["ecoli_dec"]
+    assert visible == ["eco_dec"]
 
 
 def test_setup_unknown_name_is_database_not_found(tmp_path: Path) -> None:
@@ -285,7 +285,7 @@ def test_setup_no_bundles_refuses_a_missing_bundled_name(tmp_path: Path) -> None
     Then it exits 4 instead of silently doing nothing."""
     datadir = tmp_path / "empty"
     datadir.mkdir()
-    result = runner.invoke(app, ["db", "setup", "-d", "ecoli_dec", "-B", "--datadir", str(datadir)])
+    result = runner.invoke(app, ["db", "setup", "-d", "eco_dec", "-B", "--datadir", str(datadir)])
     assert result.exit_code == 4
     envelope = json.loads(result.stderr.splitlines()[-1])
     assert envelope["code"] == "DATABASE_NOT_FOUND"
