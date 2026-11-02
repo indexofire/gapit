@@ -1,0 +1,1937 @@
+{
+  "schema": "gapit.features/1",
+  "loci": [
+    {
+      "id": "VPaI-1",
+      "label": "VPaI-1",
+      "type": "PAI",
+      "genes": [
+        {
+          "gene_id": "VP0380",
+          "start": 1,
+          "end": 1368,
+          "strand": "+",
+          "product": "tyrosine-type recombinase/integrase"
+        },
+        {
+          "gene_id": "VP0382",
+          "start": 1368,
+          "end": 1541,
+          "strand": "-",
+          "product": "AAA family ATPase"
+        },
+        {
+          "gene_id": "abiEi",
+          "start": 1823,
+          "end": 2614,
+          "strand": "-",
+          "product": "metallophosphoesterase"
+        },
+        {
+          "gene_id": "abiEi_2",
+          "start": 2910,
+          "end": 3449,
+          "strand": "-",
+          "product": "\"type IV toxin-antitoxin system AbiEi familyantitoxin\""
+        },
+        {
+          "gene_id": "VP0384",
+          "start": 4237,
+          "end": 4524,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP0386",
+          "start": 5422,
+          "end": 6417,
+          "strand": "-",
+          "product": "PDDEXK family nuclease"
+        },
+        {
+          "gene_id": "VP0387",
+          "start": 6420,
+          "end": 8192,
+          "strand": "-",
+          "product": "restriction endonuclease subunit S"
+        },
+        {
+          "gene_id": "VP0388",
+          "start": 8192,
+          "end": 9682,
+          "strand": "-",
+          "product": "N-6 DNA methylase"
+        },
+        {
+          "gene_id": "VP0389",
+          "start": 9846,
+          "end": 10244,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP0391",
+          "start": 10406,
+          "end": 10555,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP0392",
+          "start": 10632,
+          "end": 10997,
+          "strand": "+",
+          "product": "translation elongation factor Ts"
+        },
+        {
+          "gene_id": "hsdR",
+          "start": 11671,
+          "end": 12333,
+          "strand": "+",
+          "product": "DNA-methyltransferase"
+        },
+        {
+          "gene_id": "hsdR_2",
+          "start": 12395,
+          "end": 14839,
+          "strand": "-",
+          "product": "\"EcoAI/FtnUII family type I restriction enzmesubunit R\""
+        },
+        {
+          "gene_id": "VP0398",
+          "start": 15630,
+          "end": 16787,
+          "strand": "-",
+          "product": "MarR family transcriptional regulator"
+        },
+        {
+          "gene_id": "VP0399",
+          "start": 16888,
+          "end": 17052,
+          "strand": "+",
+          "product": "helix-turn-helix transcriptional regulator"
+        },
+        {
+          "gene_id": "gapS1",
+          "start": 17506,
+          "end": 18321,
+          "strand": "+",
+          "product": "restriction endonuclease"
+        },
+        {
+          "gene_id": "gapS1_2",
+          "start": 18772,
+          "end": 20361,
+          "strand": "-",
+          "product": "GapS1 family protein"
+        },
+        {
+          "gene_id": "VP0402",
+          "start": 20646,
+          "end": 22052,
+          "strand": "-",
+          "product": "HipA domain-containing protein"
+        },
+        {
+          "gene_id": "rpoD",
+          "start": 22045,
+          "end": 22380,
+          "strand": "-",
+          "product": "helix-turn-helix domain-containing protein"
+        }
+      ]
+    },
+    {
+      "id": "VPaI-2",
+      "label": "VPaI-2",
+      "type": "PAI",
+      "genes": [
+        {
+          "gene_id": "VP0634",
+          "start": 1,
+          "end": 1533,
+          "strand": "-",
+          "product": "\"bifunctional GNAT familyN-acetyltransferase/carbon-nitrogen hydrolase familyprotein\""
+        },
+        {
+          "gene_id": "VP0635",
+          "start": 1669,
+          "end": 2559,
+          "strand": "-",
+          "product": "LysR family transcriptional regulator"
+        },
+        {
+          "gene_id": "VP0636",
+          "start": 2959,
+          "end": 3522,
+          "strand": "+",
+          "product": "porin family protein"
+        },
+        {
+          "gene_id": "VP0637",
+          "start": 4097,
+          "end": 4825,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP0638",
+          "start": 5173,
+          "end": 5817,
+          "strand": "+",
+          "product": "recombinase family protein"
+        },
+        {
+          "gene_id": "VP0639",
+          "start": 5965,
+          "end": 6165,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP0641",
+          "start": 6827,
+          "end": 7438,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP0642",
+          "start": 7607,
+          "end": 8104,
+          "strand": "+",
+          "product": "ribonuclease HI"
+        },
+        {
+          "gene_id": "ssrAtmRNA           complement(674401..674768)",
+          "start": 8155,
+          "end": 9888,
+          "strand": "-",
+          "product": "site-specific integrase"
+        }
+      ]
+    },
+    {
+      "id": "VPaI-3",
+      "label": "VPaI-3",
+      "type": "PAI",
+      "genes": [
+        {
+          "gene_id": "VP1071",
+          "start": 1,
+          "end": 1137,
+          "strand": "+",
+          "product": "site-specific integrase"
+        },
+        {
+          "gene_id": "VP1072",
+          "start": 1329,
+          "end": 3152,
+          "strand": "+",
+          "product": "DEAD/DEAH box helicase"
+        },
+        {
+          "gene_id": "VP1073",
+          "start": 3516,
+          "end": 3758,
+          "strand": "-",
+          "product": "helix-turn-helix domain-containing protein"
+        },
+        {
+          "gene_id": "VP1074",
+          "start": 3880,
+          "end": 4269,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1076",
+          "start": 4331,
+          "end": 4960,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1076_2",
+          "start": 5262,
+          "end": 5783,
+          "strand": "-",
+          "product": "helix-turn-helix domain-containing protein"
+        },
+        {
+          "gene_id": "VP1077",
+          "start": 6455,
+          "end": 7693,
+          "strand": "+",
+          "product": "tyrosine-type recombinase/integrase"
+        },
+        {
+          "gene_id": "VP1078",
+          "start": 7764,
+          "end": 8486,
+          "strand": "-",
+          "product": "NYN domain-containing protein"
+        },
+        {
+          "gene_id": "VP1079",
+          "start": 8556,
+          "end": 10430,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1080",
+          "start": 10809,
+          "end": 11078,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1080_2",
+          "start": 11165,
+          "end": 12583,
+          "strand": "+",
+          "product": "DUF2075 domain-containing protein"
+        },
+        {
+          "gene_id": "VP1081",
+          "start": 12962,
+          "end": 13747,
+          "strand": "+",
+          "product": "\"sigma-70 RNA polymerase sigma factor region 4domain-containing protein\""
+        },
+        {
+          "gene_id": "VP1082",
+          "start": 13744,
+          "end": 14322,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1083",
+          "start": 14325,
+          "end": 17744,
+          "strand": "+",
+          "product": "UvrD-helicase domain-containing protein"
+        },
+        {
+          "gene_id": "VP1084",
+          "start": 17807,
+          "end": 18547,
+          "strand": "+",
+          "product": "multiubiquitin domain-containing protein"
+        },
+        {
+          "gene_id": "VP1085",
+          "start": 18522,
+          "end": 19700,
+          "strand": "+",
+          "product": "ThiF family adenylyltransferase"
+        },
+        {
+          "gene_id": "VP1087",
+          "start": 19693,
+          "end": 20139,
+          "strand": "+",
+          "product": "\"ubiquitination-like system serine proteasefamily protein\""
+        },
+        {
+          "gene_id": "VP1087_2",
+          "start": 20240,
+          "end": 22249,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "vmeA",
+          "start": 22830,
+          "end": 24467,
+          "strand": "+",
+          "product": "methyl-accepting chemotaxis protein"
+        },
+        {
+          "gene_id": "vmeA_2",
+          "start": 24892,
+          "end": 26031,
+          "strand": "+",
+          "product": "\"multidrug efflux RND transporter periplasmicadaptor subunit VmeA\""
+        },
+        {
+          "gene_id": "vmeB",
+          "start": 26034,
+          "end": 29195,
+          "strand": "+",
+          "product": "\"multidrug efflux RND transporter permeasesubunit VmeB\""
+        },
+        {
+          "gene_id": "VP1093",
+          "start": 29397,
+          "end": 29849,
+          "strand": "+",
+          "product": "\"MarR family winged helix-turn-helixtranscriptional regulator\""
+        },
+        {
+          "gene_id": "trpS",
+          "start": 29924,
+          "end": 30880,
+          "strand": "-",
+          "product": "AEC family transporter"
+        }
+      ]
+    },
+    {
+      "id": "VPaI-4",
+      "label": "VPaI-4",
+      "type": "PAI",
+      "genes": [
+        {
+          "gene_id": "VP2131",
+          "start": 1,
+          "end": 1338,
+          "strand": "+",
+          "product": "tyrosine-type recombinase/integrase"
+        },
+        {
+          "gene_id": "VP2132",
+          "start": 1331,
+          "end": 1714,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP2133",
+          "start": 1729,
+          "end": 1926,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP2134",
+          "start": 2245,
+          "end": 3465,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP2135",
+          "start": 3462,
+          "end": 5627,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP2136",
+          "start": 6225,
+          "end": 7337,
+          "strand": "+",
+          "product": "tyrosine-type recombinase/integrase"
+        },
+        {
+          "gene_id": "VP2137",
+          "start": 7504,
+          "end": 9018,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "abiEi",
+          "start": 9087,
+          "end": 10094,
+          "strand": "+",
+          "product": "DNA-binding protein"
+        },
+        {
+          "gene_id": "abiEi_2",
+          "start": 10141,
+          "end": 10668,
+          "strand": "+",
+          "product": "\"type IV toxin-antitoxin system AbiEi familyantitoxin\""
+        },
+        {
+          "gene_id": "VP2142",
+          "start": 11348,
+          "end": 13855,
+          "strand": "+",
+          "product": "AAA family ATPase"
+        },
+        {
+          "gene_id": "VP2143",
+          "start": 13868,
+          "end": 15709,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP2144",
+          "start": 15906,
+          "end": 16160,
+          "strand": "-",
+          "product": "helix-turn-helix domain-containing protein"
+        }
+      ]
+    },
+    {
+      "id": "VPaI-5",
+      "label": "VPaI-5",
+      "type": "PAI",
+      "genes": [
+        {
+          "gene_id": "VP2900",
+          "start": 10,
+          "end": 1503,
+          "strand": "+",
+          "product": "KAP family NTPase"
+        },
+        {
+          "gene_id": "VP2901",
+          "start": 1610,
+          "end": 2827,
+          "strand": "-",
+          "product": "ParB N-terminal domain-containing protein"
+        },
+        {
+          "gene_id": "VP2902",
+          "start": 2980,
+          "end": 4152,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP2903",
+          "start": 4352,
+          "end": 5710,
+          "strand": "+",
+          "product": "KAP family NTPase"
+        },
+        {
+          "gene_id": "VP2905",
+          "start": 6033,
+          "end": 8399,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP2906",
+          "start": 8658,
+          "end": 8894,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP2907",
+          "start": 9193,
+          "end": 9621,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP2908",
+          "start": 9621,
+          "end": 12266,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP2909",
+          "start": 12259,
+          "end": 13863,
+          "strand": "-",
+          "product": "site-specific integrase"
+        }
+      ]
+    },
+    {
+      "id": "VPaI-6",
+      "label": "VPaI-6",
+      "type": "PAI",
+      "genes": [
+        {
+          "gene_id": "VPA1254",
+          "start": 794,
+          "end": 1810,
+          "strand": "-",
+          "product": "IS110-like element ISVpa1 family transposase"
+        },
+        {
+          "gene_id": "VPA1255",
+          "start": 2215,
+          "end": 2457,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "gapS1",
+          "start": 2463,
+          "end": 4778,
+          "strand": "+",
+          "product": "AAA family ATPase"
+        },
+        {
+          "gene_id": "gapS1_2",
+          "start": 5185,
+          "end": 6789,
+          "strand": "-",
+          "product": "GapS1 family protein"
+        },
+        {
+          "gene_id": "VPA1258",
+          "start": 7349,
+          "end": 7788,
+          "strand": "+",
+          "product": "transposase"
+        },
+        {
+          "gene_id": "VPA1258_2",
+          "start": 7876,
+          "end": 8337,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1259",
+          "start": 8569,
+          "end": 8835,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1260",
+          "start": 9130,
+          "end": 9774,
+          "strand": "-",
+          "product": "HNH endonuclease family protein"
+        },
+        {
+          "gene_id": "VPA1261",
+          "start": 9771,
+          "end": 11183,
+          "strand": "-",
+          "product": "AAA family ATPase"
+        },
+        {
+          "gene_id": "VPA1262",
+          "start": 11929,
+          "end": 15243,
+          "strand": "+",
+          "product": "VPA1262 family protein"
+        },
+        {
+          "gene_id": "VPA1263",
+          "start": 16055,
+          "end": 18631,
+          "strand": "+",
+          "product": "T6SS effector antibacterial DNase"
+        },
+        {
+          "gene_id": "VP_RS21225",
+          "start": 18633,
+          "end": 18917,
+          "strand": "+",
+          "product": "bacteriocin immunity protein"
+        },
+        {
+          "gene_id": "VPA1266",
+          "start": 19009,
+          "end": 19275,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1266_2",
+          "start": 19556,
+          "end": 21583,
+          "strand": "-",
+          "product": "AAA family ATPase"
+        },
+        {
+          "gene_id": "gmtX",
+          "start": 21580,
+          "end": 22017,
+          "strand": "-",
+          "product": "VPA1267 family protein"
+        },
+        {
+          "gene_id": "gmtX_2",
+          "start": 22017,
+          "end": 22694,
+          "strand": "-",
+          "product": "gamma-mobile-trio protein GmtX"
+        },
+        {
+          "gene_id": "gmtZ",
+          "start": 22694,
+          "end": 25366,
+          "strand": "-",
+          "product": "gamma-mobile-trio integrase GmtZ"
+        },
+        {
+          "gene_id": "gmtY",
+          "start": 25366,
+          "end": 26823,
+          "strand": "-",
+          "product": "gamma-mobile-trio recombinase GmtY"
+        }
+      ]
+    },
+    {
+      "id": "VPaI-7",
+      "label": "VPaI-7",
+      "type": "PAI",
+      "genes": [
+        {
+          "gene_id": "tdh",
+          "start": 1,
+          "end": 525,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "tdh_2",
+          "start": 994,
+          "end": 1563,
+          "strand": "+",
+          "product": "thermostable direct hemolysin TDH"
+        },
+        {
+          "gene_id": "VPA1316",
+          "start": 2115,
+          "end": 2954,
+          "strand": "+",
+          "product": "IS5 family transposase"
+        },
+        {
+          "gene_id": "VPA1318",
+          "start": 3138,
+          "end": 3520,
+          "strand": "+",
+          "product": "transposase"
+        },
+        {
+          "gene_id": "VPA1318_2",
+          "start": 3667,
+          "end": 4128,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1319",
+          "start": 4359,
+          "end": 4589,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "vopC",
+          "start": 4671,
+          "end": 5639,
+          "strand": "+",
+          "product": "IS30 family transposase"
+        },
+        {
+          "gene_id": "vopC_2",
+          "start": 5853,
+          "end": 6959,
+          "strand": "-",
+          "product": "T3SS2 effector GTPase-activating deamidase VopC"
+        },
+        {
+          "gene_id": "VPA1322",
+          "start": 7024,
+          "end": 7320,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1323",
+          "start": 7442,
+          "end": 7879,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1324",
+          "start": 8074,
+          "end": 8766,
+          "strand": "+",
+          "product": "EAL domain-containing protein"
+        },
+        {
+          "gene_id": "VPA1326",
+          "start": 9282,
+          "end": 10481,
+          "strand": "+",
+          "product": "IS4 family transposase"
+        },
+        {
+          "gene_id": "vopT",
+          "start": 10876,
+          "end": 11238,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "vopT_2",
+          "start": 11566,
+          "end": 12276,
+          "strand": "-",
+          "product": "T3SS effector ADP-ribosyltransferase toxin VopT"
+        },
+        {
+          "gene_id": "VPA1328",
+          "start": 12627,
+          "end": 13409,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1329",
+          "start": 13862,
+          "end": 14551,
+          "strand": "-",
+          "product": "conjugal transfer protein TraA"
+        },
+        {
+          "gene_id": "VPA1331",
+          "start": 14699,
+          "end": 14845,
+          "strand": "-",
+          "product": "DUF4116 domain-containing protein"
+        },
+        {
+          "gene_id": "vtrA",
+          "start": 15224,
+          "end": 15520,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "vtrA_2",
+          "start": 16189,
+          "end": 16950,
+          "strand": "+",
+          "product": "\"type III secretion system transcriptionalregulator VtrA\""
+        },
+        {
+          "gene_id": "VPA1334",
+          "start": 16988,
+          "end": 17419,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1334_2",
+          "start": 17420,
+          "end": 17794,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "vopZ",
+          "start": 17809,
+          "end": 18042,
+          "strand": "-",
+          "product": "flagellar biosynthetic protein FliQ"
+        },
+        {
+          "gene_id": "vopZ_2",
+          "start": 18029,
+          "end": 18781,
+          "strand": "-",
+          "product": "type III secretion system effector VopZ"
+        },
+        {
+          "gene_id": "vscN2",
+          "start": 18768,
+          "end": 19043,
+          "strand": "-",
+          "product": "VPA1337 family putative T3SS effector"
+        },
+        {
+          "gene_id": "vscN2_2",
+          "start": 19123,
+          "end": 20385,
+          "strand": "-",
+          "product": "type III secretion system ATPase VscN2"
+        },
+        {
+          "gene_id": "VPA1339",
+          "start": 20385,
+          "end": 21848,
+          "strand": "-",
+          "product": "secretin N-terminal domain-containing protein"
+        },
+        {
+          "gene_id": "VPA1340",
+          "start": 21838,
+          "end": 22086,
+          "strand": "-",
+          "product": "VPA1340 family putative T3SS effector"
+        },
+        {
+          "gene_id": "VPA1341",
+          "start": 22079,
+          "end": 22762,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1342",
+          "start": 22765,
+          "end": 23439,
+          "strand": "-",
+          "product": "\"EscR/YscR/HrcR family type III secretion systemexport apparatus protein\""
+        },
+        {
+          "gene_id": "VPA1343",
+          "start": 23501,
+          "end": 23794,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "vopA",
+          "start": 24331,
+          "end": 25482,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "vopA_2",
+          "start": 25569,
+          "end": 26438,
+          "strand": "-",
+          "product": "\"type III secretion system YopJ family effectorVopA\""
+        },
+        {
+          "gene_id": "VPA1348",
+          "start": 26554,
+          "end": 26745,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1348_2",
+          "start": 27711,
+          "end": 28262,
+          "strand": "-",
+          "product": "\"winged helix-turn-helix domain-containingprotein\""
+        },
+        {
+          "gene_id": "VPA1349",
+          "start": 28547,
+          "end": 28762,
+          "strand": "-",
+          "product": "\"FliM/FliN family flagellar motor C-terminaldomain-containing protein\""
+        },
+        {
+          "gene_id": "VPA1350",
+          "start": 28778,
+          "end": 29431,
+          "strand": "-",
+          "product": "VPA1350 family putative T3SS effector"
+        },
+        {
+          "gene_id": "VPA1351",
+          "start": 29437,
+          "end": 30447,
+          "strand": "-",
+          "product": "VPA1351 family putative T3SS effector"
+        },
+        {
+          "gene_id": "VPA1352",
+          "start": 30425,
+          "end": 30838,
+          "strand": "-",
+          "product": "VPA1352 family putative T3SS effector"
+        },
+        {
+          "gene_id": "VPA1353",
+          "start": 30807,
+          "end": 31613,
+          "strand": "-",
+          "product": "OmpA family protein"
+        },
+        {
+          "gene_id": "VPA1354",
+          "start": 31588,
+          "end": 32643,
+          "strand": "-",
+          "product": "\"EscU/YscU/HrcU family type III secretion systemexport apparatus switch protein\""
+        },
+        {
+          "gene_id": "VPA1355",
+          "start": 32664,
+          "end": 34547,
+          "strand": "-",
+          "product": "FHIPEP family type III secretion protein"
+        },
+        {
+          "gene_id": "VPA1356",
+          "start": 34544,
+          "end": 35140,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1357",
+          "start": 35268,
+          "end": 40136,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1358",
+          "start": 40434,
+          "end": 41006,
+          "strand": "-",
+          "product": "dimethyladenosine transferase"
+        },
+        {
+          "gene_id": "VPA1359",
+          "start": 41017,
+          "end": 41409,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "vopD2",
+          "start": 41336,
+          "end": 41953,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "vopD2_2",
+          "start": 42000,
+          "end": 42725,
+          "strand": "-",
+          "product": "\"type III secretion system translocator proteinVopD2\""
+        },
+        {
+          "gene_id": "vopB2",
+          "start": 42736,
+          "end": 43785,
+          "strand": "-",
+          "product": "\"type III secretion system translocator proteinVopB2\""
+        },
+        {
+          "gene_id": "VPA1363",
+          "start": 44126,
+          "end": 44416,
+          "strand": "-",
+          "product": "molecular chaperone"
+        },
+        {
+          "gene_id": "VPA1364",
+          "start": 44428,
+          "end": 45159,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1365",
+          "start": 45301,
+          "end": 45789,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1366",
+          "start": 45817,
+          "end": 46275,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1367",
+          "start": 46277,
+          "end": 46810,
+          "strand": "-",
+          "product": "type III secretion protein"
+        },
+        {
+          "gene_id": "VPA1368",
+          "start": 46812,
+          "end": 47069,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "vopL",
+          "start": 47216,
+          "end": 47806,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "vopL_2",
+          "start": 48152,
+          "end": 49606,
+          "strand": "+",
+          "product": "type III secretion system effector VopL"
+        },
+        {
+          "gene_id": "VPA1373",
+          "start": 50537,
+          "end": 53125,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1376",
+          "start": 53373,
+          "end": 53936,
+          "strand": "+",
+          "product": "integrase core domain-containing protein"
+        },
+        {
+          "gene_id": "VPA1376_2",
+          "start": 54025,
+          "end": 58518,
+          "strand": "-",
+          "product": "\"SslE/AcfD family lipoprotein zincmetalloprotease\""
+        },
+        {
+          "gene_id": "VP_RS23955",
+          "start": 58744,
+          "end": 59079,
+          "strand": "+",
+          "product": "IS5/IS1182 family transposase"
+        },
+        {
+          "gene_id": "tdh_3",
+          "start": 59098,
+          "end": 59637,
+          "strand": "+",
+          "product": "IS5 family transposase"
+        },
+        {
+          "gene_id": "tdh_4",
+          "start": 59862,
+          "end": 60431,
+          "strand": "+",
+          "product": "thermostable direct hemolysin TDH"
+        },
+        {
+          "gene_id": "ospB",
+          "start": 60526,
+          "end": 61739,
+          "strand": "-",
+          "product": "IS4 family transposase"
+        },
+        {
+          "gene_id": "ospB_2",
+          "start": 62127,
+          "end": 63014,
+          "strand": "+",
+          "product": "type III secretion system effector OspB"
+        },
+        {
+          "gene_id": "VP_RS21770",
+          "start": 63096,
+          "end": 63236,
+          "strand": "-",
+          "product": "IS200/IS605 family transposase"
+        },
+        {
+          "gene_id": "VP_RS23865",
+          "start": 64082,
+          "end": 64411,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1384",
+          "start": 64447,
+          "end": 64731,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1384_2",
+          "start": 64762,
+          "end": 65139,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1385",
+          "start": 65094,
+          "end": 65426,
+          "strand": "-",
+          "product": "membrane protein"
+        },
+        {
+          "gene_id": "VPA1387",
+          "start": 65713,
+          "end": 66900,
+          "strand": "+",
+          "product": "TniQ family protein"
+        },
+        {
+          "gene_id": "csy3",
+          "start": 66901,
+          "end": 68823,
+          "strand": "+",
+          "product": "type I-F CRISPR-associated protein Csy2"
+        },
+        {
+          "gene_id": "csy3_2",
+          "start": 68810,
+          "end": 69853,
+          "strand": "+",
+          "product": "type I-F CRISPR-associated protein Csy3"
+        },
+        {
+          "gene_id": "cas6f",
+          "start": 69857,
+          "end": 70453,
+          "strand": "+",
+          "product": "\"type I-F CRISPR-associated endoribonucleaseCas6/Csy4\""
+        },
+        {
+          "gene_id": "VPA1391",
+          "start": 70936,
+          "end": 71142,
+          "strand": "-",
+          "product": "helix-turn-helix domain-containing protein"
+        },
+        {
+          "gene_id": "VPA1392",
+          "start": 71391,
+          "end": 71786,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VPA1393",
+          "start": 71786,
+          "end": 73159,
+          "strand": "+",
+          "product": "DEAD/DEAH box helicase"
+        },
+        {
+          "gene_id": "VPA1394",
+          "start": 73215,
+          "end": 74168,
+          "strand": "-",
+          "product": "TniB family NTP-binding protein"
+        },
+        {
+          "gene_id": "VPA1395",
+          "start": 74165,
+          "end": 76039,
+          "strand": "-",
+          "product": "\"Mu transposase C-terminal domain-containingprotein\""
+        },
+        {
+          "gene_id": "VPA1396",
+          "start": 76036,
+          "end": 76659,
+          "strand": "-",
+          "product": "\"TnsA endonuclease N-terminal domain-containingprotein\""
+        },
+        {
+          "gene_id": "VPA1397",
+          "start": 76801,
+          "end": 77286,
+          "strand": "+",
+          "product": "acyl-CoA thioesterase"
+        },
+        {
+          "gene_id": "malG",
+          "start": 77452,
+          "end": 77697,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "malG_2",
+          "start": 78117,
+          "end": 79007,
+          "strand": "-",
+          "product": "maltose ABC transporter permease MalG"
+        },
+        {
+          "gene_id": "malF",
+          "start": 79020,
+          "end": 80594,
+          "strand": "-",
+          "product": "maltose ABC transporter permease MalF"
+        },
+        {
+          "gene_id": "malE",
+          "start": 80674,
+          "end": 81852,
+          "strand": "-",
+          "product": "\"maltose/maltodextrin ABC transportersubstrate-binding protein MalE\""
+        },
+        {
+          "gene_id": "malK",
+          "start": 82527,
+          "end": 83645,
+          "strand": "+",
+          "product": "\"maltose/maltodextrin ABC transporter ATP-bindingprotein MalK\""
+        },
+        {
+          "gene_id": "VPA1403",
+          "start": 84106,
+          "end": 85506,
+          "strand": "+",
+          "product": "\"undecaprenyl-phosphate glucosephosphotransferase\""
+        },
+        {
+          "gene_id": "VPA1404",
+          "start": 85496,
+          "end": 86722,
+          "strand": "+",
+          "product": "outer membrane beta-barrel protein"
+        },
+        {
+          "gene_id": "VPA1405",
+          "start": 86735,
+          "end": 87268,
+          "strand": "+",
+          "product": "\"polysaccharide biosynthesis/export familyprotein\""
+        },
+        {
+          "gene_id": "VPA1406",
+          "start": 87283,
+          "end": 89465,
+          "strand": "+",
+          "product": "GumC family protein"
+        },
+        {
+          "gene_id": "VPA1407",
+          "start": 89443,
+          "end": 90255,
+          "strand": "+",
+          "product": "\"putative capsular polysaccharide synthesisfamily protein\""
+        },
+        {
+          "gene_id": "VPA1408",
+          "start": 90255,
+          "end": 91307,
+          "strand": "+",
+          "product": "glycosyltransferase"
+        },
+        {
+          "gene_id": "VPA1409",
+          "start": 91273,
+          "end": 92505,
+          "strand": "+",
+          "product": "O-antigen ligase family protein"
+        },
+        {
+          "gene_id": "VPA1410",
+          "start": 92524,
+          "end": 93357,
+          "strand": "+",
+          "product": "\"putative capsular polysaccharide synthesisfamily protein\""
+        },
+        {
+          "gene_id": "VPA1411",
+          "start": 93354,
+          "end": 94385,
+          "strand": "+",
+          "product": "glycosyltransferase"
+        },
+        {
+          "gene_id": "VPA1412",
+          "start": 94395,
+          "end": 95702,
+          "strand": "+",
+          "product": "oligosaccharide flippase family protein"
+        },
+        {
+          "gene_id": "yqfB",
+          "start": 95705,
+          "end": 96106,
+          "strand": "+",
+          "product": "VanZ family protein"
+        },
+        {
+          "gene_id": "yqfB_2",
+          "start": 96202,
+          "end": 96525,
+          "strand": "+",
+          "product": "N(4)-acetylcytidine aminohydrolase"
+        },
+        {
+          "gene_id": "VPA1415",
+          "start": 96574,
+          "end": 97173,
+          "strand": "+",
+          "product": "TetR/AcrR family transcriptional regulator"
+        },
+        {
+          "gene_id": "VPA1416",
+          "start": 97321,
+          "end": 98355,
+          "strand": "+",
+          "product": "NADP-dependent oxidoreductase"
+        },
+        {
+          "gene_id": "katE2",
+          "start": 98383,
+          "end": 99000,
+          "strand": "+",
+          "product": "glutathione S-transferase family protein"
+        },
+        {
+          "gene_id": "katE2_2",
+          "start": 99335,
+          "end": 100774,
+          "strand": "+",
+          "product": "catalase KatE2"
+        },
+        {
+          "gene_id": "VPA1419",
+          "start": 100900,
+          "end": 101778,
+          "strand": "-",
+          "product": "NAD(P)-dependent oxidoreductase"
+        },
+        {
+          "gene_id": "VPA1420",
+          "start": 101958,
+          "end": 103829,
+          "strand": "-",
+          "product": "PTS fructose transporter subunit IIBC"
+        },
+        {
+          "gene_id": "VPA1421",
+          "start": 104097,
+          "end": 104399,
+          "strand": "+",
+          "product": "PTS fructose transporter subunit IIB"
+        },
+        {
+          "gene_id": "VPA1422",
+          "start": 104408,
+          "end": 105184,
+          "strand": "+",
+          "product": "PTS sugar transporter subunit IIA"
+        },
+        {
+          "gene_id": "VPA1423",
+          "start": 105219,
+          "end": 106061,
+          "strand": "-",
+          "product": "helix-turn-helix transcriptional regulator"
+        },
+        {
+          "gene_id": "manA",
+          "start": 106447,
+          "end": 108354,
+          "strand": "+",
+          "product": "PTS fructose transporter subunit IIABC"
+        },
+        {
+          "gene_id": "manA_2",
+          "start": 108445,
+          "end": 109662,
+          "strand": "+",
+          "product": "mannose-6-phosphate isomerase, class I"
+        },
+        {
+          "gene_id": "VPA1426",
+          "start": 109743,
+          "end": 110438,
+          "strand": "-",
+          "product": "hypothetical protein"
+        }
+      ]
+    },
+    {
+      "id": "VPaI-8",
+      "label": "VPaI-8",
+      "type": "PAI",
+      "genes": [
+        {
+          "gene_id": "A79_5175",
+          "start": 1,
+          "end": 2340,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "A79_5176",
+          "start": 2334,
+          "end": 4745,
+          "strand": "+",
+          "product": "\"site-specific recombinase, phage integrasefamily domain protein, putative\""
+        },
+        {
+          "gene_id": "A79_5177",
+          "start": 4757,
+          "end": 5287,
+          "strand": "+",
+          "product": "conserved hypothetical protein"
+        },
+        {
+          "gene_id": "A79_5178",
+          "start": 5287,
+          "end": 6648,
+          "strand": "+",
+          "product": "\"site-specific recombinase, phage integrasefamily, putative\""
+        },
+        {
+          "gene_id": "A79_5179",
+          "start": 6916,
+          "end": 7110,
+          "strand": "+",
+          "product": "putative transcription regulator protein"
+        },
+        {
+          "gene_id": "A79_5180",
+          "start": 7302,
+          "end": 7439,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "A79_5181",
+          "start": 7466,
+          "end": 7678,
+          "strand": "-",
+          "product": "conserved hypothetical protein"
+        },
+        {
+          "gene_id": "A79_5182",
+          "start": 7811,
+          "end": 8932,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "A79_5183",
+          "start": 8925,
+          "end": 9833,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "A79_5184",
+          "start": 10166,
+          "end": 10462,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "A79_5185",
+          "start": 10554,
+          "end": 11321,
+          "strand": "-",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "A79_5186",
+          "start": 11567,
+          "end": 12562,
+          "strand": "+",
+          "product": "SMF protein"
+        },
+        {
+          "gene_id": "A79_5187",
+          "start": 12573,
+          "end": 13823,
+          "strand": "+",
+          "product": "conserved hypothetical protein"
+        },
+        {
+          "gene_id": "A79_5188",
+          "start": 13836,
+          "end": 15290,
+          "strand": "+",
+          "product": "KAP P-loop domain protein"
+        },
+        {
+          "gene_id": "A79_5189",
+          "start": 15601,
+          "end": 15747,
+          "strand": "-",
+          "product": "conserved hypothetical protein"
+        },
+        {
+          "gene_id": "A79_5190",
+          "start": 15986,
+          "end": 16534,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "A79_5191",
+          "start": 16664,
+          "end": 16795,
+          "strand": "-",
+          "product": "hypothetical protein"
+        }
+      ]
+    },
+    {
+      "id": "VPaI-9",
+      "label": "VPaI-9",
+      "type": "PAI",
+      "genes": [
+        {
+          "gene_id": "A79_3273",
+          "start": 1,
+          "end": 1179,
+          "strand": "+",
+          "product": "integrase"
+        },
+        {
+          "gene_id": "A79_3274",
+          "start": 1200,
+          "end": 1535,
+          "strand": "-",
+          "product": "putative excisionase"
+        },
+        {
+          "gene_id": "A79_3275",
+          "start": 1595,
+          "end": 3268,
+          "strand": "-",
+          "product": "conserved hypothetical protein"
+        },
+        {
+          "gene_id": "A79_3276",
+          "start": 3281,
+          "end": 3472,
+          "strand": "-",
+          "product": "conserved domain protein"
+        },
+        {
+          "gene_id": "A79_3277",
+          "start": 3877,
+          "end": 4092,
+          "strand": "+",
+          "product": "conserved domain protein"
+        },
+        {
+          "gene_id": "A79_3278",
+          "start": 4114,
+          "end": 6429,
+          "strand": "+",
+          "product": "\"type I restriction-modification system, Rsubunit\""
+        },
+        {
+          "gene_id": "A79_3279",
+          "start": 6431,
+          "end": 8203,
+          "strand": "+",
+          "product": "conserved hypothetical protein"
+        },
+        {
+          "gene_id": "A79_3280",
+          "start": 8207,
+          "end": 9691,
+          "strand": "+",
+          "product": "\"type I restriction-modification system, Msubunit\""
+        },
+        {
+          "gene_id": "A79_3281",
+          "start": 9694,
+          "end": 10869,
+          "strand": "+",
+          "product": "\"hypothetical Type I restriction enzymeEcoEIspecificity protein\""
+        },
+        {
+          "gene_id": "A79_3282",
+          "start": 10879,
+          "end": 12897,
+          "strand": "+",
+          "product": "conserved hypothetical protein"
+        },
+        {
+          "gene_id": "A79_3283",
+          "start": 12915,
+          "end": 13949,
+          "strand": "+",
+          "product": "conserved hypothetical protein"
+        },
+        {
+          "gene_id": "A79_3284",
+          "start": 14475,
+          "end": 15089,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "A79_3285",
+          "start": 15089,
+          "end": 15598,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "A79_3286",
+          "start": 15703,
+          "end": 16404,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "A79_3287",
+          "start": 16543,
+          "end": 16722,
+          "strand": "-",
+          "product": "transcriptional regulator"
+        },
+        {
+          "gene_id": "A79_3288",
+          "start": 16960,
+          "end": 17343,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "A79_3289",
+          "start": 17547,
+          "end": 18404,
+          "strand": "+",
+          "product": "hypothetical protein"
+        }
+      ]
+    },
+    {
+      "id": "VPaI-10",
+      "label": "VPaI-10",
+      "type": "PAI",
+      "genes": [
+        {
+          "gene_id": "VP1387",
+          "start": 1,
+          "end": 11598,
+          "strand": "+",
+          "product": "tandem large repeat"
+        },
+        {
+          "gene_id": "VP1388",
+          "start": 12354,
+          "end": 14105,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1389",
+          "start": 14178,
+          "end": 15305,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1390",
+          "start": 15302,
+          "end": 20044,
+          "strand": "+",
+          "product": "OmpA family protein"
+        },
+        {
+          "gene_id": "tssH",
+          "start": 20126,
+          "end": 21757,
+          "strand": "-",
+          "product": "\"sigma-54-dependent Fis family transcriptionalregulator\""
+        },
+        {
+          "gene_id": "tssH_2",
+          "start": 21744,
+          "end": 24416,
+          "strand": "-",
+          "product": "type VI secretion system ATPase TssH"
+        },
+        {
+          "gene_id": "VP1393",
+          "start": 24871,
+          "end": 25389,
+          "strand": "+",
+          "product": "Hcp family type VI secretion system effector"
+        },
+        {
+          "gene_id": "VP1394",
+          "start": 25462,
+          "end": 27540,
+          "strand": "+",
+          "product": "type VI secretion system Vgr family protein"
+        },
+        {
+          "gene_id": "VP1395",
+          "start": 27540,
+          "end": 28025,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1398",
+          "start": 28095,
+          "end": 29436,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1398_2",
+          "start": 29417,
+          "end": 30409,
+          "strand": "+",
+          "product": "\"DUF2169 family type VI secretion systemaccessory protein\""
+        },
+        {
+          "gene_id": "VP1399",
+          "start": 30402,
+          "end": 31346,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "tssA",
+          "start": 31581,
+          "end": 33584,
+          "strand": "+",
+          "product": "serine/threonine protein kinase"
+        },
+        {
+          "gene_id": "tssA_2",
+          "start": 33584,
+          "end": 35158,
+          "strand": "+",
+          "product": "type VI secretion system protein TssA"
+        },
+        {
+          "gene_id": "tssB",
+          "start": 35185,
+          "end": 35691,
+          "strand": "+",
+          "product": "\"type VI secretion system contractile sheathsmall subunit\""
+        },
+        {
+          "gene_id": "tssC",
+          "start": 35700,
+          "end": 37175,
+          "strand": "+",
+          "product": "\"type VI secretion system contractile sheathlarge subunit\""
+        },
+        {
+          "gene_id": "tssE",
+          "start": 37237,
+          "end": 37647,
+          "strand": "+",
+          "product": "type VI secretion system baseplate subunit TssE"
+        },
+        {
+          "gene_id": "tssF",
+          "start": 37658,
+          "end": 39406,
+          "strand": "+",
+          "product": "type VI secretion system baseplate subunit TssF"
+        },
+        {
+          "gene_id": "tssG",
+          "start": 39403,
+          "end": 40401,
+          "strand": "+",
+          "product": "type VI secretion system baseplate subunit TssG"
+        },
+        {
+          "gene_id": "tssM",
+          "start": 40465,
+          "end": 40917,
+          "strand": "-",
+          "product": "Lrp/AsnC family transcriptional regulator"
+        },
+        {
+          "gene_id": "tssM_2",
+          "start": 40950,
+          "end": 44339,
+          "strand": "-",
+          "product": "type VI secretion system membrane subunit TssM"
+        },
+        {
+          "gene_id": "VP1409",
+          "start": 44361,
+          "end": 45656,
+          "strand": "-",
+          "product": "\"type VI secretion system ImpA family N-terminaldomain-containing protein\""
+        },
+        {
+          "gene_id": "VP1410",
+          "start": 46176,
+          "end": 46775,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "tssJ",
+          "start": 46785,
+          "end": 48299,
+          "strand": "+",
+          "product": "FHA domain-containing protein"
+        },
+        {
+          "gene_id": "tssJ_2",
+          "start": 48292,
+          "end": 48792,
+          "strand": "+",
+          "product": "type VI secretion system lipoprotein TssJ"
+        },
+        {
+          "gene_id": "tssK",
+          "start": 48804,
+          "end": 50129,
+          "strand": "+",
+          "product": "type VI secretion system baseplate subunit TssK"
+        },
+        {
+          "gene_id": "icmH",
+          "start": 50126,
+          "end": 50917,
+          "strand": "+",
+          "product": "type IVB secretion system protein IcmH/DotU"
+        },
+        {
+          "gene_id": "VP1415",
+          "start": 51019,
+          "end": 53223,
+          "strand": "+",
+          "product": "PAAR-like domain-containing protein"
+        },
+        {
+          "gene_id": "VP1416",
+          "start": 53223,
+          "end": 53816,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1417",
+          "start": 53816,
+          "end": 54367,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1418",
+          "start": 54512,
+          "end": 54949,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1419",
+          "start": 55330,
+          "end": 55896,
+          "strand": "+",
+          "product": "hypothetical protein"
+        },
+        {
+          "gene_id": "VP1420",
+          "start": 55918,
+          "end": 56406,
+          "strand": "+",
+          "product": "hypothetical protein"
+        }
+      ]
+    }
+  ]
+}

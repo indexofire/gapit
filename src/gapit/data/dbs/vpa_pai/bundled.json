@@ -1,0 +1,29 @@
+{
+  "name": "vpa_pai",
+  "description": "V. parahaemolyticus VPaI-1..VPaI-10 pathogenicity islands",
+  "vendor": "gapit-curated (Boyd et al. 2008; INSDC)",
+  "dbtype": "nucl",
+  "kind": "cluster",
+  "snapshotted": "2026-11-02",
+  "license": "Public domain (INSDC sequences)",
+  "note": "Ten VPaI loci reconstructed from RIMD 2210633 (NC_004603.1/NC_004605.1) and AQ3810 (GCA_000154045.1); VPaI-10 follows the RIMD T6SS region VP1387-VP1420 (VP1386 is absent from the RefSeq annotation). Built as one locus per island through the cluster pipeline; no typing scheme.",
+  "guidance": {
+    "references": [
+      {
+        "citation": "Boyd EF, Cohen ALV, Naughton LM, Ussery DW, Binnewies TT, Stine OC, Parent MA. Molecular analysis of the emergence of pandemic Vibrio parahaemolyticus. BMC Microbiol. 2008;8:110.",
+        "doi": "10.1186/1471-2180-8-110",
+        "note": "Defines VPaI-1..VPaI-10, including the AQ3810 islands VPaI-8/VPaI-9 and the VPaI-9/VPaI-10 insertion-site comparison (Fig. S4)."
+      },
+      {
+        "citation": "Hurley CC, Quirke A, Reen FJ, Boyd EF. Four genomic islands that mark post-1995 pandemic Vibrio parahaemolyticus isolates. BMC Genomics. 2006;7:104.",
+        "doi": "10.1186/1471-2164-7-104",
+        "note": "The original VPaI-1..VPaI-7 island description."
+      }
+    ],
+    "caveats": [
+      "VPaI-1..7 coordinates follow RIMD 2210633; VPaI-8/9 follow the AQ3810 ORF descriptions. VPaI-10 is the RIMD T6SS region VP1387-VP1420 (VP1386 is absent from the RefSeq annotation): the 2008 paper shows the VPaI-9/VPaI-10 insertion-site comparison but does not publish a separate VPaI-10 coordinate table, so this boundary is the documented T6SS reconstruction.",
+      "Island presence and coverage are not a pathogenicity verdict: VPaIs can be partial, rearranged, or lost, and several islands occur in pre-1995 and environmental strains. Read the per-gene evidence, not just the locus coverage.",
+      "The panel carries no typing scheme; it answers which VPaIs are present and how completely, not which pathotype or serotype the isolate is."
+    ]
+  }
+}

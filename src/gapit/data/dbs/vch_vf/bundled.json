@@ -1,0 +1,37 @@
+{
+  "name": "vch_vf",
+  "description": "V. cholerae CTX prophage core/RS2 genes + ctxB/tcpA allele panel",
+  "vendor": "gapit-curated (INSDC)",
+  "dbtype": "nucl",
+  "kind": "gene",
+  "snapshotted": "2026-11-02",
+  "license": "Public domain (INSDC sequences)",
+  "note": "CTX core (ctxA, ctxB, zot, ace, cep, orfU), RS2 (rstR, rstA, rstB), allele-specific ctxB classical/El Tor, and tcpA classical/El Tor/O139 markers cut from NC_015209.1 (CTXphi), N16961 (NC_002505.1), O395 (NC_012582.1), and O139 FC1225 (NZ_NGQY01000008.1). No typing scheme.",
+  "guidance": {
+    "references": [
+      {
+        "citation": "Waldor MK, Mekalanos JJ. Lysogenic conversion by a filamentous phage encoding cholera toxin. Science. 1996;272(5270):1910-1914.",
+        "doi": "10.1126/science.272.5270.1910",
+        "note": "CTXphi biology and ctxAB carriage."
+      },
+      {
+        "citation": "Taylor RK, Miller VL, Furlong DB, Mekalanos JJ. Use of phoA gene fusions to identify a pilus colonization factor coordinately regulated with cholera toxin. Proc Natl Acad Sci USA. 1987;84(9):2833-2837.",
+        "doi": "10.1073/pnas.84.9.2833",
+        "note": "tcpA/TCP as the CTXphi receptor and colonization factor."
+      },
+      {
+        "citation": "Li X, Han Y, Zhao W, et al. Diversity and Complexity of CTXPhi and Pre-CTXPhi Families in Vibrio cholerae from Seventh Pandemic. Microorganisms. 2024;12(10):1935.",
+        "doi": "10.3390/microorganisms12101935",
+        "note": "ctxB and tcpA allele/type framework used by this panel."
+      }
+    ],
+    "caveats": [
+      "Marker presence is genetic potential, not toxin expression: CTXphi can be partial, defective, or lost, and tcpA presence does not prove a functional TCP.",
+      "ctxB_classical and ctxB_eltor are allele markers; O139 strains use the El Tor ctxB allele, so there is deliberately no separate ctxB_o139 record.",
+      "tcpA_o139 is the O139-associated variant represented by strain FC1225 (WP_050926100.1); it is ~99.7% identical to the canonical El Tor tcpA and can cross-hit. Read identity/coverage, not just presence.",
+      "cep is the core-encoded pilin; orfU is carried as the NC_015209.1 minor coat protein pIII annotation. Both are CTXphi structural/assembly genes, not toxin genes.",
+      "rstR/rstA/rstB are RS2 phage regulatory/replication genes; the RstR sequence is shared by the reference CTXphi and N16961 records, so it is a single marker. RS1 (rstC) and CTXphi integration-site context are not modelled here.",
+      "This panel does not assign an O serogroup, biotype, or pathotype; combine it with the O-antigen and typing panels."
+    ]
+  }
+}

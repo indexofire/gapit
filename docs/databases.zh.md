@@ -103,8 +103,8 @@ $ for name in $(gapit db list -n); do gapit db setup -d "$name"; done
 - `-` —— 没有分型方案，仅用于筛查。
 
 当 `<datadir>/<name>/gapit-manifest.json` 存在时 STATUS 显示 `installed (N)`，N 是
-记录数，否则显示 `available`。五个随 wheel 发布的**内置数据库**
-—— `cje_cps`、`eco_dec`、`lmo_sero`、`shi_sero`、`vpa_ok`
+记录数，否则显示 `available`。七个随 wheel 发布的**内置数据库**
+—— `cje_cps`、`eco_dec`、`lmo_sero`、`shi_sero`、`vch_vf`、`vpa_ok`、`vpa_pai`
 —— 均由 gapit 策划，没有提供商、也没有 fetch 路径：物化前为 `bundled`，物化后为
 `installed (N)`。每个提供商（包括 `ecoh`、`ncbi`、`resfinder`）都按需抓取，在
 `gapit db fetch -d <name>` 安装前显示 `available`。目录之外装进数据目录的数据库
@@ -266,7 +266,7 @@ Kaptive 的"位点型≠血清型"、VFDB 的 CC BY-NC 条款）。`tests/test_d
 ## 内置数据库（即装即用）
 
 大多数数据库在 `db fetch` 时才从上游下载，因为许可证禁止再分发（见"提供商"一节）。
-少数**内置**数据库随 gapit wheel 一起发布 —— 共五个，均由 gapit 策划，其内容经过
+少数**内置**数据库随 gapit wheel 一起发布 —— 共七个，均由 gapit 策划，其内容经过
 逐条记录的来源审计（公共领域来源，加上 MIT 许可的 `vpa_ok` 面板）。策略比"许可证
 允许"更严格：第三方提供商快照（`ncbi`、`card`、`ecoh`、`resfinder` 等）绝不随
 wheel 发布，因为它们的再分发条款和来源风险不应由 MIT 包承担。无需下载、无需确认：
@@ -278,6 +278,8 @@ wheel 发布，因为它们的再分发条款和来源风险不应由 MIT 包承
 | `eco_dec` | 致腹泻大肠杆菌标志基因面板（16 条记录，GB 4789.6 + 风险监测判定） | 2026-10-02 | `gapit.typing/2`（`gb4789_6`、`risk_monitoring` 双方案） |
 | `lmo_sero` | 单核细胞增生李斯特菌血清群分型（5 条记录，Doumith 2004 标记） | 2026-10-03 | `gapit.typing/2`（方案 `doumith_serogroup`） |
 | `shi_sero` | 志贺菌分子血清型 marker 面板（95 条 ShigaTyper 公共领域标记，`ipaH_c` 拆成两段对照片段；首批保守规则） | 2026-11-02 | `gapit.serotype/1`（ShigaTyper marker 规则） |
+| `vch_vf` | 霍乱弧菌 CTX 核心/RS2 基因 + ctxB classical/El Tor + tcpA classical/El Tor/O139 标记（13 条记录） | 2026-11-02 | -（仅筛查） |
+| `vpa_pai` | 副溶血弧菌 VPaI-1..VPaI-10 致病岛（10 个 locus，cluster 类；RIMD 2210633 + AQ3810） | 2026-11-02 | -（仅筛查） |
 | `vpa_ok` | 副溶血性弧菌 O/K 抗原位点（195 个位点，vpautils OAgc+CPSgc；cluster 类） | 2026-10-12 | `gapit.typing/2`（`o_group`、`k_group`、`serotype` 三方案） |
 
 **许可证来源声明。** `eco_dec` 的每条记录都取自公共领域的一级提交（NCBI
@@ -294,8 +296,19 @@ gapit.typing/2 构建产出的已解析 `sequences` + `features.json` 形式入�
 同样通过审计。`shi_sero` 面板由 ShigaTyper 2.0.5 的公共领域 marker FASTA
 重新格式化而来（不含 ShigaPass GPL 内容）；其 `serotype.json` 是首批保守
 marker-set 解析规则，不是 ShigaTyper 的逐字节移植。`ipaH_c` 对照基因拆成两段
-互不重叠的存在性片段（1-640 与 641-780），以覆盖发生分化的 ipaH 等位基因。回归测试锁定了五个内置库的
+互不重叠的存在性片段（1-640 与 641-780），以覆盖发生分化的 ipaH 等位基因。回归测试锁定了七个内置库的
 头部不出现任何 `VF*` / `VFDB` / `ARO:` 标签。
+
+`vch_vf` 是仅筛查的基因面板：CTX 核心（`ctxA`、`ctxB`、`zot`、`ace`、`cep`、
+`orfU`）、RS2（`rstR`、`rstA`、`rstB`）、`ctxB_classical` / `ctxB_eltor`
+等位标记，以及 `tcpA_classical` / `tcpA_eltor` / `tcpA_o139`。O139 使用 El Tor
+型 `ctxB`；O139 tcpA 标记来自 FC1225 相关变异，与典型 El Tor tcpA 约 99.7%
+一致，需结合 identity/coverage 解读。
+
+`vpa_pai` 是仅筛查的 cluster 库：VPaI-1..VPaI-10 每个致病岛一个 locus
+（VPaI-1..7 与 T6SS VPaI-10 来自 RIMD 2210633，VPaI-8/9 来自 AQ3810）。
+TSV 只报最佳 locus；`--format json` 会列出全部 locus 及其 coverage、identity、
+present/partial/missing 基因证据。
 
 **快照是一个时间点。** 每个快照的 `sequences` 文件与策划构建在快照当日产出的结果
 逐字节一致（vpa_ok 在本地存在真实 vpautils GenBank 文件时，对着
@@ -522,7 +535,7 @@ $ gapit db search "tet(M)" --field gene --exact --json | head -1
 ## 提供商
 
 gapit 自带二十一个提供商。每一个——包括 `card`、`ncbi` 和 `vfdb`——都在抓取时从
-上游下载。包里不内置任何提供商快照，只有上文五个由 gapit 策划、许可宽松的内置库随
+上游下载。包里不内置任何提供商快照，只有上文七个由 gapit 策划、许可宽松的内置库随
 wheel 发布。多家上游许可（CARD 的 McMaster 条款、VFDB 的 CC BY-NC、
 Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发；即使是许可宽松的提供商快照也
 有来源风险，因此一律按需抓取。八个提供商是**基因簇**数据库

@@ -285,7 +285,7 @@ wheel's notes without rebuilding anything.
 
 Most databases download from upstream at `db fetch` time because their licenses forbid
 redistribution (see [Providers](#providers)). A small set of **bundled** databases ships
-inside the gapit wheel instead — five gapit-curated databases whose content provenance
+inside the gapit wheel instead — seven gapit-curated databases whose content provenance
 was audited record-by-record (public-domain sources plus the MIT `vpa_ok` panel). The
 policy is stricter than "the license permits it": third-party provider snapshots
 (`ncbi`, `card`, `ecoh`, `resfinder`, ...) never ride the wheel, because their
@@ -298,6 +298,8 @@ Nothing to download, nothing to accept: a bundled database works out of the box.
 | `eco_dec` | Diarrheagenic E. coli marker panel (16 records, GB 4789.6 + risk-monitoring designation) | 2026-10-02 | `gapit.typing/2` (schemes `gb4789_6`, `risk_monitoring`) |
 | `lmo_sero` | Listeria monocytogenes serogrouping (5 records, Doumith 2004 markers) | 2026-10-03 | `gapit.typing/2` (scheme `doumith_serogroup`) |
 | `shi_sero` | Shigella molecular serotype marker panel (95 ShigaTyper public-domain markers, `ipaH_c` split into two control fragments; first conservative rules) | 2026-11-02 | `gapit.serotype/1` (ShigaTyper marker rules) |
+| `vch_vf` | V. cholerae CTX core/RS2 genes + ctxB classical/El Tor + tcpA classical/El Tor/O139 markers (13 records) | 2026-11-02 | - (screen-only) |
+| `vpa_pai` | V. parahaemolyticus VPaI-1..VPaI-10 pathogenicity islands (10 loci, cluster kind; RIMD 2210633 + AQ3810) | 2026-11-02 | - (screen-only) |
 | `vpa_ok` | V. parahaemolyticus O and K antigen loci (195 loci, vpautils OAgc+CPSgc; cluster kind) | 2026-10-12 | `gapit.typing/2` (schemes `o_group`, `k_group`, `serotype`) |
 
 **License provenance.** Every `eco_dec` record was re-sourced from primary
@@ -319,7 +321,18 @@ conservative marker-set resolver and is not a byte-for-byte ShigaTyper port.
 Its `ipaH_c` control is split into two non-overlapping presence fragments
 (1-640 and 641-780) so divergent ipaH alleles remain detectable.
 A regression test pins that no `VF*` / `VFDB` / `ARO:` tags appear in any
-of the five bundles' headers.
+of the seven bundles' headers.
+
+`vch_vf` is a screen-only gene panel: CTX core (`ctxA`, `ctxB`, `zot`, `ace`,
+`cep`, `orfU`), RS2 (`rstR`, `rstA`, `rstB`), allele-specific `ctxB_classical` /
+`ctxB_eltor`, and `tcpA_classical` / `tcpA_eltor` / `tcpA_o139`. O139 uses the
+El Tor `ctxB` allele; the O139 tcpA marker is the FC1225-associated variant and
+is ~99.7% identical to canonical El Tor tcpA, so read identity/coverage.
+
+`vpa_pai` is a screen-only cluster database with one locus per VPaI-1..VPaI-10
+pathogenicity island (RIMD 2210633 for VPaI-1..7 and the T6SS VPaI-10; AQ3810
+for VPaI-8/9). TSV output reports the best locus; `--format json` carries every
+locus with its coverage, identity, present/partial/missing gene evidence.
 
 **Snapshots are point-in-time.** Each snapshot's `sequences` file is byte-for-byte what
 the curated build produces on the snapshot date (a regression test proves the
@@ -481,7 +494,7 @@ documented per-locus tuning).
 ## Checking database freshness
 
 `gapit db outdated` reports every installed database's age against the staleness
-threshold. Against a fully installed datadir (output trimmed to three of twenty-six rows):
+threshold. Against a fully installed datadir (output trimmed to three of twenty-eight rows):
 
 ```console
 $ gapit db outdated --days 30
@@ -575,14 +588,14 @@ unknown `--db NAME` is a usage error (exit 2) listing what is installed.
 
 Twenty-one providers ship with gapit. Every one of them — `card`, `ncbi`, and `vfdb`
 included — downloads from its upstream source at fetch time. No provider snapshot is
-bundled: only the five gapit-curated, permissively licensed bundles above ride the
+bundled: only the seven gapit-curated, permissively licensed bundles above ride the
 package. Several upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's
 GPL-3.0) forbid redistribution inside an MIT-licensed distribution, and even
 permissively licensed provider snapshots carry provenance risk, so they stay
 fetch-on-demand. Eight providers
 are **cluster** databases (built through the cluster pipeline at fetch time): the seven
 Kaptive providers ([Kaptive providers](#kaptive-providers-gpl-downloaded-on-fetch)) and
-`vch_oagc`; the typed `vpa_ok` is bundled-only
+`vch_oagc`; the typed `vpa_ok` and untyped `vpa_pai` are bundled-only
 ([vpa_ok](#vpa_ok-v-parahaemolyticus-ok-mit-typed-on-install)).
 
 | Name | Maintainer | Content | dbtype |
@@ -617,8 +630,9 @@ Cluster databases screen through the minimap2 cluster engine
 (LC594800–LC594991 subset) as one efetch batch, appends a committed `ompW` control
 locus, and installs a committed `gapit.typing/2` asset (`o_group` + `species`). Many OL
 clusters are not serologically verified; `OUT` means no reference locus matched, not
-non-O1/non-O139, and OLU loci are not in this build yet. `ctxA/ctxB` are deliberately
-absent (future `vch_vf`).
+non-O1/non-O139, and OLU loci are not in this build yet. `ctxA/ctxB` and the
+CTX/RS2/tcpA markers are in the separate bundled `vch_vf` panel, not this O-antigen
+database.
 
 ### Kaptive providers (GPL, downloaded on fetch)
 

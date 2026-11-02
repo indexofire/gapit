@@ -13,6 +13,18 @@
   alignment geometry and stay unresolved for that pair. ShigaPass GPL
   content is not bundled.
 
+- **Bundled `vch_vf` V. cholerae CTX/tcpA panel.**
+  A 13-record, screen-only gene database: CTX core (`ctxA`, `ctxB`, `zot`,
+  `ace`, `cep`, `orfU`), RS2 (`rstR`, `rstA`, `rstB`), allele-specific
+  `ctxB_classical`/`ctxB_eltor`, and `tcpA_classical`/`tcpA_eltor`/
+  `tcpA_o139`. Public-domain INSDC sequences; no typing scheme.
+
+- **Bundled `vpa_pai` V. parahaemolyticus pathogenicity-island cluster database.**
+  Ten screen-only loci, one per VPaI-1..VPaI-10; VPaI-1..7 plus the T6SS
+  VPaI-10 come from RIMD 2210633, VPaI-8/9 from AQ3810. The bundle ships the
+  locus FASTA and `gapit.features/1` table; TSV reports the best locus and
+  JSON carries every locus with per-gene evidence.
+
 - **Experimental rich cluster evidence (`gapit screen --detail --format json`).**
   Opt-in `gapit.locus_map/1` output adds per-locus alignment pieces,
   insertions/deletions with flanking genes, per-gene query spans, panel gene

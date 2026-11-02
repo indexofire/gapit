@@ -1,8 +1,8 @@
 """Bundled databases: discovery, materialization, and the DEC matrix.
 
-The wheel ships four license-clean, gapit-curated bundles — the typed
-eco_dec, lmo_sero, and cje_cps panels plus the typed vpa_ok cluster
-snapshot (MIT, a pure built-in). Provider-backed databases (ecoh, ncbi,
+The wheel ships seven license-clean, gapit-curated bundles — the typed
+eco_dec, lmo_sero, cje_cps, shi_sero, and vch_vf panels plus the typed
+vpa_ok and untyped vpa_pai cluster snapshots. Provider-backed databases (ecoh, ncbi,
 resfinder, card, ...) are fetch-on-demand only: their upstream content
 carries licensing/provenance risk that a wheel snapshot should not
 shoulder. These tests pin the install-time-ready contract — discovery
@@ -125,12 +125,21 @@ def screen_db(sample: Path, datadir: Path, name: str, *extra: str) -> Result:
 
 def test_bundled_discovery_finds_all_bundled() -> None:
     """Given the wheel's data dir, When bundled databases are discovered,
-    Then exactly the five gapit-curated bundles ship in name order — four
-    gene-kind plus the vpa_ok cluster-kind — each metadata parses
+    Then exactly the seven gapit-curated bundles ship in name order — five
+    gene-kind plus the vpa_ok/vpa_pai cluster-kind — each metadata parses
     (vendor/dbtype/kind/snapshot date), eco_dec/lmo_sero/cje_cps carry
-    their typing documents, shi_sero is the first serotype prototype, and
-    vpa_ok carries typing, features table, and content license."""
-    assert bundled_names() == ["cje_cps", "eco_dec", "lmo_sero", "shi_sero", "vpa_ok"]
+    their typing documents, shi_sero is the first serotype prototype,
+    vch_vf is the CTX/tcpA panel, and vpa_ok/vpa_pai carry cluster feature
+    tables; vpa_pai is screen-only."""
+    assert bundled_names() == [
+        "cje_cps",
+        "eco_dec",
+        "lmo_sero",
+        "shi_sero",
+        "vch_vf",
+        "vpa_ok",
+        "vpa_pai",
+    ]
     by_name = {database.name: database for database in bundled_databases()}
     cje_cps = by_name["cje_cps"]
     assert cje_cps.metadata.vendor.startswith("gapit-curated (Poly 2015")
@@ -160,6 +169,13 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert lmo_sero.metadata.dbtype == "nucl"
     assert lmo_sero.metadata.snapshotted == "2026-10-03"
     assert lmo_sero.typing_path is not None
+    vch_vf = by_name["vch_vf"]
+    assert vch_vf.metadata.vendor == "gapit-curated (INSDC)"
+    assert vch_vf.metadata.dbtype == "nucl"
+    assert vch_vf.metadata.kind == "gene"
+    assert vch_vf.metadata.snapshotted == "2026-11-02"
+    assert vch_vf.typing_path is None
+    assert vch_vf.screen_path is not None
     vpa_ok = by_name["vpa_ok"]
     assert vpa_ok.metadata.kind == "cluster"
     assert vpa_ok.metadata.vendor == "gapit-curated (vpasero)"
@@ -169,9 +185,16 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert vpa_ok.features_path is not None
     assert vpa_ok.profile_path is not None
     assert vpa_ok.gene_families_path is not None
+    vpa_pai = by_name["vpa_pai"]
+    assert vpa_pai.metadata.kind == "cluster"
+    assert vpa_pai.metadata.vendor == "gapit-curated (Boyd et al. 2008; INSDC)"
+    assert vpa_pai.metadata.license == "Public domain (INSDC sequences)"
+    assert vpa_pai.typing_path is None
+    assert vpa_pai.features_path is not None
+    assert vpa_pai.profile_path is None
     assert by_name["eco_dec"].features_path is None
     assert find_bundled("eco_dec") is not None
-    assert find_bundled("vpa_ok") is not None
+    assert find_bundled("vpa_pai") is not None
     assert find_bundled("ncbi") is None
     assert find_bundled("card") is None
 
@@ -180,14 +203,16 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     """Given every bundled panel, When every header is inspected, Then no VF
     tag, VFDB marker, or ARO accession appears anywhere — the DEC lesson
     from the license audit (2 VFDB records hid past header-spotting) is
-    locked mechanically across all five bundles (record counts pinned;
+    locked mechanically across all seven bundles (record counts pinned;
     the vpa_ok cluster snapshot's bare locus ids are trivially clean)."""
     typed_counts = {
         "cje_cps": 42,
         "eco_dec": 16,
         "lmo_sero": 5,
         "shi_sero": 96,
+        "vch_vf": 13,
         "vpa_ok": VPA_OK_LOCI,
+        "vpa_pai": 10,
     }
     for bundled in bundled_databases():
         text = bundled.sequences_path.read_text(encoding="utf-8")

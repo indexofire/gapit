@@ -374,8 +374,12 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
         f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\tgene\t-\tSynthetica\n"
         f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\tgene"
         "\t-\tExample Org\n"
+        "vch_vf\tV. cholerae CTX prophage core/RS2 genes + ctxB/tcpA allele panel\tbundled"
+        "\tnucl\tgene\t-\tgapit-curated (INSDC)\n"
         "vpa_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
         "nucl\tcluster\tintegrated\tgapit-curated (vpasero)\n"
+        "vpa_pai\tV. parahaemolyticus VPaI-1..VPaI-10 pathogenicity islands\tbundled\t"
+        "nucl\tcluster\t-\tgapit-curated (Boyd et al. 2008; INSDC)\n"
     )
 
 

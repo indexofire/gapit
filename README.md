@@ -100,14 +100,14 @@ A database is a directory under the datadir, resolved from `--datadir`, then
 `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`
 (use `gapit db path` to inspect it). On a fresh install
 `gapit db list` bootstraps the datadir and lists the catalog (bundled rows ready for
-first use); `gapit db setup` creates it and materializes all five bundled databases.
-Twenty-six databases are
+first use); `gapit db setup` creates it and materializes all seven bundled databases.
+Twenty-eight databases are
 built into the catalog — thirteen gene providers, eight cluster providers, and
-five bundled snapshots (`cje_cps`, `eco_dec`, `lmo_sero`, `shi_sero`, `vpa_ok`). Every
+seven bundled snapshots (`cje_cps`, `eco_dec`, `lmo_sero`, `shi_sero`, `vch_vf`, `vpa_ok`, `vpa_pai`). Every
 provider builds on `gapit db fetch`,
 which downloads from upstream — including `nme_sero` (N. meningitidis serogroup + ctrA + sodC, non-MLST). The bundled set is gapit-curated and provenance-clean only:
-the public-domain `eco_dec`, `lmo_sero`, `cje_cps`, and `shi_sero` marker panels plus the MIT
-typed-cluster snapshot `vpa_ok`, materialized into the datadir on first use with zero
+the public-domain `eco_dec`, `lmo_sero`, `cje_cps`, `shi_sero`, and `vch_vf`
+panels plus the `vpa_pai` and MIT typed-cluster `vpa_ok` databases, materialized into the datadir on first use with zero
 network. The bundled `eco_dec` additionally carries per-gene identity floors
 (`floors.json`, `pic` at 90%) that both engines apply before presence calls, and
 `cje_cps` ships floors plus per-database `screen.json` defaults (MAPQ 20, depth 5, 10%
@@ -135,6 +135,8 @@ conda/Docker guidance, and security notes, see [Data directory](docs/datadir.md)
 | `ecoli_vf` | E. coli virulence factors | nucl |
 | `lmo_sero` | Listeria monocytogenes serogrouping (Doumith 2004) | nucl |
 | `shi_sero` | Shigella molecular serotype marker panel (ShigaTyper public-domain markers; first serotype rules) | nucl |
+| `vch_vf` | V. cholerae CTX core/RS2 + ctxB classical/El Tor + tcpA classical/El Tor/O139 markers | nucl |
+| `vpa_pai` | V. parahaemolyticus VPaI-1..VPaI-10 pathogenicity islands (cluster) | nucl |
 | `bacmet2` | BacMet2 biocide/resistance genes (protein) | prot |
 | `victors` | Victors virulence factors | nucl |
 | `upec_expec_vf` | UPEC/ExPEC virulence genes | nucl |
@@ -233,7 +235,7 @@ roadmap (the current architecture lives in `AGENTS.md`, `SPEC.md`, and `docs/dat
 
 gapit is MIT-licensed. It is a behavioral reimplementation of abricate (GPL-2.0) and
 copies no Perl code; abricate itself remains GPL-2.0. The only database content inside
-the package is the five audited, permissively licensed, gapit-curated bundles under
+the package is the seven audited, permissively licensed, gapit-curated bundles under
 `src/gapit/data/dbs/`
 (public domain / Apache-2.0 / BSD-3-Clause / MIT); every other provider downloads from
 upstream at fetch time, under its own license (SPEC.md §9).
