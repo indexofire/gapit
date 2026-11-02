@@ -278,6 +278,16 @@ consumes abricate-built datadirs.
 > typing mode. The 813-genome multi-species validation harness and report live
 > in `scripts/shigella/VALIDATION.md` (ShigaTyper/ShigaPass/ShigeiFinder
 > references; directory labels are treated as collection metadata, not truth).
+>
+> **Vibrio virulence and PAI databases (2026-11-03):** `vch_vf` ships as a
+> 13-record screen-only gene db (CTX core/RS2, ctxB classical/El Tor, tcpA
+> classical/El Tor/O139) and `vpa_pai` as a 10-locus screen-only cluster db
+> (VPaI-1..VPaI-10; RIMD 2210633 for 1-7/10, AQ3810 for 8/9). Both are
+> gapit-curated public-domain INSDC content, built by `scripts/vibrio/`.
+> VPaI-10 follows the RIMD T6SS region VP1387-VP1420 and carries an explicit
+> boundary caveat; O139 uses the El Tor ctxB allele and the O139 tcpA marker
+> is ~99.7% identical to canonical El Tor tcpA. No typing scheme is installed;
+> `gapit screen --format json` carries the full per-marker/per-locus evidence.
 
 ## Milestones
 
