@@ -141,7 +141,7 @@ def db_path_command(datadir: Path | None, as_json: bool) -> None:
 def db_list_command(datadir: Path | None, names_only: bool, as_json: bool) -> None:
     """List known databases and their state.
 
-    Columns: NAME, DESCRIPTION, STATUS, DBTYPE, TYPING, PROVIDER. With
+    Columns: NAME, DESCRIPTION, STATUS, DBTYPE, KIND, TYPING, PROVIDER. With
     ``--name``, print only the names, space-separated, in NAME order.
     """
 
@@ -164,11 +164,11 @@ def db_list_command(datadir: Path | None, names_only: bool, as_json: bool) -> No
             # TTY-only rich table; pipes/redirects must keep the byte-stable TSV.
             Console().print(db_list_table(entries))
             return
-        click.echo("NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER")
+        click.echo("NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tKIND\tTYPING\tPROVIDER")
         for entry in entries:
             click.echo(
                 f"{tsv_cell(entry.name)}\t{tsv_cell(entry.description)}"
-                f"\t{db_list_status(entry)}\t{entry.dbtype}"
+                f"\t{db_list_status(entry)}\t{entry.dbtype}\t{entry.kind}"
                 f"\t{db_list_typing(entry)}\t{tsv_cell(entry.vendor)}"
             )
 

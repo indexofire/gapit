@@ -8,7 +8,10 @@ bundled databases still materialize on first use), loads the database's
 typing.json, and runs the shared gene-path engine
 (:func:`gapit.typing_gene.evaluate_gene_calls`) over each FILE's folded
 gene calls. Cluster databases refuse with a typed error: their typing is
-integrated into ``gapit screen`` (gapit.cluster/1 emits it directly).
+integrated into ``gapit screen``.  Cluster JSON results (``gapit.cluster/2``
+or ``gapit.locus_map/1``) are accepted as a concise-formatting path: their
+already-evaluated ``phenotypes`` map is rendered as the same
+``gapit.typing_result/1`` document, without re-running the aligner.
 """
 
 from datetime import UTC, datetime
@@ -28,6 +31,7 @@ from gapit.formats.typing_result import (
     typing_tsv_preamble,
 )
 from gapit.screening import find_database
+from gapit.typing_cluster_input import read_cluster_typing_input
 from gapit.typing_gene import evaluate_gene_calls
 from gapit.typing_input import STDIN_LABEL, read_typing_input
 
@@ -73,6 +77,36 @@ def run_typing(
     source = [str(path) for path in paths]
     if stdin_text is not None:
         source.append(STDIN_LABEL)
+
+    def render(db_name: str, results: list[TypingFileResult], *, now: datetime) -> str:
+        chunks: list[str] = []
+
+        def sink(chunk: str) -> None:
+            if chunk:
+                chunks.append(chunk)
+                if emit is not None:
+                    emit(chunk)
+
+        if output_format is OutputFormat.json:
+            sink(render_typing_result_json(source, db_name, results, now=now))
+        elif output_format is OutputFormat.md:
+            sink(render_typing_md(source, db_name, results, now=now))
+        else:
+            sink(typing_tsv_preamble())
+            for result in results:
+                sink(typing_file_chunk(result))
+        return "".join(chunks)
+
+    cluster_input = read_cluster_typing_input(paths, stdin_text)
+    if cluster_input is not None:
+        database, results = cluster_input
+        if not quiet:
+            click.echo(
+                f"Typing {len(results)} file(s) against {database} (cluster result)",
+                err=True,
+            )
+        return render(database, results, now=datetime.now(UTC))
+
     table = read_typing_input(paths, stdin_text)
     document = _resolve_document(table.database, datadir, quiet)
     if not quiet:
@@ -85,21 +119,4 @@ def run_typing(
         )
         for entry in table.files
     ]
-    now = datetime.now(UTC)
-    chunks: list[str] = []
-
-    def sink(chunk: str) -> None:
-        if chunk:
-            chunks.append(chunk)
-            if emit is not None:
-                emit(chunk)
-
-    if output_format is OutputFormat.json:
-        sink(render_typing_result_json(source, table.database, results, now=now))
-    elif output_format is OutputFormat.md:
-        sink(render_typing_md(source, table.database, results, now=now))
-    else:
-        sink(typing_tsv_preamble())
-        for result in results:
-            sink(typing_file_chunk(result))
-    return "".join(chunks)
+    return render(table.database, results, now=datetime.now(UTC))

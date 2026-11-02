@@ -65,7 +65,9 @@ def test_profile_opts_into_secondary_and_thresholds(tmp_path: Path) -> None:
     (tmp_path / CLUSTER_PROFILE_FILENAME).write_text(
         '{"schema":"gapit.cluster_profile/1","coverage_mode":"primary_secondary",'
         '"min_gene_cov":50.0,"min_cluster_cov":90.0,"fallback_evidence":true,'
-        '"locus_typeable_coverage":50.0,"locus_typeable_identity":90.0}',
+        '"locus_typeable_coverage":50.0,"locus_typeable_identity":90.0,'
+        '"locus_quality_min_coverage":80.0,"locus_quality_min_identity":90.0,'
+        '"locus_quality_max_missing_genes":3,"locus_quality_max_extra_panel_genes":2}',
         encoding="utf-8",
     )
     db = _database(tmp_path)
@@ -76,6 +78,10 @@ def test_profile_opts_into_secondary_and_thresholds(tmp_path: Path) -> None:
     assert params.min_cluster_cov == 90.0
     assert params.locus_typeable_coverage == 50.0
     assert params.locus_typeable_identity == 90.0
+    assert params.locus_quality_min_coverage == 80.0
+    assert params.locus_quality_min_identity == 90.0
+    assert params.locus_quality_max_missing_genes == 3
+    assert params.locus_quality_max_extra_panel_genes == 2
     explicit = resolve_cluster_params(db, 60, 90, 95, 1)
     assert explicit.min_gene_cov == 60.0
     assert explicit.min_cluster_cov == 95.0
@@ -123,6 +129,10 @@ def test_bundled_vpa_ok_opts_into_secondary_coverage() -> None:
     assert profile.min_gene_cov == 50.0
     assert profile.locus_typeable_coverage == 50.0
     assert profile.locus_typeable_identity == 90.0
+    assert profile.locus_quality_min_coverage == 80.0
+    assert profile.locus_quality_min_identity == 90.0
+    assert profile.locus_quality_max_missing_genes == 3
+    assert profile.locus_quality_max_extra_panel_genes == 2
 
 
 def test_fallback_evidence_is_scheme_family_scoped() -> None:

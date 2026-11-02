@@ -56,32 +56,32 @@ export GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"
 
 ```console
 $ gapit db list
-NAME	DESCRIPTION	STATUS	DBTYPE	TYPING	PROVIDER
-ab_k	A. baumannii K locus (Kaptive)	available	nucl	-	Kaptive (Kenyon lab)
-ab_o	A. baumannii OC locus — official keyword ab_o (Kaptive)	available	nucl	-	Kaptive (Kenyon lab)
-argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée-Infection
-bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	available	prot	-	University of Gothenburg
-card	CARD protein homolog resistance models	available	nucl	-	McMaster University
-cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
-ecoh	E. coli O and H antigens (srst2 EcOH)	available	nucl	-	Holt lab (srst2)
-ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	command	gapit-curated (public-domain sources)
-ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	-	Kaptive (Gladstone lab)
-ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	-	PHAC-NML
-kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
-kosc_o	K. oxytoca species complex O locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
-kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
-kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	-	Kaptive (klebgenomics)
-lmo_sero	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	command	gapit-curated (public-domain INSDC sources)
-megares	MEGARes antimicrobial resistance genes	available	nucl	-	MEG Lab
-ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	available	nucl	-	NCBI
-nme_sero	Neisseria meningitidis serogroup + ctrA + sodC control (non-MLST)	available	nucl	command	MDU-PHL
-plasmidfinder	CGE PlasmidFinder replicons	available	nucl	-	DTU CGE
-resfinder	CGE ResFinder acquired resistance genes	available	nucl	-	DTU CGE
-upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	-	FordeGenomics
-vch_oagc	Vibrio cholerae O-antigen gene clusters (OAGC; 190 OL loci) + ompW species control	available	nucl	integrated	gapit(Hangzhou CDC)
-vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	-	USTC (VFDB)
-victors	Victors virulence factors	available	nucl	-	University of Chicago
-vpa_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	integrated	gapit-curated (vpasero)
+NAME	DESCRIPTION	STATUS	DBTYPE	KIND	TYPING	PROVIDER
+ab_k	A. baumannii K locus (Kaptive)	available	nucl	cluster	-	Kaptive (Kenyon lab)
+ab_o	A. baumannii OC locus — official keyword ab_o (Kaptive)	available	nucl	cluster	-	Kaptive (Kenyon lab)
+argannot	ARG-ANNOT acquired resistance genes	available	nucl	gene	-	IHU Méditerranée-Infection
+bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	available	prot	gene	-	University of Gothenburg
+card	CARD protein homolog resistance models	available	nucl	gene	-	McMaster University
+cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	gene	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
+ecoh	E. coli O and H antigens (srst2 EcOH)	available	nucl	gene	-	Holt lab (srst2)
+ecoli_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gene	command	gapit-curated (public-domain sources)
+ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	cluster	-	Kaptive (Gladstone lab)
+ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	gene	-	PHAC-NML
+kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	cluster	-	Kaptive (klebgenomics)
+kosc_o	K. oxytoca species complex O locus (Kaptive)	available	nucl	cluster	-	Kaptive (klebgenomics)
+kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	cluster	-	Kaptive (klebgenomics)
+kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	cluster	-	Kaptive (klebgenomics)
+lmo_sero	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	gene	command	gapit-curated (public-domain INSDC sources)
+megares	MEGARes antimicrobial resistance genes	available	nucl	gene	-	MEG Lab
+ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	available	nucl	gene	-	NCBI
+nme_sero	Neisseria meningitidis serogroup + ctrA + sodC control (non-MLST)	available	nucl	gene	command	MDU-PHL
+plasmidfinder	CGE PlasmidFinder replicons	available	nucl	gene	-	DTU CGE
+resfinder	CGE ResFinder acquired resistance genes	available	nucl	gene	-	DTU CGE
+upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	gene	-	FordeGenomics
+vch_oagc	Vibrio cholerae O-antigen gene clusters (OAGC; 190 OL loci) + ompW species control	available	nucl	cluster	integrated	gapit(Hangzhou CDC)
+vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	gene	-	USTC (VFDB)
+victors	Victors virulence factors	available	nucl	gene	-	University of Chicago
+vpa_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	cluster	integrated	gapit-curated (vpasero)
 ```
 
 Rows are sorted globally by NAME, so the TSV and JSON listings can be consumed without
@@ -99,12 +99,14 @@ $ for name in $(gapit db list -n); do gapit db setup -d "$name"; done
 
 The loop is the explicit "acquire and index everything" pattern: a named provider is
 fetched when missing, a named bundled database is materialized, and installed databases
-are reindexed. For a repair-only pass that never fetches, use `gapit db setup --all`. Every row is a screening database (`gapit screen`); TYPING says how the
-optional designation works, if the database carries a `typing.json`:
+are reindexed. For a repair-only pass that never fetches, use `gapit db setup --all`. Every row is a screening database (`gapit screen`); KIND distinguishes gene from
+cluster databases, and TYPING says how the optional designation works, if the
+database carries a `typing.json`:
 
 - `command` — a gene database: screen to a table, then run `gapit typing RESULT.tsv`.
-- `integrated` — a cluster database: the phenotype rides `gapit screen` itself
-  (`gapit typing` refuses cluster databases).
+- `integrated` — a cluster database: the phenotype is evaluated by `gapit screen`
+  itself. `gapit typing` can reformat cluster JSON (`cluster/2` or `locus_map/1`)
+  but does not re-evaluate it; cluster TSV is not re-typable.
 - `-` — no typing scheme; screen-only.
 
 STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`

@@ -62,6 +62,20 @@ def _read_table(path: Path) -> str:
         ) from exc
 
 
+def _reject_cluster_table(label: str, text: str) -> None:
+    """A cluster/2 TSV looks like a table but is not the gene-table contract;
+    point the user at the JSON result that carries the scheme metadata."""
+    header = text.splitlines()[0] if text.splitlines() else ""
+    columns = {column.strip().upper() for column in header.split("\t")}
+    if "SEROTYPE" in columns or any(column.endswith("_GROUP") for column in columns):
+        raise InputError(
+            "cluster screen tables cannot be re-typed (no scheme metadata);"
+            " rerun screen with --format json and pass the JSON to typing",
+            code="TYPING_CLUSTER_TABLE",
+            context={"file": label},
+        )
+
+
 def read_typing_input(paths: list[Path], stdin_text: str | None = None) -> TypingInput:
     """Parse and validate the designation input: every table's rows (the
     listed files plus, when ``stdin_text`` is given, the already-read stdin
@@ -70,9 +84,12 @@ def read_typing_input(paths: list[Path], stdin_text: str | None = None) -> Typin
     rows: list[ScreenRow] = []
     labels: list[str] = []
     for path in paths:
+        text = _read_table(path)
+        _reject_cluster_table(str(path), text)
         labels.append(str(path))
-        rows.extend(parse_table(str(path), _read_table(path)))
+        rows.extend(parse_table(str(path), text))
     if stdin_text is not None:
+        _reject_cluster_table(STDIN_LABEL, stdin_text)
         labels.append(STDIN_LABEL)
         rows.extend(parse_table(STDIN_LABEL, stdin_text))
     if not rows:

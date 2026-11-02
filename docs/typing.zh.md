@@ -58,8 +58,10 @@ $ gapit screen 1.fna --db ecoli_dec --quiet | gapit typing --quiet
 `TYPING_NO_SCHEME`，基因簇数据库为 `TYPING_CLUSTER_DB`——基因簇判定不经过该命令。
 
 **基因簇例外。** 基因簇数据库的判定保持集成在 `gapit screen` 内：其判定单元是最佳
-*位点* call，只有 minimap2 基因簇引擎能算——不存在可供重读的筛查表。筛查 typed 基因
-簇数据库会直接注释簇文档——单 scheme 数据库注释 `gapit.cluster/1`（仅限 typed 的 TSV
+*位点* call，只有 minimap2 基因簇引擎能算。紧凑的 cluster TSV 不是基因表，也没有
+重新判定所需的 scheme 元数据；请使用 cluster JSON：`gapit typing result.json` 可读取
+`gapit.cluster/2` 或 `gapit.locus_map/1`，把已经算好的 phenotypes 渲染成
+`gapit.typing_result/1`，不重新运行比对。筛查 typed 基因簇数据库会直接注释簇文档——单 scheme 数据库注释 `gapit.cluster/1`（仅限 typed 的 TSV
 `PHENOTYPE` 列、JSON/MD 中的 `best.phenotype` + `best.phenotype_detail`），多 scheme
 数据库渲染 `gapit.cluster/2`（每个 scheme 一个 call 装进 `phenotypes` 映射，TSV 为
 每方案的胜出位点证据列）。数据库 profile 还可以保留同家族 fallback 证据，并在

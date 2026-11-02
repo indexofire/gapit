@@ -256,6 +256,17 @@ consumes abricate-built datadirs.
 > the optional `locus_status` (`known` / `unknown_locus` / `none`) and
 > `locus_confidence` (`typeable` / `untypeable`) fields. /1 and
 > profile-less cluster dbs stay byte-frozen; additive schema only, no version bump.
+>
+> **Rich locus-map prototype (2026-11-02):** the cluster engine now has an opt-in
+> `LocusAlignment` walk (query/target cs steps, insertions/deletions, per-gene
+> query spans) and a `gapit.locus_map/1` JSON document. Panel gene families and
+> locus containment are a build-time sidecar (`gene_families.json`); vpa_ok
+> ships the prototype sidecar. Detail is available through
+> `gapit screen --detail --format json` (compact outputs untouched); rendering
+> is deliberately left to agents/external tools. `gapit typing` consumes cluster
+> `cluster/2` / `locus_map/1` JSON and renders the already-evaluated phenotypes
+> as `typing_result/1` (cluster TSV lacks scheme metadata). Quality is
+> annotate-only; no typing gate and no version bump yet.
 
 ## Milestones
 

@@ -161,6 +161,7 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert vpa_ok.typing_path is not None
     assert vpa_ok.features_path is not None
     assert vpa_ok.profile_path is not None
+    assert vpa_ok.gene_families_path is not None
     assert by_name["ecoli_dec"].features_path is None
     assert find_bundled("ecoli_dec") is not None
     assert find_bundled("vpa_ok") is not None
@@ -306,7 +307,7 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     bundled_rows = [line for line in lines if line.startswith("ecoli_dec\t")]
     assert bundled_rows == [
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
-        "\tbundled\tnucl\tcommand\tgapit-curated (public-domain sources)"
+        "\tbundled\tnucl\tgene\tcommand\tgapit-curated (public-domain sources)"
     ]
     bundled_all = set(bundled_names())
     first_bundled = next(
@@ -322,7 +323,8 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     assert after.exit_code == 0
     assert (
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
-        "\tinstalled (16)\tnucl\tcommand\tgapit-curated (public-domain sources)" in after.stdout
+        "\tinstalled (16)\tnucl\tgene\tcommand\tgapit-curated (public-domain sources)"
+        in after.stdout
     )
 
     as_json = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
@@ -480,6 +482,8 @@ def test_screen_auto_materializes_bundled_cluster_database(tmp_path: Path) -> No
     assert (db_dir / "features.json").is_file()
     assert bundled.profile_path is not None
     assert (db_dir / "cluster.json").read_bytes() == bundled.profile_path.read_bytes()
+    assert bundled.gene_families_path is not None
+    assert (db_dir / "gene_families.json").read_bytes() == bundled.gene_families_path.read_bytes()
     assert (db_dir / "sequences.nin").is_file()
     report = json.loads(result.stdout)
     assert report["schema"] == "gapit.cluster/2"
@@ -535,3 +539,33 @@ def test_every_bundle_declares_a_content_license() -> None:
     checked from prose alone)."""
     for database in bundled_databases():
         assert database.metadata.license, database.name
+
+
+def test_screen_detail_emits_rich_locus_maps(tmp_path: Path) -> None:
+    """Given a cluster screen with --detail, When JSON is requested, Then
+    the document carries compact phenotypes plus rich per-locus evidence."""
+    sample = tmp_path / "carrier.fna"
+    loci_fasta_from_bundle("vpa_ok", sample, "OL3", "KL6")
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    result = screen_db(sample, datadir, "vpa_ok", "--format", "json", "--detail", "--quiet")
+    assert result.exit_code == 0, result.stderr
+    document = json.loads(result.stdout)
+    assert document["schema"] == "gapit.locus_map/1"
+    file_entry = document["files"][0]
+    assert "OL3" in file_entry["locus_maps"]
+    assert file_entry["locus_maps"]["OL3"]["quality"]["status"] == "pass"
+    assert file_entry["phenotypes"]["o_group"]["phenotype"] == "O3"
+
+
+def test_screen_detail_requires_json(tmp_path: Path) -> None:
+    """Given --detail without JSON, When the cluster screen runs, Then it is
+    a usage error instead of silently dropping the rich payload."""
+    sample = tmp_path / "carrier.fna"
+    loci_fasta_from_bundle("vpa_ok", sample, "OL3", "KL6")
+    datadir = tmp_path / "datadir"
+    datadir.mkdir()
+    result = screen_db(sample, datadir, "vpa_ok", "--detail", "--quiet")
+    assert result.exit_code == 2
+    envelope = json.loads(result.stderr.splitlines()[-1])
+    assert envelope["code"] == "USAGE_ERROR"

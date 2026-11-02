@@ -8,6 +8,7 @@ minimap2; the engine (gapit.cluster) owns invocation and verdict assembly.
 """
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import Literal
 
 from gapit.errors import GapitError
@@ -17,7 +18,26 @@ from gapit.paf import union_length
 # matching bases inside it (substitution and deletion runs carry 0).
 CsRun = tuple[int, int, int]
 
+AlignmentOp = Literal["match", "substitution", "insertion", "deletion"]
+
 Verdict = Literal["present", "partial", "absent"]
+
+
+@dataclass(frozen=True, slots=True)
+class CsStep:
+    """One cs op in alignment order, with query and target coordinates
+    relative to the alignment start (both 0-based half-open). Insertions
+    consume query only, deletions target only; match/substitution consume
+    both. ``matches`` is the number of matching target bases (0 for
+    substitution/deletion/insertion)."""
+
+    op: AlignmentOp
+    qstart: int
+    qend: int
+    tstart: int
+    tend: int
+    matches: int
+
 
 # Verdict floor shared by every caller (documented constant): a gene covered
 # at >= 50% is "partial" once it fails either present threshold, below it
@@ -25,14 +45,17 @@ Verdict = Literal["present", "partial", "absent"]
 PARTIAL_MIN_COV = 50.0
 
 
-def parse_cs(cs: str, tstart: int) -> tuple[CsRun, ...]:
-    """Parse a short-form cs string starting at PAF ``tstart`` into target
-    runs. ``:n`` (n matching bases), ``*ab`` (substitution: 1 target base, 0
-    matches), ``-ss`` (deletion: len(ss) target bases, 0 matches) consume
-    target columns; ``+s`` (insertion) consumes none. Any other op shape is a
-    typed CS_PARSE_FAILED error (the PAF boundary's parse-don't-validate)."""
-    runs: list[CsRun] = []
-    position = tstart
+def parse_cs_steps(cs: str) -> tuple[CsStep, ...]:
+    """Parse a short-form cs string into query/target walk steps.
+
+    ``:n`` (n matching bases), ``*ab`` (substitution: 1 query + 1 target
+    base), ``+s`` (insertion: len(s) query bases), ``-ss`` (deletion:
+    len(ss) target bases). Coordinates are relative to the alignment start.
+    Any other op shape is a typed CS_PARSE_FAILED error (the PAF boundary's
+    parse-don't-validate)."""
+    steps: list[CsStep] = []
+    qpos = 0
+    tpos = 0
     index = 0
     while index < len(cs):
         op = cs[index]
@@ -47,15 +70,17 @@ def parse_cs(cs: str, tstart: int) -> tuple[CsRun, ...]:
                     code="CS_PARSE_FAILED",
                 )
             length = int(cs[digits_start:index])
-            runs.append((position, position + length, length))
-            position += length
+            steps.append(CsStep("match", qpos, qpos + length, tpos, tpos + length, matches=length))
+            qpos += length
+            tpos += length
         elif op == "*":
             if index + 2 > len(cs):
                 raise GapitError(
                     f"cs substitution op without two bases: {cs!r}", code="CS_PARSE_FAILED"
                 )
-            runs.append((position, position + 1, 0))
-            position += 1
+            steps.append(CsStep("substitution", qpos, qpos + 1, tpos, tpos + 1, matches=0))
+            qpos += 1
+            tpos += 1
             index += 2
         elif op == "+":
             bases_start = index
@@ -63,7 +88,9 @@ def parse_cs(cs: str, tstart: int) -> tuple[CsRun, ...]:
                 index += 1
             if bases_start == index:
                 raise GapitError(f"cs insertion op without bases: {cs!r}", code="CS_PARSE_FAILED")
-            # insertion bases: query-only, target position unchanged
+            length = index - bases_start
+            steps.append(CsStep("insertion", qpos, qpos + length, tpos, tpos, matches=0))
+            qpos += length
         elif op == "-":
             bases_start = index
             while index < len(cs) and cs[index] not in ":*+-":
@@ -71,14 +98,25 @@ def parse_cs(cs: str, tstart: int) -> tuple[CsRun, ...]:
             if bases_start == index:
                 raise GapitError(f"cs deletion op without bases: {cs!r}", code="CS_PARSE_FAILED")
             length = index - bases_start
-            runs.append((position, position + length, 0))
-            position += length
+            steps.append(CsStep("deletion", qpos, qpos, tpos, tpos + length, matches=0))
+            tpos += length
         else:
             raise GapitError(
                 f"unknown cs op {op!r} in {cs!r}",
                 code="CS_PARSE_FAILED",
             )
-    return tuple(runs)
+    return tuple(steps)
+
+
+def parse_cs(cs: str, tstart: int) -> tuple[CsRun, ...]:
+    """Target-space projection of :func:`parse_cs_steps` (the historical
+    coverage contract): match/substitution/deletion runs at absolute
+    ``tstart``; insertions consume no target columns and are absent."""
+    return tuple(
+        (tstart + step.tstart, tstart + step.tend, step.matches)
+        for step in parse_cs_steps(cs)
+        if step.op != "insertion"
+    )
 
 
 def intersect_coverage(records: Iterable[Iterable[CsRun]], lo: int, hi: int) -> tuple[int, int]:

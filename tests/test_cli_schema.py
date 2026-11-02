@@ -82,3 +82,13 @@ def test_schema_registers_database_listing_documents() -> None:
         assert result.exit_code == 0, name
         payload = json.loads(result.stdout)
         assert payload["properties"]["schema"]["const"] == schema
+
+
+def test_schema_locus_map_is_registered() -> None:
+    """Given the rich locus-map document, When introspected, Then its schema
+    is a first-class gapit.locus_map/1 contract."""
+    result = runner.invoke(app, ["schema", "locus_map"])
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["properties"]["schema"]["const"] == "gapit.locus_map/1"
+    assert "LocusMap" in payload.get("$defs", {})

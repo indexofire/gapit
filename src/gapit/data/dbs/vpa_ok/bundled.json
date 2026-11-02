@@ -6,7 +6,7 @@
   "kind": "cluster",
   "snapshotted": "2026-10-12",
   "license": "MIT (database content)",
-  "note": "vpautils OAgc.gbk + CPSgc.gbk (Bakta-annotated, MIT), concatenated in source_urls order and built through the cluster pipeline with the committed gapit.typing/2 asset; gene ids resolved at snapshot time (first-use materialization replays the build without re-resolving). cluster.json opts into primary+secondary coverage, a 50% gene-coverage floor, 50/90 typeable floors, and fallback evidence.",
+  "note": "vpautils OAgc.gbk + CPSgc.gbk (Bakta-annotated, MIT), concatenated in source_urls order and built through the cluster pipeline with the committed gapit.typing/2 asset; gene ids resolved at snapshot time (first-use materialization replays the build without re-resolving). cluster.json opts into primary+secondary coverage, a 50% gene-coverage floor, 50/90 typeable floors, and fallback evidence; gene_families.json carries the build-time homology/containment sidecar.",
   "guidance": {
     "references": [
       {

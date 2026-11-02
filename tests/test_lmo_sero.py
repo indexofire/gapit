@@ -283,7 +283,7 @@ def test_bundled_lmo_sero_auto_materializes_and_lists(tmp_path: Path) -> None:
     assert listing.exit_code == 0
     assert (
         "lmo_sero\tListeria monocytogenes serogrouping (Doumith 2004)\tinstalled (5)\tnucl\t"
-        "command\tgapit-curated (public-domain INSDC sources)" in listing.stdout
+        "gene\tcommand\tgapit-curated (public-domain INSDC sources)" in listing.stdout
     )
 
     table = tmp_path / "bundled.tsv"

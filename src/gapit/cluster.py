@@ -33,6 +33,8 @@ from gapit.cluster_profile import CoverageMode
 from gapit.db import Database
 from gapit.errors import DatabaseError, GapitError
 from gapit.gbfeatures import FeaturesDocument, LocusFeatures
+from gapit.gene_families import load_gene_families
+from gapit.locus_map_models import LocusMap
 from gapit.minimap2_run import iter_minimap2
 from gapit.paf import PafRecord
 from gapit.typing_models import TypingDocument, read_typing_document
@@ -53,6 +55,10 @@ class ClusterParams(BaseModel, frozen=True):
     min_cluster_cov: float = Field(default=96.0, ge=0.0, le=100.0)
     locus_typeable_coverage: float | None = Field(default=None, ge=0.0, le=100.0)
     locus_typeable_identity: float | None = Field(default=None, ge=0.0, le=100.0)
+    locus_quality_min_coverage: float = Field(default=80.0, ge=0.0, le=100.0)
+    locus_quality_min_identity: float = Field(default=90.0, ge=0.0, le=100.0)
+    locus_quality_max_missing_genes: int = Field(default=3, ge=0)
+    locus_quality_max_extra_panel_genes: int = Field(default=2, ge=0)
     threads: int = Field(default=1, ge=1)
 
 
@@ -110,6 +116,7 @@ class ClusterReport(BaseModel, frozen=True):
     best: BestCall | None
     loci: tuple[LocusCall, ...]
     phenotypes: dict[str, SchemeCall] = Field(default_factory=dict)
+    locus_maps: dict[str, LocusMap] = Field(default_factory=dict)
 
 
 def load_features(database: Database) -> FeaturesDocument:
@@ -227,12 +234,15 @@ def screen_cluster_file(
     params: ClusterParams,
     *,
     debug: bool = False,
+    detail: bool = False,
 ) -> ClusterReport:
     """Screen one assembly file: one minimap2 asm20 --cs invocation (query =
     the file's contigs, target = the locus FASTA), per-gene/locus union math,
     ranked loci, best call above min_cluster_cov. Rows are primary-only unless
-    the database profile opts into ``primary_secondary`` coverage."""
-    rows = iter_minimap2(
+    the database profile opts into ``primary_secondary`` coverage. With
+    ``detail``, attach the rich best-locus map (alignment pieces, indels,
+    quality) without changing compact renderers."""
+    row_stream = iter_minimap2(
         [(query, None)],
         database,
         read_type="asm20",
@@ -240,7 +250,12 @@ def screen_cluster_file(
         debug=debug,
         nm_tags=True,
     )
-    grouped = runs_by_locus(rows, coverage_mode=params.coverage_mode)
+    if detail:
+        rows = list(row_stream)
+        grouped = runs_by_locus(rows, coverage_mode=params.coverage_mode)
+    else:
+        rows = []
+        grouped = runs_by_locus(row_stream, coverage_mode=params.coverage_mode)
     stats = [
         _locus_call(locus, grouped[locus.id], params)
         for locus in features.loci
@@ -268,4 +283,35 @@ def screen_cluster_file(
             genes_partial=verdicts["partial"],
             genes_absent=verdicts["absent"],
         )
-    return ClusterReport(file=str(query), best=best, loci=loci)
+    locus_maps: dict[str, LocusMap] = {}
+    if detail and loci:
+        from gapit.cluster_alignment import build_locus_alignment, gene_query_spans
+        from gapit.locus_map import build_locus_map
+
+        family_document = load_gene_families(database.path)
+        features_by_id = {locus.id: locus for locus in features.loci}
+        # Extra panel genes must come from primary alignments: a secondary
+        # cross-locus hit is homology, not a second locus in the sample.
+        gene_spans = {
+            locus_id: gene_query_spans(features_by_id[locus_id], rows, coverage_mode="primary")
+            for locus_id in grouped
+            if locus_id in features_by_id
+        }
+        locus_maps = {
+            call.locus: build_locus_map(
+                call,
+                build_locus_alignment(
+                    features_by_id[call.locus], rows, coverage_mode=params.coverage_mode
+                ),
+                features,
+                loci,
+                family_document,
+                gene_spans,
+                min_coverage=params.locus_quality_min_coverage,
+                min_identity=params.locus_quality_min_identity,
+                max_missing_genes=params.locus_quality_max_missing_genes,
+                max_extra_panel_genes=params.locus_quality_max_extra_panel_genes,
+            )
+            for call in loci
+        }
+    return ClusterReport(file=str(query), best=best, loci=loci, locus_maps=locus_maps)

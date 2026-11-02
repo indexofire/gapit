@@ -43,8 +43,9 @@ from gapit.formats.cluster_md import (
     cluster_md_file_chunk,
     cluster_md_head,
 )
+from gapit.formats.locus_map import render_locus_map_json
 from gapit.gbfeatures import FeaturesDocument
-from gapit.progress import terminal_rule
+from gapit.progress import screen_progress, terminal_rule
 from gapit.typing_cluster2 import evaluate_cluster2
 from gapit.typing_engine import evaluate_typing
 from gapit.typing_models import TypingDocument, uses_cluster_v2, validate_references
@@ -124,6 +125,26 @@ def resolve_cluster_params(
         min_cluster_cov=min_cluster_cov,
         locus_typeable_coverage=profile.locus_typeable_coverage,
         locus_typeable_identity=profile.locus_typeable_identity,
+        locus_quality_min_coverage=(
+            profile.locus_quality_min_coverage
+            if profile.locus_quality_min_coverage is not None
+            else 80.0
+        ),
+        locus_quality_min_identity=(
+            profile.locus_quality_min_identity
+            if profile.locus_quality_min_identity is not None
+            else 90.0
+        ),
+        locus_quality_max_missing_genes=(
+            profile.locus_quality_max_missing_genes
+            if profile.locus_quality_max_missing_genes is not None
+            else 3
+        ),
+        locus_quality_max_extra_panel_genes=(
+            profile.locus_quality_max_extra_panel_genes
+            if profile.locus_quality_max_extra_panel_genes is not None
+            else 2
+        ),
         threads=threads,
     )
 
@@ -137,6 +158,7 @@ def _screen_one(
     *,
     quiet: bool,
     debug: bool,
+    detail: bool,
 ) -> ClusterReport:
     """Screen one file and annotate it when the db carries a typing.json —
     one scheme annotates the best call (/1), several schemes populate the
@@ -144,7 +166,7 @@ def _screen_one(
     locus)."""
     if not quiet:
         click.echo(f"Processing: {path}", err=True)
-    report = screen_cluster_file(path, database, features, params, debug=debug)
+    report = screen_cluster_file(path, database, features, params, debug=debug, detail=detail)
     if document is not None:
         if uses_cluster_v2(document):
             report = report.model_copy(
@@ -160,6 +182,22 @@ def _screen_one(
             )
         else:
             report = evaluate_typing(report, document.schemes[0])
+    if report.locus_maps:
+        wanted: set[str] = set()
+        if report.best is not None:
+            wanted.add(report.best.locus)
+        wanted.update(
+            call.winner_locus
+            for call in report.phenotypes.values()
+            if call.winner_locus is not None
+        )
+        report = report.model_copy(
+            update={
+                "locus_maps": {
+                    locus: mapped for locus, mapped in report.locus_maps.items() if locus in wanted
+                }
+            }
+        )
     if not quiet:
         called = report.best.locus if report.best is not None else "none"
         click.echo(f"Best locus in {path}: {called}", err=True)
@@ -176,6 +214,7 @@ def run_cluster_screen(
     nopath: bool,
     quiet: bool,
     debug: bool = False,
+    detail: bool = False,
     emit: Emit | None = None,
     stdout_emit: bool = False,
     jobs: int = 1,
@@ -194,6 +233,8 @@ def run_cluster_screen(
     concatenation is byte-identical to the buffered return value."""
     if jobs < 1:
         usage_fail(f"--jobs must be >= 1: got {jobs}")
+    if detail and output_format is not OutputFormat.json:
+        usage_fail("--detail requires --format json")
     cpu_count = os.cpu_count()
     if not quiet and cpu_count is not None and jobs * params.threads > cpu_count:
         click.echo(
@@ -211,72 +252,97 @@ def run_cluster_screen(
     typed = typing_document is not None
 
     def screen_one(path: Path) -> ClusterReport:
+        if task_id is not None:
+            bar.describe(path.name)
         return _screen_one(
-            path, database, features, typing_document, params, quiet=quiet, debug=debug
+            path,
+            database,
+            features,
+            typing_document,
+            params,
+            quiet=quiet or task_id is not None,
+            debug=debug,
+            detail=detail,
         )
 
     def iter_reports() -> Iterator[ClusterReport]:
         # Each worker owns one minimap2 subprocess. executor.map yields in
         # input order, so rendering and ``emit`` stay head-of-line exactly
         # like the sequential path (a failing file raises at its position).
+        def tracked(seq: Iterator[ClusterReport]) -> Iterator[ClusterReport]:
+            for report in seq:
+                bar.advance()
+                yield report
+
         if jobs == 1:
-            yield from (screen_one(path) for path in files)
+            yield from tracked(screen_one(path) for path in files)
             return
         with ThreadPoolExecutor(max_workers=jobs) as executor:
-            yield from executor.map(screen_one, files)
+            yield from tracked(executor.map(screen_one, files))
 
-    chunks: list[str] = []
+    with screen_progress(files, quiet=quiet) as (bar, task_id):
+        chunks: list[str] = []
 
-    def sink(chunk: str) -> None:
-        if chunk:
-            chunks.append(chunk)
-            if emit is not None:
-                emit(chunk)
+        def sink(chunk: str) -> None:
+            if chunk:
+                chunks.append(chunk)
+                if emit is not None:
+                    if stdout_emit:
+                        bar.write(chunk)
+                    else:
+                        with bar.suspend():
+                            emit(chunk)
 
-    if output_format is OutputFormat.json:
-        reports = list(iter_reports())
-        if v2_document is not None:
-            sink(render_cluster2_json(reports, params, now=datetime.now(UTC)))
-        else:
-            sink(render_cluster_json(reports, params, now=datetime.now(UTC), typed=typed))
-    elif output_format is OutputFormat.md:
-        if v2_document is not None:
-            sink(cluster2_md_head(params, now=datetime.now(UTC)))
-        else:
-            # Static frontmatter leads; each file's section (its own summary
-            # row + gene table) streams the moment the file completes.
-            sink(cluster_md_head(params, now=datetime.now(UTC)))
-        for report in iter_reports():
-            if v2_document is not None:
-                sink(cluster2_md_file_chunk(report, v2_document))
+        if output_format is OutputFormat.json:
+            reports = list(iter_reports())
+            if detail:
+                sink(render_locus_map_json(reports, params, now=datetime.now(UTC)))
+            elif v2_document is not None:
+                sink(render_cluster2_json(reports, params, now=datetime.now(UTC)))
             else:
-                sink(cluster_md_file_chunk(report, typed=typed))
-    else:
-        csv = output_format is OutputFormat.csv
-        if v2_document is not None:
-            sink(cluster2_tsv_preamble(csv=csv, noheader=noheader, document=v2_document))
-            separator = terminal_rule() if stdout_emit and not csv else ""
-            if separator and not noheader:
-                sink(separator)
-            first = True
+                sink(render_cluster_json(reports, params, now=datetime.now(UTC), typed=typed))
+        elif output_format is OutputFormat.md:
+            if v2_document is not None:
+                sink(cluster2_md_head(params, now=datetime.now(UTC)))
+            else:
+                # Static frontmatter leads; each file's section (its own summary
+                # row + gene table) streams the moment the file completes.
+                sink(cluster_md_head(params, now=datetime.now(UTC)))
             for report in iter_reports():
-                if not first and separator:
-                    sink(separator)
-                first = False
-                sink(cluster2_tsv_file_chunk(report, csv=csv, nopath=nopath, document=v2_document))
-            if separator:
-                sink(separator)
+                if v2_document is not None:
+                    sink(cluster2_md_file_chunk(report, v2_document))
+                else:
+                    sink(cluster_md_file_chunk(report, typed=typed))
         else:
-            sink(cluster_tsv_preamble(csv=csv, noheader=noheader, typed=typed))
-            separator = terminal_rule() if stdout_emit and not csv else ""
-            if separator and not noheader:
-                sink(separator)
-            first = True
-            for report in iter_reports():
-                if not first and separator:
+            csv = output_format is OutputFormat.csv
+            if v2_document is not None:
+                sink(cluster2_tsv_preamble(csv=csv, noheader=noheader, document=v2_document))
+                separator = terminal_rule() if stdout_emit and not csv else ""
+                if separator and not noheader:
                     sink(separator)
-                first = False
-                sink(cluster_tsv_file_chunk(report, csv=csv, nopath=nopath, typed=typed))
-            if separator:
-                sink(separator)
-    return "".join(chunks)
+                first = True
+                for report in iter_reports():
+                    if not first and separator:
+                        sink(separator)
+                    first = False
+                    sink(
+                        cluster2_tsv_file_chunk(
+                            report, csv=csv, nopath=nopath, document=v2_document
+                        )
+                    )
+                if separator:
+                    sink(separator)
+            else:
+                sink(cluster_tsv_preamble(csv=csv, noheader=noheader, typed=typed))
+                separator = terminal_rule() if stdout_emit and not csv else ""
+                if separator and not noheader:
+                    sink(separator)
+                first = True
+                for report in iter_reports():
+                    if not first and separator:
+                        sink(separator)
+                    first = False
+                    sink(cluster_tsv_file_chunk(report, csv=csv, nopath=nopath, typed=typed))
+                if separator:
+                    sink(separator)
+        return "".join(chunks)

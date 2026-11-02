@@ -240,7 +240,7 @@ def test_db_list_bootstraps_a_missing_datadir(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.stderr
     assert missing.is_dir()
     lines = result.stdout.splitlines()
-    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER"
+    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tKIND\tTYPING\tPROVIDER"
     assert any(line.startswith("cje_cps\t") and "\tbundled\t" in line for line in lines)
 
 
@@ -269,12 +269,12 @@ def test_db_list_text_shows_installed_state(
     result = runner.invoke(app, ["db", "list", "--datadir", str(datadir)])
     assert result.exit_code == 0
     lines = result.stdout.splitlines()
-    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER"
-    assert f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\t-\tSynthetica" in lines
+    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tKIND\tTYPING\tPROVIDER"
+    assert f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\tgene\t-\tSynthetica" in lines
     assert (
-        f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\t-\tExample Org"
-        in lines
-    )
+        f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\tgene"
+        "\t-\tExample Org"
+    ) in lines
 
 
 def test_db_list_json_emits_gapit_dblist_document(
@@ -341,7 +341,7 @@ def test_db_list_table_builds_rich_table() -> None:
     )
     text = console.export_text()
     assert "Databases" in text
-    for header in ("Name", "Provider", "Status", "DBTYPE", "TYPING", "Description"):
+    for header in ("Name", "Provider", "Status", "DBTYPE", "KIND", "TYPING", "Description"):
         assert header in text
     assert "card" in text
     assert "McMaster University" in text
@@ -361,17 +361,18 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
     monkeypatch.setattr(sys, "stdout", fake)
     db_list_command(datadir=datadir, names_only=False, as_json=False)
     assert fake.getvalue() == (
-        "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER\n"
+        "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tKIND\tTYPING\tPROVIDER\n"
         "cje_cps\tCampylobacter jejuni Penner capsule (CPS) multiplex PCR panel\tbundled"
-        "\tnucl\tcommand\tgapit-curated (Poly 2015; CC0 + NCBI public domain)\n"
+        "\tnucl\tgene\tcommand\tgapit-curated (Poly 2015; CC0 + NCBI public domain)\n"
         "ecoli_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
-        "\tbundled\tnucl\tcommand\tgapit-curated (public-domain sources)\n"
-        "lmo_sero\tListeria monocytogenes serogrouping (Doumith 2004)\tbundled\tnucl\t"
+        "\tbundled\tnucl\tgene\tcommand\tgapit-curated (public-domain sources)\n"
+        "lmo_sero\tListeria monocytogenes serogrouping (Doumith 2004)\tbundled\tnucl\tgene\t"
         "command\tgapit-curated (public-domain INSDC sources)\n"
-        f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\t-\tSynthetica\n"
-        f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\t-\tExample Org\n"
+        f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\tgene\t-\tSynthetica\n"
+        f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\tgene"
+        "\t-\tExample Org\n"
         "vpa_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
-        "nucl\tintegrated\tgapit-curated (vpasero)\n"
+        "nucl\tcluster\tintegrated\tgapit-curated (vpasero)\n"
     )
 
 
@@ -390,7 +391,7 @@ def test_db_list_tty_renders_rich_table_not_tsv(
     assert "Databases" in out
     assert "installed (2)" in out
     assert "available" in out
-    assert "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER" not in out
+    assert "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tKIND\tTYPING\tPROVIDER" not in out
 
 
 def test_db_fetch_all_installs_default_dbs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

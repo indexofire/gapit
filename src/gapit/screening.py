@@ -119,6 +119,7 @@ def run_screen(
     min_gene_cov: float = 90.0,
     min_gene_id: float = 90.0,
     min_cluster_cov: float = 96.0,
+    detail: bool = False,
     emit: Emit | None = None,
     stdout_emit: bool = False,
 ) -> str:
@@ -163,10 +164,13 @@ def run_screen(
             nopath=nopath,
             quiet=quiet,
             debug=debug,
+            detail=detail,
             emit=emit,
             stdout_emit=stdout_emit,
             jobs=jobs,
         )
+    if detail:
+        usage_fail("--detail applies to cluster databases only (use --format json)")
     reject_cluster_engine_flags(min_gene_cov, min_gene_id, min_cluster_cov)
     params = ScreeningParams(
         db=db_name,

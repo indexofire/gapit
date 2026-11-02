@@ -113,6 +113,8 @@ def materialize_cluster_bundle(
             )
         if bundled.profile_path is not None:
             shutil.copyfile(bundled.profile_path, build_dir / "cluster.json")
+        if bundled.gene_families_path is not None:
+            shutil.copyfile(bundled.gene_families_path, build_dir / "gene_families.json")
         build_cluster_database(
             build_dir,
             name=name,

@@ -43,9 +43,9 @@ is usable:
 
 ```console
 $ gapit db list
-NAME	DESCRIPTION	STATUS	DBTYPE	TYPING	PROVIDER
-argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée-Infection
-cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	installed (42)	nucl	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
+NAME	DESCRIPTION	STATUS	DBTYPE	KIND	TYPING	PROVIDER
+argannot	ARG-ANNOT acquired resistance genes	available	nucl	gene	-	IHU Méditerranée-Infection
+cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	installed (42)	nucl	gene	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
 ```
 
 (twenty-five catalog databases in total: the four bundled ones now read `installed` in

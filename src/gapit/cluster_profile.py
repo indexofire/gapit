@@ -35,7 +35,9 @@ class ClusterProfile(BaseModel, frozen=True):
     flag at its historical default; an explicit non-default CLI value wins.
     ``locus_typeable_coverage`` / ``locus_typeable_identity`` (with
     ``fallback_evidence``) classify a detected locus as Kaptive-style
-    typeable/untypeable without changing the phenotype call.
+    typeable/untypeable without changing the phenotype call.  The
+    ``locus_quality_*`` fields configure the native coverage/identity/gene-count
+    quality verdict (annotate-only in the prototype).
     """
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
@@ -50,6 +52,10 @@ class ClusterProfile(BaseModel, frozen=True):
     fallback_evidence: bool = False
     locus_typeable_coverage: float | None = Field(default=None, ge=0.0, le=100.0)
     locus_typeable_identity: float | None = Field(default=None, ge=0.0, le=100.0)
+    locus_quality_min_coverage: float | None = Field(default=None, ge=0.0, le=100.0)
+    locus_quality_min_identity: float | None = Field(default=None, ge=0.0, le=100.0)
+    locus_quality_max_missing_genes: int | None = Field(default=None, ge=0)
+    locus_quality_max_extra_panel_genes: int | None = Field(default=None, ge=0)
 
 
 def default_cluster_profile() -> ClusterProfile:

@@ -67,8 +67,8 @@ class DbListEntry(BaseModel, frozen=True):
     # GBK/GFF-built db shadowing a provider name); the default is gene.
     kind: Literal["gene", "cluster"] = "gene"
     # Whether the database carries a typing scheme (typing.json). Gene-kind
-    # databases designate through `gapit typing`; cluster-kind databases
-    # designate inside `gapit screen` (the command refuses cluster dbs).
+    # databases designate through `gapit typing`; cluster-kind databases are
+    # evaluated inside `gapit screen` (typing can only reformat their JSON).
     typing: bool = False
     # Upstream content license when the provider pins one (card, vfdb,
     # ecoli_vf, kaptive); omitted otherwise.
@@ -386,8 +386,9 @@ def db_list_typing(entry: DbListEntry) -> str:
 
     ``command`` — a gene-kind database: screen to a table, then run
     ``gapit typing RESULT.tsv``. ``integrated`` — a typed cluster database:
-    the phenotype rides ``gapit screen`` itself (``gapit typing`` refuses
-    cluster dbs). ``-`` — no typing.json, screen-only."""
+    the phenotype is evaluated by ``gapit screen`` itself; ``gapit typing``
+    can reformat the cluster JSON but does not re-evaluate it. ``-`` — no
+    typing.json, screen-only."""
     if not entry.typing:
         return "-"
     return "command" if entry.kind == "gene" else "integrated"
@@ -396,8 +397,8 @@ def db_list_typing(entry: DbListEntry) -> str:
 def db_list_table(entries: Sequence[DbListEntry]) -> Table:
     """Rich rendering of the database listing for interactive terminals.
 
-    Same rows and STATUS/TYPING texts as the TSV (NAME, DESCRIPTION, STATUS,
-    DBTYPE, TYPING, PROVIDER); the command prints it only when stdout is a
+    Same rows and STATUS/KIND/TYPING texts as the TSV (NAME, DESCRIPTION,
+    STATUS, DBTYPE, KIND, TYPING, PROVIDER); the command prints it only when stdout is a
     TTY, so pipes and redirects keep the byte-stable TSV. Description cells
     are literal ``Text`` so upstream prose can never parse as rich markup.
     The box is SQUARE: every horizontal rule the same thin ``─`` weight (the
@@ -408,6 +409,7 @@ def db_list_table(entries: Sequence[DbListEntry]) -> Table:
     table.add_column("Description")
     table.add_column("Status", no_wrap=True)
     table.add_column("DBTYPE", style="yellow", no_wrap=True)
+    table.add_column("KIND", style="cyan", no_wrap=True)
     table.add_column("TYPING", style="magenta", no_wrap=True)
     table.add_column("Provider")
     for entry in entries:
@@ -416,6 +418,7 @@ def db_list_table(entries: Sequence[DbListEntry]) -> Table:
             Text(entry.description),
             Text(db_list_status(entry), style="green" if entry.installed else "dim"),
             entry.dbtype,
+            entry.kind,
             db_list_typing(entry),
             entry.vendor,
         )

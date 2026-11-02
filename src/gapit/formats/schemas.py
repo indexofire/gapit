@@ -17,6 +17,7 @@ from gapit.errors import ErrorEnvelope
 from gapit.formats.cluster import ClusterDocument
 from gapit.formats.cluster2 import Cluster2Document
 from gapit.formats.json import ReportDocument, VersionDocument
+from gapit.formats.locus_map import LocusMapDocument
 from gapit.formats.reads_json import Reads2Document, ReadsDocument
 from gapit.formats.summary import SummaryDocument
 from gapit.formats.typing_result import TypingResultDocument
@@ -31,6 +32,7 @@ SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "reads2": Reads2Document,
     "cluster": ClusterDocument,
     "cluster2": Cluster2Document,
+    "locus_map": LocusMapDocument,
     "summary": SummaryDocument,
     "error": ErrorEnvelope,
     "version": VersionDocument,

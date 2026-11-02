@@ -40,9 +40,9 @@ gapit: indexed tinyamr (3 sequences, nucl)
 
 ```console
 $ gapit db list
-NAME	DESCRIPTION	STATUS	DBTYPE	TYPING	PROVIDER
-argannot	ARG-ANNOT acquired resistance genes	available	nucl	-	IHU Méditerranée-Infection
-cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	installed (42)	nucl	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
+NAME	DESCRIPTION	STATUS	DBTYPE	KIND	TYPING	PROVIDER
+argannot	ARG-ANNOT acquired resistance genes	available	nucl	gene	-	IHU Méditerranée-Infection
+cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	installed (42)	nucl	gene	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
 ```
 
 （共二十五个目录数据库：四个内置库在这个数据目录里已显示 `installed`，其余仅可

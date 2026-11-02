@@ -215,6 +215,16 @@ def _reject_reads_only_flags(
     ),
 )
 @click.option(
+    "--detail",
+    "-l",
+    is_flag=True,
+    help=(
+        "Cluster dbs: emit the rich locus-map JSON (alignment pieces,"
+        " insertions, gene families, quality) instead of the compact document."
+        " Requires --format json."
+    ),
+)
+@click.option(
     "--output",
     "-o",
     type=click.Path(path_type=Path),
@@ -257,6 +267,7 @@ def screen_command(
     noheader: bool,
     nopath: bool,
     debug: bool,
+    detail: bool,
     output_format: OutputFormat | None,
     output: Path | None,
     *,
@@ -278,6 +289,8 @@ def screen_command(
         # blastn contigs) and the frozen matrix of guards with it.
         reads_flags = [reads_positional(path) for path in args] if args and aligner is None else []
         all_reads = bool(reads_flags) and all(reads_flags)
+        if detail and (r1 is not None or all_reads or aligner is AlignerEnum.minimap2):
+            usage_fail("--detail applies to cluster databases only")
         defaults = screen_defaults_for(db, datadir)
         ctx = click.get_current_context()
 
@@ -448,6 +461,7 @@ def screen_command(
                     min_gene_cov=min_gene_cov,
                     min_gene_id=min_gene_id,
                     min_cluster_cov=min_cluster_cov,
+                    detail=detail,
                     emit=deliver,
                     stdout_emit=output is None,
                 )

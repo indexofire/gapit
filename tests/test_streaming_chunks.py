@@ -497,8 +497,9 @@ def test_cluster_md_file1_emits_before_slow_file2_completes(
         params: ClusterParams,
         *,
         debug: bool = False,
+        detail: bool = False,
     ) -> ClusterReport:
-        report = real(path, database, features, params, debug=debug)
+        report = real(path, database, features, params, debug=debug, detail=detail)
         if path.name == "b.fa":
             time.sleep(0.4)
             b_done["at"] = time.monotonic()

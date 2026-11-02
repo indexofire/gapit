@@ -113,6 +113,10 @@ def render_cluster2_json(
                     "fallback_evidence",
                     "locus_typeable_coverage",
                     "locus_typeable_identity",
+                    "locus_quality_min_coverage",
+                    "locus_quality_min_identity",
+                    "locus_quality_max_missing_genes",
+                    "locus_quality_max_extra_panel_genes",
                 }
             )
         ),

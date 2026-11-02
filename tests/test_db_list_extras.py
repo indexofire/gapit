@@ -58,13 +58,29 @@ def test_db_list_includes_built_gene_and_cluster_databases(tmp_path: Path) -> No
 
     lines = list_rows(datadir)
 
-    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tTYPING\tPROVIDER"
+    assert lines[0] == "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tKIND\tTYPING\tPROVIDER"
     rows = [line.split("\t") for line in lines[1:]]
     names = [row[0] for row in rows]
     assert names == sorted(names)
     by_name = {row[0]: row for row in rows}
-    assert by_name["myamr"] == ["myamr", "", "installed (2)", "nucl", "-", "local"]
-    assert by_name["myloci"] == ["myloci", "", "installed (2)", "nucl", "-", "local"]
+    assert by_name["myamr"] == [
+        "myamr",
+        "",
+        "installed (2)",
+        "nucl",
+        "gene",
+        "-",
+        "local",
+    ]
+    assert by_name["myloci"] == [
+        "myloci",
+        "",
+        "installed (2)",
+        "nucl",
+        "cluster",
+        "-",
+        "local",
+    ]
 
 
 def test_db_list_json_marks_extras_local_and_keeps_registry_entries_untouched(
@@ -172,8 +188,8 @@ def test_db_list_manifestless_dir_counts_fasta_and_detects_dbtype(tmp_path: Path
     lines = list_rows(datadir)
     rows = {line.split("\t")[0]: line for line in lines[1:]}
 
-    assert rows["alegacy"] == "alegacy\t\tinstalled (2)\tnucl\t-\tlocal"
-    assert rows["zproto"] == "zproto\t\tinstalled (1)\tprot\t-\tlocal"
+    assert rows["alegacy"] == "alegacy\t\tinstalled (2)\tnucl\tgene\t-\tlocal"
+    assert rows["zproto"] == "zproto\t\tinstalled (1)\tprot\tgene\t-\tlocal"
     names = [line.split("\t")[0] for line in lines[1:]]
     assert names == sorted(names)
 
@@ -212,7 +228,7 @@ def test_db_list_flags_a_locally_built_typed_gene_database(tmp_path: Path) -> No
     entry = next(item for item in json.loads(result.stdout)["providers"] if item["name"] == "typed")
     assert entry["kind"] == "gene"
     assert entry["typing"] is True
-    assert "typed\t\tinstalled (4)\tnucl\tcommand\tlocal" in list_rows(datadir)
+    assert "typed\t\tinstalled (4)\tnucl\tgene\tcommand\tlocal" in list_rows(datadir)
 
 
 def test_db_list_does_not_call_a_manifest_only_dir_installed(tmp_path: Path) -> None:
@@ -320,7 +336,7 @@ def test_db_list_reads_local_info_description_and_vendor(tmp_path: Path) -> None
     assert entry["vendor"] == "gapit(Hangzhou CDC)"
 
     rows = list_rows(datadir)
-    assert "myamr\tLocal AMR panel\tinstalled (2)\tnucl\t-\tgapit(Hangzhou CDC)" in rows
+    assert "myamr\tLocal AMR panel\tinstalled (2)\tnucl\tgene\t-\tgapit(Hangzhou CDC)" in rows
 
 
 def test_db_list_malformed_local_info_is_a_typed_error(tmp_path: Path) -> None:

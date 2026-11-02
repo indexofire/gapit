@@ -2,7 +2,27 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Experimental rich cluster evidence (`gapit screen --detail --format json`).**
+  Opt-in `gapit.locus_map/1` output adds per-locus alignment pieces,
+  insertions/deletions with flanking genes, per-gene query spans, panel gene
+  families, containment diagnostics, and an annotate-only locus quality
+  verdict. `gene_families.json` is a build-time homology/containment sidecar
+  (the bundled vpa_ok snapshot ships one). Compact TSV/CSV/MD and the default
+  JSON remain unchanged. Rendering is intentionally out of scope: the JSON
+  carries the geometry/evidence for agents or external tools to draw. `gapit typing` now also
+  reads cluster `gapit.cluster/2` / `gapit.locus_map/1` JSON and renders the
+  already-evaluated phenotypes as the concise `gapit.typing_result/1` document
+  (cluster TSV still requires `screen --format json`, since it lacks scheme
+  metadata).
+
 ### Changed
+
+- **`gapit db list` gains a KIND column.** The TSV/rich table now distinguishes
+  `gene` from `cluster` databases explicitly; the `gapit.dblist/1` JSON already
+  carried `kind`. TYPING remains the designation-mode column
+  (`command` / `integrated` / `-`).
 
 - **Cluster databases can opt into a per-database `cluster.json` profile.**
   `coverage_mode: primary_secondary` makes cluster coverage use the union of

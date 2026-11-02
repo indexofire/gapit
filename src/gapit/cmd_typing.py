@@ -61,7 +61,8 @@ def _stdin_text(files: list[Path]) -> str | None:
     help=(
         "gapit/abricate screen result TSV/CSV file(s) to type — contig"
         " (FILE/%IDENTITY/%COVERAGE) and reads (#SAMPLE/BREADTH%) tables are"
-        " accepted ('-' = stdin)."
+        " accepted, plus cluster JSON (gapit.cluster/2 or gapit.locus_map/1);"
+        " '-' = stdin."
     ),
 )
 @datadir_option()
@@ -92,7 +93,11 @@ def typing_command(
     quiet: bool,
     output: Path | None,
 ) -> None:
-    """Designate phenotypes from contig or reads screen result table(s) (typed gene databases)."""
+    """Designate phenotypes from screen result tables or cluster JSON.
+
+    Gene databases evaluate the table; cluster JSON is already designated by
+    ``gapit screen`` and is rendered into the same concise typing result.
+    """
     args = list(files or [])
     # Bare invocation at a terminal keeps the help-on-bare policy; with a
     # pipe attached the table arrives on stdin. Runs before dispatch so the

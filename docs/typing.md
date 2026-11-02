@@ -67,8 +67,11 @@ through the command.
 
 **The cluster exception.** A cluster database's designation stays integrated in
 `gapit screen`: its unit of typing is the best *locus* call, which only the minimap2
-cluster engine can compute — there is no re-readable screen table for it. Screening a
-typed cluster database annotates the cluster document directly — a single-scheme db
+cluster engine can compute. The compact cluster TSV is not a gene table and does not
+carry the per-scheme metadata needed for re-typing; use cluster JSON instead:
+`gapit typing result.json` reads `gapit.cluster/2` or `gapit.locus_map/1` and renders
+the already-evaluated phenotypes as `gapit.typing_result/1` without re-running the
+aligner. Screening a typed cluster database annotates the cluster document directly — a single-scheme db
 annotates `gapit.cluster/1` (the typed-only `PHENOTYPE` TSV column, `best.phenotype` +
 `best.phenotype_detail` in JSON/MD), and a multi-scheme db renders `gapit.cluster/2`
 (one call per scheme in a `phenotypes` map, per-scheme winner-evidence TSV columns).

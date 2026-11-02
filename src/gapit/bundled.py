@@ -118,6 +118,12 @@ class BundledDatabase(BaseModel, frozen=True):
         profile = self.path / "cluster.json"
         return profile if profile.is_file() else None
 
+    @property
+    def gene_families_path(self) -> Path | None:
+        """The optional gapit.gene_families/1 sidecar for cluster bundles."""
+        families = self.path / "gene_families.json"
+        return families if families.is_file() else None
+
 
 def bundled_databases() -> list[BundledDatabase]:
     """Every bundled database, sorted by name. A directory qualifies when it
