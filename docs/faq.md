@@ -199,7 +199,7 @@ license expose it in `gapit db list --json`. Details in SPEC.md §9 and the
 
 Write a provider module and fetch it by name: every provider downloads from its
 upstream source at fetch time, transforms the records, and builds locally. Nothing
-beyond the four gapit-curated bundles ships in the wheel (upstream licenses such as
+beyond the five gapit-curated bundles ships in the wheel (upstream licenses such as
 CARD's or VFDB's forbid redistribution inside an MIT-licensed distribution, and provider
 snapshots carry provenance risk beyond the license text). The header format,
 transforms, and build pipeline are specified in SPEC.md §11.

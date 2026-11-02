@@ -277,8 +277,8 @@ def _has_blast_index(sequences_path: Path) -> bool:
 
 
 def _has_typing(path: Path) -> bool:
-    """Whether a database directory carries a typing scheme."""
-    return (path / "typing.json").is_file()
+    """Whether a database directory carries a typing/serotype scheme."""
+    return (path / "typing.json").is_file() or (path / "serotype.json").is_file()
 
 
 def _provider_has_typing(provider: object) -> bool:
@@ -316,7 +316,7 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
                 typing=(
                     _has_typing(root / database.name)
                     if manifest is not None
-                    else database.typing_path is not None
+                    else (database.typing_path is not None or database.serotype_path is not None)
                 ),
                 license=database.metadata.license or None,
                 source="bundled",

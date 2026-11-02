@@ -13,7 +13,7 @@ Run everything from the repo root with the gapit environment on PATH
 
 The fixture db at `tests/data/db/tinyamr` holds three short AMR genes: `tetA`,
 `blaTEM-1`, and `sul1`. Copy it into a temp datadir and let `gapit db setup` bootstrap
-the rest: it materializes the four bundled databases that ship in the wheel (zero
+the rest: it materializes the five bundled databases that ship in the wheel (zero
 network — including `eco_dec`, which you will type with in section 4) and indexes
 everything, no `makeblastdb` by hand:
 
@@ -48,7 +48,7 @@ argannot	ARG-ANNOT acquired resistance genes	available	nucl	gene	-	IHU Méditerr
 cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	installed (42)	nucl	gene	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
 ```
 
-(twenty-five catalog databases in total: the four bundled ones now read `installed` in
+(twenty-six catalog databases in total: the five bundled ones now read `installed` in
 this datadir, the rest read `available` until you `gapit db fetch` them)
 
 ## 2. Screen a contig file

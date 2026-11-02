@@ -21,8 +21,11 @@ import click
 
 from gapit.bundled import resolve_screen_datadir
 from gapit.cluster import load_typing
+from gapit.db import Database
+from gapit.dbcodec import decode_seqid
 from gapit.engines import Emit, OutputFormat
 from gapit.errors import DatabaseError
+from gapit.fasta import iter_fasta
 from gapit.formats.typing_result import (
     TypingFileResult,
     render_typing_md,
@@ -31,14 +34,15 @@ from gapit.formats.typing_result import (
     typing_tsv_preamble,
 )
 from gapit.screening import find_database
+from gapit.serotype_engine import evaluate_serotype
+from gapit.serotype_models import load_serotype, validate_serotype_references
 from gapit.typing_cluster_input import read_cluster_typing_input
 from gapit.typing_gene import evaluate_gene_calls
 from gapit.typing_input import STDIN_LABEL, read_typing_input
 
 
-def _resolve_document(table_database: str, datadir: Path | None, quiet: bool):
-    """The typing document of the database every row screened against —
-    refusing cluster databases (integrated typing) and untyped ones."""
+def _resolve_database(table_database: str, datadir: Path | None, quiet: bool) -> Database:
+    """The database every row screened against, refusing cluster databases."""
     database = find_database(
         resolve_screen_datadir(datadir, table_database), table_database, quiet=quiet
     )
@@ -49,15 +53,26 @@ def _resolve_document(table_database: str, datadir: Path | None, quiet: bool):
             code="TYPING_CLUSTER_DB",
             context={"db": table_database},
         )
+    return database
+
+
+def _typing_document(database: Database):
     document = load_typing(database)
     if document is None:
         raise DatabaseError(
-            f"database {table_database!r} carries no typing scheme"
+            f"database {database.name!r} carries no typing scheme"
             " (only databases built with `db build --typing` designate)",
             code="TYPING_NO_SCHEME",
-            context={"db": table_database},
+            context={"db": database.name},
         )
     return document
+
+
+def _database_gene_ids(database: Database) -> frozenset[str]:
+    return frozenset(
+        decode_seqid(record.id, database.name).gene
+        for record in iter_fasta(database.sequences_path)
+    )
 
 
 def run_typing(
@@ -108,15 +123,33 @@ def run_typing(
         return render(database, results, now=datetime.now(UTC))
 
     table = read_typing_input(paths, stdin_text)
-    document = _resolve_document(table.database, datadir, quiet)
-    if not quiet:
-        click.echo(f"Typing {len(table.files)} file(s) against {table.database}", err=True)
-    results = [
-        TypingFileResult(
-            file=entry.file,
-            genes=tuple(sorted(entry.calls)),
-            phenotypes=evaluate_gene_calls(entry.calls, document),
-        )
-        for entry in table.files
-    ]
+    database = _resolve_database(table.database, datadir, quiet)
+    serotype_document = load_serotype(database.path)
+    if serotype_document is not None:
+        validate_serotype_references(serotype_document, _database_gene_ids(database))
+        if not quiet:
+            click.echo(
+                f"Typing {len(table.files)} file(s) against {table.database} (serotype)",
+                err=True,
+            )
+        results = [
+            TypingFileResult(
+                file=entry.file,
+                genes=tuple(sorted(entry.calls)),
+                phenotypes={"serotype": evaluate_serotype(entry.calls, serotype_document)},
+            )
+            for entry in table.files
+        ]
+    else:
+        document = _typing_document(database)
+        if not quiet:
+            click.echo(f"Typing {len(table.files)} file(s) against {table.database}", err=True)
+        results = [
+            TypingFileResult(
+                file=entry.file,
+                genes=tuple(sorted(entry.calls)),
+                phenotypes=evaluate_gene_calls(entry.calls, document),
+            )
+            for entry in table.files
+        ]
     return render(table.database, results, now=datetime.now(UTC))

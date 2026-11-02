@@ -176,6 +176,12 @@ def collect_db_info(name: str, datadir: Path | None) -> DbInfoDocument:
         if entry.installed
         else ("bundled" if entry.source == "bundled" else "available")
     )
+    serotype_schema = (
+        "gapit.serotype/1"
+        if (directory / "serotype.json").is_file()
+        or (bundled is not None and bundled.serotype_path is not None)
+        else None
+    )
     return DbInfoDocument(
         name=name,
         description=entry.description or (bundled.metadata.description if bundled else ""),
@@ -191,7 +197,10 @@ def collect_db_info(name: str, datadir: Path | None) -> DbInfoDocument:
         # gene build does not carry one into the manifest).
         license=(manifest.license if manifest and manifest.license else entry.license),
         snapshot=bundled.metadata.snapshotted if bundled else None,
-        typing_schema=manifest.typing_schema if manifest else None,
+        typing_schema=(
+            (manifest.typing_schema if manifest and manifest.typing_schema else None)
+            or serotype_schema
+        ),
         source_urls=manifest.source_urls if manifest else (),
         note=(
             (manifest.note if manifest and manifest.note else None)
@@ -204,7 +213,7 @@ def collect_db_info(name: str, datadir: Path | None) -> DbInfoDocument:
         or _default_usage(
             name,
             manifest.kind if manifest else entry.kind,
-            bool(manifest is not None and manifest.typing_schema),
+            entry.typing,
         ),
     )
 

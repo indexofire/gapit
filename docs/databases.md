@@ -285,7 +285,7 @@ wheel's notes without rebuilding anything.
 
 Most databases download from upstream at `db fetch` time because their licenses forbid
 redistribution (see [Providers](#providers)). A small set of **bundled** databases ships
-inside the gapit wheel instead — four gapit-curated databases whose content provenance
+inside the gapit wheel instead — five gapit-curated databases whose content provenance
 was audited record-by-record (public-domain sources plus the MIT `vpa_ok` panel). The
 policy is stricter than "the license permits it": third-party provider snapshots
 (`ncbi`, `card`, `ecoh`, `resfinder`, ...) never ride the wheel, because their
@@ -297,6 +297,7 @@ Nothing to download, nothing to accept: a bundled database works out of the box.
 | `cje_cps` | C. jejuni Penner capsule multiplex PCR panel (37 records: 36 CPS amplicons + `lpxA` control) | 2026-10-27 | `gapit.typing/2` (scheme `penner_cps`) |
 | `eco_dec` | Diarrheagenic E. coli marker panel (16 records, GB 4789.6 + risk-monitoring designation) | 2026-10-02 | `gapit.typing/2` (schemes `gb4789_6`, `risk_monitoring`) |
 | `lmo_sero` | Listeria monocytogenes serogrouping (5 records, Doumith 2004 markers) | 2026-10-03 | `gapit.typing/2` (scheme `doumith_serogroup`) |
+| `shi_sero` | Shigella molecular serotype marker panel (95 ShigaTyper public-domain markers, `ipaH_c` split into two control fragments; first conservative rules) | 2026-11-02 | `gapit.serotype/1` (ShigaTyper marker rules) |
 | `vpa_ok` | V. parahaemolyticus O and K antigen loci (195 loci, vpautils OAgc+CPSgc; cluster kind) | 2026-10-12 | `gapit.typing/2` (schemes `o_group`, `k_group`, `serotype`) |
 
 **License provenance.** Every `eco_dec` record was re-sourced from primary
@@ -312,8 +313,13 @@ MIT-licensed vpautils content (lab-curated loci, Bakta-annotated, via
 resolved `sequences` + `features.json` pair a completed gapit.typing/2 build
 produces. The `cje_cps` panel is assembled from the GenBank accessions the source paper
 lists (public-domain INSDC records; the paper itself is CC0), so it clears the same gate.
+The `shi_sero` panel is reformatted from ShigaTyper 2.0.5's Public Domain
+marker FASTA (no ShigaPass GPL content); its `serotype.json` is the first
+conservative marker-set resolver and is not a byte-for-byte ShigaTyper port.
+Its `ipaH_c` control is split into two non-overlapping presence fragments
+(1-640 and 641-780) so divergent ipaH alleles remain detectable.
 A regression test pins that no `VF*` / `VFDB` / `ARO:` tags appear in any
-of the four bundles' headers.
+of the five bundles' headers.
 
 **Snapshots are point-in-time.** Each snapshot's `sequences` file is byte-for-byte what
 the curated build produces on the snapshot date (a regression test proves the
@@ -475,7 +481,7 @@ documented per-locus tuning).
 ## Checking database freshness
 
 `gapit db outdated` reports every installed database's age against the staleness
-threshold. Against a fully installed datadir (output trimmed to three of twenty-five rows):
+threshold. Against a fully installed datadir (output trimmed to three of twenty-six rows):
 
 ```console
 $ gapit db outdated --days 30
@@ -569,7 +575,7 @@ unknown `--db NAME` is a usage error (exit 2) listing what is installed.
 
 Twenty-one providers ship with gapit. Every one of them — `card`, `ncbi`, and `vfdb`
 included — downloads from its upstream source at fetch time. No provider snapshot is
-bundled: only the four gapit-curated, permissively licensed bundles above ride the
+bundled: only the five gapit-curated, permissively licensed bundles above ride the
 package. Several upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's
 GPL-3.0) forbid redistribution inside an MIT-licensed distribution, and even
 permissively licensed provider snapshots carry provenance risk, so they stay

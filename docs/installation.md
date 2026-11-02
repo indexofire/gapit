@@ -12,7 +12,7 @@ pip install gapit
 ```
 
 The wheel bundles the Python package and the `gapit`/`gapit-mcp` console scripts, plus
-four audited, permissively licensed, gapit-curated database bundles that materialize into
+five audited, permissively licensed, gapit-curated database bundles that materialize into
 the datadir on first use (see
 [Bundled databases](./databases.md#bundled-databases-install-time-ready)); every other
 provider downloads from upstream at fetch time, because several upstream licenses forbid

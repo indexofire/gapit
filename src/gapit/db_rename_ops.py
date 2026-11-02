@@ -43,7 +43,14 @@ from gapit.proctools import note
 from gapit.records import Manifest, read_manifest, write_manifest
 
 # Sidecars a database may carry; all of them reference ids, never the db name.
-_SIDECARS = (*SIDECARS, "features.json", "cluster.json", "gene_families.json")
+_SIDECARS = (
+    *SIDECARS,
+    "features.json",
+    "cluster.json",
+    "gene_families.json",
+    "markers.json",
+    "serotype.json",
+)
 
 
 class RenameReceipt(BaseModel, frozen=True):

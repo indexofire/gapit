@@ -163,7 +163,7 @@ CLI 显式参数 > `screen.json` > 全局默认值。内置 `cje_cps` 使用 MAP
 
 ## 数据库适用哪些许可证？
 
-gapit 本身以 MIT 许可。四个由 gapit 策划、许可宽松的内置库随 wheel 发布（公有领域的
+gapit 本身以 MIT 许可。五个由 gapit 策划、许可宽松的内置库随 wheel 发布（公有领域的
 `cje_cps`、`eco_dec`、`lmo_sero` 面板，以及 MIT 的 `vpa_ok` typed-cluster
 快照），首次使用时物化进数据目录；每个提供商——`ncbi`、`card`、`ecoh`、
 `resfinder` 以及其余所有提供商——都在抓取时从上游下载，内容保留其原始许可证（CARD 的 McMaster 非商业条款、VFDB 的
@@ -174,5 +174,5 @@ CC BY-NC、CGE、Kaptive 的 GPL-3.0 等），gapit 不重新授权。声明了�
 ## 如何向默认集合添加新数据库？
 
 写一个提供商模块并按名字抓取：每个提供商都在抓取时从上游下载、变换记录、本地构建。
-除四个由 gapit 策划的内置库之外，wheel 不携带任何内容（CARD、VFDB 等上游许可禁止
+除五个由 gapit 策划的内置库之外，wheel 不携带任何内容（CARD、VFDB 等上游许可禁止
 随 MIT 许可的发行版再分发，而且提供商快照还有许可证文本之外的来源风险）。表头格式、变换和构建流水线见 SPEC.md §11。

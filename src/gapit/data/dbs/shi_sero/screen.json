@@ -1,0 +1,12 @@
+{
+  "schema": "gapit.screen/1",
+  "contigs": {
+    "minid": 80.0,
+    "mincov": 50.0,
+    "merge_fragments": true
+  },
+  "reads": {
+    "min_breadth": 50.0,
+    "min_identity": 80.0
+  }
+}

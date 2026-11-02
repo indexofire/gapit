@@ -132,6 +132,7 @@ def read_typing_input(paths: list[Path], stdin_text: str | None = None) -> Typin
                         coverage_pct=row.coverage_pct,
                         identity_pct=row.identity_pct,
                         verdict="present",
+                        alignment_start_pct=row.alignment_start_pct,
                     )
                     for gene, row in per_gene.items()
                 },
