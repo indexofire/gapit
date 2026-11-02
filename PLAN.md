@@ -267,6 +267,17 @@ consumes abricate-built datadirs.
 > `cluster/2` / `locus_map/1` JSON and renders the already-evaluated phenotypes
 > as `typing_result/1` (cluster TSV lacks scheme metadata). Quality is
 > annotate-only; no typing gate and no version bump yet.
+>
+> **Shigella serotype database (2026-11-02):** `shi_sero` ships as the fifth
+> bundled gene db: ShigaTyper 2.0.5 public-domain markers plus the new
+> `gapit.serotype/1` marker-set resolver (`ipaH_c` split into two control
+> fragments for divergent alleles). `gapit typing` reads the screen table's
+> `COVERAGE` range for alignment-start evidence and resolves S. boydii 6 vs 10
+> from the `wbaM` 5' junction (IS629 interruption vs intact type 10);
+> `gapit schema serotype` is registered and `db info`/`db list` expose the
+> typing mode. The 813-genome multi-species validation harness and report live
+> in `scripts/shigella/VALIDATION.md` (ShigaTyper/ShigaPass/ShigeiFinder
+> references; directory labels are treated as collection metadata, not truth).
 
 ## Milestones
 
