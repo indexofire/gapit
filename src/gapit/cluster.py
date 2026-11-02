@@ -72,6 +72,10 @@ class GeneCall(BaseModel, frozen=True):
     coverage_pct: float
     identity_pct: float
     verdict: Verdict
+    # Table-derived typing evidence: the alignment start as a percentage of
+    # the reference marker (0.0 = the 5' end is covered).  Cluster screens
+    # and reads tables leave it None; only `gapit typing` populates it.
+    alignment_start_pct: float | None = None
 
 
 class LocusCall(BaseModel, frozen=True):

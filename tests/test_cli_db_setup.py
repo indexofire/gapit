@@ -61,28 +61,30 @@ def patch_synthetic_provider(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
 
 def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
     """Given the fixture, When db setup runs and then databases are listed,
-    Then exit 0, all four bundled databases materialize (one stderr note
+    Then exit 0, all five bundled databases materialize (one stderr note
     each, alphabetical — vpa_ok's counting loci) alongside tinyamr's Indexed
-    line, and the listing carries all five databases."""
+    line, and the listing carries all six databases."""
     datadir = make_datadir(tmp_path)
     setup = runner.invoke(app, ["db", "setup", "--datadir", str(datadir)])
     assert setup.exit_code == 0
     stderr_lines = setup.stderr.splitlines()
-    assert stderr_lines[:3] == [
+    assert stderr_lines[:4] == [
         f"gapit: materializing bundled database {name} ({records} records) into {datadir}"
         for name, records in (
             ("cje_cps", 42),
             ("eco_dec", 16),
             ("lmo_sero", 5),
+            ("shi_sero", 96),
         )
     ]
-    assert stderr_lines[3:4] == [
+    assert stderr_lines[4:5] == [
         f"gapit: materializing bundled database vpa_ok (195 loci) into {datadir}",
     ]
-    assert stderr_lines[4:] == [
+    assert stderr_lines[5:] == [
         "gapit: indexed cje_cps (42 sequences, nucl)",
         "gapit: indexed eco_dec (16 sequences, nucl)",
         "gapit: indexed lmo_sero (5 sequences, nucl)",
+        "gapit: indexed shi_sero (96 sequences, nucl)",
         "gapit: indexed tinyamr (3 sequences, nucl)",
         "gapit: indexed vpa_ok (195 sequences, nucl)",
     ]
@@ -92,10 +94,11 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
         "cje_cps",
         "eco_dec",
         "lmo_sero",
+        "shi_sero",
         "tinyamr",
         "vpa_ok",
     ]
-    tinyamr = infos[3]
+    tinyamr = infos[4]
     assert tinyamr.n_sequences == 3
     assert tinyamr.dbtype == "nucl"
     assert re.fullmatch(r"\d{4}-[A-Za-z]{3}-\d{2}", tinyamr.date)

@@ -1,0 +1,29 @@
+{
+  "name": "shi_sero",
+  "description": "Shigella molecular serotype marker panel (ShigaTyper public-domain markers)",
+  "vendor": "gapit-curated (ShigaTyper public-domain markers)",
+  "dbtype": "nucl",
+  "kind": "gene",
+  "snapshotted": "2026-11-02",
+  "license": "Public Domain (ShigaTyper marker sequences)",
+  "note": "ShigaTyper 2.0.5 ShigellaRef5 marker panel, reformatted as gapit/v1; markers.json carries the O-antigen/POAC/virulence roles and serotype.json carries the first conservative marker-set resolver. The ipaH_c control is split into two non-overlapping presence fragments (1-640 and 641-780), a gapit-derived sensitivity marker for divergent ipaH alleles.",
+  "guidance": {
+    "references": [
+      {
+        "citation": "Wu Y, Lau HK, Lee T, Lau DK, Payne J. In Silico Serotyping Based on Whole-Genome Sequencing Improves the Accuracy of Shigella Identification. Appl Environ Microbiol. 2019;85(7):e00165-19.",
+        "url": "https://github.com/CFSAN-Biostatistics/shigatyper",
+        "note": "ShigaTyper marker panel; Public Domain."
+      },
+      {
+        "citation": "Senchenkova SN, Feng L, Yang J, et al. Structural and Genetic Characterization of the Shigella boydii Type 10 and Type 6 O Antigens. J Bacteriol. 2005;187(7):2551-2554.",
+        "doi": "10.1128/JB.187.7.2551-2554.2005",
+        "note": "wbaM is intact in type 10 and interrupted by IS629 in type 6; the 5' alignment start separates them."
+      }
+    ],
+    "caveats": [
+      "Contig screens resolve S. boydii 6 vs 10 from the wbaM 5' alignment start; reads tables carry no alignment geometry and leave that pair unresolved.",
+      "The ipaH_c control is two non-overlapping presence fragments (1-640 and 641-780), not the full-length ShigaTyper gene: divergent ipaH alleles retain different parts of the gene.",
+      "ShigaPass GPL3 database content is deliberately not copied into this MIT bundle."
+    ]
+  }
+}

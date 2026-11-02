@@ -122,7 +122,7 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
     tmp_path: Path,
 ) -> None:
     """Given an empty datadir (no local extras), When `db list --json`, Then
-    the only source fields in the document are the four bundled rows
+    the only source fields in the document are the five bundled rows
     (alphabetical, source=bundled, not installed, vendor from bundled.json)
     — registry entries stay field-free and the extension remains additive."""
     datadir = tmp_path / "datadir"
@@ -137,6 +137,7 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
         ("cje_cps", "bundled"),
         ("eco_dec", "bundled"),
         ("lmo_sero", "bundled"),
+        ("shi_sero", "bundled"),
         ("vpa_ok", "bundled"),
     ]
     for entry in with_source:

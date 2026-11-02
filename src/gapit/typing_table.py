@@ -11,6 +11,7 @@ the reads engine has already applied its own presence rule before rendering.
 
 import csv
 import io
+import re
 from collections.abc import Iterator
 from typing import NamedTuple
 
@@ -20,16 +21,27 @@ _FILE_COLUMNS = ("#FILE", "FILE")
 _SAMPLE_COLUMNS = ("#SAMPLE", "SAMPLE")
 _READS_MARKERS = (*_SAMPLE_COLUMNS, "BREADTH%")
 _READS1_IDENTITY_PCT = 100.0
+#: The abricate COVERAGE cell: ``sstart-send/slen`` in subject (marker)
+#: coordinates, ascending.  The 5' fraction is typing evidence: a marker
+#: interrupted near its start (``253-957/957``) is not the same allele as a
+#: marker whose 3' end is missing (``1-831/957``).
+_COVERAGE_RANGE = re.compile(r"(\d+)-(\d+)/(\d+)")
 
 
 class ScreenRow(NamedTuple):
-    """One data row of a screen result table, reduced to the typing keys."""
+    """One data row of a screen result table, reduced to the typing keys.
+
+    ``alignment_start_pct`` is the alignment's start as a percentage of the
+    reference marker's length (0.0 = the 5' end is covered).  It is None for
+    reads tables, which have no alignment range.
+    """
 
     file: str
     gene: str
     database: str
     identity_pct: float
     coverage_pct: float
+    alignment_start_pct: float | None
 
 
 class _Columns(NamedTuple):
@@ -44,13 +56,18 @@ class _Columns(NamedTuple):
     database: int
     identity: int | None
     coverage: int
+    coverage_range: int | None
     present: int | None
     reads: bool
 
     @property
     def last(self) -> int:
         indexes = [self.file, self.gene, self.database, self.coverage]
-        indexes.extend(index for index in (self.identity, self.present) if index is not None)
+        indexes.extend(
+            index
+            for index in (self.identity, self.coverage_range, self.present)
+            if index is not None
+        )
         return max(indexes)
 
 
@@ -93,6 +110,7 @@ def _header(label: str, line_number: int, columns: list[str]) -> _Columns:
             database_at,
             indexes.get("IDENTITY%"),
             breadth_at,
+            None,
             indexes.get("PRESENT"),
             reads=True,
         )
@@ -120,7 +138,16 @@ def _header(label: str, line_number: int, columns: list[str]) -> _Columns:
         or coverage_at is None
     ):
         raise _malformed(label, line_number, f"header lacks {', '.join(missing)} column(s)")
-    return _Columns(file_at, gene_at, database_at, identity_at, coverage_at, None, reads=False)
+    return _Columns(
+        file_at,
+        gene_at,
+        database_at,
+        identity_at,
+        coverage_at,
+        indexes.get("COVERAGE"),
+        None,
+        reads=False,
+    )
 
 
 def _iter_rows(text: str, separator: str) -> Iterator[tuple[int, list[str]]]:
@@ -147,6 +174,30 @@ def _reads_present(cell: str, label: str, line_number: int) -> bool:
     if value == "no":
         return False
     raise _malformed(label, line_number, f"PRESENT must be yes or no, got {cell!r}")
+
+
+def _alignment_start_pct(cell: str, label: str, line_number: int) -> float:
+    """The COVERAGE cell's 5' position as a percentage of the marker length.
+
+    ``1-831/957`` → 0.0 (3' truncation), ``253-957/957`` → 26.33 (5'
+    truncation).  Anything that is not ascending, in-range marker coordinates
+    is a malformed row, never a silent 0.0.
+    """
+    match = _COVERAGE_RANGE.fullmatch(cell.strip())
+    if match is None:
+        raise _malformed(
+            label,
+            line_number,
+            f"COVERAGE must be START-END/LENGTH, got {cell!r}",
+        )
+    start, end, length = (int(value) for value in match.groups())
+    if length <= 0 or not 1 <= start <= end <= length:
+        raise _malformed(
+            label,
+            line_number,
+            f"COVERAGE coordinates out of range: {cell!r}",
+        )
+    return 100.0 * (start - 1) / length
 
 
 def _numeric_detail(header: _Columns) -> str:
@@ -187,6 +238,11 @@ def parse_table(label: str, text: str) -> list[ScreenRow]:
             )
         except ValueError as exc:
             raise _malformed(label, line_number, _numeric_detail(header)) from exc
+        alignment_start = (
+            None
+            if header.coverage_range is None
+            else _alignment_start_pct(columns[header.coverage_range], label, line_number)
+        )
         rows.append(
             ScreenRow(
                 columns[header.file],
@@ -194,6 +250,7 @@ def parse_table(label: str, text: str) -> list[ScreenRow]:
                 columns[header.database],
                 identity,
                 coverage,
+                alignment_start,
             )
         )
     return rows

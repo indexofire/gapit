@@ -56,9 +56,10 @@ def row(
     database: str = DB,
     identity: str = "100.00",
     coverage: str = "100.00",
+    coverage_range: str = "1-90/90",
 ) -> str:
     return (
-        f"{file}\tc1\t1\t90\t+\t{gene}\t1-90/90\t===============\t0/0\t"
+        f"{file}\tc1\t1\t90\t+\t{gene}\t{coverage_range}\t===============\t0/0\t"
         f"{coverage}\t{identity}\t{database}\t-\t-\t-"
     )
 
@@ -150,6 +151,32 @@ class TestParsing:
         )
         parsed = read_typing_input([path])
         assert parsed.files[0].calls["marker_a"].identity_pct == 100.0
+
+    def test_alignment_start_is_parsed_from_the_coverage_range(self, tmp_path: Path) -> None:
+        """Given a 5'-truncated marker row, When typed, Then the folded call
+        carries the alignment start as a percentage of the marker length;
+        a 3'-truncated row starts at 0."""
+        path = table(
+            tmp_path,
+            "start.tsv",
+            [
+                row(gene="wbaM", coverage="73.67", coverage_range="253-957/957"),
+                row(gene="Sb6_wzx", coverage="86.83", coverage_range="1-831/957"),
+            ],
+        )
+        calls = read_typing_input([path]).files[0].calls
+        assert calls["wbaM"].alignment_start_pct == pytest.approx(26.33, abs=0.01)
+        assert calls["Sb6_wzx"].alignment_start_pct == 0.0
+
+    def test_malformed_coverage_range_fails_typed(self, tmp_path: Path) -> None:
+        """Given a COVERAGE cell that is not START-END/LENGTH, When typed,
+        Then exit 5 with SCREEN_TABLE_MALFORMED rather than a silent 0.0."""
+        path = table(tmp_path, "badrange.tsv", [row(coverage_range="not-a-range")])
+        result = runner.invoke(app, ["typing", str(path), "--datadir", str(typed_db)])
+        assert result.exit_code == 5
+        envelope = json.loads(result.stderr.splitlines()[-1])
+        assert envelope["code"] == "SCREEN_TABLE_MALFORMED"
+        assert "COVERAGE" in envelope["message"]
 
     def test_header_only_table_is_typed_no_data(self, tmp_path: Path) -> None:
         """Given a table whose screen found nothing (header only), When

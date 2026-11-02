@@ -24,6 +24,7 @@ from gapit.formats.typing_result import TypingResultDocument
 from gapit.gbfeatures import FeaturesDocument
 from gapit.gene_floors import GeneFloors
 from gapit.screen_defaults import ScreenDefaults
+from gapit.serotype_models import SerotypeDocument
 from gapit.typing_models import TypingDocument
 
 SCHEMA_MODELS: dict[str, type[BaseModel]] = {
@@ -46,4 +47,5 @@ SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "typing_result": TypingResultDocument,
     "floors": GeneFloors,
     "screen": ScreenDefaults,
+    "serotype": SerotypeDocument,
 }

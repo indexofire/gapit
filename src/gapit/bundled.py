@@ -32,6 +32,7 @@ Past the budget, split a separate data wheel or keep the database
 fetch-on-demand instead of inflating the ceiling.
 """
 
+import shutil
 from pathlib import Path
 from typing import Literal
 
@@ -124,6 +125,18 @@ class BundledDatabase(BaseModel, frozen=True):
         families = self.path / "gene_families.json"
         return families if families.is_file() else None
 
+    @property
+    def markers_path(self) -> Path | None:
+        """The optional marker metadata sidecar for a gene bundle."""
+        markers = self.path / "markers.json"
+        return markers if markers.is_file() else None
+
+    @property
+    def serotype_path(self) -> Path | None:
+        """The optional gapit.serotype/1 profile sidecar for a gene bundle."""
+        serotype = self.path / "serotype.json"
+        return serotype if serotype.is_file() else None
+
 
 def bundled_databases() -> list[BundledDatabase]:
     """Every bundled database, sorted by name. A directory qualifies when it
@@ -207,6 +220,10 @@ def materialize_bundled(name: str, datadir: Path, *, quiet: bool = True) -> None
         screen=bundled.screen_path,
         source="bundled",
     )
+    if bundled.markers_path is not None:
+        shutil.copyfile(bundled.markers_path, datadir / name / "markers.json")
+    if bundled.serotype_path is not None:
+        shutil.copyfile(bundled.serotype_path, datadir / name / "serotype.json")
 
 
 def resolve_screen_datadir(cli_value: Path | None, db_name: str) -> Path:

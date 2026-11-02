@@ -1,0 +1,589 @@
+{
+  "schema": "gapit.shigella_markers/1",
+  "source": {
+    "tool": "ShigaTyper",
+    "version": "2.0.5",
+    "file": "ShigellaRef5.fasta",
+    "license": "Public Domain"
+  },
+  "markers": [
+    {
+      "gene": "ipaH_c",
+      "category": "virulence",
+      "serotype_group": null,
+      "length": 640,
+      "derived_from": "ipaH_c:1-640"
+    },
+    {
+      "gene": "ipaH_c",
+      "category": "virulence",
+      "serotype_group": null,
+      "length": 140,
+      "derived_from": "ipaH_c:641-780"
+    },
+    {
+      "gene": "ipaB",
+      "category": "virulence",
+      "serotype_group": null,
+      "length": 1743
+    },
+    {
+      "gene": "EclacY",
+      "category": "biochemical",
+      "serotype_group": null,
+      "length": 1254
+    },
+    {
+      "gene": "cadA",
+      "category": "biochemical",
+      "serotype_group": null,
+      "length": 2143
+    },
+    {
+      "gene": "Ss_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SS",
+      "length": 1269
+    },
+    {
+      "gene": "Ss_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SS",
+      "length": 1173
+    },
+    {
+      "gene": "Ss_methylase",
+      "category": "o_antigen_modification",
+      "serotype_group": "SS",
+      "length": 1833
+    },
+    {
+      "gene": "Sf_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SF1-5",
+      "length": 1257
+    },
+    {
+      "gene": "Sf_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SF1-5",
+      "length": 1149
+    },
+    {
+      "gene": "Sf6_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SF6",
+      "length": 1233
+    },
+    {
+      "gene": "Sf6_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SF6",
+      "length": 1188
+    },
+    {
+      "gene": "gtrI",
+      "category": "poac",
+      "serotype_group": null,
+      "length": 1521
+    },
+    {
+      "gene": "gtrII",
+      "category": "poac",
+      "serotype_group": null,
+      "length": 1461
+    },
+    {
+      "gene": "gtrIV",
+      "category": "poac",
+      "serotype_group": null,
+      "length": 1314
+    },
+    {
+      "gene": "gtrV",
+      "category": "poac",
+      "serotype_group": null,
+      "length": 1254
+    },
+    {
+      "gene": "gtrX",
+      "category": "poac",
+      "serotype_group": null,
+      "length": 1266
+    },
+    {
+      "gene": "gtrIC",
+      "category": "poac",
+      "serotype_group": null,
+      "length": 1596
+    },
+    {
+      "gene": "Oac",
+      "category": "poac",
+      "serotype_group": null,
+      "length": 1002
+    },
+    {
+      "gene": "Oac1b",
+      "category": "poac",
+      "serotype_group": null,
+      "length": 1002
+    },
+    {
+      "gene": "Xv",
+      "category": "poac",
+      "serotype_group": null,
+      "length": 1521
+    },
+    {
+      "gene": "Sd1_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD1",
+      "length": 1191
+    },
+    {
+      "gene": "Sd1_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD1",
+      "length": 1143
+    },
+    {
+      "gene": "Sd1_rfp",
+      "category": "o_antigen",
+      "serotype_group": "SD1",
+      "length": 1134
+    },
+    {
+      "gene": "Sd2_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD2",
+      "length": 1428
+    },
+    {
+      "gene": "Sd2_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD2",
+      "length": 1086
+    },
+    {
+      "gene": "Sd3_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD3",
+      "length": 1515
+    },
+    {
+      "gene": "Sd3_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD3",
+      "length": 1104
+    },
+    {
+      "gene": "Sd4_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD4",
+      "length": 1272
+    },
+    {
+      "gene": "Sd4_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD4",
+      "length": 1233
+    },
+    {
+      "gene": "Sd5_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD5",
+      "length": 1188
+    },
+    {
+      "gene": "Sd5_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD5",
+      "length": 1332
+    },
+    {
+      "gene": "Sd6_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD6",
+      "length": 1275
+    },
+    {
+      "gene": "Sd6_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD6",
+      "length": 1139
+    },
+    {
+      "gene": "Sd7_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD7",
+      "length": 1488
+    },
+    {
+      "gene": "Sd7_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD7",
+      "length": 1191
+    },
+    {
+      "gene": "Sd8_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD8",
+      "length": 1170
+    },
+    {
+      "gene": "Sd8_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD8",
+      "length": 1227
+    },
+    {
+      "gene": "Sd9_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD9",
+      "length": 1281
+    },
+    {
+      "gene": "Sd9_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD9",
+      "length": 1206
+    },
+    {
+      "gene": "Sd10_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD10",
+      "length": 1161
+    },
+    {
+      "gene": "Sd10_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD10",
+      "length": 1422
+    },
+    {
+      "gene": "Sd11_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD11",
+      "length": 1401
+    },
+    {
+      "gene": "Sd11_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD11",
+      "length": 1164
+    },
+    {
+      "gene": "Sd12_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD12",
+      "length": 1212
+    },
+    {
+      "gene": "Sd12_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD12",
+      "length": 1074
+    },
+    {
+      "gene": "Sd13_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD13",
+      "length": 1503
+    },
+    {
+      "gene": "Sd13_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD13",
+      "length": 1098
+    },
+    {
+      "gene": "Sd14_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD14",
+      "length": 1266
+    },
+    {
+      "gene": "Sd14_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD14",
+      "length": 1203
+    },
+    {
+      "gene": "Sd15_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SD15",
+      "length": 1188
+    },
+    {
+      "gene": "Sd15_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SD15",
+      "length": 1242
+    },
+    {
+      "gene": "SdProv_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SDProv",
+      "length": 1320
+    },
+    {
+      "gene": "SdProv_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SDProv",
+      "length": 1212
+    },
+    {
+      "gene": "SdProvE_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SDProv",
+      "length": 1248
+    },
+    {
+      "gene": "SdProvE_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SDProv",
+      "length": 1173
+    },
+    {
+      "gene": "Sb1_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB1",
+      "length": 1185
+    },
+    {
+      "gene": "Sb1_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB1",
+      "length": 1065
+    },
+    {
+      "gene": "Sb2_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB2",
+      "length": 1248
+    },
+    {
+      "gene": "Sb2_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB2",
+      "length": 1188
+    },
+    {
+      "gene": "Sb3_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB3",
+      "length": 1266
+    },
+    {
+      "gene": "Sb3_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB3",
+      "length": 1251
+    },
+    {
+      "gene": "Sb4_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB4",
+      "length": 1230
+    },
+    {
+      "gene": "Sb4_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB4",
+      "length": 1293
+    },
+    {
+      "gene": "Sb5_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB5",
+      "length": 1149
+    },
+    {
+      "gene": "Sb5_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB5",
+      "length": 1092
+    },
+    {
+      "gene": "Sb6_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB6",
+      "length": 1413
+    },
+    {
+      "gene": "Sb6_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB6",
+      "length": 1053
+    },
+    {
+      "gene": "wbaM",
+      "category": "o_antigen",
+      "serotype_group": null,
+      "length": 957
+    },
+    {
+      "gene": "Sb7_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB7",
+      "length": 1215
+    },
+    {
+      "gene": "Sb7_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB7",
+      "length": 1296
+    },
+    {
+      "gene": "Sb8_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB8",
+      "length": 1206
+    },
+    {
+      "gene": "Sb8_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB8",
+      "length": 1083
+    },
+    {
+      "gene": "Sb9_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB9",
+      "length": 1248
+    },
+    {
+      "gene": "Sb9_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB9",
+      "length": 1218
+    },
+    {
+      "gene": "Sb11_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB11",
+      "length": 1428
+    },
+    {
+      "gene": "Sb11_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB11",
+      "length": 1029
+    },
+    {
+      "gene": "Sb12_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB12",
+      "length": 1335
+    },
+    {
+      "gene": "Sb12_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB12",
+      "length": 1140
+    },
+    {
+      "gene": "Sb13_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB13",
+      "length": 1320
+    },
+    {
+      "gene": "Sb13_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB13",
+      "length": 1179
+    },
+    {
+      "gene": "Sb14_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB14",
+      "length": 1458
+    },
+    {
+      "gene": "Sb14_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB14",
+      "length": 1212
+    },
+    {
+      "gene": "Sb15_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB15",
+      "length": 1392
+    },
+    {
+      "gene": "Sb15_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB15",
+      "length": 1179
+    },
+    {
+      "gene": "Sb16_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB16",
+      "length": 1401
+    },
+    {
+      "gene": "Sb16_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB16",
+      "length": 1158
+    },
+    {
+      "gene": "Sb17_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB17",
+      "length": 1266
+    },
+    {
+      "gene": "Sb17_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB17",
+      "length": 1212
+    },
+    {
+      "gene": "Sb18_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB18",
+      "length": 1218
+    },
+    {
+      "gene": "Sb18_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB18",
+      "length": 1146
+    },
+    {
+      "gene": "Sb19_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SB19",
+      "length": 1251
+    },
+    {
+      "gene": "Sb19_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SB19",
+      "length": 1140
+    },
+    {
+      "gene": "SbProv_wzx",
+      "category": "o_antigen",
+      "serotype_group": "SBProv",
+      "length": 1293
+    },
+    {
+      "gene": "SbProv_wzy",
+      "category": "o_antigen",
+      "serotype_group": "SBProv",
+      "length": 1176
+    },
+    {
+      "gene": "heparinase",
+      "category": "o_antigen",
+      "serotype_group": null,
+      "length": 1626
+    }
+  ]
+}

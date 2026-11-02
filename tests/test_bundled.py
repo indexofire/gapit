@@ -125,12 +125,12 @@ def screen_db(sample: Path, datadir: Path, name: str, *extra: str) -> Result:
 
 def test_bundled_discovery_finds_all_bundled() -> None:
     """Given the wheel's data dir, When bundled databases are discovered,
-    Then exactly the four gapit-curated bundles ship in name order — three
+    Then exactly the five gapit-curated bundles ship in name order — four
     gene-kind plus the vpa_ok cluster-kind — each metadata parses
     (vendor/dbtype/kind/snapshot date), eco_dec/lmo_sero/cje_cps carry
-    their typing documents, and vpa_ok carries typing, features table, and
-    content license."""
-    assert bundled_names() == ["cje_cps", "eco_dec", "lmo_sero", "vpa_ok"]
+    their typing documents, shi_sero is the first serotype prototype, and
+    vpa_ok carries typing, features table, and content license."""
+    assert bundled_names() == ["cje_cps", "eco_dec", "lmo_sero", "shi_sero", "vpa_ok"]
     by_name = {database.name: database for database in bundled_databases()}
     cje_cps = by_name["cje_cps"]
     assert cje_cps.metadata.vendor.startswith("gapit-curated (Poly 2015")
@@ -147,6 +147,13 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert eco_dec.metadata.snapshotted == "2026-10-02"
     assert eco_dec.typing_path is not None
     assert eco_dec.floors_path is not None
+    shi_sero = by_name["shi_sero"]
+    assert shi_sero.metadata.vendor.startswith("gapit-curated (ShigaTyper")
+    assert shi_sero.metadata.dbtype == "nucl"
+    assert shi_sero.metadata.kind == "gene"
+    assert shi_sero.typing_path is None
+    assert shi_sero.markers_path is not None
+    assert shi_sero.serotype_path is not None
     lmo_sero = by_name["lmo_sero"]
     assert lmo_sero.metadata.description == "Listeria monocytogenes serogrouping (Doumith 2004)"
     assert lmo_sero.metadata.vendor == "gapit-curated (public-domain INSDC sources)"
@@ -173,12 +180,13 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
     """Given every bundled panel, When every header is inspected, Then no VF
     tag, VFDB marker, or ARO accession appears anywhere — the DEC lesson
     from the license audit (2 VFDB records hid past header-spotting) is
-    locked mechanically across all four bundles (record counts pinned;
+    locked mechanically across all five bundles (record counts pinned;
     the vpa_ok cluster snapshot's bare locus ids are trivially clean)."""
     typed_counts = {
         "cje_cps": 42,
         "eco_dec": 16,
         "lmo_sero": 5,
+        "shi_sero": 96,
         "vpa_ok": VPA_OK_LOCI,
     }
     for bundled in bundled_databases():

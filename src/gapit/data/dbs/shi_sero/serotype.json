@@ -1,0 +1,1239 @@
+{
+  "schema": "gapit.serotype/1",
+  "name": "shi_sero",
+  "control_gene": "ipaH_c",
+  "control_coverage_floor": 50.0,
+  "control_identity_floor": 80.0,
+  "fallback": "Not Shigella/EIEC",
+  "ambiguous": "No prediction (multiple marker sets)",
+  "unresolved": "Shigella spp. (unresolved)",
+  "rules": [
+    {
+      "phenotype": "S. dysenteriae 1",
+      "requires": [
+        "Sd1_wzx",
+        "Sd1_rfp"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper: Sd1 rfp+"
+      ]
+    },
+    {
+      "phenotype": "S. dysenteriae 1 (rfp-)",
+      "requires": [
+        "Sd1_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "Sd1_rfp"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper: Sd1 wzx+ / rfp- (phenotypically negative)"
+      ]
+    },
+    {
+      "phenotype": "S. boydii 20",
+      "requires": [
+        "Sb1_wzx",
+        "heparinase"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper: Sb1 rfb + heparinase = SB20"
+      ]
+    },
+    {
+      "phenotype": "S. boydii 1",
+      "requires": [
+        "Sb1_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "heparinase"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper: Sb1 rfb without heparinase"
+      ]
+    },
+    {
+      "phenotype": "S. sonnei form I",
+      "requires": [
+        "Ss_wzx",
+        "Ss_methylase"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper: Ss_wzx + Ss_methylase + cadA; cadA is optional because S. sonnei isolates can lose the cadA call while retaining the form I O-antigen genes"
+      ]
+    },
+    {
+      "phenotype": "S. sonnei form II",
+      "requires": [
+        "Ss_methylase",
+        "cadA"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "Ss_wzx"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper: cadA + Ss_methylase without Ss_wzx"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 6",
+      "requires": [
+        "Sf6_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper: Sf6_wzx"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 1a",
+      "requires": [
+        "Sf_wzx",
+        "gtrI"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrII",
+        "gtrIV",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 1b",
+      "requires": [
+        "Sf_wzx",
+        "gtrI",
+        "Oac1b"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrII",
+        "gtrIV",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 1c (7a)",
+      "requires": [
+        "Sf_wzx",
+        "gtrI",
+        "gtrIC"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrII",
+        "gtrIV",
+        "gtrV",
+        "gtrX",
+        "Oac",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 7b",
+      "requires": [
+        "Sf_wzx",
+        "gtrI",
+        "gtrIC",
+        "Oac1b"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrII",
+        "gtrIV",
+        "gtrV",
+        "gtrX",
+        "Oac",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 2a",
+      "requires": [
+        "Sf_wzx",
+        "gtrII"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrIV",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 2av",
+      "requires": [
+        "Sf_wzx",
+        "gtrII",
+        "Xv"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrIV",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac",
+        "Oac1b"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 2b",
+      "requires": [
+        "Sf_wzx",
+        "gtrII",
+        "gtrX"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrIV",
+        "gtrV",
+        "gtrIC",
+        "Oac",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 3a",
+      "requires": [
+        "Sf_wzx",
+        "gtrX",
+        "Oac"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrIV",
+        "gtrV",
+        "gtrIC",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 3b",
+      "requires": [
+        "Sf_wzx",
+        "Oac"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrIV",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 3b (oac1b)",
+      "requires": [
+        "Sf_wzx",
+        "Oac1b"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrIV",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 4a",
+      "requires": [
+        "Sf_wzx",
+        "gtrIV"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 4av",
+      "requires": [
+        "Sf_wzx",
+        "gtrIV",
+        "Xv"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac",
+        "Oac1b"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 4b",
+      "requires": [
+        "Sf_wzx",
+        "gtrIV",
+        "Oac"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 4bv",
+      "requires": [
+        "Sf_wzx",
+        "gtrIV",
+        "Oac",
+        "Xv"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac1b"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 5a",
+      "requires": [
+        "Sf_wzx",
+        "gtrV",
+        "Oac"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrIV",
+        "gtrX",
+        "gtrIC",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri 5b",
+      "requires": [
+        "Sf_wzx",
+        "gtrV",
+        "gtrX",
+        "Oac"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrIV",
+        "gtrIC",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri X",
+      "requires": [
+        "Sf_wzx",
+        "gtrX"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrIV",
+        "gtrV",
+        "gtrIC",
+        "Oac",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri Xv (4c)",
+      "requires": [
+        "Sf_wzx",
+        "gtrX",
+        "Xv"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrIV",
+        "gtrV",
+        "gtrIC",
+        "Oac",
+        "Oac1b"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri Yv",
+      "requires": [
+        "Sf_wzx",
+        "Xv"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrIV",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac",
+        "Oac1b"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper POAC set"
+      ]
+    },
+    {
+      "phenotype": "S. flexneri Y",
+      "requires": [
+        "Sf_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "gtrI",
+        "gtrII",
+        "gtrIV",
+        "gtrV",
+        "gtrX",
+        "gtrIC",
+        "Oac",
+        "Oac1b",
+        "Xv"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "ShigaTyper: Sf rfb with no POAC modification"
+      ]
+    },
+    {
+      "phenotype": "S. dysenteriae 2",
+      "requires": [
+        "Sd2_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 3",
+      "requires": [
+        "Sd3_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 4",
+      "requires": [
+        "Sd4_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 5",
+      "requires": [
+        "Sd5_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 6",
+      "requires": [
+        "Sd6_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 7",
+      "requires": [
+        "Sd7_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 8",
+      "requires": [
+        "Sd8_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 9",
+      "requires": [
+        "Sd9_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 10",
+      "requires": [
+        "Sd10_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 11",
+      "requires": [
+        "Sd11_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 12",
+      "requires": [
+        "Sd12_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 13",
+      "requires": [
+        "Sd13_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 14",
+      "requires": [
+        "Sd14_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae 15",
+      "requires": [
+        "Sd15_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae provisional 96-265",
+      "requires": [
+        "SdProv_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. dysenteriae provisional E670-74",
+      "requires": [
+        "SdProvE_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 2",
+      "requires": [
+        "Sb2_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 3",
+      "requires": [
+        "Sb3_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 4",
+      "requires": [
+        "Sb4_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 5",
+      "requires": [
+        "Sb5_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 7",
+      "requires": [
+        "Sb7_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 8",
+      "requires": [
+        "Sb8_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 9",
+      "requires": [
+        "Sb9_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 11",
+      "requires": [
+        "Sb11_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 12",
+      "requires": [
+        "Sb12_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 14",
+      "requires": [
+        "Sb14_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 15",
+      "requires": [
+        "Sb15_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 16",
+      "requires": [
+        "Sb16_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 17",
+      "requires": [
+        "Sb17_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 18",
+      "requires": [
+        "Sb18_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 19",
+      "requires": [
+        "Sb19_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    },
+    {
+      "phenotype": "S. boydii 10",
+      "requires": [
+        "Sb6_wzx",
+        "wbaM"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {
+        "wbaM": 20.0
+      },
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "Senchenkova et al. 2005: type 10 has an intact wbaM (ribofuranosyltransferase); a wbaM alignment covering the 5' end separates it from type 6"
+      ]
+    },
+    {
+      "phenotype": "S. boydii 6",
+      "requires": [
+        "Sb6_wzx",
+        "wbaM"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {
+        "wbaM": 95.0
+      },
+      "min_alignment_start_pct": {
+        "wbaM": 20.0
+      },
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "Senchenkova et al. 2005: type 6 wbaM is interrupted by IS629; a 5'-truncated wbaM alignment (IS629 insertion at ~252/957) identifies type 6"
+      ]
+    },
+    {
+      "phenotype": "S. boydii 6/10",
+      "requires": [
+        "Sb6_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [
+        "wbaM"
+      ],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": [
+        "wbaM absent/weak; S. boydii 6 vs 10 cannot be separated"
+      ]
+    },
+    {
+      "phenotype": "S. boydii 13",
+      "requires": [
+        "Sb13_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": true,
+      "notes": [
+        "SB13 is no longer considered Shigella; control-exempt by ShigaTyper"
+      ]
+    },
+    {
+      "phenotype": "S. boydii provisional E1621-54",
+      "requires": [
+        "SbProv_wzx"
+      ],
+      "requires_any": [],
+      "excludes": [],
+      "max_coverage": {},
+      "min_alignment_start_pct": {},
+      "max_alignment_start_pct": {},
+      "coverage_floor": 50.0,
+      "identity_floor": 80.0,
+      "control_exempt": false,
+      "notes": []
+    }
+  ]
+}

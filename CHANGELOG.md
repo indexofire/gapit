@@ -4,6 +4,15 @@
 
 ### Added
 
+- **Experimental bundled `shi_sero` marker panel + `gapit.serotype/1`.**
+  The first Shigella slice ships 95 ShigaTyper 2.0.5 public-domain markers
+  (`ipaH_c` split into two control fragments for divergent alleles),
+  marker metadata, and a conservative 63-rule marker-set resolver consumed by
+  `gapit typing`. It resolves S. boydii 6 vs 10 from the wbaM 5' alignment
+  start (IS629 interruption vs intact type 10); reads tables carry no
+  alignment geometry and stay unresolved for that pair. ShigaPass GPL
+  content is not bundled.
+
 - **Experimental rich cluster evidence (`gapit screen --detail --format json`).**
   Opt-in `gapit.locus_map/1` output adds per-locus alignment pieces,
   insertions/deletions with flanking genes, per-gene query spans, panel gene

@@ -92,3 +92,13 @@ def test_schema_locus_map_is_registered() -> None:
     payload = json.loads(result.stdout)
     assert payload["properties"]["schema"]["const"] == "gapit.locus_map/1"
     assert "LocusMap" in payload.get("$defs", {})
+
+
+def test_schema_serotype_is_registered() -> None:
+    """Given the serotype profile document, When introspected, Then its
+    schema is the gapit.serotype/1 contract."""
+    result = runner.invoke(app, ["schema", "serotype"])
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["properties"]["schema"]["const"] == "gapit.serotype/1"
+    assert "SerotypeRule" in payload.get("$defs", {})
