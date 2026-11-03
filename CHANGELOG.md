@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.6.8] - 2026-11-03
+
 ### Added
 
 - **Experimental bundled `shi_sero` marker panel + `gapit.serotype/1`.**
@@ -39,6 +41,14 @@
   metadata).
 
 ### Changed
+
+- **gseek requirement raised to `gseek>=0.10.4`.** The `gapit[gseek]` extra and
+  the pixi dev environment now share the same floor.
+
+- **READMEs trimmed to install, quick start, and documentation links.** The
+  database catalog, output-contract, MCP, gseek, and development sections were
+  removed from the README; each topic already has a dedicated docs page, so the
+  README is now a short entry point (241 -> 89 lines).
 
 - **`AGENTS.md` refreshed and trimmed.** The repository guide now matches the
   current tree (provider layout, `typing`/`schema` CLI surface,

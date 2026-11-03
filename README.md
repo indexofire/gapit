@@ -3,239 +3,87 @@
 [English](README.md) | [中文](README.zh.md)
 
 Mass screening of contigs and reads for known genes — AMR, virulence, serotype, plasmid
-replicons, species targets, or any custom database. An agent-first Python reimplementation
-of [abricate](https://github.com/tseemann/abricate): byte-compatible TSV plus first-class
-JSON and Markdown.
-
-## Why gapit
-
-- **Frozen abricate-compatible baseline.** Contig screening keeps the same BLAST
-  pipeline, hit rules, and abricate-format TSV as a frozen baseline surface for existing
-  pipelines. From v0.5.0 gapit pursues its own contract; abricate parity is no longer a
-  release gate — the parity harness (`pixi run -e parity parity`) remains a regression
-  reference for that frozen surface.
-- **Machine-readable by design.** Versioned output schemas (`gapit.report/1`,
-  `gapit.reads/1`, `gapit.summary/1`), self-describing via `gapit schema`, typed JSON error
-  envelopes on stderr, documented exit codes. An agent can discover the whole contract
-  without reading docs.
-- **Reads, not just contigs.** `gapit screen --r1/--r2` screens FASTQ through minimap2, and
-  `--r1` accepts assembly FASTA directly (content-detected, `map-ont` forced) for a fast
-  presence survey. abricate cannot screen raw reads.
+replicons, species markers, or any custom database. Contig screening emits
+abricate-compatible TSV; JSON and Markdown are first-class outputs. Python 3.12.
 
 ## Install
-
-From PyPI (external BLAST+ and minimap2 binaries required on PATH — see
-[docs/installation.md](docs/installation.md)):
 
 ```bash
 pip install gapit
 ```
 
-Or from a git clone with [pixi](https://pixi.sh), which manages the environment including
-the external binaries:
+BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2` must be on
+`PATH`. The pixi/conda paths install them for you; see
+[installation](docs/installation.md) for those, Docker, and pinned setups.
 
 ```bash
+# from a clone, with the external binaries managed for you
 git clone https://github.com/indexofire/gapit.git
 cd gapit
 pixi install
 pixi run gapit --version
 ```
 
-Alternatively, the repository's `environment.yml` puts gapit and the external binaries in a
-conda environment:
-
-```bash
-git clone https://github.com/indexofire/gapit.git
-cd gapit
-conda env create -f environment.yml
-conda activate gapit-env
-gapit --version
-```
-
-The package supports Python 3.12 (3.12 only); the dev environment pins 3.12.
-
 ## Quick start
 
+Bundled databases work offline on first use; every other database is fetched with
+`gapit db fetch`.
+
 ```bash
-# Screen contigs (abricate-compatible TSV on stdout; --db is required)
-gapit screen contigs.fa --db ncbi
+# contigs -> abricate-compatible TSV on stdout
+gapit screen contigs.fa --db eco_dec
 
-# Agent- and human-readable outputs
-gapit screen contigs.fa --db ncbi --format json
-gapit screen contigs.fa --db ncbi --format md
+# JSON / Markdown for agents and humans
+gapit screen contigs.fa --db eco_dec --format json
+gapit screen contigs.fa --db eco_dec --format md
 
-# Two-stage designation: screen writes the gene table, typing designates from it
-# (typed gene databases — the bundled eco_dec carries the dual-scheme DEC panel)
-gapit screen isolates.fa --db eco_dec --output dec.tsv
-gapit typing dec.tsv
-# Neisseria meningitidis: serogroup + ctrA + sodC control (no MLST)
-gapit db fetch -d nme_sero
-gapit screen isolate.fna -d nme_sero
+# FASTQ reads through minimap2
+gapit screen --r1 R1.fastq.gz --r2 R2.fastq.gz --read-type sr --db eco_dec
 
-# Screen FASTQ reads; --read-type picks the minimap2 preset
-gapit screen --r1 sample_R1.fastq.gz --r2 sample_R2.fastq.gz --read-type sr --db card
-gapit screen --r1 ont_reads.fastq.gz --db ncbi --read-type map-ont --format json
+# two-stage gene typing: screen writes the table, typing designates from it
+gapit screen isolate.fa --db eco_dec --output result.tsv
+gapit typing result.tsv
 
-# Summarize report tables into a gene presence/absence matrix
+# summarize many reports into a gene matrix
 gapit summary *.tsv
 
-# Databases: four ship in-wheel and work instantly; every provider downloads from upstream on fetch
-gapit db fetch -d all         # default set (card, vfdb)
+# databases
 gapit db fetch -d ncbi
 gapit db list
-gapit db outdated                # flag databases older than the staleness threshold
-gapit db search "tet(M)"         # look up genes across every installed database
-gapit db build mydb my_genes.fa --tsv my_meta.tsv   # custom db from any FASTA
 
-# Introspection
-gapit schema report     # JSON Schema of gapit.report/1
+# introspect the output contract
+gapit schema report
 ```
 
-Contig screening follows abricate defaults (`--minid 80`, `--mincov 80`). Reads-mode
-presence defaults to 90% alignment breadth (`--min-breadth 90`).
+Contig defaults are `--minid 80 --mincov 80`; reads presence defaults to 90% alignment
+breadth. Full flags and examples: [contigs](docs/screen.md), [reads](docs/reads.md),
+[typing](docs/typing.md), [summary](docs/summary.md).
 
-## Databases
+## Documentation
 
-A database is a directory under the datadir, resolved from `--datadir`, then
-`$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`
-(use `gapit db path` to inspect it). On a fresh install
-`gapit db list` bootstraps the datadir and lists the catalog (bundled rows ready for
-first use); `gapit db setup` creates it and materializes all seven bundled databases.
-Twenty-eight databases are
-built into the catalog — thirteen gene providers, eight cluster providers, and
-seven bundled snapshots (`cje_cps`, `eco_dec`, `lmo_sero`, `shi_sero`, `vch_vf`, `vpa_ok`, `vpa_pai`). Every
-provider builds on `gapit db fetch`,
-which downloads from upstream — including `nme_sero` (N. meningitidis serogroup + ctrA + sodC, non-MLST). The bundled set is gapit-curated and provenance-clean only:
-the public-domain `eco_dec`, `lmo_sero`, `cje_cps`, `shi_sero`, and `vch_vf`
-panels plus the `vpa_pai` and MIT typed-cluster `vpa_ok` databases, materialized into the datadir on first use with zero
-network. The bundled `eco_dec` additionally carries per-gene identity floors
-(`floors.json`, `pic` at 90%) that both engines apply before presence calls, and
-`cje_cps` ships floors plus per-database `screen.json` defaults (MAPQ 20, depth 5, 10%
-lpxA relative depth). The same `screen.json` (`gapit.screen/1`) mechanism lets any
-database declare its own reads/contigs thresholds, so one global parameter set is not
-forced onto panels of different amplicon lengths. Several
-upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's GPL-3.0) forbid
-redistribution inside an MIT-licensed distribution, and provider snapshots carry
-provenance risk beyond the license text — so every provider (`ncbi`, `card`, `ecoh`,
-`resfinder`, ...) is fetch-on-demand: `db fetch -d <name>` installs the latest upstream
-content. For the database anatomy, datadir sharing,
-conda/Docker guidance, and security notes, see [Data directory](docs/datadir.md).
-
-| Name | Content | dbtype |
-|---|---|---|
-| `ncbi` | NCBI AMRFinderPlus curated AMR | nucl |
-| `card` | CARD protein homolog resistance models | nucl |
-| `resfinder` | CGE ResFinder acquired resistance genes | nucl |
-| `argannot` | ARG-ANNOT acquired resistance genes | nucl |
-| `plasmidfinder` | CGE PlasmidFinder replicons | nucl |
-| `megares` | MEGARes antimicrobial resistance genes | nucl |
-| `ecoh` | E. coli O and H antigens (srst2 EcOH) | nucl |
-| `eco_dec` | Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation) | nucl |
-| `vfdb` | VFDB virulence factors (set A, nucleotide) | nucl |
-| `ecoli_vf` | E. coli virulence factors | nucl |
-| `lmo_sero` | Listeria monocytogenes serogrouping (Doumith 2004) | nucl |
-| `shi_sero` | Shigella molecular serotype marker panel (ShigaTyper public-domain markers; first serotype rules) | nucl |
-| `vch_vf` | V. cholerae CTX core/RS2 + ctxB classical/El Tor + tcpA classical/El Tor/O139 markers | nucl |
-| `vpa_pai` | V. parahaemolyticus VPaI-1..VPaI-10 pathogenicity islands (cluster) | nucl |
-| `bacmet2` | BacMet2 biocide/resistance genes (protein) | prot |
-| `victors` | Victors virulence factors | nucl |
-| `upec_expec_vf` | UPEC/ExPEC virulence genes | nucl |
-| `vpa_ok` | V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero; cluster, MIT, one-scan O:K serotype) | nucl |
-| `vch_oagc` | V. cholerae O-antigen gene clusters (190 OL loci + ompW control; cluster, fetch-on-demand) | nucl |
-
-gapit also reads datadirs built by abricate itself (legacy `~~~` headers). The reverse
-does not hold: gapit-native databases use the `gapit/v1` header format (see docs/databases.md),
-which abricate cannot read. Protein databases such as `bacmet2` screen through blastx.
-
-Gene **cluster** databases are a second kind: `gapit db build NAME loci.gbk|gff3` builds a
-`kind: cluster` db (locus calls via minimap2, optional `--typing FILE` phenotype scoring),
-and the seven Kaptive cluster databases (kpsc_k, kpsc_o, kosc_k, kosc_o, ab_k, ab_o,
-ecoli_kps) fetch the Kaptive antigen-locus references at install time (GPL-3.0 content, so
-nothing is bundled — cite Kaptive/Wyres et al. 2020 for results). The typed cluster
-bundle `vpa_ok`
-merges the vpasero OAgc + CPSgc references (MIT) into one bundled db — a pure built-in in
-the eco_dec/lmo_sero pattern, no `db fetch` — where a single
-`gapit screen --db vpa_ok` renders gapit.cluster/2 with `o_group`, `k_group`, and the
-composed `serotype` O:K call (RIMD 2210633 → O3:K6), working straight after
-`pip install gapit` with zero network.
-`gapit db list --json`
-surfaces each provider's content license where one is pinned.
-
-## Output contract
-
-- **stdout purity.** Data on stdout, diagnostics on stderr, always. `--quiet` silences
-  stderr only.
-- **Deterministic.** Stable sort orders, fixed tool parameters, no wall-clock timestamps
-  inside data payloads.
-- **Errors** print a JSON envelope to stderr and exit nonzero:
-
-```text
-{"schema": "gapit.error/1", "code": "...", "message": "...", "context": {...}}
-```
-
-| Exit code | Meaning |
+| Topic | Page |
 |---|---|
-| 0 | success |
-| 1 | unexpected error |
-| 2 | usage error |
-| 3 | missing dependency |
-| 4 | database error |
-| 5 | input error |
+| Install, quickstart | [installation](docs/installation.md), [quickstart](docs/quickstart.md) |
+| Contig screening, cluster databases | [screen](docs/screen.md) |
+| Reads and assembly surveys | [reads](docs/reads.md) |
+| Gene matrices | [summary](docs/summary.md) |
+| Typing schemes and phenotypes | [typing](docs/typing.md) |
+| JSON/Markdown contracts, error envelope | [outputs](docs/outputs.md), `gapit schema` |
+| Database catalog, providers, bundles | [databases](docs/databases.md) |
+| Datadir, sharing, Docker | [datadir](docs/datadir.md) |
+| Custom databases | [custom-db](docs/custom-db.md) |
+| Agents and MCP server | [agents](docs/agents.md), [mcp](docs/mcp.md) |
+| Optional gseek engine | [gseek](docs/gseek-engine.md) |
 
-## MCP server
+Full manual: <https://indexofire.github.io/gapit/>.
 
-gapit ships an MCP (Model Context Protocol) stdio server so agent runtimes can
-screen assemblies without parsing CLI output: `gapit mcp` or the `gapit-mcp`
-console script speaks newline-delimited JSON-RPC 2.0 on stdin/stdout (no extra
-dependencies — the protocol is hand-rolled). It exposes twelve tools:
-`screen` (gapit.report/1 by default; `aligner minimap2` for a fast assembly
-survey), `screen_reads` (FASTQ via minimap2, gapit.reads/1), `summary`
-(gapit.summary/1), `typing` (designate from a screen table and surface
-follow-up notes such as the W/Y EX7E check), `schema`, `db_list`, plus the
-database tools `db_path`, `db_setup`, `db_fetch`, `db_build`, `db_search`, and
-`db_outdated` so an agent can self-provision and inspect databases
-mid-session.
-Tool failures return `isError: true` with the `gapit.error/1` envelope as text.
-Register it with an MCP client:
+## Development and license
 
-```json
-{"mcpServers": {"gapit": {"command": "gapit-mcp"}}}
-```
+Contributor workflow and gates: [CONTRIBUTING.md](CONTRIBUTING.md); internal rules:
+[AGENTS.md](AGENTS.md); trust boundaries: [SECURITY.md](SECURITY.md); changes:
+[CHANGELOG.md](CHANGELOG.md).
 
-## Optional gseek engine
-
-`GAPIT_ENGINE=legacy|gseek|shadow` can route contig BLAST, protein `blastx-fast`,
-reads minimap2, and cluster minimap2 through
-[gseek](https://github.com/indexofire/gseek). `legacy` remains the default and
-is retained on every path; `shadow` runs both and returns legacy. gseek requires
-Python 3.12 and is installed by the pixi `default` environment (the `py312` feature) or
-`pip install "gapit[gseek]"`. See [gseek engine](docs/gseek-engine.md).
-
-## Development
-
-| Task | Runs |
-|---|---|
-| `pixi run lint` | ruff check |
-| `pixi run fmt` | ruff format |
-| `pixi run fmt-check` | ruff format --check |
-| `pixi run typecheck` | basedpyright (strict) |
-| `pixi run test` | pytest, offline unit/CLI suite |
-| `pixi run -e parity parity` | byte-diff screening vs real abricate |
-| `pixi run -e parity summary-parity` | byte-diff summary vs real abricate |
-
-User documentation lives in [`docs/index.md`](docs/index.md), rendered at
-<https://indexofire.github.io/gapit/>.
-
-`SPEC.md` is the legacy abricate-table/header interop contract, `AGENTS.md`/`CONTRIBUTING.md` the contributor rules,
-`SECURITY.md` the trust-boundary and reporting policy, `CITATION.cff` the citation
-metadata, and `CHANGELOG.md` the change history. `PLAN.md` is kept as a historical
-roadmap (the current architecture lives in `AGENTS.md` and `docs/`; `SPEC.md` is the legacy table/header interop contract).
-
-## License
-
-gapit is MIT-licensed. It is a behavioral reimplementation of abricate (GPL-2.0) and
-copies no Perl code; abricate itself remains GPL-2.0. The only database content inside
-the package is the seven audited, permissively licensed, gapit-curated bundles under
-`src/gapit/data/dbs/`
-(public domain / Apache-2.0 / BSD-3-Clause / MIT); every other provider downloads from
-upstream at fetch time, under its own license (SPEC.md §9).
+gapit is MIT-licensed. It is a behavioral reimplementation of abricate (GPL-2.0) and copies
+no Perl code. The seven gapit-curated bundled databases are permissively licensed; every
+other provider downloads from upstream at fetch time under its own license. If you use
+gapit, cite [CITATION.cff](CITATION.cff).

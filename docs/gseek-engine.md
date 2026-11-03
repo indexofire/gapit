@@ -45,7 +45,7 @@ gseek:
 pip install "gapit[gseek]"
 ```
 
-The pixi `default` environment (with the `py312` feature) uses Python 3.12 and includes `gseek>=0.10.2`. Without gseek, `GAPIT_ENGINE=gseek` raises a
+The pixi `default` environment (with the `py312` feature) uses Python 3.12 and includes `gseek>=0.10.4`. Without gseek, `GAPIT_ENGINE=gseek` raises a
 typed `MISSING_DEPENDENCY` error; `legacy` and all existing commands are
 unaffected.
 

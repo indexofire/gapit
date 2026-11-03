@@ -79,7 +79,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/99/91/8acff4f5e50511b911bbccb72b8628a49c68ce14148cd9f6431094859a90/annotated_types-0.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b2/84/c1e1e845d0453253a98d1ba188d68597f0ba7e552eeabea514d9395d418a/basedpyright-1.40.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/58/50/6c0d534c5f134586a8e1ba4e330569e32f057e33372ae556463212fb4cd3/click-8.5.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/12/27/89bbd615b79a621bfc40a1a9bf21369e05b43771872a500a53fa67f8e54e/gseek-0.10.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/59/fe/5a7de69fa8dd2c21b507c1f2c793ab44e4dbfa4bd72cd1bfb621e38c987a/gseek-0.10.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/b1/3846dd7f199d53cb17f49cba7e651e9ce294d8497c8c150530ed11865bb8/iniconfig-2.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b3/81/4da04ced5a082363ecfa159c010d200ecbd959ae410c10c0264a38cac0f5/markdown_it_py-4.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl
@@ -923,13 +923,13 @@ packages:
   timestamp: 1694615932610
 - pypi: ./
   name: gapit
-  version: 0.6.7
-  sha256: e4066a887728723609a30d91144d2f0ffa9c4294cd8792ededcac59b9819cd9c
+  version: 0.6.8
+  sha256: 7923786b820b63c44b30aac98fe6c1223f9de33c3a4d1ae20091147a41b81a58
   requires_dist:
   - click>=8.2
   - pydantic>=2.7
   - rich>=13
-  - gseek>=0.10.3 ; extra == 'gseek'
+  - gseek>=0.10.4 ; extra == 'gseek'
   requires_python: '>=3.12,<3.13'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/gawk-5.4.1-h0a3468a_0.conda
   sha256: 0ae20399bc13d1097237cf29653c1f2dd68e37f08b47a9b3cab76f97556a6bfa
@@ -1005,12 +1005,15 @@ packages:
   license_family: LGPL
   size: 102835
   timestamp: 1786118485753
-- pypi: https://files.pythonhosted.org/packages/12/27/89bbd615b79a621bfc40a1a9bf21369e05b43771872a500a53fa67f8e54e/gseek-0.10.2-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/59/fe/5a7de69fa8dd2c21b507c1f2c793ab44e4dbfa4bd72cd1bfb621e38c987a/gseek-0.10.4-py3-none-any.whl
   name: gseek
-  version: 0.10.2
-  sha256: 12c32cc4e2343607ff245bce5ddbac307e37794e9a0d3e7145285815643610ec
+  version: 0.10.4
+  sha256: 9f3aad6671fc155c26e776c8088924a83bff6bf183870fd907d3521dcc8be406
   requires_dist:
   - hypothesis>=6.100 ; extra == 'dev'
+  - mkdocs-material>=9.5 ; extra == 'dev'
+  - mkdocs-static-i18n>=1.2 ; extra == 'dev'
+  - mkdocs>=1.6 ; extra == 'dev'
   - pre-commit>=3.7 ; extra == 'dev'
   - pyright>=1.1 ; extra == 'dev'
   - pytest-cov>=5.0 ; extra == 'dev'
