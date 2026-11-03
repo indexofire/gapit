@@ -1,18 +1,18 @@
 # AGENTS.md — gapit
 
 > Python tool for mass screening of contigs and reads for known genes, with gene-cluster
-> typing and phenotype designation. Originally a reimplementation of
+> typing and phenotype designation. An independent reimplementation of
 > [abricate](https://github.com/tseemann/abricate); **from v0.5.0 onward gapit pursues its
-> own contract** — abricate parity is no longer a design goal. **Agent-first**: every
-> output is machine-readable (JSON / Markdown) by design, not as an afterthought.
+> own contract** — abricate parity is a regression reference for the legacy table, not a
+> design goal. **Agent-first**: outputs are machine-readable (JSON / Markdown) by design.
 
 ## 1. Mission
 
 `gapit` answers one question: **which known genes are present in this assembly, and how confident
 are we?** A modern, typed, testable Python tool that:
 
-1. Ships an abricate-compatible contig TSV as the historical baseline surface (frozen
-   behavior, kept for existing pipelines), while new development follows gapit's own design.
+1. Ships the abricate-compatible 15-column contig TSV as a frozen baseline surface for existing
+   pipelines (`SPEC.md` §5), while new development follows gapit's own design.
 2. Adds first-class **JSON** and **Markdown** outputs so LLM agents and humans can consume
    results without parsing tab-delimited text.
 3. Exposes stable, versioned output contracts (schemas, exit codes, error envelopes) that
@@ -25,12 +25,10 @@ are we?** A modern, typed, testable Python tool that:
   for PyPI).
 - **Python**: 3.12 in the pixi dev env; the package declares
   `requires-python = ">=3.12,<3.13"` and CI tests Python 3.12.
-- **External binaries**: BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2`
-  (FASTQ read screening, docs/reads.md), all from conda-forge/bioconda. Invoked only via `subprocess`
-  with an argument list — never `shell=True`. Input normalization (fa/fq/gbk/embl, gz/bz2) is
-  native (`seqconvert.py`); `any2fasta` is no longer a gapit dependency anywhere — the
-  differential-validation oracle binary arrives transitively via abricate in the opt-in
-  `parity` pixi env (prepend `.pixi/envs/parity/bin` to PATH for the differential test).
+- **External binaries**: BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2`,
+  all from conda-forge/bioconda. Invoked only via `subprocess` with an argument list — never
+  `shell=True`. Input normalization (fa/fq/gbk/embl, gz/bz2) is native (`seqconvert.py`);
+  abricate's own `any2fasta` exists only inside the opt-in `parity` env, for the oracle.
 - **Core libraries**: `click` (CLI), `pydantic` v2 (data models / JSON schema), `rich` (terminal
   output). No biopython — FASTA I/O is a small streaming parser we own.
 - **Optional engine**: `gseek` (`gapit[gseek]`, Python 3.12) behind `GAPIT_ENGINE`;
@@ -46,127 +44,43 @@ pixi run fmt-check   # ruff format --check
 pixi run typecheck   # basedpyright --strict
 pixi run test        # pytest (unit, offline)
 pixi run gapit       # the CLI itself
-pixi run -e parity parity          # byte-diff screening vs real abricate (abricate-only env)
-pixi run -e parity summary-parity  # byte-diff summary vs real abricate
+pixi run -e docs mkdocs build --strict     # bilingual docs site
+pixi run -e parity parity                  # byte-diff screening vs real abricate
+pixi run -e parity summary-parity          # byte-diff summary vs real abricate
 ```
 
-Every change must leave `lint`, `typecheck`, and `test` green.
+Every change must leave `lint`, `fmt-check`, `typecheck`, and `test` green; doc changes also need
+the strict docs build. Parity is an opt-in regression check for the legacy surface only.
 
 ## 3. Repository layout
 
+A grouped map, not an inventory — open a directory for its full file list.
+
 ```
 gapit/
-├── AGENTS.md            # this file
-├── CONTRIBUTING.md      # contributor workflow and gates
-├── SECURITY.md          # trust boundaries + vulnerability reporting
-├── CITATION.cff         # citation metadata
+├── AGENTS.md, CONTRIBUTING.md, SECURITY.md, CITATION.cff
+├── SPEC.md              # frozen legacy table/header interop contract
 ├── PLAN.md              # historical development roadmap
-├── SPEC.md              # legacy abricate-table/header interop contract
-├── pixi.toml
-├── recipe/
-│   └── meta.yaml        # conda recipe (submission deferred)
-├── .github/workflows/
-│   └── ci.yml           # gates matrix Python 3.12 + parity job
+├── docs/                # user docs (bilingual) + mkdocs nav
+├── pixi.toml, pyproject.toml, recipe/meta.yaml
+├── .github/workflows/ci.yml   # gates + scheduled clean-gates + parity job
 ├── src/gapit/
-│   ├── __init__.py
-│   ├── cli.py           # click entrypoint: screen / summary / db / schema / mcp
-│   ├── config.py        # datadir resolution, first-run bootstrap, defaults, env vars
-│   ├── dispatch.py      # shared CLI dispatch (error envelope → exit codes) + --datadir option + --output target
-│   ├── proctools.py     # external-tool plumbing: argv subprocess runner + stderr notes
-│   ├── fasta.py         # streaming FASTA reader + shared gz/bz2 text opener
-│   ├── seqconvert.py    # native input normalization: fa/fq/gbk/embl (±gz/bz2) → FASTA
-│   ├── db.py            # database discovery, header parsing, makeblastdb wrapper
-│   ├── dbcodec.py       # gapit/v1 tagged-header codec (percent-encoded ids)
-│   ├── db_txn.py        # per-db write lock + staging build + rename publish
-│   ├── records.py       # records.jsonl truth store + gapit.manifest/1 provenance
-│   ├── dbbuild.py       # deterministic native-db build pipeline with self-check
-│   ├── clusterbuild.py  # cluster-db build pipeline: GBK/GFF → locus FASTA + features.json + typing copy
-│   ├── cluster.py       # cluster-screening engine core: minimap2 asm20 → per-locus/per-gene calls
-│   ├── cluster_math.py  # cs-walk → union coverage/identity math + verdicts (pure functions)
-│   ├── db_ops.py        # db use-cases: fetch + list (shared CLI + MCP; no typer)
-│   ├── db_setup_ops.py  # db use-case: bootstrap + materialize + index (gapit.dbsetup/1)
-│   ├── db_rename_ops.py # db use-case: rename an installed database (gene rebuild / cluster re-stamp)
-│   ├── db_info_ops.py   # db use-case: provenance/literature/caveats document (gapit.dbinfo/1)
-│   ├── db_info_manual.py # `db info` man-style renderer (sections, wrapping, terminal width)
-│   ├── db_info_models.py # leaf models shared by bundled.json and db info (references/guidance)
-│   ├── db_query_ops.py  # db use-cases: search + outdated over installed DBs (shared CLI + MCP)
-│   ├── db_build_ops.py  # db use-case: custom FASTA+TSV → gene db, GBK/GFF → cluster db (shared CLI + MCP)
-│   ├── db_build_meta.py # `db build --tsv` metadata sidecar: parse + merge (shared by the build use-case)
-│   ├── gbfeatures.py    # GenBank FEATURES/ORIGIN parser → LocusFeatures/GeneFeature + gapit.features/1
-│   ├── gene_floors.py   # gapit.floors/1 per-gene identity floors: model, loader, build validation, reads gate
-│   ├── gffparse.py      # GFF3 parser (embedded ##FASTA or sidecar) → the same locus/gene models
-│   ├── typing_models.py # gapit.typing schema (rules + named schemes; /1 degrades to one default scheme)
-│   ├── typing_rules.py  # gapit.typing rule models (weighted_genes/exact_set/cluster_match/learned_linear) + reference checks
-│   ├── typing_decide.py # typing decision layer: ranking, control-gene gate, unique-group mixed override
-│   ├── typing_results.py # typing evaluation-result models (PhenotypeDetail, SchemeCall)
-│   ├── typing_engine.py # typing evaluation, cluster path: rule scoring → phenotype call + breakdown
-│   ├── typing_gene.py   # typing evaluation, gene path (DEC markers): hits → per-scheme report phenotypes
-│   ├── typing_cluster2.py # typing evaluation, multi-scheme cluster path: report → per-scheme phenotypes map
-│   ├── bundled.py       # bundled databases: discovery + kind-forked materialize-into-datadir
-│   ├── bundled_cluster.py # cluster-bundle materialization: committed artifacts → cluster build
-│   ├── blast.py         # blastn invocation + tabular output parsing
-│   ├── hits.py          # Hit model, identity/coverage computation, filtering, dedup
-│   ├── fragments.py     # opt-in --merge-fragments cross-contig gene-fragment merging
-│   ├── minimap.py       # COVERAGE_MAP construction (exact abricate arithmetic)
-│   ├── minimap2_run.py  # minimap2 invocation layer for reads mode (streaming PAF, --cs/NM tags)
-│   ├── paf.py           # PAF row parsing + interval arithmetic (minimap2 output boundary)
-│   ├── report.py        # Report model: the canonical in-memory result
-│   ├── engines.py       # shared OutputFormat / AlignerEnum (leaf module for the three engines)
-│   ├── gseek_engine.py  # optional gseek bridge (legacy/gseek/shadow) for BLAST/minimap2
-│   ├── progress.py      # stderr-bound rich batch progress bar
-│   ├── screening.py      # blastn screen use-case + the shared run_screen dispatcher
-│   ├── screening_cluster.py # cluster screen use-case: kind guards, typing wiring, rendering
-│   ├── screening_reads.py # minimap2 use-cases: --r1/--r2 reads + --aligner minimap2 assemblies
-│   ├── screening_reads_positional.py # positional FASTQ wildcard: pairing + per-sample screens
-│   ├── typing_input.py   # `gapit typing` input: contig/reads tables → per-FILE folded GeneCalls
-│   ├── typing_table.py   # `gapit typing` table parsing: contig 15-column + reads #SAMPLE/BREADTH% shapes
-│   ├── typing_ops.py     # `gapit typing` use-case: resolve db, run the engine, render
-│   ├── reads.py          # FASTQ mode: minimap2 PAF parsing, coverage breadth/depth, presence
-│   ├── readpairs.py      # positional FASTQ filename → sample/lane inference
-│   ├── summary.py       # summary core: parse report tables into a gene matrix
-│   ├── cmd_screen.py    # `gapit screen` CLI (registered from cli.py)
-│   ├── cmd_screen_positionals.py # screen positional guard: db-name-as-file usage error
-│   ├── cmd_screen_reads_args.py # reads-mode CLI arg rules (comma split + flag rejects)
-│   ├── cmd_summary.py   # `gapit summary` CLI (registered from cli.py)
-│   ├── cmd_typing.py    # `gapit typing` CLI (registered from cli.py)
-│   ├── cmd_db.py        # `gapit db` command group (fetch/path/list/build/install/search/outdated/setup)
-│   ├── cmd_db_install.py # `gapit db install`: SHA256-verified local-file install
-│   ├── cmd_db_rename.py # `gapit db rename` CLI (naming-convention migration)
-│   ├── cmd_db_info.py   # `gapit db info -d NAME` CLI (manual page / TSV / JSON)
-│   ├── cmd_db_build.py  # `gapit db build` CLI (custom FASTA → native db)
-│   ├── cmd_db_search.py # `gapit db search` CLI (records.jsonl lookup)
-│   ├── cmd_db_outdated.py # `gapit db outdated` CLI (staleness report)
-│   ├── cmd_db_setup.py  # `gapit db setup` CLI (bootstrap + materialize + index)
-│   ├── mcp.py           # MCP stdio server (hand-rolled JSON-RPC 2.0); backs gapit-mcp
-│   ├── mcp_tools.py     # MCP tool implementations (call the shared use-cases)
-│   ├── mcp_schemas.py   # MCP tools/list declarations (names, descriptions, inputSchemas)
-│   ├── errors.py        # typed errors + JSON error envelope
-│   ├── formats/
-│   │   ├── tsv.py       # abricate-compatible TSV/CSV (phenotype-free in every typing version)
-│   │   ├── csvutil.py   # CSV RFC 4180 + TSV cell sanitization (streaming renderers)
-│   │   ├── json.py      # versioned JSON (gapit.report/1 et al.)
-│   │   ├── reads_json.py # versioned JSON (gapit.reads/1, gapit.reads/2)
-│   │   ├── reads_tsv.py # streaming reads TSV/CSV table
-│   │   ├── md.py        # Markdown (human + agent readable, YAML frontmatter)
-│   │   ├── cluster.py   # gapit.cluster/1 models + JSON/TSV renderers (typed variant)
-│   │   ├── cluster2.py  # gapit.cluster/2 models + JSON/TSV renderers (multi-scheme phenotypes map)
-│   │   ├── cluster_md.py # gapit.cluster/1 + /2 Markdown renderers (Phenotype(s) column when typed)
-│   │   ├── typing_result.py # gapit.typing_result/1 models + TSV/JSON/MD renderers
-│   │   ├── schemas.py   # registered output models behind `gapit schema`
-│   │   └── summary.py   # summary matrix renderers (TSV/CSV/JSON/MD)
-│   ├── providers/       # 20 database provider modules (13 gene + 7 kaptive cluster) + cluster_common.py + common.py
-│   └── py.typed
-├── scripts/
-│   ├── cluster_calibration.py # developer calibration harness for typed cluster dbs (single-scheme split dbs)
-│   └── generate_vp_typing.py # regenerates the committed vpa_ok typing asset from the vpautils OAgc/CPSgc GBKs
-└── tests/
-    ├── data/            # tiny synthetic db + contigs + reads (fast, offline)
-    ├── golden/          # expected outputs incl. abricate reference TSVs
-    ├── parity/          # corpus + run_parity.py / run_summary_parity.py (opt-in env)
-    └── test_*.py        # unit + CLI + provider + integration tests
+│   ├── cli.py, cmd_*.py       # click entrypoints: screen / summary / typing / db / schema / mcp
+│   ├── config.py, dispatch.py, errors.py, proctools.py
+│   ├── db.py, dbcodec.py, db_txn.py, records.py, dbbuild.py
+│   ├── db_*_ops.py, bundled*.py, providers/   # fetch/build/rename/info/query + bundles
+│   ├── blast.py, hits.py, screening*.py, fragments.py, minimap*.py, reads.py, readpairs.py
+│   ├── cluster*.py, gbfeatures.py, gffparse.py, locus_map*.py
+│   ├── gene_families.py, serotype_*.py, typing_*.py, gene_floors.py
+│   ├── formats/               # tsv/csv/json/md/summary/cluster/typing_result/schemas/locus_map
+│   ├── mcp*.py, gseek_engine.py
+│   └── data/dbs/              # curated bundled databases (see §6)
+├── scripts/                   # reproducible asset builders (shigella/, vibrio/) + calibration
+└── tests/                     # data/, golden/, parity/, test_*.py
 ```
 
-One file, one responsibility. Target ≤ 250 LOC per module; split before it hurts.
+One file, one responsibility. New modules stay small (~250 LOC); the established CLI and
+orchestration modules (`cmd_screen.py`, `db_ops.py`, `gseek_engine.py`) are deliberately larger.
 
 ## 4. Coding conventions
 
@@ -179,82 +93,49 @@ One file, one responsibility. Target ≤ 250 LOC per module; split before it hur
 - **Deterministic output.** Stable sort orders, no wall-clock timestamps inside data payloads
   (metadata block only), LF line endings, UTF-8.
 - **TDD for core logic.** hit filtering, merging, and coverage-map math are written test-first.
+- **Bilingual docs.** A user-facing doc change updates both `docs/foo.md` and `docs/foo.zh.md`.
 - Match the style of the file you are editing; when in doubt, `ruff format` decides.
 
 ## 5. The agent-facing output contract (design center)
 
-This is what distinguishes gapit from abricate. Treat it as a public API.
+Treat this as a public API. Formats are detailed in `docs/outputs.md`, agent usage in
+`docs/agents.md`, and every JSON document is introspectable with `gapit schema`.
 
-- **Formats**: `--format tsv|csv|json|md` (default `tsv` for abricate compatibility).
-- **JSON**: top-level `"schema": "gapit.report/1"`; schema introspectable via
-  `gapit schema report | reads | reads2 | summary | cluster | cluster2 | dblist | dbsetup | dbinfo | dboutdated | datadir | error | version` (plus
-  `cluster | cluster2 | features | typing | typing_result | floors`). Keys are snake_case,
-  units explicit (`identity_pct`, `coverage_pct`). Semver the schema; never rename or
-  retype a field in a minor bump.
+- **Formats**: `--format tsv|csv|json|md` (default `tsv` for existing pipelines).
+- **JSON**: every document carries a top-level `"schema": "<name>/<version>"`; `gapit schema
+  --help` lists every registered document. Keys are snake_case and units explicit
+  (`identity_pct`, `coverage_pct`). Semver the schema; never rename or retype a field in a
+  minor bump.
 - **Markdown**: YAML frontmatter (tool version, db, params, ISO-8601 UTC timestamp) + tables a
   human can read and an agent can regex reliably.
 - **Errors**: failures print a JSON envelope to stderr
   `{"schema": "gapit.error/1", "code": "...", "message": "...", "context": {...}}` and exit with a
-  documented non-zero code (2 = usage, 3 = missing dependency, 4 = db error, 5 = input error).
+  documented code (1 unexpected, 2 usage, 3 missing dependency, 4 db error, 5 input error).
 - **Typing** `[gapit-extension]`: two-stage designation — `gapit screen -o result.tsv --db NAME`
   detects genes (screen output is phenotype-free; typed and untyped gene dbs screen
   byte-identically), then `gapit typing result.tsv [-D|-f|-o|-q]` designates from the screen
   table (`gapit.typing_result/1`; cluster dbs refuse — their typing rides the screen).
   The MCP `typing` tool accepts the screen table text and returns the same document.
-- **DB acquisition** `[gapit-extension]`: `gapit db fetch|path|list|info|search|outdated|build|install|rename|setup` —
-  database fetch from the provider catalog (every provider downloads from upstream at fetch
-  time — nothing catalog-side is bundled inside the wheel beyond the sanctioned exceptions.
-  No provider snapshot rides the wheel, even when its upstream license permits it: CARD/VFDB
-  terms are non-commercial, Kaptive is GPL, and provider content carries provenance risk
-  beyond the license text. The sanctioned exceptions are the seven gapit-curated bundles
-  under `src/gapit/data/dbs/` — the public-domain `eco_dec`, `lmo_sero`, `cje_cps`, `shi_sero`,
-  `vch_vf`, and `vpa_pai` panels plus the MIT `vpa_ok` typed cluster snapshot — pure built-ins
-  in the eco_dec/lmo_sero pattern: no provider module, no `db fetch`; vpautils OAgc+CPSgc merged
-  content, MIT (GPL/NC content is never bundled) — materialized into the datadir on first
-  use via `bundled.py` (gene bundles replay the gene pipeline, cluster bundles the
-  cluster pipeline); a bundled refresh means a new snapshot riding a wheel release. What
-  may ride the wheel is governed by the §6 policy),
-  database listing (`gapit db list`, whose TYPING column reads `command` for gene-kind
-  databases designated by `gapit typing`, `integrated` for cluster-kind databases whose
-  phenotype rides `gapit screen`, and `-` for screen-only databases), per-database `db info -d NAME` (provenance + literature
-  references + usage + caveats, merging the provider catalog, `bundled.json`,
-  the manifest, provider modules, and an optional `info.json` sidecar;
-  `gapit.dbinfo/1`),
-  records.jsonl gene search, staleness
-  report, custom FASTA→native-db build, GBK/GFF→cluster-db build (`--typing` installs a
-  validated `gapit.typing/1` or `/2` spec on either kind), the eight download-on-fetch
-  cluster providers (the seven Kaptive panels plus `vch_oagc`, the V. cholerae
-  O-antigen/ompW provider; never bundled), the MIT-licensed `vpa_ok` typed cluster bundle (OAgc+CPSgc merged: the committed typing asset
-  installs a 3-scheme `gapit.typing/2` doc so one screen renders `gapit.cluster/2` with
-  the composed `O:K` serotype, zero network from first install), SHA256-verified
-  local-file install, `db build NAME` with **no input** (re-projects an installed gene
-  database from its edited `records.jsonl` — the curation path; info/typing/floors
-  sidecars and manifest provenance survive, input-shaping flags are rejected), and
-  `db rename OLD NEW` (rebuilds an installed database under a new
-  name — gene dbs re-header every record, cluster dbs re-stamp the manifest — then removes
-  the old directory; the migration path for names that predate the convention).
-  **Database naming**: new species databases use the genus initial
-  plus the first two letters of the species (`cje` for *C. jejuni*, `eco` for
-  *E. coli*, `vch` for *V. cholerae*); genus-level databases use the first three
-  letters of the genus (`shi` for *Shigella*, `cam` for *Campylobacter*), followed by a
-  content suffix (`cje_cps`, `shi_serotype`). Existing published names are legacy and
-  stay stable; `db rename` is the sanctioned migration path when a name must change.
-  Datadir precedence is `--datadir`, `$GAPIT_DATADIR`,
-  `$XDG_DATA_HOME/gapit/db` (absolute XDG only), then `~/.local/share/gapit/db`;
-  `gapit db path [--json]` introspects it without creating, while `db list`/`db setup`
-  bootstrap a missing root. See `docs/datadir.md` for the database anatomy, sharing and
-  Docker policy.
+- **Databases** `[gapit-extension]`: `gapit db fetch|path|list|info|search|outdated|build|install|rename|setup`.
+  Providers download from upstream at fetch time; only the seven gapit-curated bundles under
+  `src/gapit/data/dbs/` ship inside the wheel (policy in §6). `db build NAME` with no input
+  re-projects an installed gene database from its edited `records.jsonl` (the curation path);
+  `db rename OLD NEW` is the migration path for names that predate the convention. Anatomy,
+  sharing, and Docker policy live in `docs/databases.md` and `docs/datadir.md`.
+  **Naming**: species databases use the genus initial plus two species letters (`cje`, `eco`,
+  `vch`); genus-level databases use the first three genus letters (`shi`, `cam`), followed by a
+  content suffix (`cje_cps`, `shi_serotype`). Published names stay stable.
+  **Datadir precedence**: `--datadir`, `$GAPIT_DATADIR`, `$XDG_DATA_HOME/gapit/db` (absolute XDG
+  only), then `~/.local/share/gapit/db`; `gapit db path [--json]` introspects it without
+  creating, while `db list`/`db setup` bootstrap a missing root.
 - **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing twelve tools:
-  read-only `screen` (incl. `aligner minimap2` assembly survey), `screen_reads` (FASTQ via
-  minimap2), `summary`, `typing` (screen-table text → typing result + follow-up notes),
-  `schema`, `db_search`, `db_outdated`, `db_path` (resolve the effective datadir without
-  creating it), plus `db_list` (may create the empty datadir on first use), and the
-  datadir-mutating `db_setup` (bootstrap/index), `db_fetch` (installs databases from the
-  provider catalog; may download) and `db_build` (writes a custom db); tool failures carry
+  read-only `screen` (incl. `aligner minimap2`), `screen_reads`, `summary`, `typing`, `schema`,
+  `db_path`, `db_search`, `db_outdated`; `db_list` may create the empty datadir on first use;
+  the datadir-mutating `db_setup`, `db_fetch`, and `db_build` complete the set. Failures carry
   the `gapit.error/1` envelope.
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
-- **Self-description**: `gapit --version --json`, `gapit db list --json`, `gapit schema` — an agent
-  must be able to discover everything without reading docs.
+- **Self-description**: `gapit --version --json`, `gapit db list --json`, `gapit schema --help` —
+  an agent must be able to discover everything without reading docs.
 
 ## 6. Bundled-database policy (what may ride the wheel)
 
@@ -283,8 +164,8 @@ passes three gates, in order:
 
 Growth tiers past the budget — split rather than inflate the ceiling:
 
-- **≤ 30 MiB**: keep adding to `src/gapit/data/dbs/`. Atomic data-with-code versioning,
-  zero packaging machinery; the abricate precedent ships 16 MiB in-package.
+- **≤ 30 MiB**: keep adding to `src/gapit/data/dbs/`. Atomic data-with-code versioning and
+  zero packaging machinery.
 - **30–100 MiB**: split a separate `gapit-data` wheel with its own version (the
   `spacy[lookups]` → `spacy-lookups-data` pattern), pulled via a `gapit[datasets]` extra;
   `bundled_databases()` grows a second discovery root.
@@ -299,52 +180,48 @@ Growth tiers past the budget — split rather than inflate the ceiling:
   committed files deliberately and review diffs like code.
 - **Parity harness**: `pixi run -e parity parity` (and `summary-parity`) runs real abricate
   (conda) and gapit over a small genome corpus and diffs the gene calls byte-for-byte (file,
-  gene, %identity, %coverage). **From v0.5.0 this is a regression reference for the frozen
-  baseline surface, not a release gate for new work** — new features need not check abricate
+  gene, %identity, %coverage). **It is a regression reference for the frozen legacy surface
+  (`SPEC.md` §2–§6), not a release gate for new work** — new features need not check abricate
   and may diverge deliberately.
-- Full suite + CI matrix Python 3.12; parity byte-diff is opt-in via the `parity` pixi env.
-  Offline tests stay fast.
+- **Docs**: `pixi run -e docs mkdocs build --strict` must be warning-free; `docs/*.md` and
+  `docs/*.zh.md` stay in sync.
+- Full suite + CI on Python 3.12; parity is opt-in via the `parity` pixi env. Offline tests stay
+  fast.
 
-## 8. Domain knowledge (legacy arithmetic in SPEC.md; current contracts in docs/)
+## 8. Domain knowledge (frozen arithmetic in SPEC.md; current contracts in docs/)
 
-- A **database** is a directory `<datadir>/<dbname>/sequences`: a nucleotide FASTA whose headers
-  encode `>~~~GENE~~~PRODUCT` (and accession / resistance metadata depending on the source db).
-  `makeblastdb -dbtype nucl` builds the index. gapit also writes its own native `gapit/v1`
-  tagged-header format (SPEC §11), whose `func` key carries a locked per-provider function
-  vocabulary (antibiotic classes, `virulence`, `replicon`, ...); abricate cannot read
-  gapit-native databases.
-- Screening = native normalize (`seqconvert.py`, any2fasta-equivalent semantics) → `blastn` of
-  query contigs against one db → 15-field
-  tabular hits → filter by identity / coverage thresholds → **dedup hits sharing identical
-  `(contig, qstart, qend)`** (first/best BLAST row wins) → one TSV row per surviving hit.
-  The default path does **not** merge overlapping intervals (frozen baseline behavior;
-  the opt-in `--merge-fragments` cross-contic extension in `fragments.py` is the sanctioned
-  exception).
-- **Cluster databases** are GBK/GFF-built locus panels screened by minimap2 `asm20` on
-  assembly FASTA only. `--r1/--r2` and `--aligner minimap2` are usage errors against a
-  cluster database (assemble FASTQ first): locus coverage/identity thresholds are
-  assembly-calibrated, and read mapping to repeat-rich multi-kilobase loci needs a
-  read-specific preset, depth/MAPQ filtering, and truth-set calibration. Cluster builds
-  (and `db setup`) write the `sequences.asm20.mmi` target index; legacy uses it when
-  fresh, gseek keeps its own content-addressed cache.
-- Key computed fields: `%COVERAGE = 100*(length-gaps)/slen` (filtered unrounded, displayed
-  `%.2f`), `%IDENTITY` (BLAST pident, never post-filtered), `COVERAGE_MAP` (15-char minimap),
-  `GAPS`. Exact formulas, the dedup rule, and the minimap arithmetic live in `SPEC.md` — they
-  are **gapit's frozen contract** for the baseline surface: do not change them silently. New
-  surfaces (reads, cluster, typing) follow their own documented contracts and may diverge from
-  abricate by design.
+- **Databases** are directories `<datadir>/<dbname>/` holding `sequences` plus its BLAST index.
+  Legacy headers are `>DB~~~GENE~~~ACCESSION~~~RESISTANCE` followed by a space and the product
+  (`SPEC.md` §2); gapit-native headers use the `gapit/v1` codec whose `func` key carries a
+  locked per-provider vocabulary (`docs/databases.md`). abricate cannot read gapit-native
+  databases.
+- **Legacy screening** = native normalize (`seqconvert.py`) → `blastn` against one db → 15-field
+  rows → identity/coverage filter → **dedup identical `(contig, qstart, qend)`** (first row
+  wins) → one TSV row per hit. The default path does not merge overlapping intervals;
+  `--merge-fragments` is the explicit opt-in extension in `fragments.py`. Field values and the
+  minimap arithmetic are frozen in `SPEC.md` §3–§5 — do not change them silently.
+- **Cluster databases** are GBK/GFF-built locus panels screened by `minimap2 -x asm20` on
+  assembly FASTA only. `--r1/--r2` and `--aligner minimap2` are usage errors against a cluster
+  database: locus thresholds are assembly-calibrated, and read mapping to repeat-rich
+  multi-kilobase loci needs a read preset, depth/MAPQ filtering, and truth-set calibration.
+  Cluster builds (and `db setup`) write `sequences.asm20.mmi`; see `docs/screen.md`.
+- **Reads** use streaming `minimap2` PAF with breadth/depth presence rules — `docs/reads.md`.
+- **Typing** is a second stage for gene databases and rides the screen for cluster databases;
+  rules, schemes, and output live in `docs/typing.md` and `gapit.typing/1|2`.
 
 ## 9. Git & workflow
 
 - Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`).
 - Never commit unless the user explicitly asks. Never force-push.
-- `PLAN.md` tracks phases; update it when scope changes, not retroactively.
+- `PLAN.md` is the historical roadmap; update it when scope changes, not retroactively.
+  `CHANGELOG.md` records user-visible changes.
 
 ## 10. For agents working in this repo
 
-1. Read `SPEC.md` before touching `blast.py`, `hits.py`, or `minimap.py`.
+1. Read `SPEC.md` before touching `blast.py`, `hits.py`, or `minimap.py`; read the linked doc
+   before changing any other public surface.
 2. Public contract changes (JSON schema, exit codes, CLI flags) require a schema version bump and
-   a note in `PLAN.md`.
+   a `CHANGELOG.md` entry (plus `PLAN.md` when scope changes).
 3. Do not add dependencies without checking this file's §2 first — the list is intentionally short.
-4. Verification is part of the task: `pixi run lint && pixi run typecheck && pixi run test` before
-   declaring done.
+4. Verification is part of the task: `pixi run lint && pixi run fmt-check && pixi run typecheck
+   && pixi run test` before declaring done; doc changes also run the strict docs build.

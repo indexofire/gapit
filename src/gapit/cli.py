@@ -116,11 +116,8 @@ register_mcp_command(app)
 @app.command("schema", no_args_is_help=True)
 @click.argument(
     "name",
-    help=(
-        "Document to introspect: report, reads, reads2, cluster, cluster2,"
-        " summary, error, version, dblist, dbsetup, dboutdated, datadir,"
-        " features, typing, typing_result, floors, or screen."
-    ),
+    # Generated from the registry so the help can never drift from it.
+    help=f"Document to introspect: {', '.join(SCHEMA_MODELS)}.",
 )
 def schema(name: str) -> None:
     """Print the JSON Schema of a gapit output document.

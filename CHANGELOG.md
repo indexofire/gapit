@@ -40,6 +40,16 @@
 
 ### Changed
 
+- **`AGENTS.md` refreshed and trimmed.** The repository guide now matches the
+  current tree (provider layout, `typing`/`schema` CLI surface,
+  `scripts/shigella` + `scripts/vibrio`), replaces the per-file inventory with a
+  grouped module map, and compresses the database/domain sections into pointers
+  to `docs/`. Verification now lists `fmt-check` and the strict docs build.
+
+- **`gapit schema --help` lists documents from the registry.** The argument help
+  is generated from `SCHEMA_MODELS`, so it can no longer omit `locus_map`,
+  `serotype`, or `dbinfo`.
+
 - **`SPEC.md` refocused as a legacy-table interop contract.**
   The abricate CLI/provider catalog and historical quirks were removed from the
   normative surface; §2–§6 now freeze only the `~~~` headers, legacy BLAST

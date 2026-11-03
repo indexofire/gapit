@@ -4,6 +4,7 @@
 
 # agent session tooling
 .omo/
+.hermes/
 
 # python
 __pycache__/
@@ -14,11 +15,8 @@ __pycache__/
 dist/
 build/
 
-# opencode
-.omo/
-
-# hermes agent
-.hermes/
-
 # mkdocs rendered site
 site/
+
+# development
+dev/
