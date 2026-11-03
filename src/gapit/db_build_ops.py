@@ -5,7 +5,7 @@ inputs run the gene pipeline (records.jsonl -> sequences + BLAST index +
 manifest, written last), GBK/GFF inputs run the cluster pipeline (locus
 FASTA + features.json + manifest ``kind: cluster``, gapit.dbbuild). This
 module is orchestration plus kind dispatch only — the building blocks live in
-records/dbbuild/db_build_meta/fasta/dbcodec/db (SPEC.md §11). The
+records/dbbuild/db_build_meta/fasta/dbcodec/db (docs/databases.md). The
 CLI command (:mod:`gapit.cmd_db_build`) and the MCP tool
 (:mod:`gapit.mcp_tools`) are thin callers.
 

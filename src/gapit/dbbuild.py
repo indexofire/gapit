@@ -7,7 +7,7 @@ LAST (it certifies the artifacts). Every step is deterministic, atomic where
 it matters, and self-verifying: the generated headers must decode back
 through :mod:`gapit.dbcodec` before anything is indexed. No minimap2 index
 is persisted: reads mode indexes the ``sequences`` FASTA in memory only
-(SPEC.md §10).
+(docs/reads.md).
 """
 
 import hashlib

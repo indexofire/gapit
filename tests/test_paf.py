@@ -1,4 +1,4 @@
-"""Unit tests for PAF row parsing (SPEC.md §10)."""
+"""Unit tests for PAF row parsing (docs/reads.md)."""
 
 import pytest
 

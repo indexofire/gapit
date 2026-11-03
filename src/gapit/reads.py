@@ -1,4 +1,4 @@
-"""FASTQ/FASTA read screening via minimap2 (SPEC.md §10 — gapit extension)."""
+"""FASTQ/FASTA read screening via minimap2 (docs/reads.md — gapit extension)."""
 
 import enum
 import gzip
@@ -94,7 +94,7 @@ def detect_read_kind(path: Path) -> ReadFileKind:
 
 
 class ReadsParams(BaseModel, frozen=True):
-    """Parameters for one read-screening run (SPEC.md §10). The reads/2
+    """Parameters for one read-screening run (docs/reads.md). The reads/2
     thresholds default off; gapit.reads/1 rendering ignores them entirely.
     ``min_depth``/``min_relative_depth`` add the abundance gate: absolute
     mean depth and the gene:control mean-depth ratio (0..1)."""

@@ -45,7 +45,7 @@ gapit 筛查 contig 文件和 FASTQ reads 中的已知基因：AMR（抗微生�
 | 文件 | 内容 |
 |---|---|
 | [README](https://github.com/indexofire/gapit/blob/main/README.md) | 项目概览、安装、快速上手、输出契约、数据库表 |
-| [SPEC.md](https://github.com/indexofire/gapit/blob/main/SPEC.md) | abricate 行为规范；比对一致性的唯一事实来源 |
+| [SPEC.md](https://github.com/indexofire/gapit/blob/main/SPEC.md) | abricate 表格/表头互操作契约；parity 仅作回归参考 |
 | [PLAN.md](https://github.com/indexofire/gapit/blob/main/PLAN.md) | 按阶段划分的开发路线图 |
 | [AGENTS.md](https://github.com/indexofire/gapit/blob/main/AGENTS.md) | 贡献者与 agent 指南：目录结构、约定、验证 |
 | [CHANGELOG.md](https://github.com/indexofire/gapit/blob/main/CHANGELOG.md) | 变更历史 |

@@ -93,7 +93,7 @@ def parse_blast_row(line: str) -> BlastRow:
 
 
 def ensure_blast() -> None:
-    """Require blastn >= 2.2.30 on PATH (SPEC.md §1 version gate)."""
+    """Require blastn >= 2.2.30 on PATH (SPEC.md §3 version gate)."""
     try:
         result = subprocess.run(["blastn", "-version"], check=False, capture_output=True, text=True)
     except FileNotFoundError as exc:

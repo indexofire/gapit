@@ -1,6 +1,6 @@
 """Unit tests for PAF identity math and the gapit.reads/2 row filters.
 
-Identity contract (SPEC.md §10, reads/2): per-alignment identity is
+Identity contract (docs/reads.md, reads/2): per-alignment identity is
 ``100.0 * (alen - nm) / alen`` over PAF column 10 and the ``NM:i:`` tag.
 A row without NM cannot be assessed and counts as 100.0; a degenerate
 zero-length alignment block also counts as 100.0 (no division by zero).

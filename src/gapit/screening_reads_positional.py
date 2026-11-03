@@ -1,4 +1,4 @@
-"""The positional-FASTQ wildcard screening use-case (SPEC.md §10 extension).
+"""The positional-FASTQ wildcard screening use-case (docs/reads.md extension).
 
 ``gapit screen -d db *.fastq.gz``: when every positional file is FASTQ (by
 extension, or content sniff for ambiguous names — the classification lives
@@ -70,7 +70,7 @@ def run_screen_reads_positional(
     run per lane, per-sample union, one files[] entry per sample (reads[]
     carries the sample key; the lane files parade on stderr). tsv is the
     default format (streaming: header, then one chunk per sample); json
-    stays the opt-in single document (SPEC.md §10); a nonzero
+    stays the opt-in single document (docs/reads.md); a nonzero
     --min-identity/--min-mapq turns on gapit.reads/2 alignment filtering.
     Returns the full output for the caller to echo (MCP contract), and when
     ``emit`` is given also hands each rendered chunk to it as soon as the

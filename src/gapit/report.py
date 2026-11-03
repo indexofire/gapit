@@ -6,7 +6,7 @@ from gapit.hits import Hit
 
 
 class ScreeningParams(BaseModel, frozen=True):
-    """Parameters for one screening run (SPEC.md §1 defaults and bounds)."""
+    """Parameters for one screening run (SPEC.md §3 defaults and bounds)."""
 
     db: str
     minid: float = Field(default=80.0, gt=0.0, le=100.0)

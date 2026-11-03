@@ -26,7 +26,7 @@ are we?** A modern, typed, testable Python tool that:
 - **Python**: 3.12 in the pixi dev env; the package declares
   `requires-python = ">=3.12,<3.13"` and CI tests Python 3.12.
 - **External binaries**: BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2`
-  (FASTQ read screening, SPEC.md §10), all from conda-forge/bioconda. Invoked only via `subprocess`
+  (FASTQ read screening, docs/reads.md), all from conda-forge/bioconda. Invoked only via `subprocess`
   with an argument list — never `shell=True`. Input normalization (fa/fq/gbk/embl, gz/bz2) is
   native (`seqconvert.py`); `any2fasta` is no longer a gapit dependency anywhere — the
   differential-validation oracle binary arrives transitively via abricate in the opt-in
@@ -61,7 +61,7 @@ gapit/
 ├── SECURITY.md          # trust boundaries + vulnerability reporting
 ├── CITATION.cff         # citation metadata
 ├── PLAN.md              # historical development roadmap
-├── SPEC.md              # frozen contract for the baseline surface (distilled from abricate)
+├── SPEC.md              # legacy abricate-table/header interop contract
 ├── pixi.toml
 ├── recipe/
 │   └── meta.yaml        # conda recipe (submission deferred)
@@ -305,7 +305,7 @@ Growth tiers past the budget — split rather than inflate the ceiling:
 - Full suite + CI matrix Python 3.12; parity byte-diff is opt-in via the `parity` pixi env.
   Offline tests stay fast.
 
-## 8. Domain knowledge (abridged; full detail in SPEC.md)
+## 8. Domain knowledge (legacy arithmetic in SPEC.md; current contracts in docs/)
 
 - A **database** is a directory `<datadir>/<dbname>/sequences`: a nucleotide FASTA whose headers
   encode `>~~~GENE~~~PRODUCT` (and accession / resistance metadata depending on the source db).

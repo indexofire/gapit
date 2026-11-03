@@ -25,7 +25,7 @@ class OutputFormat(enum.Enum):
 
 
 class AlignerEnum(enum.Enum):
-    """Alignment engines for screen (SPEC.md §1/§10)."""
+    """Alignment engines for screen (AGENTS.md §5 / docs/screen.md)."""
 
     blastn = "blastn"
     minimap2 = "minimap2"

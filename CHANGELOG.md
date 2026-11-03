@@ -40,6 +40,13 @@
 
 ### Changed
 
+- **`SPEC.md` refocused as a legacy-table interop contract.**
+  The abricate CLI/provider catalog and historical quirks were removed from the
+  normative surface; §2–§6 now freeze only the `~~~` headers, legacy BLAST
+  values, 15-column table, and the `gapit typing`/`gapit summary` input shapes.
+  Current gapit features link to their own docs/schemas, and the parity harness
+  is documented as a regression reference rather than a design goal.
+
 - **Bundled `ecoli_dec` renamed to `eco_dec`.** The bundle directory, `bundled.json`
   name, `sequences` headers, and `records.jsonl` db fields all use `eco_dec` now.
   Installed legacy copies can be migrated with

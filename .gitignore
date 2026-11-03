@@ -17,5 +17,8 @@ build/
 # opencode
 .omo/
 
+# hermes agent
+.hermes/
+
 # mkdocs rendered site
 site/

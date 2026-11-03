@@ -288,6 +288,12 @@ consumes abricate-built datadirs.
 > boundary caveat; O139 uses the El Tor ctxB allele and the O139 tcpA marker
 > is ~99.7% identical to canonical El Tor tcpA. No typing scheme is installed;
 > `gapit screen --format json` carries the full per-marker/per-locus evidence.
+>
+> **SPEC.md refocused (2026-11-03):** the document now freezes only the legacy
+> abricate-table interop surface (`~~~` headers, 15-column values, typing/
+> summary input shapes) and links current gapit CLI/reads/cluster/typing/db/
+> gseek contracts to their own docs and schemas. abricate parity remains an
+> opt-in regression reference, not a design goal.
 
 ## Milestones
 

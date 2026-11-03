@@ -1,7 +1,7 @@
 """Read-only queries over installed databases, shared by the CLI and MCP.
 
 - ``perform_search``: case-insensitive lookup across the ``records.jsonl``
-  truth stores of every installed database (SPEC.md §11).
+  truth stores of every installed database (docs/databases.md).
 - ``perform_outdated``: installed-database staleness report against a
   threshold (``days``). Staleness is a REPORT, never an error state.
 

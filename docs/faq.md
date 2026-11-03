@@ -202,4 +202,4 @@ upstream source at fetch time, transforms the records, and builds locally. Nothi
 beyond the seven gapit-curated bundles ships in the wheel (upstream licenses such as
 CARD's or VFDB's forbid redistribution inside an MIT-licensed distribution, and provider
 snapshots carry provenance risk beyond the license text). The header format,
-transforms, and build pipeline are specified in SPEC.md §11.
+transforms, and build pipeline are specified in docs/databases.md.

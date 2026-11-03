@@ -1,4 +1,4 @@
-"""The minimap2 screening use-cases (SPEC.md §10): ``--r1``/``--r2`` reads and
+"""The minimap2 screening use-cases (docs/reads.md): ``--r1``/``--r2`` reads and
 positional assemblies via ``--aligner minimap2``.
 
 Split from screening.py so each use-case module stays under the 250 pure-LOC
@@ -112,7 +112,7 @@ def _screen_lanes(
     """Minimap2 engine core shared by both entry points: preset resolution,
     screening, rendering; tsv is the default format (the streaming table —
     tsv is the human default on every surface, json/md the agent opt-ins,
-    SPEC.md §10). Either reads/2 threshold on selects the gapit.reads/2
+    docs/reads.md). Either reads/2 threshold on selects the gapit.reads/2
     document; both off keep gapit.reads/1 byte-identical. Returns the
     rendered output for the caller to echo."""
     resolved = resolve_read_preset(lanes, read_type, quiet)
@@ -207,7 +207,7 @@ def run_screen_reads(
     --r1/--r2 file lists (the CLI owns the comma-splitting; MCP passes arrays
     natively, so commas in filenames survive). Per-lane minimap2, sample-level
     union; tsv is the default format (the streaming table; json/md the
-    explicit opt-ins, SPEC.md §10). A nonzero
+    explicit opt-ins, docs/reads.md). A nonzero
     --min-identity/--min-mapq turns on gapit.reads/2 alignment filtering.
     Returns the rendered output."""
     if aligner is AlignerEnum.blastn:

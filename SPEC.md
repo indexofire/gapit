@@ -1,104 +1,117 @@
-# SPEC.md — abricate behavior specification (parity contract for gapit)
+# SPEC.md — gapit legacy-table and compatibility contract
 
-> Distilled from abricate **1.4.0**, master commit
-> [`e2064df7d193ad783d4c188d4ce79706faf9eb75`](https://github.com/tseemann/abricate/commit/e2064df7d193ad783d4c188d4ce79706faf9eb75)
-> (2026-07-17). abricate is a single 530-line Perl script (`bin/abricate`) plus a DB builder
-> (`bin/abricate-get_db`); there are no perl5 libraries.
+> **Scope.** This document is the frozen interoperability contract for the
+> abricate-shaped surface gapit still consumes and emits: `~~~` database
+> headers, the 15-column screen table, the value rules behind its fields, and
+> the table shapes `gapit typing` / `gapit summary` accept. It is **not** the
+> abricate CLI specification and it is not the only gapit contract.
 >
-> **Parity principle**: where gapit and this document disagree with intuition, abricate wins.
-> Every rule below is a parity requirement unless marked `[gapit-extension]`.
+> Current gapit features — subcommands, reads, cluster screening, typing,
+> database providers/bundles, gseek, JSON documents — are specified by the
+> docs and schemas linked in §7. The abricate parity harness remains a
+> regression reference for this legacy surface; from v0.5.0 it is not a
+> design goal.
+>
+> **Frozen** means field names/order/units and the named arithmetic below do
+> not change without the compatibility decision in AGENTS.md §5/§10. New
+> gapit surfaces may diverge from abricate by design.
 
-## 1. CLI surface
+## 1. Scope and compatibility policy
 
-| Option | Type | Default | Notes |
-|---|---|---|---|
-| `--db` | str | `ncbi` | subdir of datadir |
-| `--datadir` | path | `<script-dir>/../db` | gapit: `--datadir`, then `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db` (absolute XDG only), then `~/.local/share/gapit/db` |
-| `--minid` | float | **80** | `0 < minid <= 100`; enforced only via blastn `-perc_identity` |
-| `--mincov` | float | **80** | `0 <= mincov <= 100`; post-filter on unrounded float |
-| `--threads` | int | 1 | passed to `-num_threads` |
-| `--fofn` | path | — | file-of-filenames; **replaces** positional args |
-| `--quiet` | flag | off | silences stderr only |
-| `--csv` | flag | off | field separator `,` instead of tab (abricate flag; gapit: `--format csv` only — the flag itself is not accepted) |
-| `--noheader` | flag | off | suppress `#FILE ...` header row |
-| `--nopath` | flag | off | basename the FILE column |
-| `--summary` | flag | off | summary-matrix mode (§7), args are report files |
-| `--identity` | flag | off | summary cells show %IDENTITY instead of %COVERAGE |
-| `--list` / `--setupdb` / `--check` / `--version` / `--help` | modes | — | |
-| `--debug` | flag | off | verbose stderr; echoes each external argv as `gapit: run: <argv>` on stderr (upstream prints `Running: $cmd`) |
-| `--format` `[gapit-extension]` | enum | `tsv` | `tsv\|csv\|json\|md`; supersedes upstream's validated-but-unimplemented `--outfmt` (`bed gff json` are accepted upstream but do nothing) |
+| Surface | Status |
+|---|---|
+| `~~~` database headers (§2) | frozen read contract |
+| Legacy contig BLAST path and its field values (§3–§4) | frozen |
+| 15-column screen table (§5) | frozen |
+| `gapit typing` / `gapit summary` legacy-table inputs (§6) | frozen shape |
+| Current CLI, subcommands, exit codes, schemas | gapit-owned; AGENTS.md §5 |
+| Reads, clusters, typing rules, databases/providers, gseek | gapit-owned; §7 links |
 
-Mode precedence (upstream): `--summary` → `--check` → dep check → `--list`/`--setupdb` → BLAST
-version gate (`blastn -version` must be ≥ 2.2.30; we require modern BLAST+ ≥ 2.7 via conda) → run.
+Where this file and a linked current-feature doc disagree about a gapit-only
+feature, the linked doc wins. For §2–§6, this file wins for the frozen
+interop surface.
 
-Exit codes (upstream): `0` ok; `1` any runtime error; `5` unknown option; BLAST/any2fasta pipeline
-failure propagated verbatim. **gapit mapping** `[gapit-extension]`: `2` usage, `3` missing
-dependency, `4` db error, `5` input error, `1` unexpected — stdout TSV stays byte-compatible;
-exit-code integers are gapit's own contract (documented in AGENTS.md §5). Normalization failures
-are native (§3) and map to exit 5 + JSON envelope like the rest.
+The parity harness (`pixi run -e parity parity` / `summary-parity`) checks
+the legacy surface against real abricate. It is opt-in, regression-only, and
+does not constrain new gapit features.
 
-## 2. Database layout
+## 2. Legacy database layout and `~~~` headers `[frozen]`
 
-- DB = directory `<datadir>/<name>/` containing `sequences` (FASTA) + BLAST index files
+- A legacy database is a directory `<datadir>/<name>/` containing a
+  nucleotide or protein FASTA named `sequences`, with the BLAST index
   (`sequences.n*` / `sequences.p*`) built beside it.
-- **Header convention**: `>DB~~~GENE~~~ACCESSION~~~RESISTANCE<space>PRODUCT`
-  (`~~~` = IDSEP). Fields may be missing; RESISTANCE is `;`-separated, sorted, spaces→`_`.
-  RESISTANCE is baked into the ID at DB-build time; **no sidecar metadata is consulted at
-  screening time**.
-- `--setupdb`: for every subdir with readable `sequences`, run `makeblastdb`; afterwards require
-  `sequences.nin` or `sequences.pin` to exist.
-- **mol_type heuristic** (replicate exactly): concatenate non-header lines, delete `[AGTC]`
-  (case-insensitive); if remaining length > 50% of total → `prot`, else `nucl`. Then
-  `makeblastdb -in <path> -title <name> -dbtype <type> -logfile /dev/null`.
-- DB introspection: `blastdbcmd -info -db <prefix>`; DBTYPE = `prot` iff output contains
-  `total residues` else `nucl`. DBTYPE selects **blastn vs blastx** at screening time.
+- **Header convention**:
+  `>DB~~~GENE~~~ACCESSION~~~RESISTANCE<space>PRODUCT` (`~~~` = IDSEP).
+  Fields may be missing. `RESISTANCE` is `;`-separated, sorted, and spaces
+  become `_`. For legacy databases the RESISTANCE value is baked into the ID;
+  no sidecar metadata is consulted at screening time.
+- Decode fallbacks: split on `~~~`; no separator at all means
+  `gene = sseqid`, `accession = ""`, `database = --db`; a partial split fills
+  missing trailing fields with empty strings.
+- Legacy indexing runs `makeblastdb` with an explicit `-dbtype`, selected by
+  the abricate mol_type heuristic: concatenate non-header sequence, delete
+  `[AGTC]` case-insensitively; if the remainder is >50% of the total it is
+  `prot`, else `nucl`. Current `gapit db setup` / `gapit db build` and the
+  native `gapit/v1` format are documented in `docs/databases.md`; gapit reads
+  both native and legacy datadirs.
+- DBTYPE introspection uses `blastdbcmd -info`; `prot` iff the output
+  contains `total residues`, else `nucl`. DBTYPE selects `blastn` vs `blastx`.
 
-## 3. Screening pipeline
+## 3. Legacy contig screening path `[frozen]`
 
-Per input file (upstream wraps in `bash -c 'set -euo pipefail; ...'`; gapit uses argv lists, no
-shell). Upstream pipes `any2fasta -q -u <file> |` into blastn; gapit normalizes natively
-(`seqconvert.py`, any2fasta `-q -u` semantics) and feeds the FASTA to blastn on stdin:
+These are the defaults and the BLAST invocation behind the legacy table.
+Reads and cluster modes are separate gapit contracts (§7).
 
-```
-blastn -task blastn -dust no -perc_identity <minid> \
-  -db <datadir>/<db>/sequences \
-  -outfmt "6 qseqid qstart qend qlen sseqid sstart send slen sstrand evalue length pident gaps gapopen stitle" \
-  -num_threads <threads> -evalue 1E-20 -culling_limit 1 -max_target_seqs 10000
-```
+- Defaults for the legacy contig path: `--minid 80`, `--mincov 80`,
+  `--threads 1`. `--minid` is enforced only through `blastn -perc_identity`;
+  `--mincov` is a post-filter on the unrounded coverage float.
+- BLAST invocation:
 
-- **outfmt 6 fields, exact order (15)**: `qseqid qstart qend qlen sseqid sstart send slen sstrand
-  evalue length pident gaps gapopen stitle`. A row with ≠15 columns is a hard error.
-- Protein DBs use `blastx -task blastx-fast -seg no` **without `-perc_identity`**, and `--minid`
-  is then silently ignored (upstream quirk — reproduce, with a stderr note).
-- Normalization is native `seqconvert.py` replicating `any2fasta -q -u`: `.fa/.fq/.gbk/.embl`,
-  gz, bz2 → FASTA (id/header, description, uppercase sequence rules extracted from the perl).
-  Divergence: gapit re-wraps at 60 columns and reads universal newlines — blast-invisible, and
-  parsed-record equality with the binary is differentially tested by running under the
-  `parity` env's PATH (abricate provides any2fasta transitively; gapit owns no any2fasta
-  dependency).
+  ```
+  blastn -task blastn -dust no -perc_identity <minid> \
+    -db <datadir>/<db>/sequences \
+    -outfmt "6 qseqid qstart qend qlen sseqid sstart send slen sstrand evalue length pident gaps gapopen stitle" \
+    -num_threads <threads> -evalue 1E-20 -culling_limit 1 -max_target_seqs 10000
+  ```
 
-## 4. Hit processing (the core algorithm)
+  The outfmt field order is exact and has 15 fields; a row with a different
+  count is a hard error.
+- Protein DBs use `blastx -task blastx-fast -seg no` **without**
+  `-perc_identity`; the legacy path silently ignores `--minid` and emits a
+  stderr note. This quirk is retained for compatibility.
+- Input normalization is native (`seqconvert.py`, any2fasta `-q -u`
+  semantics): fa/fq/gbk/embl, gz/bz2 → FASTA. gapit re-wraps at 60 columns and
+  reads universal newlines; these are blast-invisible. Current screening
+  options (`--fofn`, `--jobs`, CSV/JSON/MD, progress) are in
+  `docs/screen.md`.
+- The legacy path checks that `blastn` is ≥ 2.2.30 before running; current
+  environments require modern BLAST+ anyway.
+
+## 4. Hit processing and COVERAGE_MAP `[frozen]`
 
 For each BLAST row, in order:
 
-1. **Minus-strand normalize**: if `sstrand == "minus"`, swap `sstart`/`send` (subject coords only;
-   `qstart`/`qend` are always ascending and never swapped).
-2. **Dedup (the only "merge")**: drop the row if `qseqid~qstart~qend` was already seen for this
-   input file. First row wins; BLAST emits best hits first. The key **ignores strand**.
-   There is **no interval-overlap merging, no gap tolerance, no best-gene choice** — two genes
-   overlapping at different query spans are both reported (upstream README caveat). gapit MUST NOT
-   add merging to the default path; any future merge mode goes behind a flag, off by default.
-3. **Coverage filter**: `pct_cov = 100 * (length - gaps) / slen` (ungapped aligned columns over
-   full subject/gene length). Keep iff `pct_cov >= mincov` — comparison on the **unrounded**
-   float; display is `%.2f`. (A 79.996% hit displays `80.00` but is discarded. Replicate exactly.)
-4. **Identity**: `%IDENTITY = pident` as printed by BLAST (`%.2f`). Never post-filtered.
-5. **Subject ID parse**: split `sseqid` on `~~~` → `(database, gene, accession, resistance)`.
-   No `~~~` at all → `gene = sseqid`, `accession = ""`, `database = --db` value. Partial fields →
-   empty strings.
-6. **Product cleanup**: `stitle or "n/a"`; strip all `,` and `\t`; if it contains `~~~`, drop the
-   leading whitespace-delimited token (makeblastdb prefixes stitle with the ID; upstream issue #95).
+1. **Minus-strand normalize**: if `sstrand == "minus"`, swap `sstart`/`send`
+   (subject coords only; query coords are already ascending).
+2. **Dedup (the only "merge")**: drop a row if `qseqid~qstart~qend` was already
+   seen for this input file; first row wins; the key ignores strand. There is
+   no interval-overlap merging and no best-gene choice in the default path.
+   `--merge-fragments` is an explicit gapit extension
+   (`docs/screen.md`), not part of this frozen path.
+3. **Coverage filter**:
+   `pct_cov = 100 * (length - gaps) / slen` (ungapped aligned columns over
+   full subject length). Keep iff `pct_cov >= mincov`, compared on the
+   unrounded float; display is `%.2f`. A 79.996% hit displays `80.00` but is
+   discarded.
+4. **Identity**: `%IDENTITY = pident` as printed by BLAST (`%.2f`), never
+   post-filtered.
+5. **Subject ID parse**: legacy `~~~` rules above; native `gapit/v1` headers
+   decode through `docs/databases.md` and are not part of the legacy grammar.
+6. **Product cleanup**: `stitle or "n/a"`; strip `,` and `\t`; if the product
+   contains `~~~` (or the subject is a gapit-tagged seqid), drop the leading
+   whitespace-delimited token (makeblastdb prefixes stitle with the ID).
 
-### COVERAGE_MAP (minimap) — replicate this arithmetic exactly
+### COVERAGE_MAP (minimap)
 
 ```
 WIDTH = 15 - (1 if gapopen > 0 else 0)     # broken maps: 14 boxes + '/'
@@ -109,366 +122,101 @@ for i in 0 .. WIDTH-1:
     if gapopen > 0 and i == int(WIDTH/2): append '/' after char
 ```
 
-Result is always 15 chars. Note the `int()` truncation quirks (e.g. a full-length hit on a long
-gene may leave box 0 as `.` since coords are 1-based) — do not "fix" them.
+The result is always 15 chars. The `int()` truncation quirks are intentional
+and must not be "fixed".
 
-### Row assembly & ordering
+### Row assembly and ordering
 
 | Column | Value |
 |---|---|
-| FILE | path as given (basename if `--nopath`) |
+| FILE | path as given (basename with `--nopath`) |
 | SEQUENCE, START, END | `qseqid`, `qstart`, `qend` (query coords) |
-| STRAND | `-` if `sstrand == "minus"` else `+` (blastx: always `+`) |
-| GENE / DATABASE / ACCESSION / RESISTANCE | `~~~` fields 2/1/3/4 (fallbacks per step 5) |
+| STRAND | `-` if `sstrand == "minus"`, else `+` (blastx: always `+`) |
+| GENE / DATABASE / ACCESSION / RESISTANCE | `~~~` fields 2/1/3/4 (fallbacks above) |
 | COVERAGE | `sstart-send/slen` (subject coords, ascending) |
-| COVERAGE_MAP | minimap above |
+| COVERAGE_MAP | the minimap above |
 | GAPS | `gapopen/gaps` |
 | %COVERAGE / %IDENTITY | `%.2f` |
 | PRODUCT | cleaned stitle |
 
-Rows are sorted by SEQUENCE (lexicographic) then START (numeric) with a **stable** sort. Files
-are processed sequentially in argument order, concurrently with `--jobs` (stdout always in
-input order). gapit streams: the TSV header prints once screening starts and each file's rows
-are emitted as the file completes — a failing file *k* leaves the already-emitted prefix
-(header + files 1..*k-1*) on stdout, then the typed error envelope (upstream abricate prints
-partial rows too; the all-or-nothing behavior was retired with per-file streaming).
+Rows sort by SEQUENCE lexicographically, then START numerically, with a
+stable sort. Files are processed in argument order; `gapit screen --jobs N`
+may screen concurrently but stdout stays in input order. The TSV header is
+printed once, and completed files stream out as they finish; a later failure
+leaves the already-emitted prefix plus the typed error envelope.
 
-## 5. TSV/CSV output
+## 5. 15-column table `[frozen]`
 
-- Header (unless `--noheader`), printed once:
+- Header unless `--noheader`:
   `#FILE SEQUENCE START END STRAND GENE COVERAGE COVERAGE_MAP GAPS %COVERAGE %IDENTITY DATABASE ACCESSION PRODUCT RESISTANCE`
-- Separator: tab, or `,` with `--csv` (gapit: `--format csv`). Line = `join(sep, fields) + "\n"`.
-- stdout = data only; all chatter (Processing/Found N genes/Tips) to stderr.
+- Separator: tab, or comma via `--format csv`. The legacy abricate `--csv`
+  flag is not a gapit CLI option; `--format csv` is the gapit spelling.
+- One line per hit: `join(separator, fields) + "\n"`. stdout carries data
+  only; diagnostics, progress and the `Found N genes` note go to stderr.
+- `--nopath` applies to the FILE column. `RESISTANCE` is the display/resistance
+  field; for native databases it carries the locked function vocabulary
+  documented in `docs/databases.md`.
+- `#`-prefixed lines after the header are skipped by table consumers; this
+  allows concatenated screen tables.
+- JSON and Markdown are gapit extensions, not this 15-column contract; their
+  schemas and fields are in `docs/outputs.md` and `gapit schema report`.
 
-## 6. Summary mode (`gapit summary`)
+## 6. Consuming legacy tables `[frozen shape]`
 
-Input: ≥1 abricate-format report files. Upstream surface is `abricate --summary`;
-gapit exposes it as the `summary` subcommand (`--identity`, `--nopath`, `--format
-tsv|csv|json|md`, `--quiet`).
+### `gapit typing`
 
-- **Dutch mode**: with exactly 1 input file, matrix rows are keyed by that report's FILE column;
-  with >1 files, rows are keyed by input filename (basename applied to labels if `--nopath`).
-  With `--nopath`, dutch keys colliding on the same basename merge into ONE row (genes union;
-  NUM_FOUND counts the union's distinct genes) — intentional.
-- First encountered row anywhere is treated as the header map (name→index, later duplicate
-  names win — Perl `zip` semantics); lines whose col0 starts with `#` are skipped afterwards.
-  A first row WITHOUT `#` (e.g. a noheader report) is header map **and** a data row — quirk
-  verified against 1.4.0.
-- Duplicate input filenames (compared as given, pre-basename): stderr `WARNING: Skipping
-  duplicate file: <name>` + skip. Zero-hit files still appear (non-dutch) with `NUM_FOUND 0`.
-- Gene universe = union of all GENE values, sorted lexicographically.
-- Output: `#FILE  NUM_FOUND  <gene…>`; cell = each hit's %COVERAGE (or %IDENTITY with
-  `--identity`) `;`-joined in file order; absent = `.`. NUM_FOUND = count of **distinct genes**.
-- **Rows sort by the as-given key, not the display label** — with `--nopath`, labels can appear
-  unsorted (e.g. keys `1dir/zeta.tsv`, `2dir/mid.tsv` print as `zeta.tsv`, `mid.tsv`). Verified.
-- The `#`-skip tests raw col0 BEFORE `--nopath` basename-ing. A file key starting with `#` is
-  skipped entirely.
-- **`[gapit-extension]` divergences** (typed where upstream is silent-undef):
-  - separator auto-detected per input file (tab if the first line has one, else comma, else
-    tab) — upstream `--csv` must match the reports' format and switches BOTH input and output
-    separator; gapit's input parsing is format-agnostic and `--format` controls only the output.
-  - no args → UsageError exit 2 (upstream: exit 1); missing/unreadable file → InputError
-    `INPUT_NOT_FOUND` exit 5 (upstream: exit 1); non-UTF-8 → InputError `SUMMARY_MALFORMED`.
-  - a data row shorter than the mapped GENE/metric columns, or a header map lacking them, →
-    InputError `SUMMARY_MALFORMED` (exit 5) with file+line context. Upstream silently treats
-    missing cells as empty strings.
-  - empty (0-byte) and header-only files are valid: non-dutch they appear with `NUM_FOUND 0`;
-    a single one in dutch mode yields the header line only (verified upstream).
-- **`gapit.summary/1`** (JSON): `schema`, `tool`, `created_at`, `params` (`metric`:
-  `%COVERAGE`|`%IDENTITY`, `nopath`), `genes` (sorted union), `rows` (`file` label,
-  `num_found`, `cells`: gene → list of original value strings; absent genes omitted).
-  Cells keep the original report strings verbatim. Markdown mirrors this with YAML
-  frontmatter and pipe-escaped cells. Introspect via `gapit schema summary`.
-- Opt-in parity: `pixi run -e parity summary-parity` byte-diffs gapit vs abricate over the
-  committed synthetic fixtures in `tests/data/summary` (dutch, multi, identity, duplicate,
-  csv, nopath-key-sort).
+`gapit typing` reads TSV or CSV screen tables from files or stdin. The contig
+shape needs `FILE`/`#FILE`, `GENE`, `DATABASE`, `%IDENTITY`, and `%COVERAGE`;
+the reads shape needs `#SAMPLE`, `GENE`, `DATABASE`, and `BREADTH%`. A table
+may contain rows for several FILE values but only one DATABASE value; mixed
+DATABASE values are a typed error. `#`-prefixed continuation header rows are
+skipped. Typing uses the values as given; it does not re-run BLAST. Current
+rule semantics, reads input details, and the output document are in
+`docs/typing.md` and `gapit schema typing_result`.
 
-## 7. Edge cases & quirks (parity-critical)
+### `gapit summary`
 
-- **Input types**: fa/fastq/gz/bz2/gbk/embl via native normalization (any2fasta `-q -u`
-  semantics; upstream uses the external binary). Invalid input → pipeline failure → nonzero
-  exit (gapit: exit 5 + JSON error envelope).
-- **Empty FASTA** → zero hits; header still printed; success exit.
-- **Circular contigs**: no special handling (linear).
-- **Partial `~~~` headers**: missing trailing fields → empty strings.
-- **`--csv` + summary**: summary must be told the separator; mixing breaks upstream — gapit
-  detects format per file instead `[gapit-extension]` (RESOLVED 2026-09-17, see §6).
-- **Determinism**: stable sort; fixed BLAST params; no timestamps in data payloads. (Upstream
-  MOTD/`srand` is stderr-only and dropped in gapit.) gapit `--jobs N` screens files
-  concurrently but stdout stays in input order; when `--jobs N --threads T` exceeds the cpu
-  count, one stderr note warns about oversubscription (stdout unaffected) `[gapit-extension]`.
-- **blastx**: no sstrand → STRAND `+`; minid unenforced (quirk kept, documented).
-- Known upstream caveats we inherit: no mutational resistance; gap reporting incomplete;
-  overlapping genes both reported; possible coverage-calculation issues.
+`gapit summary` accepts one or more abricate-format report tables (TSV or CSV,
+auto-detected per file). The first line is the header map; later lines whose
+first cell starts with `#` are skipped. Rows are keyed by FILE (dutch mode) or
+input filename (multi-file); duplicate input filenames are warned and skipped.
+The gene universe is the sorted union of GENE values; `NUM_FOUND` counts
+distinct genes; cells are `;`-joined original metric strings in file order
+(`.` when absent). Current modes, formats, JSON, and Markdown are in
+`docs/summary.md`; the JSON document is `gapit schema summary`.
 
-## 8. Bundled databases
+## 7. Current gapit contract map
 
-12 DBs ship in abricate's `db/` (all `nucl` as distributed): `ncbi` (default, AMRFinderPlus core
-AMR), `card` (protein-homolog models only; ACC carries `start-end` coords; multi-class
-RESISTANCE), `resfinder` (plain ACC; gene has `_copy` suffix), `argannot`, `plasmidfinder`,
-`megares` (SNP-confirmation entries excluded), `ecoh`, `vfdb`, `ecoli_vf`, `bacmet2`, `victors`,
-`upec_expec_vf`; plus `db/abricate/` — a cd-hit-est recipe, not a DB. Disabled getters:
-`ncbibetalactamase`, `serotypefinder`.
-
-gapit v1.0 reads any abricate-format datadir (including abricate's own). Reimplemented as
-`gapit db fetch` (Phase 7) — providers, transforms, and the native format are specified in §11.
-gapit-native DB construction and acquisition (`gapit db`, `gapit/v1` headers) is specified
-in §11.
-
-## 9. License note
-
-abricate is GPL-2.0. gapit is MIT: an independent behavioral reimplementation, no Perl code
-copied. Bundled DB content retains its original upstream licenses.
-
-## 10. Read and assembly screening (FASTQ/FASTA) — gapit extension
-
-abricate cannot screen raw reads; gapit can. Design decisions (2026-09-15; input detection and
-preset resolution added 2026-09-19):
-
-- **Backend: minimap2 only.** `-x sr` (short/paired reads), `-x map-ont`, `-x map-hifi`.
-  bwa/bowtie2 are deliberately excluded: srst2 needs them for SNP-level allele calling, which is
-  outside gapit's mission (presence + confidence). One backend covers all read types, and PAF
-  output needs no samtools.
-- **Invocation**: `gapit screen --r1 R1[,R1b…] [--r2 R2[,R2b…]] [--read-type
-  sr|map-ont|map-hifi]` (comma-separated file lists, one entry per lane; `--r2` count must equal
-  `--r1` count — lane i pairs r1[i]/r2[i]) — mutually exclusive with positional contig files.
-  The `--aligner blastn|minimap2` engine selector (2026-09-19) defaults to blastn for positional
-  files and minimap2 for reads: `--aligner minimap2` routes positional FASTA through this same
-  reads pipeline (FASTQ content there is a usage error, "minimap2 engine requires FASTA
-  assemblies"), while `--aligner blastn` with `--r1`/`--r2` is a usage error.
-  **Input kinds and preset resolution**: `--r1` accepts FASTQ reads and assembly FASTA; each
-  file is detected from content at validation time (first non-whitespace byte: `>` = FASTA,
-  `@` = FASTQ; gzip-wrapped files peeked through the decompressor since minimap2 reads them
-  natively; anything else is `InputError INVALID_READS_FORMAT`, exit 5, context `{file}`).
-  Usage errors (exit 2): mixed FASTA+FASTQ within the `--r1` list ("mixed FASTA and FASTQ
-  inputs"), FASTA together with `--r2` ("paired-end requires FASTQ"), FASTA with an explicit
-  non-`map-ont` preset ("assembly FASTA requires map-ont"). `--read-type` defaults to None at
-  the CLI layer and resolves in the reads use-case after detection: FASTA → `map-ont` (one
-  stderr note "assembly FASTA detected; using map-ont" when defaulted, suppressed by `--quiet`;
-  stdout purity unaffected), FASTQ → explicit preset or `sr`. Resolved preset flows to
-  `params.read_type` in `gapit.reads/1` (schema frozen, unchanged).
-  Pipeline: one `minimap2 -x <preset> -t <threads> <datadir>/<db>/sequences R1 [R2]` run per
-  lane → PAF on stdout; all lanes' rows are aggregated as one sample. FASTA inputs pass through
-  to minimap2 unchanged (no format conversion). The db
-  `sequences` FASTA is used directly (minimap2 indexes in memory; no `.mmi` is
-  built or consulted). A persisted default-built `.mmi` is deliberately rejected:
-  it overrides the `-x` preset's indexing parameters (minimap2 WARNING
-  "-k, -w or -H overridden by prebuilt index"), which misassigns close homologs
-  (2026-09-19 benchmark: blaCTX-M/blaSHV allele divergence) and ran 1.2 s slower
-  than in-memory indexing at current DB scale.
-- **PAF parsing**: 12 required fields (`qname qlen qstart qend strand tname tlen tstart tend
-  nmatch alen mapq`) + optional tags. Keep primary alignments only (`tp:A:P`; records lacking a
-  `tp` tag are kept). A row with <12 fields is a hard error.
-- **Per-gene aggregation** over a per-base coverage array of length `tlen`:
-  `breadth_pct = 100 * covered_bases / tlen` (covered = ≥1 aligned base, union of all primary
-  alignments' `tstart..tend`), `mean_depth = sum(per-base depth) / tlen`,
-  `reads_mapped` = distinct query names with ≥1 primary alignment on the gene.
-- **Presence call**: `present = breadth_pct >= min_breadth`, `--min-breadth` default **90.0**
-  (srst2-style). `--minid`/`--mincov` do NOT apply to reads mode.
-- **Output**: the default (no `--format`) is the streaming **tsv** table (tsv is the human
-  default on every gapit surface; json/md are the agent opt-ins — breaking vs the ≤0.5.0
-  reads default, changed in the unreleased cycle; §10 describes gapit's own reads extension,
-  so this wording is normative for gapit only, not for the abricate parity path).
-  `--format json` emits `gapit.reads/1`; `--format md` the Markdown form; `--format csv` is
-  the comma spelling of the tsv table. Genes with zero
-  mapped reads are omitted; entries sorted by `breadth_pct` descending, then gene name.
-  `gapit.report/1` (contig mode) is unchanged and frozen. `gapit schema reads` introspects the
-  new document.
-- **Known limits** (document, do not fix in v1): homologous gene families share multi-mapping
-  reads — primary-only assignment may misassign closely related alleles; no SNP-level allele
-  calling; no per-read identity/MAPQ filtering. Empirically, `minimap2 -x sr` soft-clips ~5 nt
-  at each alignment end, so genes under ~100 nt can cap below the 90% breadth threshold — reads
-  mode targets normal-length genes (hundreds of nt+); calibrate `--min-breadth` for tiny DBs.
-- **reads/2 (opt-in identity/MAPQ filtering, added 2026-09-20)**: `--min-identity FLOAT`
-  (0–100, default 0 = off) and `--min-mapq INT` (default 0 = off) filter PAF alignments
-  BEFORE aggregation, after the primary-only rule; `identity >= min_identity` and
-  `mapq >= min_mapq` (boundary-inclusive). Per-alignment identity is `100 * (alen - nm) / alen`
-  over column 10 and the `NM:i:` tag; a row without NM counts as identity 100.0 (cannot assess),
-  as does a degenerate zero-length block. **STRICTLY ADDITIVE**: both thresholds off keeps
-  `gapit.reads/1` byte-identical and the minimap2 argv unchanged; either on switches the output
-  document to `gapit.reads/2` (schema literal, params gain `min_identity`/`min_mapq`, gene
-  entries gain `mean_identity_pct` = alen-weighted mean identity over kept rows, rounded 2;
-  markdown gains an `Identity%` column) and adds `--cs` to the invocation (minimap2 omits
-  `NM:i:` from PAF output without it; alignments unchanged, but note the emitted spans can
-  differ slightly between the `/1` and `/2` geometries). With the blastn engine these flags are
-  a usage error (exit 2, "--min-identity/--min-mapq are reads-mode only (minimap2 engine)").
-  `gapit schema reads2` introspects the document. Motivation (KP benchmark, 2026-09-20):
-  breadth-only presence over-calls homologous families (sr 11 true names vs ONT 140 vs blastn
-  18); an identity floor of ~95 removes the weak alignments without touching the /1 contract.
-
-## 11. gapit-native databases — [gapit-extension]
-
-gapit builds its own databases rather than only consuming abricate-built datadirs. A native
-DB keeps a typed truth source (`records.jsonl`) and generates every screening artifact from
-it; sequence headers are tagged + percent-encoded (`gapit/v1`) instead of `~~~`. Design
-locked 2026-09-17. **abricate cannot read gapit-built DBs** (accepted trade-off); gapit
-reads both formats — no `gapit|` prefix → legacy rules (§4 step 5), untouched.
-
-### Header grammar (`gapit/v1`)
-
-`>gapit|db=<v>|gene=<v>|acc=<v>|func=<v><space>PRODUCT`; fixed key order `db gene acc func`
-(writers emit exactly this order; decode keys by name — order-agnostic, duplicates
-rejected); empty `acc`/`func` values allowed.
-
-- **Percent-encoding** (values only; lowercase hex; every other char verbatim):
-
-  | raw | encoded | raw | encoded |
-  |---|---|---|---|
-  | `%` | `%25` | space | `%20` |
-  | `\|` | `%7C` | tab | `%09` |
-  | `=` | `%3D` | LF | `%0A` |
-  | `;` | `%3B` | CR | `%0D` |
-
-- **function**: the list is joined with `;` first, then encoded as one value → decodes to
-  the abricate display string `a;b`.
-- **encode total / decode strict**: encode never raises. Decode raises `DatabaseError
-  HEADER_MALFORMED` (exit 4; context `{seqid, reason}`; machine-stable snake_case reasons —
-  `missing_gene`, `missing_db`, `missing_acc`, `duplicate_key:<k>`,
-  `invalid_percent_escape:<k>`, `segment_without_key`, `empty_key`) on: a `%` not followed
-  by two hex digits (checked in EVERY segment, unknown keys included), missing/empty
-  `gene`, a missing `db`/`acc` KEY, duplicate key, segment without `=`, empty key. The
-  `db`/`gene`/`acc` keys are required-present (gapit answers presence/absence — identity
-  fields must be explicit); an empty `acc` VALUE is allowed (unpublished sequences) and an
-  empty `db` value falls back to `default_db` (symmetric with legacy); the `func` key is
-  intentionally optional (functional annotation is incidental metadata) — absent `func`
-  decodes to `""`. Unknown keys are skipped by name (forward compat). Uppercase-hex
-  escapes decode fine (strict-write, lenient-read).
-  The same error fires at screening time on a malformed tagged `sseqid`/`tname`.
-- **round-trip evidence** (BLAST 2.15+, minimap2): tagged seqids survive makeblastdb →
-  blastn `sseqid` and minimap2 `tname` byte-identical; 727-char ids pass untruncated; BLAST
-  does not reinterpret pipe ids; `blastdbcmd -info` (§2 DBTYPE introspection) works.
-- **product cleanup extension** (issue-#95 quirk translated): stitle is always
-  `"<seqid> <product>"`, so §4 step 6's leading-token strip also fires when the seqid is
-  gapit-tagged (`~~~` in product **or** tagged seqid); a bare tagged seqid in stitle stays
-  verbatim.
-
-### Directory layout
-
-```
-<datadir>/<name>/
-  records.jsonl         truth source: one frozen Record JSON object per line (LF, UTF-8)
-  sequences             GENERATED projection: tagged headers, 60-col wrap, atomic write
-  sequences.n*|p*       BLAST index, explicit dbtype (§2 mol_type heuristic not consulted)
-  gapit-manifest.json   gapit.manifest/1 provenance sidecar, written LAST (certifies build)
-```
-
-- **Record fields** (frozen): `db`, `gene`, `sequence`, `accession` (default `""`),
-  `function` (tuple, default `()`), `product` (default `"n/a"`), `source_id` (default
-  `""`).
-- **gapit.manifest/1 fields**: `schema`, `name`, `source_urls`, `fetched_at` (ISO-8601 UTC,
-  seconds), `sha256` (of `sequences`; 64 hex, stored lowercase), `n_records`, `dbtype`
-  (explicit `nucl|prot`), `header_format` (`gapit/v1`), `upstream_version`, `tool`,
-  `makeblastdb_version`, `minimap2_version` (environment provenance; no `.mmi` is built —
-  reads mode indexes in memory, §10 — but the version stays recorded as provenance for the
-  machine that produced the artifacts).
-- `records.jsonl` + the manifest are FILE contracts: never on stdout, not in
-  `gapit schema`. Rebuilds are deterministic — same records + inputs → byte-identical
-  `sequences` and manifest (tool versions come from the environment, `fetched_at` is an
-  input; nothing wall-clock).
-
-### Build pipeline
-
-```
-fetch → transform → normalize → dedupe → sort → records.jsonl → sequences → self-check
-  → sha256 → makeblastdb (explicit dbtype) → manifest (written LAST)
-```
-
-- **normalize** per record: uppercase; nucl `[^AGCT]`→`N`, prot `[^A-Z]`→`X`; function
-  sorted, then whitespace runs → `_` per class (upstream load_fasta semantics).
-- **dedupe** on the exact normalized sequence, first wins (dropped count → stderr note);
-  duplicate gene NAMES are allowed and kept (upstream keeps them too).
-- **sort** by `gene` (lexicographic) → `records.jsonl`.
-- **self-check**: every generated header must decode back to its record — in order, counts
-  included; product is NOT compared (display field, not truth). Any failure stops the build
-  before anything is indexed.
-- Upstream `is_full_gene` is a no-op (map result discarded) — not ported.
-- **typed errors** (DatabaseError, exit 4): `DB_ALREADY_EXISTS` (manifest present, no
-  `--force`), `DOWNLOAD_FAILED`, `PROVIDER_EMPTY`, `PROVIDER_INVALID`, `BUILD_INVALID`
-  (product line break / empty sequence / zero records), `BUILD_SELF_CHECK_FAILED`.
-
-### Providers
-
-| name | dbtype | source | transform (distilled) |
-|---|---|---|---|
-| `ncbi` | nucl | `https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/` (`AMR_CDS.fa` + `ReferenceGeneCatalog.txt`) | 7-field id `pi\|acc\|fp\|fn\|gene\|fam\|prod` (later pipes fold into prod); keep iff `fp==fn==1`; TSV row keyed `refseq_nucleotide_accession` (0-based col 10) required, scope `core`, type/subtype `AMR`; ABX = subclass `/`-split; ACC = TSV acc (`+.1` if unversioned); DESC = prod `_`→space |
-| `card` | nucl | `https://card.mcmaster.ca/latest/data` (tar.bz2 → `card.json`) | `protein homolog model` only; `model_param.snp` → PROVIDER_INVALID; dna = first sorted `model_sequences` key; ARO `Drug Class` → ABX (strip ` antibiotic`, spaces→`_`); ID = model_name ws→`_`; ACC = `accession:fmax-fmin` (swapped iff minus strand); DESC = ARO_description |
-| `resfinder` | nucl | `https://bitbucket.org/genomicepidemiology/resfinder_db/get/HEAD.zip` | `phenotypes.txt` keyed by gene (`^(.*?)_\w+$`, last row wins); ABX = col2 `,`-split minus `unknown\|notes\|none` (filter before trim); issue-#62 glued-`>` repair on raw text; `.fsa` id `^(.*?)_(\d+)_(\S+)$` → ID = `{id}_{copy}`; ACC; DESC = base gene |
-| `argannot` | nucl | `https://www.mediterranee-infection.com/wp-content/uploads/2019/09/ARG-ANNOT_NT_V6_July2019.txt` | strip `\` file-wide first; `:`-split → ID = x0, ACC = `x1:x2`, DESC = `""` |
-| `plasmidfinder` | nucl | `https://bitbucket.org/genomicepidemiology/plasmidfinder_db/get/HEAD.zip` | `*.fsa`; `^(.*)_(([A-Z]+\|NC_)\d+(\.\d+)?)$` keeps the copy number ON the gene; ACC = accession; DESC = original full id; non-matching id kept verbatim |
-| `megares` | nucl | `https://www.meglab.org/downloads/megares_v3.00.zip` | `\|`-split (limit 6); non-empty 6th field (RequiresSNPConfirmation) → skip; ID = group, ACC = MEG id, DESC = `x1:x2:x3:x4`; no ABX |
-| `ecoh` | nucl | `https://raw.githubusercontent.com/katholt/srst2/master/data/EcOH.fasta` | `__`-split → gene = x2 (allele field); `;`-split desc → ACC = first, DESC = rest joined with space |
-| `vfdb` | nucl | `http://www.mgc.ac.cn/VFs/Down/VFDB_setA_nt.fas.gz` | id `^(\w+)\(\w+\|(\w+)(\.\d+)?\)$` → ACC = $2 (version suffix dropped); first `(...)` of DESC renames the gene; DESC otherwise verbatim |
-| `ecoli_vf` | nucl | `https://github.com/phac-nml/ecoli_vf/raw/master/data/repaired_ecoli_vfs_shortnames.ffn` | id `^(\w+)(?:\((.*?)\))?$` → ACC = `$2 or $1`; strip trailing `[strain]` groups; paren-desc overrides gene |
-| `bacmet2` | **prot** | `http://bacmet.biomedicine.gu.se/download/BacMet2_EXP_database.fasta` | `\|`-split, ≥4 fields (5th UniProt name ignored); ID = `x1-x0` (reversed); ACC = `x2:x3`; DESC = description or gene |
-| `victors` | nucl | `http://phidias.us/victors/downloads/gen_downloads.php` + `gen_downloads_protein.php` | `.faa` headers → gi map (ACC, DESC); `.ffn` id `gi\|N:s-e` → ACC = map or `gi\|N:s-e`; DESC = map desc cut at ` [` or `hypothetical protein`; gene = full `.ffn` id |
-| `upec_expec_vf` | nucl | `https://raw.githubusercontent.com/FordeGenomics/ST167_Code/refs/heads/main/UPEC-ExPEC_VF/UPEC_ExPEC_VF.tsv` | TSV keyed `Gene name` (first row wins); ID = gene; ACC = `Accession/Source:Begin-End`; DESC = Description; ABX = [Class]; SEQ = Sequence |
-
-Known divergences vs `abricate-get_db` 1.4.0: records whose ids fail a provider regex are
-**skipped** (upstream splices stale/undef perl capture variables into garbage fields);
-resfinder + plasmidfinder fetch Bitbucket `HEAD.zip` instead of `git clone` (no git
-dependency). Transform semantics are distilled from the perl (read-only) and pinned
-per-provider by offline synthetic-fixture unit tests; real-network fetch is the runtime
-path and is not exercised by the offline suite.
-
-### CLI (`gapit db`)
-
-- `gapit db fetch NAME [--datadir D] [--force] [--quiet]` — full pipeline into
-  `<datadir>/NAME`; stdout = one-line JSON receipt `{db, records, dbtype, destination}`;
-  unknown NAME → UsageError exit 2 (registry lookup precedes datadir resolution).
-- `gapit db path [--datadir D] [--json]` — print the resolved datadir without creating it;
-  `--json` emits `gapit.datadir/1` (`datadir`, `exists`, `source` = `cli|env|xdg|default`).
-- `gapit db list [--datadir D] [--json]` — `NAME PROVIDER STATUS DBTYPE DESCRIPTION`
-  table (NAME = the `--db` value, PROVIDER = upstream maintainer org; `installed (N)`
-  iff `<datadir>/<name>/gapit-manifest.json` exists, else `available`),
-  or `gapit.dblist/1` JSON (`providers[]`: `name`, `vendor`, `description`, `dbtype`,
-  `installed`, `indexed`, `records` omitted when unset). Registered as
-  `gapit schema dblist`; `gapit schema dboutdated`/`datadir` expose the sibling
-  listings. A missing datadir is bootstrapped (created) before listing, so a fresh
-  installation can inspect the catalog; `setupdb` bootstraps it too.
-- `gapit db install SOURCE --sha256 HASH --output TARGET` — verified LOCAL-FILE install
-  only (no network, no providers, no archives): streaming SHA256, atomic replace after the
-  digest verifies; stdout receipt `{destination, sha256}`; mismatch → InputError
-  `CHECKSUM_MISMATCH` exit 5.
-
-### Reads mode: in-memory indexing only
-
-- Reads mode always screens against the `sequences` FASTA — minimap2 indexes
-  it in memory with the invocation preset's own parameters. No `.mmi` is
-  built, and a `.mmi` left in a datadir by an older gapit is never consulted
-  (inert). Persisted indexes were tried and rejected: a default-built `.mmi`
-  overrides the `-x sr` indexing parameters ("-k, -w or -H overridden by
-  prebuilt index"), which misassigns close homologs and benchmarks slower
-  (see §10).
-- Reads-mode `tname` decodes through the same codec (tagged or `~~~`), so
-  native DBs yield proper gene fields in `gapit.reads/1`; prot DBs are
-  unreadable by minimap2 (nucleotide-only) — reads mode targets nucl DBs.
-
-### Function vocabulary (gapit/v1 `func` values)
-
-Each native provider populates `Record.function` from a locked vocabulary (values flow
-to the `func=` header key and onward to the outputs):
-
-| provider(s) | `func` value(s) |
+| Surface | Current contract |
 |---|---|
-| `ncbi`, `resfinder`, `argannot`, `card` | the source's antibiotic classes (the abricate ABX values) |
-| `megares` | the MEGARes class field |
-| `ecoh` | allele-derived `H-antigen` / `O-antigen` / antigen fallback |
-| `vfdb`, `ecoli_vf`, `victors`, `upec_expec_vf` | `virulence` |
-| `plasmidfinder` | `replicon` |
-| `bacmet2` | `biocide` (BacMet spans biocides + metals; the id carries no class) |
+| CLI, exit codes, error envelope | `AGENTS.md` §5, `gapit --help`, `gapit schema error` |
+| Contig screening, formats, fragments | `docs/screen.md`, `docs/outputs.md` |
+| Reads (FASTQ/FASTA, minimap2) | `docs/reads.md`, `gapit schema reads` / `reads2` |
+| Cluster databases (`kind: cluster`) | `docs/screen.md#cluster-databases-kind-cluster` |
+| Typing (`gapit typing`) | `docs/typing.md`, `gapit schema typing` / `typing_result` |
+| Databases, providers, bundles, headers | `docs/databases.md`, `docs/datadir.md` |
+| gseek engine | `docs/gseek-engine.md` |
+| MCP | `docs/mcp.md` |
+| Output schemas | `gapit schema <name>` (`gapit.schema` registry) |
 
-The TSV `RESISTANCE` / JSON `resistance` output names are frozen and carry these
-functional categories for native DBs.
+## 8. Change policy
 
-### Download-on-fetch (no bundled content)
+- A change to §2–§6 (legacy header, field value, table shape, typing/summary
+  input) is a compatibility change: update this file, the relevant
+  tests/goldens, and the parity harness.
+- A change to a current gapit-only feature (new subcommand, reads/cluster
+  behavior, typing rule, provider, bundle, gseek) updates its linked doc and
+  tests; it does **not** require a SPEC.md rewrite.
+- JSON field or schema changes follow AGENTS.md §5/§10: bump the schema
+  version and record the change; never rename or retype a field in a minor
+  bump.
+- The parity harness is a regression reference for the legacy surface, not a
+  release gate for new features.
 
-- **Nothing is bundled.** Every provider — card and vfdb included — downloads
-  from its upstream source at fetch time and builds locally (license
-  compliance, 2026-09 audit: CARD's McMaster terms are non-commercial and
-  forbid redistribution; VFDB content is CC BY-NC; ecoli_vf content is
-  VFDB-derived per its own README; the kaptive cluster content is GPL-3.0).
-- Bare `gapit db fetch` (no NAME) installs the default set `("card", "vfdb")`
-  in order, one JSON receipt line per db on stdout — over the network like
-  any named fetch.
-- Providers that pin a content license expose it via `gapit db list --json`
-  (`license` field) and stamp it into the build manifest (kaptive precedent).
+## 9. License and provenance
+
+gapit is MIT-licensed; abricate is GPL-2.0. gapit is an independent behavioral
+reimplementation and copies no Perl code. Legacy database content retains its
+upstream license. Bundled, provider, and native-database provenance rules live
+in `AGENTS.md` §6 and `docs/databases.md`; this file is documentation, not
+code.

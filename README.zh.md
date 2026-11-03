@@ -136,7 +136,7 @@ datadir 共享、conda/Docker 指南和安全注意事项见[数据目录](docs/
 | `vch_oagc` | 霍乱弧菌 O 抗原基因簇（190 个 OL locus + ompW 内参；cluster，按需抓取） | nucl |
 
 gapit 也能读取 abricate 自己构建的 datadir（旧式 `~~~` 表头）。反过来不成立：
-gapit 原生数据库使用 `gapit/v1` 表头格式（见 SPEC.md §11），abricate 无法读取。
+gapit 原生数据库使用 `gapit/v1` 表头格式（见 docs/databases.md），abricate 无法读取。
 `bacmet2` 等蛋白数据库通过 blastx 筛查。
 
 基因**簇**数据库是第二种类型：`gapit db build NAME loci.gbk|gff3` 构建
@@ -209,10 +209,10 @@ gseek 需要 Python 3.12，可通过 pixi `default` 环境（`py312` feature）�
 用户文档在 [`docs/index.zh.md`](docs/index.zh.md)，渲染于
 <https://indexofire.github.io/gapit/>。
 
-`SPEC.md` 是 parity 契约，`AGENTS.md`/`CONTRIBUTING.md` 是贡献规则，
+`SPEC.md` 是 abricate 表格/表头互操作契约，`AGENTS.md`/`CONTRIBUTING.md` 是贡献规则，
 `SECURITY.md` 是信任边界与报告策略，`CITATION.cff` 是引用元数据，
 `CHANGELOG.md` 是变更历史。`PLAN.md` 作为历史路线图保留（当前架构见
-`AGENTS.md`、`SPEC.md` 和 `docs/datadir.zh.md`）。
+`AGENTS.md` 和 `docs/`；`SPEC.md` 是旧版表格/表头互操作契约）。
 
 ## 许可证
 

@@ -1,4 +1,4 @@
-"""The minimap2 invocation layer for reads mode (SPEC.md §10).
+"""The minimap2 invocation layer for reads mode (docs/reads.md).
 
 Split from reads.py (which was over the 250 pure-LOC ceiling) so this module
 owns exactly one thing: running minimap2 and streaming its PAF rows. The

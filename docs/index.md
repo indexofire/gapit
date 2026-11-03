@@ -45,7 +45,7 @@ TSV on stdout, plus first-class JSON and Markdown outputs with versioned schemas
 | File | Contents |
 |---|---|
 | [README](https://github.com/indexofire/gapit/blob/main/README.md) | Project overview, install, quick start, output contract, database table |
-| [SPEC.md](https://github.com/indexofire/gapit/blob/main/SPEC.md) | The abricate behavior spec; source of truth for parity |
+| [SPEC.md](https://github.com/indexofire/gapit/blob/main/SPEC.md) | Legacy abricate-table/header interop contract; parity is regression only |
 | [PLAN.md](https://github.com/indexofire/gapit/blob/main/PLAN.md) | Development roadmap, phase by phase |
 | [AGENTS.md](https://github.com/indexofire/gapit/blob/main/AGENTS.md) | Contributor and agent guide: layout, conventions, verification |
 | [CHANGELOG.md](https://github.com/indexofire/gapit/blob/main/CHANGELOG.md) | Change history |

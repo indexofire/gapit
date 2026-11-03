@@ -9,7 +9,7 @@ from gapit.report import Report, ScreeningParams
 
 
 def test_default_params() -> None:
-    """Given no overrides, When constructed, Then SPEC.md §1 defaults apply."""
+    """Given no overrides, When constructed, Then SPEC.md §3 defaults apply."""
     params = ScreeningParams(db="ncbi")
     assert params.minid == 80.0
     assert params.mincov == 80.0

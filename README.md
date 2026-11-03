@@ -144,7 +144,7 @@ conda/Docker guidance, and security notes, see [Data directory](docs/datadir.md)
 | `vch_oagc` | V. cholerae O-antigen gene clusters (190 OL loci + ompW control; cluster, fetch-on-demand) | nucl |
 
 gapit also reads datadirs built by abricate itself (legacy `~~~` headers). The reverse
-does not hold: gapit-native databases use the `gapit/v1` header format (see SPEC.md §11),
+does not hold: gapit-native databases use the `gapit/v1` header format (see docs/databases.md),
 which abricate cannot read. Protein databases such as `bacmet2` screen through blastx.
 
 Gene **cluster** databases are a second kind: `gapit db build NAME loci.gbk|gff3` builds a
@@ -226,10 +226,10 @@ Python 3.12 and is installed by the pixi `default` environment (the `py312` feat
 User documentation lives in [`docs/index.md`](docs/index.md), rendered at
 <https://indexofire.github.io/gapit/>.
 
-`SPEC.md` is the parity contract, `AGENTS.md`/`CONTRIBUTING.md` the contributor rules,
+`SPEC.md` is the legacy abricate-table/header interop contract, `AGENTS.md`/`CONTRIBUTING.md` the contributor rules,
 `SECURITY.md` the trust-boundary and reporting policy, `CITATION.cff` the citation
 metadata, and `CHANGELOG.md` the change history. `PLAN.md` is kept as a historical
-roadmap (the current architecture lives in `AGENTS.md`, `SPEC.md`, and `docs/datadir.md`).
+roadmap (the current architecture lives in `AGENTS.md` and `docs/`; `SPEC.md` is the legacy table/header interop contract).
 
 ## License
 

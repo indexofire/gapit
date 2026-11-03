@@ -1,4 +1,4 @@
-"""Unit tests for per-gene coverage aggregation (SPEC.md §10).
+"""Unit tests for per-gene coverage aggregation (docs/reads.md).
 
 All breadth/depth expectations are computed BY HAND from interval unions.
 """
