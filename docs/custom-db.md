@@ -389,6 +389,34 @@ sequences.nto
 
 `records.jsonl` is the editable truth and `sequences` its `gapit/v1`-header projection; the `sequences.n*` files are the BLAST index. Field-level detail for both file contracts is in [Databases](./databases.md). Sequences are stored verbatim, no provider-style normalization: this is your curated truth, and a manifest with `source_urls: ["local"]` certifies the build.
 
+## Provenance and license metadata (mandatory)
+
+Every custom database **must** carry its provenance in the manifest (`gapit-manifest.json`) so that
+`gapit db info -d NAME` shows where the content came from. There are no exceptions:
+
+1. **Source in `note`** — the literature citation (authors, journal, year, DOI), the source
+   software/database with version (e.g. `CjejuniTyper 2026-03`, `el_gato db 2025-03`), the
+   INSDC/PubMLST accessions used, the extraction method in one sentence, and the build date.
+2. **Upstream license in `license`** — exactly as the source declares it (MIT, CC BY 4.0,
+   public domain INSDC, …). Never guess; if the source states nothing, write `unspecified`.
+3. **Origin URLs/accessions in `source_urls`** — replace the bare `local` with the actual
+   repository URLs or accession lists whenever the content derives from a fetchable source.
+4. **Objection clause in `note`** — whenever the content derives from a publication or a
+   third-party tool whose license does not explicitly permit redistribution, append:
+   > If any author or rights holder objects to the use or redistribution of this database,
+   > please contact indexofire@gmail.com and the content will be removed or adjusted promptly
+   > upon verification.
+
+A build without these fields is considered unfinished: the curation path is to edit
+`gapit-manifest.json` directly (add `license`, `note`, `source_urls`, `upstream_version`)
+and re-verify with `gapit db info`.
+
+5. **Short list description via `info.json`** — the manifest `note` carries the full
+   provenance and shows under `db info` NOTE; it must NOT be the list description.
+   Write an `info.json` sidecar (`gapit.dbinfo/1` DbGuidance) with a one-line
+   `description` (+ `vendor`, `references`, `caveats`, `usage`): `db list` shows the
+   one-liner, `db info` shows everything.
+
 ## Troubleshooting
 
 | Symptom | Error (exit code) | Fix |

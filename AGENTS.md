@@ -225,3 +225,14 @@ Growth tiers past the budget — split rather than inflate the ceiling:
 3. Do not add dependencies without checking this file's §2 first — the list is intentionally short.
 4. Verification is part of the task: `pixi run lint && pixi run fmt-check && pixi run typecheck
    && pixi run test` before declaring done; doc changes also run the strict docs build.
+5. **Custom databases built with `gapit db build` are not done until provenance is written into
+   the manifest** (`license`, `note`, `source_urls`, `upstream_version`): `note` must carry the
+   literature citation + source software/version + accessions + build date; `license` must state
+   the upstream license as declared (`unspecified` when the source states none); and whenever the
+   content derives from a publication/third-party tool without explicit redistribution rights,
+   `note` must append the objection clause ("if any author or rights holder objects to the use or
+   redistribution of this database, please contact indexofire@gmail.com and the content will be
+   removed or adjusted promptly upon verification"). Verify with `gapit db info -d NAME`.
+   Also write the `info.json` sidecar with a one-line `description` (vendor/references/caveats/usage
+   as applicable) so `db list` stays brief while `db info` carries the detail.
+   Full rule: `docs/custom-db.md` § "Provenance and license metadata".

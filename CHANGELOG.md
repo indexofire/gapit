@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Custom-database provenance rules (docs).** `docs/custom-db.md`/`.zh.md` now
+  mandate a provenance and license metadata section for every `gapit db build`:
+  source citation + software version + accessions + build date in the manifest
+  `note`, the upstream `license` as declared, origin `source_urls`, an
+  author-objection contact clause when redistribution rights are unclear, and a
+  one-line `info.json` sidecar description so `db list` stays brief while
+  `db info` carries the detail. `AGENTS.md` enforces the same for agents.
+
 ## [0.6.8] - 2026-11-03
 
 ### Added

@@ -424,6 +424,31 @@ sequences.nto
 序列原样存储，不做提供商风格的归一化：这是你策展的事实，manifest 以
 `source_urls: ["local"]` 为构建背书。
 
+## 来源与许可元数据（强制）
+
+每个自定义数据库**必须**在 manifest（`gapit-manifest.json`）中写明来源信息，使
+`gapit db info -d NAME` 能直接看到内容出处。无例外：
+
+1. **`note` 写来源** —— 文献引用（作者、期刊、年份、DOI）、来源软件/数据库及版本
+   （如 `CjejuniTyper 2026-03`、`el_gato db 2025-03`）、所用 INSDC/PubMLST 登录号、
+   一句话提取方法、构建日期。
+2. **`license` 写上游许可** —— 按来源声明原样填写（MIT、CC BY 4.0、INSDC 公共领域…）。
+   不得臆测；来源未声明时写 `unspecified`。
+3. **`source_urls` 写出处** —— 内容来自可获取来源时，用实际仓库 URL 或登录号列表
+   替换单纯的 `local`。
+4. **`note` 附版权异议条款** —— 内容源自论文或第三方软件、且其许可未明确允许再分发时，
+   必须附加：
+   > 如原始作者或版权方对本数据库内容的使用或再分发有异议，请发邮件至
+   > indexofire@gmail.com，我们将在核实后及时移除或调整相应内容。
+
+缺少这些字段的构建视为未完成：策展路径是直接编辑 `gapit-manifest.json`
+（补 `license`、`note`、`source_urls`、`upstream_version`），并用 `gapit db info` 复核。
+
+5. **list 简短描述走 `info.json`** —— manifest `note` 承载完整来源、只在 `db info`
+   的 NOTE 行展示，不得充当列表描述。另写 `info.json` 边车（DbGuidance）：一行式
+   `description`（+ `vendor`/`references`/`caveats`/`usage`）——`db list` 只显示这一行，
+   `db info` 显示全部细节。
+
 ## 故障排查
 
 | 症状 | 错误（退出码） | 修复 |
