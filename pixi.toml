@@ -16,6 +16,7 @@ gapit = "gapit"
 [dependencies]
 blast = ">=2.15"
 minimap2 = ">=2.24"
+pyrodigal = ">=3.7.1,<4"
 
 # CI baseline (AGENTS.md §2): Python 3.12 only, matching gside/gmlst and gseek.
 [feature.py312.dependencies]

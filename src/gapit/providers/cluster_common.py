@@ -15,6 +15,7 @@ first, then ``validate_references`` gates drift against the downloaded
 content BEFORE any artifact is written.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -70,6 +71,16 @@ class ClusterProvider:
     # Literature references + interpretation caveats for `gapit db info`
     # (usage is synthesized from the kind).
     guidance: DbGuidance = field(default_factory=DbGuidance)
+    # Optional pre-parse hook: (download workdir) -> None. Providers whose
+    # upstream is a plain FASTA (not GBK/GFF) write a GFF3 here before the
+    # cluster parser runs — pyrodigal CDS annotation, for example. The
+    # generated file must end in .gff3 to be picked up by the parser.
+    preprocess: Callable[[Path], Path] | None = None
+    # Optional post-build hook: (download workdir, staged db dir) -> None.
+    # Providers that need non-record sidecars (kmer.json, cluster.json,
+    # extra .u64 sets) write them here AFTER the cluster build has written
+    # the locus FASTA but BEFORE the manifest is stamped.
+    finalize: Callable[[Path, Path], None] | None = None
 
 
 def fetch_cluster_provider(
@@ -111,6 +122,9 @@ def fetch_cluster_provider(
             for url in provider.source_urls:
                 download_file(url, workdir / url_basename(url))
             note(quiet, f"downloaded {len(provider.source_urls)} source file(s)")
+            if provider.preprocess is not None:
+                gff3_path = provider.preprocess(workdir)
+                note(quiet, f"preprocessed -> {gff3_path.name}")
             loci = _merged_loci(provider, workdir)
         note(quiet, f"parsed {len(loci)} loci from {provider.name}")
         typing_schema = ""
@@ -122,7 +136,7 @@ def fetch_cluster_provider(
                 document, FeaturesDocument(loci=tuple(item.features for item in loci))
             )
             typing_schema = typing_schema_of(provider.typing)
-        return build_cluster_database(
+        manifest = build_cluster_database(
             build_dir,
             name=provider.name,
             loci=loci,
@@ -135,15 +149,29 @@ def fetch_cluster_provider(
             quiet=quiet,
             debug=debug,
         )
+        if provider.finalize is not None:
+            provider.finalize(workdir, build_dir)
+        return manifest
 
 
 def _merged_loci(provider: ClusterProvider, workdir: Path) -> list[LocusSequence]:
-    """Parse every downloaded source into one locus list (declaration
-    order); a single-URL provider parses its one file, byte-identical to the
-    pre-multi-URL pipeline."""
+    """Parse every cluster-input file in the workdir (declaration order).
+    Source-url basenames first (preserving provider declaration order),
+    then any additional .gff3/.gbk files a preprocess hook created."""
+    from gapit.clusterbuild import is_cluster_input, parse_cluster_input
+
     loci: list[LocusSequence] = []
+    parsed_names: set[str] = set()
     for url in provider.source_urls:
-        loci.extend(parse_cluster_input(workdir / url_basename(url)))
+        path = workdir / url_basename(url)
+        if path.is_file() and is_cluster_input(path):
+            loci.extend(parse_cluster_input(path))
+            parsed_names.add(path.name)
+    for path in sorted(workdir.iterdir()):
+        if path.name in parsed_names or not path.is_file():
+            continue
+        if is_cluster_input(path):
+            loci.extend(parse_cluster_input(path))
     for extra in provider.extra_sources:
         loci.extend(parse_cluster_input(extra))
     return loci

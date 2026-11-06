@@ -4,6 +4,22 @@
 
 ### Added
 
+- **Provider modules for GPL-3.0 databases (`spy_emm` + `spn_sero`).**
+  `gapit db fetch -d spy_emm` downloads the CDC emm database via emmtyper
+  (MDU-PHL, GPLv3) and builds a gene database with dual typing schemes;
+  `gapit db fetch -d spn_sero` downloads the SeroBA reference (Sanger,
+  GPLv3), pyrodigal-annotates it into a GFF3 via the new `ClusterProvider
+  preprocess` hook, and builds a cluster database with `gapit.typing/3`
+  key_kmers differential sets (k=31) — both FASTA and FASTQ paths validated.
+  New `preprocess` and `finalize` hooks on `ClusterProvider`; `_merged_loci`
+  scans the entire workdir (not just source_url basenames) for cluster-input
+  files. Committed wheel assets: `spy_emm_typing.json`, `spn_sero_typing.json`,
+  `spn_sero_kmer.json`, `tuf.fna`. pyrodigal added to dependencies.
+
+## Also in Unreleased
+
+### Added
+
 - **Multi-backend typing architecture guide (`docs/backends.md` + `.zh.md`).**
   A comprehensive bilingual guide covering the full system: gene vs cluster
   database kinds, FASTA vs FASTQ input paths, BLAST/minimap2/k-mer

@@ -101,6 +101,7 @@ def test_real_registry_carries_the_seven_kaptive_providers() -> None:
     assert {n for n, p in REGISTRY.items() if p.kind == "cluster"} == {
         *KAPTIVE_PROVIDERS,
         "vch_oagc",
+        "spn_sero",
     }
     for name, (url, repo) in EXPECTED_SOURCES.items():
         provider = REGISTRY[name]

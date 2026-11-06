@@ -1,0 +1,2910 @@
+{
+ "schema": "gapit.typing/3",
+ "schemes": [
+  {
+   "name": "cps_serotype",
+   "cutoff": 0.75,
+   "ambiguity_margin": 0.05,
+   "fallback": "non-typeable (novel/recombinant cps locus or non-pneumococcal)",
+   "rules": [
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 1",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "01__008",
+       "01__011",
+       "01__009",
+       "01__007"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "01.diff"
+     },
+     "notes": [
+      "cps locus 01; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 2",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "02__011",
+       "02__009",
+       "02__010",
+       "02__008"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "02.diff"
+     },
+     "notes": [
+      "cps locus 02; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 3",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "03__002",
+       "03__001",
+       "03__003",
+       "03__004"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "03.diff"
+     },
+     "notes": [
+      "cps locus 03; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 4",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "04__009",
+       "04__011",
+       "04__008",
+       "04__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "04.diff"
+     },
+     "notes": [
+      "cps locus 04; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 5",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "05__009",
+       "05__014",
+       "05__008",
+       "05__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "05.diff"
+     },
+     "notes": [
+      "cps locus 05; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 6A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "06A__007",
+       "06A__006",
+       "06A__011",
+       "06A__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "06A.diff"
+     },
+     "notes": [
+      "cps locus 06A; diff kmers vs 6B/6F/6G"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 6B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "06B__007",
+       "06B__006",
+       "06B__016",
+       "06B__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "06B.diff"
+     },
+     "notes": [
+      "cps locus 06B; diff kmers vs 6A/6F/6G"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 6F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "06F__020",
+       "06F__001",
+       "06F__017",
+       "06F__018"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "06F.diff"
+     },
+     "notes": [
+      "cps locus 06F; diff kmers vs 6A/6B/6G"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 6G",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "06G__001",
+       "06G__021",
+       "06G__003",
+       "06G__002"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "06G.diff"
+     },
+     "notes": [
+      "cps locus 06G; diff kmers vs 6A/6B/6F"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 6C",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "06C__006",
+       "06C__015",
+       "06C__016",
+       "06C__017"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "06C.diff"
+     },
+     "notes": [
+      "cps locus 06C; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 6D",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "06D__006",
+       "06D__010",
+       "06D__009",
+       "06D__008"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "06D.diff"
+     },
+     "notes": [
+      "cps locus 06D; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 6E",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "06E__007",
+       "06E__006",
+       "06E__011",
+       "06E__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "06E.diff"
+     },
+     "notes": [
+      "cps locus 06E; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 7A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "07A__009",
+       "07A__010",
+       "07A__016",
+       "07A__015"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "07A.diff"
+     },
+     "notes": [
+      "cps locus 07A; diff kmers vs 7F"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 7F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "07F__009",
+       "07F__015",
+       "07F__014",
+       "07F__013"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "07F.diff"
+     },
+     "notes": [
+      "cps locus 07F; diff kmers vs 7A"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 7B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "07B__011",
+       "07B__008",
+       "07B__009",
+       "07B__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "07B.diff"
+     },
+     "notes": [
+      "cps locus 07B; diff kmers vs 40"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 40",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "40__011",
+       "40__008",
+       "40__009",
+       "40__007"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "40.diff"
+     },
+     "notes": [
+      "cps locus 40; diff kmers vs 7B"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 7C",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "07C__011",
+       "07C__006",
+       "07C__008",
+       "07C__009"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "07C.diff"
+     },
+     "notes": [
+      "cps locus 07C; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 8",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "08__009",
+       "08__011",
+       "08__008",
+       "08__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "08.diff"
+     },
+     "notes": [
+      "cps locus 08; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 9A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "09A__017",
+       "09A__018",
+       "09A__011",
+       "09A__014"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "09A.diff"
+     },
+     "notes": [
+      "cps locus 09A; diff kmers vs 9V"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 9V",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "09V__011",
+       "09V__014",
+       "09V__010",
+       "09V__013"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "09V.diff"
+     },
+     "notes": [
+      "cps locus 09V; diff kmers vs 9A"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 9L",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "09L__015",
+       "09L__011",
+       "09L__010",
+       "09L__013"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "09L.diff"
+     },
+     "notes": [
+      "cps locus 09L; diff kmers vs 9N"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 9N",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "09N__015",
+       "09N__011",
+       "09N__010",
+       "09N__016"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "09N.diff"
+     },
+     "notes": [
+      "cps locus 09N; diff kmers vs 9L"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 10A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "10A__013",
+       "10A__012",
+       "10A__003",
+       "10A__004"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "10A.diff"
+     },
+     "notes": [
+      "cps locus 10A; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 10B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "10B__013",
+       "10B__012",
+       "10B__003",
+       "10B__004"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "10B.diff"
+     },
+     "notes": [
+      "cps locus 10B; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 10C",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "10C__016",
+       "10C__012",
+       "10C__011",
+       "10C__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "10C.diff"
+     },
+     "notes": [
+      "cps locus 10C; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 10F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "10F__016",
+       "10F__012",
+       "10F__011",
+       "10F__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "10F.diff"
+     },
+     "notes": [
+      "cps locus 10F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 10X",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "10X__013",
+       "10X__014",
+       "10X__008",
+       "10X__007"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "10X.diff"
+     },
+     "notes": [
+      "cps locus 10X; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 11A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "11A__007",
+       "11A__011",
+       "11A__008",
+       "11A__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "11A.diff"
+     },
+     "notes": [
+      "cps locus 11A; diff kmers vs 11D"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 11D",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "11D__007",
+       "11D__011",
+       "11D__008",
+       "11D__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "11D.diff"
+     },
+     "notes": [
+      "cps locus 11D; diff kmers vs 11A"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 11B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "11B__011",
+       "11B__008",
+       "11B__010",
+       "11B__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "11B.diff"
+     },
+     "notes": [
+      "cps locus 11B; diff kmers vs 11C"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 11C",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "11C__011",
+       "11C__008",
+       "11C__010",
+       "11C__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "11C.diff"
+     },
+     "notes": [
+      "cps locus 11C; diff kmers vs 11B"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 11E",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "11E__016",
+       "11E__017",
+       "11E__007",
+       "11E__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "11E.diff"
+     },
+     "notes": [
+      "cps locus 11E; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 11F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "11F__007",
+       "11F__016",
+       "11F__015",
+       "11F__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "11F.diff"
+     },
+     "notes": [
+      "cps locus 11F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 12A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "12A__005",
+       "12A__006",
+       "12A__007",
+       "12A__014"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "12A.diff"
+     },
+     "notes": [
+      "cps locus 12A; diff kmers vs 46"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 46",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "46__005",
+       "46__006",
+       "46__007",
+       "46__014"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "46.diff"
+     },
+     "notes": [
+      "cps locus 46; diff kmers vs 12A"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 12B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "12B__005",
+       "12B__012",
+       "12B__006",
+       "12B__013"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "12B.diff"
+     },
+     "notes": [
+      "cps locus 12B; diff kmers vs 12F/44"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 12F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "12F__005",
+       "12F__012",
+       "12F__006",
+       "12F__013"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "12F.diff"
+     },
+     "notes": [
+      "cps locus 12F; diff kmers vs 12B/44"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 44",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "44__016",
+       "44__015",
+       "44__005",
+       "44__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "44.diff"
+     },
+     "notes": [
+      "cps locus 44; diff kmers vs 12B/12F"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 13",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "13__013",
+       "13__010",
+       "13__012",
+       "13__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "13.diff"
+     },
+     "notes": [
+      "cps locus 13; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 14",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "14__012",
+       "14__008",
+       "14__013",
+       "14__007"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "14.diff"
+     },
+     "notes": [
+      "cps locus 14; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 15A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "15A__013",
+       "15A__008",
+       "15A__007",
+       "15A__014"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "15A.diff"
+     },
+     "notes": [
+      "cps locus 15A; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 15B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "15B__008",
+       "15B__013",
+       "15B__007",
+       "15B__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "15B.diff"
+     },
+     "notes": [
+      "cps locus 15B; diff kmers vs 15C"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 15C",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "15C__013",
+       "15C__008",
+       "15C__007",
+       "15C__014"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "15C.diff"
+     },
+     "notes": [
+      "cps locus 15C; diff kmers vs 15B"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 15F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "15F__018",
+       "15F__008",
+       "15F__013",
+       "15F__007"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "15F.diff"
+     },
+     "notes": [
+      "cps locus 15F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 16A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "16A__015",
+       "16A__012",
+       "16A__010",
+       "16A__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "16A.diff"
+     },
+     "notes": [
+      "cps locus 16A; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 16F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "16F__010",
+       "16F__014",
+       "16F__012",
+       "16F__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "16F.diff"
+     },
+     "notes": [
+      "cps locus 16F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 17A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "17A__012",
+       "17A__014",
+       "17A__013",
+       "17A__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "17A.diff"
+     },
+     "notes": [
+      "cps locus 17A; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 17F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "17F__014",
+       "17F__015",
+       "17F__013",
+       "17F__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "17F.diff"
+     },
+     "notes": [
+      "cps locus 17F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 18A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "18A__008",
+       "18A__010",
+       "18A__011",
+       "18A__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "18A.diff"
+     },
+     "notes": [
+      "cps locus 18A; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 18B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "18B__013",
+       "18B__012",
+       "18B__008",
+       "18B__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "18B.diff"
+     },
+     "notes": [
+      "cps locus 18B; diff kmers vs 18C"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 18C",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "18C__012",
+       "18C__008",
+       "18C__010",
+       "18C__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "18C.diff"
+     },
+     "notes": [
+      "cps locus 18C; diff kmers vs 18B"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 18F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "18F__009",
+       "18F__013",
+       "18F__021",
+       "18F__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "18F.diff"
+     },
+     "notes": [
+      "cps locus 18F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 19A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "19A__010",
+       "19A__009",
+       "19A__011",
+       "19A__008"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "19A.diff"
+     },
+     "notes": [
+      "cps locus 19A; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 19B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "19B__012",
+       "19B__013",
+       "19B__010",
+       "19B__009"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "19B.diff"
+     },
+     "notes": [
+      "cps locus 19B; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 19C",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "19C__015",
+       "19C__012",
+       "19C__013",
+       "19C__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "19C.diff"
+     },
+     "notes": [
+      "cps locus 19C; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 19F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "19F__010",
+       "19F__009",
+       "19F__006",
+       "19F__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "19F.diff"
+     },
+     "notes": [
+      "cps locus 19F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 20",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "20__013",
+       "20__005",
+       "20__009",
+       "20__007"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "20.diff"
+     },
+     "notes": [
+      "cps locus 20; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 21",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "21__012",
+       "21__011",
+       "21__019",
+       "21__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "21.diff"
+     },
+     "notes": [
+      "cps locus 21; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 22A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "22A__009",
+       "22A__008",
+       "22A__014",
+       "22A__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "22A.diff"
+     },
+     "notes": [
+      "cps locus 22A; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 22F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "22F__009",
+       "22F__003",
+       "22F__014",
+       "22F__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "22F.diff"
+     },
+     "notes": [
+      "cps locus 22F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 23A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "23A__007",
+       "23A__010",
+       "23A__009",
+       "23A__008"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "23A.diff"
+     },
+     "notes": [
+      "cps locus 23A; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 23B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "23B__010",
+       "23B__009",
+       "23B__007",
+       "23B__019"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "23B.diff"
+     },
+     "notes": [
+      "cps locus 23B; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 23B1",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "23B1__015",
+       "23B1__004",
+       "23B1__016",
+       "23B1__022"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "23B1.diff"
+     },
+     "notes": [
+      "cps locus 23B1; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 23F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "23F__007",
+       "23F__010",
+       "23F__009",
+       "23F__008"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "23F.diff"
+     },
+     "notes": [
+      "cps locus 23F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 24A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "24A__015",
+       "24A__014",
+       "24A__011",
+       "24A__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "24A.diff"
+     },
+     "notes": [
+      "cps locus 24A; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 24B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "24B__009",
+       "24B__020",
+       "24B__008",
+       "24B__021"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "24B.diff"
+     },
+     "notes": [
+      "cps locus 24B; diff kmers vs 24F"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 24F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "24F__015",
+       "24F__014",
+       "24F__011",
+       "24F__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "24F.diff"
+     },
+     "notes": [
+      "cps locus 24F; diff kmers vs 24B"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 25A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "25A__018",
+       "25A__002",
+       "25A__004",
+       "25A__014"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "25A.diff"
+     },
+     "notes": [
+      "cps locus 25A; diff kmers vs 25F"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 25F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "25F__018",
+       "25F__002",
+       "25F__004",
+       "25F__014"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "25F.diff"
+     },
+     "notes": [
+      "cps locus 25F; diff kmers vs 25A"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 27",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "27__010",
+       "27__008",
+       "27__009",
+       "27__007"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "27.diff"
+     },
+     "notes": [
+      "cps locus 27; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 28A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "28A__010",
+       "28A__012",
+       "28A__011",
+       "28A__009"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "28A.diff"
+     },
+     "notes": [
+      "cps locus 28A; diff kmers vs 28F"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 28F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "28F__010",
+       "28F__012",
+       "28F__011",
+       "28F__009"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "28F.diff"
+     },
+     "notes": [
+      "cps locus 28F; diff kmers vs 28A"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 29",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "29__007",
+       "29__008",
+       "29__010",
+       "29__009"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "29.diff"
+     },
+     "notes": [
+      "cps locus 29; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 31",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "31__009",
+       "31__012",
+       "31__011",
+       "31__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "31.diff"
+     },
+     "notes": [
+      "cps locus 31; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 32A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "32A__014",
+       "32A__011",
+       "32A__008",
+       "32A__007"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "32A.diff"
+     },
+     "notes": [
+      "cps locus 32A; diff kmers vs 32F"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 32F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "32F__011",
+       "32F__008",
+       "32F__007",
+       "32F__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "32F.diff"
+     },
+     "notes": [
+      "cps locus 32F; diff kmers vs 32A"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 33A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "33A__012",
+       "33A__011",
+       "33A__007",
+       "33A__008"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "33A.diff"
+     },
+     "notes": [
+      "cps locus 33A; diff kmers vs 33F"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 33F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "33F__012",
+       "33F__011",
+       "33F__007",
+       "33F__008"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "33F.diff"
+     },
+     "notes": [
+      "cps locus 33F; diff kmers vs 33A"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 33B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "33B__008",
+       "33B__009",
+       "33B__010",
+       "33B__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "33B.diff"
+     },
+     "notes": [
+      "cps locus 33B; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 33C",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "33C__008",
+       "33C__010",
+       "33C__007",
+       "33C__006"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "33C.diff"
+     },
+     "notes": [
+      "cps locus 33C; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 33D",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "33D__008",
+       "33D__009",
+       "33D__010",
+       "33D__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "33D.diff"
+     },
+     "notes": [
+      "cps locus 33D; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 34",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "34__007",
+       "34__008",
+       "34__013",
+       "34__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "34.diff"
+     },
+     "notes": [
+      "cps locus 34; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 35A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "35A__011",
+       "35A__010",
+       "35A__007",
+       "35A__009"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "35A.diff"
+     },
+     "notes": [
+      "cps locus 35A; diff kmers vs 35C/42"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 35C",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "35C__010",
+       "35C__007",
+       "35C__009",
+       "35C__013"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "35C.diff"
+     },
+     "notes": [
+      "cps locus 35C; diff kmers vs 35A/42"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 42",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "42__010",
+       "42__007",
+       "42__009",
+       "42__013"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "42.diff"
+     },
+     "notes": [
+      "cps locus 42; diff kmers vs 35A/35C"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 35B",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "35B__007",
+       "35B__008",
+       "35B__010",
+       "35B__009"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "35B.diff"
+     },
+     "notes": [
+      "cps locus 35B; diff kmers vs 35D"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 35D",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "35D__007",
+       "35D__008",
+       "35D__010",
+       "35D__009"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "35D.diff"
+     },
+     "notes": [
+      "cps locus 35D; diff kmers vs 35B"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 35F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "35F__013",
+       "35F__007",
+       "35F__008",
+       "35F__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "35F.diff"
+     },
+     "notes": [
+      "cps locus 35F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 36",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "36__014",
+       "36__015",
+       "36__012",
+       "36__017"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "36.diff"
+     },
+     "notes": [
+      "cps locus 36; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 37",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "37__001"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "37.diff"
+     },
+     "notes": [
+      "cps locus 37; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 38",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "38__014",
+       "38__018",
+       "38__001",
+       "38__004"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "38.diff"
+     },
+     "notes": [
+      "cps locus 38; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 39",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "39__013",
+       "39__008",
+       "39__009",
+       "39__015"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "39.diff"
+     },
+     "notes": [
+      "cps locus 39; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 39X",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "39X__011",
+       "39X__007",
+       "39X__013",
+       "39X__008"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "39X.diff"
+     },
+     "notes": [
+      "cps locus 39X; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 41A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "41A__006",
+       "41A__013",
+       "41A__010",
+       "41A__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "41A.diff"
+     },
+     "notes": [
+      "cps locus 41A; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 41F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "41F__020",
+       "41F__010",
+       "41F__013",
+       "41F__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "41F.diff"
+     },
+     "notes": [
+      "cps locus 41F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 43",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "43__017",
+       "43__011",
+       "43__012",
+       "43__014"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "43.diff"
+     },
+     "notes": [
+      "cps locus 43; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 45",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "45__012",
+       "45__008",
+       "45__010",
+       "45__013"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "45.diff"
+     },
+     "notes": [
+      "cps locus 45; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 47A",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "47A__013",
+       "47A__009",
+       "47A__010",
+       "47A__012"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "47A.diff"
+     },
+     "notes": [
+      "cps locus 47A; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 47F",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "47F__007",
+       "47F__008",
+       "47F__011",
+       "47F__010"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "47F.diff"
+     },
+     "notes": [
+      "cps locus 47F; no siblings"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serotype 48",
+     "coverage": {
+      "weight": 0.45,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.2,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.1,
+      "genes": [
+       "48__013",
+       "48__012",
+       "48__010",
+       "48__011"
+      ]
+     },
+     "key_kmers": {
+      "weight": 0.25,
+      "k": 31,
+      "set": "48.diff"
+     },
+     "notes": [
+      "cps locus 48; no siblings"
+     ]
+    }
+   ]
+  }
+ ]
+}
