@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.1] - 2026-11-06
+
+### Added
+
+- **Test coverage for screening_kmer, emmtyper and seroba providers.**
+  16 new tests covering the k-mer containment screening path (locus calls,
+  phenotype evaluation, FASTQ end-to-end) and the GPL provider modules
+  (registration, transform, preprocess GFF3, NT-reference exclusion).
+  `screening_kmer.py` public API renamed (private→public). 1487 total
+  tests passing.
+
 ## [0.7.0] - 2026-11-06
 
 ### Added
