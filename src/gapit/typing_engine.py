@@ -162,6 +162,12 @@ def score_cluster_match(
             _component("identity", rule.identity.weight * identity),
             _component("key_genes", rule.key_genes.weight * key_fraction),
         )
+        if rule.key_kmers is not None:
+            kmer_fraction = locus.kmer_hits.get(rule.key_kmers.set, 0.0)
+            components = (
+                *components,
+                _component("key_kmers", rule.key_kmers.weight * kmer_fraction),
+            )
         total = sum(component.score for component in components)
         if winner is None or total > winner[0]:
             winner = (total, components, _locus_evidence(locus))

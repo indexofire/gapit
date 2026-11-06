@@ -102,6 +102,18 @@ class KeyGenesComponent(BaseModel, frozen=True):
     genes: list[str]
 
 
+class KeyKmersComponent(BaseModel, frozen=True):
+    """``key_kmers`` — the k-mer granularity analogue of ``key_genes``:
+    the fraction of a declared k-mer set (``gapit.kmerdb/1``) present in
+    the query. Differential sets (locus k-mers minus sibling-locus union)
+    resolve reference pairs whose locus identity differs by less than the
+    scheme's ambiguity margin (single-SNP serotypes)."""
+
+    weight: float
+    k: int = Field(ge=1, le=31)
+    set: str = Field(min_length=1)
+
+
 class ClusterMatchRule(BaseModel, frozen=True):
     """``cluster_match`` — locus-level component scoring."""
 
@@ -110,6 +122,7 @@ class ClusterMatchRule(BaseModel, frozen=True):
     coverage: CoverageComponent
     identity: IdentityComponent
     key_genes: KeyGenesComponent
+    key_kmers: KeyKmersComponent | None = None
     notes: list[str] = Field(default_factory=list)
 
 

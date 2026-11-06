@@ -17,6 +17,9 @@ from pydantic import BaseModel, ConfigDict, Field, JsonValue
 ERROR_CODES: frozenset[str] = frozenset(
     {
         "ARCHIVE_INVALID",
+        "KMERDB_MALFORMED",
+        "KMERDB_SET_MISSING",
+        "KMERDB_UNKNOWN_LOCUS",
         "ARCHIVE_TOO_LARGE",
         "BLASTDBCMD_PARSE_FAILED",
         "BLAST_FAILED",
@@ -85,6 +88,7 @@ ERROR_CODES: frozenset[str] = frozenset(
         "TYPING_CLUSTER_DB",
         "TYPING_CLUSTER_TABLE",
         "TYPING_MALFORMED",
+        "TYPING_UNKNOWN_KMERSET",
         "TYPING_NO_DATA",
         "TYPING_NO_SCHEME",
         "TYPING_UNKNOWN_GENE",

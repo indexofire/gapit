@@ -91,6 +91,7 @@ class LocusCall(BaseModel, frozen=True):
     rank: int
     genes: tuple[GeneCall, ...]
     missing: tuple[str, ...]
+    kmer_hits: dict[str, float] = Field(default_factory=dict)
 
 
 class BestCall(BaseModel, frozen=True):
@@ -185,6 +186,31 @@ class _LocusStats:
     covered_bp: int
 
 
+def _kmer_hit_fractions(
+    query: Path, database: Database, covered_loci: set[str]
+) -> dict[str, tuple[str, float]]:
+    """Per-set hit fractions for a database carrying a ``gapit.kmerdb/1``
+    sidecar: count the query's canonical k-mers once, intersect every
+    declared set, and return ``{set_name: (of_locus, fraction)}`` filtered
+    to sets anchored on covered loci (absent loci keep an empty map).
+    Databases without the sidecar return ``{}`` — the alignment-only path
+    is unchanged."""
+    from gapit.kmerdb import count_fasta_kmers, load_kmer_set, read_kmerdb, set_hit_fraction
+
+    document = read_kmerdb(database.path)
+    if document is None:
+        return {}
+    relevant = {name: spec for name, spec in document.sets.items() if spec.of in covered_loci}
+    if not relevant:
+        return {}
+    codes = count_fasta_kmers(query, document.k)
+    hits: dict[str, tuple[str, float]] = {}
+    for name, spec in relevant.items():
+        reference = load_kmer_set(database.path, name)
+        hits[name] = (spec.of, set_hit_fraction(codes, reference))
+    return hits
+
+
 def _locus_call(
     locus: LocusFeatures, grouped: tuple[list[tuple[CsRun, ...]], int], params: ClusterParams
 ) -> _LocusStats:
@@ -245,7 +271,10 @@ def screen_cluster_file(
     ranked loci, best call above min_cluster_cov. Rows are primary-only unless
     the database profile opts into ``primary_secondary`` coverage. With
     ``detail``, attach the rich best-locus map (alignment pieces, indels,
-    quality) without changing compact renderers."""
+    quality) without changing compact renderers. When the database carries a
+    ``gapit.kmerdb/1`` sidecar the query's canonical k-mers are counted once
+    and every declared set's hit fraction is attached to its ``of`` locus —
+    the ``key_kmers`` typing component consumes these (SNP-level calls)."""
     row_stream = iter_minimap2(
         [(query, None)],
         database,
@@ -270,6 +299,23 @@ def screen_cluster_file(
             entry.call.locus, entry.call.coverage_pct, entry.call.identity_pct, entry.covered_bp
         )
     )
+    kmer_hits = _kmer_hit_fractions(query, database, {entry.call.locus for entry in stats})
+    if kmer_hits:
+        stats = [
+            _LocusStats(
+                call=entry.call.model_copy(
+                    update={
+                        "kmer_hits": {
+                            name: fraction[1]
+                            for name, fraction in kmer_hits.items()
+                            if fraction[0] == entry.call.locus
+                        }
+                    },
+                ),
+                covered_bp=entry.covered_bp,
+            )
+            for entry in stats
+        ]
     loci = tuple(
         entry.call.model_copy(update={"rank": rank}) for rank, entry in enumerate(stats, start=1)
     )

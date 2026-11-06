@@ -37,7 +37,7 @@ def test_schema_typing_selector() -> None:
     result = runner.invoke(app, ["schema", "typing"])
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
-    assert payload["properties"]["schema"]["const"] == "gapit.typing/2"
+    assert "gapit.typing/2" in payload["properties"]["schema"]["enum"]
     assert "schemes" in payload["properties"]
     assert not {"rules", "cutoff", "ambiguity_margin", "fallback"} & set(payload["properties"])
     scheme = payload["$defs"]["TypingScheme"]["properties"]

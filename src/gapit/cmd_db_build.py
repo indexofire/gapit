@@ -80,6 +80,18 @@ from gapit.dispatch import datadir_option, dispatch, quiet_option
     default="",
     help="Default product for records whose FASTA header has no description text.",
 )
+@click.option(
+    "--kmerdb",
+    "-K",
+    "kmer_db",
+    type=click.Path(exists=True, path_type=Path),
+    default=None,
+    help=(
+        "Cluster builds: gapit.kmerdb/1 JSON declaring k-mer sets over the"
+        " loci (differential sets resolve SNP-level pairs); materialized"
+        " into the database at build time."
+    ),
+)
 @click.option("--force", "-f", is_flag=True, help="Overwrite the database if it already exists.")
 @quiet_option()
 def db_build_command(
@@ -91,6 +103,7 @@ def db_build_command(
     typing: Path | None,
     floors: Path | None,
     screen: Path | None,
+    kmer_db: Path | None,
     datadir: Path | None,
     description: str,
     force: bool,
@@ -122,6 +135,7 @@ def db_build_command(
             typing=typing,
             floors=floors,
             screen=screen,
+            kmer_db=kmer_db,
         )
         click.echo(receipt.model_dump_json(exclude_none=True))
 

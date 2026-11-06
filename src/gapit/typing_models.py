@@ -146,7 +146,9 @@ class TypingDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.typing/2"] = Field(default="gapit.typing/2", alias="schema")
+    schema_name: Literal["gapit.typing/2", "gapit.typing/3"] = Field(
+        default="gapit.typing/2", alias="schema"
+    )
     schemes: tuple[TypingScheme, ...] = Field(min_length=1)
 
     @model_validator(mode="after")
@@ -315,7 +317,8 @@ def typing_schema_of(path: Path) -> str:
     value a build records in its manifest's ``typing_schema``. Assumes
     :func:`read_typing_document` accepted the file."""
     tag = _parse_json(_read_text(path), path).get("schema")
-    if not isinstance(tag, str) or tag not in ("gapit.typing/1", "gapit.typing/2"):
+    known_tags = ("gapit.typing/1", "gapit.typing/2", "gapit.typing/3")
+    if not isinstance(tag, str) or tag not in known_tags:
         raise DatabaseError(
             f"malformed typing document {path}: unknown schema tag {tag!r}",
             code="TYPING_MALFORMED",

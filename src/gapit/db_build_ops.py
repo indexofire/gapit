@@ -162,6 +162,7 @@ def perform_build(
     typing: Path | None = None,
     floors: Path | None = None,
     screen: Path | None = None,
+    kmer_db: Path | None = None,
     source: Literal["bundled"] | None = None,
 ) -> BuildReceipt:
     """Run the custom-build pipeline and return the receipt — the shared CLI
@@ -248,7 +249,9 @@ def perform_build(
                     code="DB_ALREADY_EXISTS",
                     context={"db": name},
                 )
-            manifest = perform_cluster_build(name, fasta, typing, build_dir, quiet=quiet)
+            manifest = perform_cluster_build(
+                name, fasta, typing, build_dir, kmer_db=kmer_db, quiet=quiet
+            )
         return BuildReceipt(
             db=name,
             records=manifest.n_records,

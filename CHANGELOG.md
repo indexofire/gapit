@@ -4,6 +4,21 @@
 
 ### Added
 
+- **`gapit.typing/3` `key_kmers` component + `gapit.kmerdb/1` k-mer substrate.**
+  Cluster databases may now carry a `kmer.json` sidecar declaring
+  differential k-mer sets (a locus's canonical k-mers minus its family
+  siblings'), materialized at build time via `gapit db build -K`. The
+  `key_kmers` rule component scores the fraction of the declared set
+  present in the query — SNP-level reference pairs that locus
+  coverage/identity cannot separate (a single SNP moves identity by
+  ~0.001) resolve as 1.0-vs-0.0 by the differential set. Validated on
+  S. pneumoniae: 100 serotype references now resolve as 100 individual
+  serotypes (previously 20 SNP-level complexes); 7 unit tests in
+  `test_kmer_typing.py`.
+
+
+### Added
+
 - **Custom-database provenance rules (docs).** `docs/custom-db.md`/`.zh.md` now
   mandate a provenance and license metadata section for every `gapit db build`:
   source citation + software version + accessions + build date in the manifest

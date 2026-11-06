@@ -39,11 +39,13 @@ from gapit.gffparse import parse_gff3_features
 from gapit.proctools import note
 from gapit.records import Manifest, write_manifest
 from gapit.typing_models import (
+    TypingDocument,
     read_typing_document,
     typing_schema_of,
     uses_cluster_v2,
     validate_references,
 )
+from gapit.typing_rules import ClusterMatchRule
 
 _WRAP_COLUMNS = 60
 
@@ -285,14 +287,21 @@ def resolve_gene_ids(loci: Sequence[LocusSequence]) -> list[LocusSequence]:
 
 
 def perform_cluster_build(
-    name: str, fasta: Path, typing: Path | None, db_dir: Path, *, quiet: bool = True
+    name: str,
+    fasta: Path,
+    typing: Path | None,
+    db_dir: Path,
+    *,
+    kmer_db: Path | None = None,
+    quiet: bool = True,
 ) -> Manifest:
     """The cluster branch of the build use-case: parse the GBK/GFF input,
     validate the typing spec (schema and referenced ids) — a multi-scheme
     document additionally runs build-time gene-id resolution first, so its
     rules reference the resolved ids (gapit.cluster/2) — so a bad spec
     fails before any artifact is written, then build (callers shape the
-    receipt)."""
+    receipt). ``kmer_db`` optionally installs a ``gapit.kmerdb/1`` sidecar
+    and materializes its sets from the built locus FASTA."""
     loci = parse_cluster_input(fasta)
     typing_schema = ""
     if typing is not None:
@@ -301,8 +310,10 @@ def perform_cluster_build(
             loci = resolve_gene_ids(loci)
         validate_references(document, FeaturesDocument(loci=tuple(item.features for item in loci)))
         typing_schema = typing_schema_of(typing)
+        if kmer_db is not None:
+            _validate_kmer_references(document, kmer_db, loci)
     db_dir.mkdir(parents=True, exist_ok=True)
-    return build_cluster_database(
+    manifest = build_cluster_database(
         db_dir,
         name=name,
         loci=loci,
@@ -312,3 +323,46 @@ def perform_cluster_build(
         typing_schema=typing_schema,
         quiet=quiet,
     )
+    if kmer_db is not None:
+        from gapit.kmerdb import KmerDbDocument, materialize_kmer_sets
+
+        document_k = KmerDbDocument.model_validate_json(kmer_db.read_text(encoding="utf-8"))
+        materialize_kmer_sets(db_dir, document_k, db_dir / "sequences")
+    return manifest
+
+
+def _validate_kmer_references(
+    document: TypingDocument, kmer_db: Path, loci: Sequence[LocusSequence]
+) -> None:
+    """Every ``key_kmers.set`` in the typing document must be declared in
+    the kmerdb sidecar (TYPING_UNKNOWN_KMERSET at build time, the
+    unknown-gene precedent)."""
+    from gapit.kmerdb import KmerDbDocument
+
+    kmer_document = KmerDbDocument.model_validate_json(kmer_db.read_text(encoding="utf-8"))
+    known = set(kmer_document.sets)
+    locus_ids = {item.features.id for item in loci}
+    referenced = {
+        rule.key_kmers.set
+        for scheme in document.schemes
+        for rule in scheme.rules
+        if isinstance(rule, ClusterMatchRule) and rule.key_kmers is not None
+    }
+    missing_sets = sorted(referenced - known)
+    if missing_sets:
+        raise DatabaseError(
+            f"typing rules reference undeclared kmer sets: {missing_sets}",
+            code="TYPING_UNKNOWN_KMERSET",
+            context={"sets": ", ".join(missing_sets)},
+        )
+    stray = sorted(
+        name
+        for name, spec in kmer_document.sets.items()
+        if spec.of not in locus_ids or any(other not in locus_ids for other in spec.against)
+    )
+    if stray:
+        raise DatabaseError(
+            f"kmer sets reference loci absent from the input: {stray}",
+            code="KMERDB_UNKNOWN_LOCUS",
+            context={"sets": ", ".join(stray)},
+        )
