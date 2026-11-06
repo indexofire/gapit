@@ -69,7 +69,7 @@ def screen_cluster_kmer(
 
             click.echo(f"K-mer screening: {', '.join(str(p) for p in reads)}", err=True)
         query_kmers = count_fastq_kmers(*reads, k=kmer_doc.k)
-        loci = _locus_calls_from_kmers(query_kmers, database.path, features, kmer_doc)
+        loci = locus_calls_from_kmers(query_kmers, database.path, features, kmer_doc)
         best_locus, best_type, best_phen = "-", "-", "-"
         cov_str, id_str = "0.00", "0.00"
         if loci and loci[0].coverage_pct >= min_cluster_cov:
@@ -79,12 +79,12 @@ def screen_cluster_kmer(
             cov_str = f"{top.coverage_pct:.2f}"
             id_str = f"{top.identity_pct:.2f}"
             if typing_document is not None:
-                best_phen = _best_phenotype(loci, typing_document)
+                best_phen = best_phenotype(loci, typing_document)
         lines.append(f"{r1}\t{best_locus}\t{best_type}\t{best_phen}\t{cov_str}\t{id_str}\t0\t0\t-")
     return "\n".join(lines) + "\n"
 
 
-def _locus_calls_from_kmers(
+def locus_calls_from_kmers(
     query_kmers: set[int],
     db_dir: Path,
     features: FeaturesDocument,
@@ -119,7 +119,7 @@ def _locus_calls_from_kmers(
     return [call.model_copy(update={"rank": i + 1}) for i, (_, call) in enumerate(calls)]
 
 
-def _best_phenotype(loci: list[LocusCall], typing_document: object) -> str:
+def best_phenotype(loci: list[LocusCall], typing_document: object) -> str:
     """Evaluate typing schemes on the k-mer locus calls; return the first
     scheme's phenotype (the common single-scheme case)."""
     from gapit.typing_cluster2 import evaluate_cluster2

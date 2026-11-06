@@ -1,4 +1,4 @@
-"""Typing-engine unit suites (stage 3): the pure gapit.typing/1 evaluators.
+"""Typing-engine unit suites (stage 3): the pure gapit.typing/1-3 evaluators.
 
 No I/O anywhere: ClusterReport/LocusCall/GeneCall values are built directly,
 rules come from typing_models, and every score/decision is asserted on the
