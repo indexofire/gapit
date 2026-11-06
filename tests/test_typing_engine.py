@@ -285,6 +285,48 @@ class TestClusterMatch:
         _, components, _ = score_cluster_match(self.RULE, report([locus_call("locusA", genes)]))
         assert components[2].score == pytest.approx(0.1)
 
+    def test_alternative_key_gene_groups_score_best_group(self) -> None:
+        """Given mutually exclusive loci (O1 Inaba vs Ogawa), When the rule
+        declares alternative key-gene groups, Then the group present in the
+        scored locus carries the full component weight (not 1/len(groups))."""
+        rule = ClusterMatchRule(
+            model="cluster_match",
+            phenotype="O1",
+            coverage=CoverageComponent(weight=0.55, floor=90.0),
+            identity=IdentityComponent(weight=0.25, floor=95.0),
+            key_genes=KeyGenesComponent(
+                weight=0.2,
+                genes=["inaba_a", "inaba_b", "ogawa_a", "ogawa_b"],
+                groups=[["inaba_a", "inaba_b"], ["ogawa_a", "ogawa_b"]],
+            ),
+        )
+        genes = [gene("ogawa_a"), gene("ogawa_b")]
+        score, components, evidence = score_cluster_match(
+            rule, report([locus_call("ogawa", genes)])
+        )
+        assert components[2].score == pytest.approx(0.2)
+        assert score == pytest.approx(1.0)
+        assert evidence is not None and evidence.locus == "ogawa"
+
+    def test_alternative_key_gene_groups_do_not_accept_foreign_locus(self) -> None:
+        """Given a locus with none of the declared groups, When scored, Then
+        the key-genes component is zero (no cross-locus credit)."""
+        rule = ClusterMatchRule(
+            model="cluster_match",
+            phenotype="O1",
+            coverage=CoverageComponent(weight=0.55, floor=90.0),
+            identity=IdentityComponent(weight=0.25, floor=95.0),
+            key_genes=KeyGenesComponent(
+                weight=0.2,
+                genes=["inaba_a", "ogawa_a"],
+                groups=[["inaba_a"], ["ogawa_a"]],
+            ),
+        )
+        _, components, _ = score_cluster_match(
+            rule, report([locus_call("other", [gene("other_a")])])
+        )
+        assert components[2].score == pytest.approx(0.0)
+
 
 class TestLearnedLinear:
     def test_sigmoid_of_weighted_features_and_bias(self) -> None:

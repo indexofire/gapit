@@ -98,8 +98,22 @@ class IdentityComponent(BaseModel, frozen=True):
 
 
 class KeyGenesComponent(BaseModel, frozen=True):
+    """``key_genes`` — the fraction of the listed gene ids present in the
+    scored locus. ``groups`` optionally lists mutually exclusive alternative
+    sets (e.g. the near-identical O1 Inaba and O1 Ogawa LPS loci): the
+    scorer takes the best group's fraction, so a strain carrying either
+    locus reaches the full component weight. ``genes`` stays the union used
+    for reference validation and as the fallback when ``groups`` is empty."""
+
     weight: float
     genes: list[str]
+    groups: list[list[str]] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _groups_non_empty(self) -> "KeyGenesComponent":
+        if any(not group for group in self.groups):
+            raise ValueError("key_genes groups must not be empty")
+        return self
 
 
 class KeyKmersComponent(BaseModel, frozen=True):
@@ -174,7 +188,13 @@ def check_rule_references(
                 ("gene", name) for name in (*rule.requires, *rule.requires_any, *rule.excludes)
             )
         case ClusterMatchRule():
-            referenced = (("gene", name) for name in rule.key_genes.genes)
+            referenced = (
+                ("gene", name)
+                for name in (
+                    *rule.key_genes.genes,
+                    *(gene for group in rule.key_genes.groups for gene in group),
+                )
+            )
         case LearnedLinearRule():
             referenced = (
                 (parse_feature_name(feature)[0], parse_feature_name(feature)[1])

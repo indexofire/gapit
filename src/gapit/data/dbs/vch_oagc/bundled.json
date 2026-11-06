@@ -1,0 +1,37 @@
+{
+  "name": "vch_oagc",
+  "description": "Vibrio cholerae O-antigen gene clusters (OAGC, 190 OL loci) + ompW control",
+  "vendor": "gapit(Hangzhou CDC)",
+  "dbtype": "nucl",
+  "kind": "cluster",
+  "snapshotted": "2026-11-06",
+  "license": "Public domain (INSDC; Murase 2022 BioProject PRJDB8600)",
+  "note": "V. cholerae O-antigen biosynthetic locus (OL) references from the Murase 2022 global O-serogroup genomic dissection (doi:10.1099/mgen.0.000860; INSDC LC594800-LC594991), with the N16961 ompW CDS as species control. Cluster snapshot of the Hangzhou CDC build; 190 OL loci + ompW. The panel reports locus-level matches (OL/O), not serologically verified serogroups; Inaba vs Ogawa and OLU (untypeable) loci are not resolved.",
+  "guidance": {
+    "references": [
+      {
+        "citation": "Murase K, Arakawa E, Izumiya H, Iguchi A, Takemura T, Kikuchi T, Nakagawa I, Thomson NR, Ohnishi M, Morita M. Genomic dissection of the Vibrio cholerae O-serogroup global reference strains: reassessing our view of diversity and plasticity between two chromosomes. Microb Genom 2022;8(8):mgen000860.",
+        "doi": "10.1099/mgen.0.000860",
+        "note": "Source of the O-antigen biosynthetic locus (OL) reference set; the combined GenBank file covers the O-serogroup reference strains, NCBI BioProject PRJDB8600 (LC594800-LC594991)."
+      },
+      {
+        "citation": "Nandi B, Nandy RK, Mukhopadhyay S, Nair GB, Shimada T, Ghose AC. Rapid method for species-specific identification of Vibrio cholerae using primers targeted to the gene of outer membrane protein OmpW. J Clin Microbiol 2000;38(11):4145-4151.",
+        "doi": "10.1128/JCM.38.11.4145-4151.2000",
+        "note": "ompW species-control marker; the control locus is the N16961 ompW CDS (NC_002506.1:819609-820262)."
+      }
+    ],
+    "caveats": [
+      "The OL reference set contains many clusters that have not been serologically verified. An OL/O call is a locus match, not a confirmed O serogroup; confirm with agglutination or a validated serotyping scheme.",
+      "OLU (untypeable/unassigned) loci are not yet included. An OUT call means no reference locus matched, not that the isolate is non-O1/non-O139; additional OLU references will be added from public databases.",
+      "OL1-Inaba and OL1-Ogawa both map to O1 in this build; the panel does not resolve Inaba vs Ogawa (wbeT phase variation) or other subserotypes.",
+      "O-antigen loci can recombine and assemblies can be partial. A weak or partial locus match should be confirmed; coverage/identity and the cluster evidence columns are part of the call.",
+      "ctxA/ctxB are deliberately absent from this database; they belong to the separate vch_vf panel.",
+      "ompW is a species-control marker, not an absolute species or serogroup determinant; interpret it with the isolate context.",
+      "Bundled snapshot of the Hangzhou CDC build from a combined GenBank file (INSDC LC594800-LC594991, BioProject PRJDB8600); sequences retain their INSDC provenance and the panel is not a serologically validated scheme."
+    ],
+    "usage": [
+      "gapit screen isolate.fa -d vch_oagc --format json",
+      "gapit screen isolate.fa -d vch_oagc --output vch_oagc.tsv"
+    ]
+  }
+}

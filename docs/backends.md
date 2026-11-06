@@ -75,7 +75,9 @@ per-locus coverage/identity/gene calls via minimap2 alignment; typing
 rules score over these:
 
 - `cluster_match`: weighted sum of coverage + identity + `key_genes` +
-  `key_kmers` components per locus
+  `key_kmers` components per locus. `key_genes.groups` optionally lists
+  mutually exclusive alternative gene sets (e.g. the near-identical O1
+  Inaba/Ogawa LPS loci); the best set present scores the component.
 
 **Best for**: polysaccharide biosynthesis loci (capsule, LPS, O-antigen),
 pathogenicity islands, any large variable region where gene content

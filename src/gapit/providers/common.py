@@ -94,6 +94,24 @@ class Provider:
     finalize: Callable[[Path, Path], None] | None = None
 
 
+def natural_key(text: str) -> tuple[object, ...]:
+    """Deterministic digit-aware sort key: ``t214`` sorts before ``t10303``.
+
+    Providers write their records sorted by gene name so builds are
+    reproducible; a plain lexical sort mis-orders digit-suffixed families
+    (spa type t214 vs t10303), which also changes BLAST's tie-breaking among
+    equal-scoring hits. Splitting digit runs makes the order numeric where
+    the name is numeric and lexical otherwise.
+    """
+    import re as _re
+
+    parts = _re.split(r"(\d+)", text)
+    key: list[object] = []
+    for part in parts:
+        key.append(int(part) if part.isdigit() else part)
+    return tuple(key)
+
+
 def security_note(message: str) -> None:
     """A trust-boundary warning that survives ``--quiet`` (stderr only)."""
     print(f"gapit: WARNING: {message}", file=sys.stderr)
@@ -275,7 +293,10 @@ def fetch_provider(
                 context={"db": provider.name},
             )
         validate_records(kept)
-        write_records(sorted(kept, key=lambda record: record.gene), build_dir / "records.jsonl")
+        write_records(
+            sorted(kept, key=lambda record: natural_key(record.gene)),
+            build_dir / "records.jsonl",
+        )
         return build_database(
             build_dir,
             name=provider.name,

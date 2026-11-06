@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.7.3] - 2026-11-06
+
+### Added
+
+- **`vch_oagc` bundled** — V. cholerae O-antigen gene clusters (190 OL
+  loci + `ompW` species control; Murase 2022, INSDC PRJDB8600). The
+  snapshot includes the Inaba/Ogawa O1 rule merge and reports a
+  locus-level O group, not a serologically confirmed serogroup.
+  `gapit db setup` now materializes thirteen bundled databases
+  (17.8 MiB), still fetch-free install-time ready. GPL-3.0 content
+  (`spn_sero`, `spy_emm`) remains fetch-on-demand.
+- **`staphscope` provider for `sau_spa`** — `gapit db fetch -d sau_spa`
+  rebuilds all 22,842 Ridom spa types from StaphScope's MIT-licensed
+  repeat table (`sparepeats.fasta` + `spatypes.txt`) plus the `tuf`
+  control. Nothing is bundled: the 19 MB Ridom reference set stays
+  download-on-demand under its academic-use terms.
+
+### Fixed
+
+- **Provider builds use digit-aware natural ordering** (`natural_key`):
+  `t214` now sorts before `t10303`. Nested spa types tie on BLAST
+  bitscore and `-culling_limit 1` keeps the first subject, so subject
+  order decides the call; fetched `sau_spa` now reproduces the validated
+  local build (N315 → t214, NCTC 8325 → t9139).
+- **Alternative `key_genes.groups` in `cluster_match` rules** —
+  mutually exclusive loci (O1 Inaba vs Ogawa) can declare alternative
+  key-gene sets; the best set present scores the component. `vch_oagc`
+  uses one O1 rule with two groups: both reference loci and N16961 now
+  call O1 confidently (previously the union-key merge scored 0.8998,
+  just under the 0.9 cutoff, and reported `OUT`).
+- `vch_oagc` caveats updated for the bundled snapshot (INSDC
+  provenance; the panel is not a serologically validated scheme).
+- `gapit --version` (and every result header) now reports the release
+  version: `gapit.__version__` was stuck at 0.6.8. A new test ties it to
+  `pyproject.toml` so the next release bump cannot drift again.
+
 ## [0.7.2] - 2026-11-06
 
 ### Added

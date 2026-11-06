@@ -103,3 +103,43 @@ class TestSerobaProvider:
         assert ">01" in text
         assert "alternative_aliB_NT" not in text
         assert "Swiss_NT" not in text
+
+
+class TestStaphscopeProvider:
+    def test_registered(self):
+        assert "sau_spa" in REGISTRY
+
+    def test_kind_is_gene(self):
+        assert REGISTRY["sau_spa"].kind == "gene"
+
+    def test_transform_builds_spa_type_sequences(self, tmp_path: Path):
+        """sparepeats.fasta + spatypes.txt → concatenated repeat arrays."""
+        from gapit.providers.staphscope import transform
+
+        (tmp_path / "sparepeats.fasta").write_text(
+            ">r01\n"
+            + "ACGT" * 6
+            + "\n"  # 24 bp
+            + ">r02\n"
+            + "TTTT" * 6
+            + "\n"
+            + ">r03\n"
+            + "GGGG" * 6
+            + "\n"
+        )
+        (tmp_path / "spatypes.txt").write_text("t001,01-02\nt002,01-02-03\nNT,-\n")
+        records = {r.gene: r for r in transform(tmp_path) if r.gene != "tuf"}
+        assert set(records) == {"t001", "t002"}
+        assert records["t001"].sequence == "ACGT" * 6 + "TTTT" * 6
+        assert records["t002"].sequence == "ACGT" * 6 + "TTTT" * 6 + "GGGG" * 6
+        assert records["t001"].db == "sau_spa"
+
+    def test_transform_numeric_order(self, tmp_path: Path):
+        """Records are emitted in numeric type order (t214 before t10303):
+        BLAST culling tie-breaking depends on subject order."""
+        from gapit.providers.staphscope import transform
+
+        (tmp_path / "sparepeats.fasta").write_text(">r01\n" + "ACGT" * 6 + "\n")
+        (tmp_path / "spatypes.txt").write_text("t10303,01\nt214,01\n")
+        genes = [r.gene for r in transform(tmp_path) if r.gene != "tuf"]
+        assert genes == ["t214", "t10303"]

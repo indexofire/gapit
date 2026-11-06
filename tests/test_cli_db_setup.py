@@ -61,7 +61,7 @@ def patch_synthetic_provider(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
 
 def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
     """Given the fixture, When db setup runs and then databases are listed,
-    Then exit 0, all twelve bundled databases materialize (one stderr note
+    Then exit 0, all thirteen bundled databases materialize (one stderr note
     each, alphabetical — vpa_ok/vpa_pai count loci) alongside tinyamr's
     Indexed line, and the listing carries all eight databases."""
     datadir = make_datadir(tmp_path)
@@ -80,13 +80,14 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
             ("sag_sero", "14 records"),
             ("shi_sero", "96 records"),
             ("str_lancefield", "29 records"),
+            ("vch_oagc", "191 loci"),
             ("vch_vf", "13 records"),
             ("vpa_ok", "195 loci"),
             ("vpa_pai", "10 loci"),
         )
     ]
-    assert stderr_lines[:12] == expected_materialize
-    assert stderr_lines[12:] == [
+    assert stderr_lines[:13] == expected_materialize
+    assert stderr_lines[13:] == [
         "gapit: indexed cje_cps (42 sequences, nucl)",
         "gapit: indexed eco_dec (16 sequences, nucl)",
         "gapit: indexed lmo_sero (5 sequences, nucl)",
@@ -97,6 +98,7 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
         "gapit: indexed shi_sero (96 sequences, nucl)",
         "gapit: indexed str_lancefield (29 sequences, nucl)",
         "gapit: indexed tinyamr (3 sequences, nucl)",
+        "gapit: indexed vch_oagc (191 sequences, nucl)",
         "gapit: indexed vch_vf (13 sequences, nucl)",
         "gapit: indexed vpa_ok (195 sequences, nucl)",
         "gapit: indexed vpa_pai (10 sequences, nucl)",
@@ -114,6 +116,7 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
         "shi_sero",
         "str_lancefield",
         "tinyamr",
+        "vch_oagc",
         "vch_vf",
         "vpa_ok",
         "vpa_pai",

@@ -74,7 +74,7 @@ nme_sero	脑膜炎奈瑟菌血清群 + ctrA + sodC 内参（非 MLST）	availabl
 plasmidfinder	CGE PlasmidFinder replicons	available	nucl	gene	-	DTU CGE
 resfinder	CGE ResFinder acquired resistance genes	available	nucl	gene	-	DTU CGE
 upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	gene	-	FordeGenomics
-vch_oagc	Vibrio cholerae O-antigen gene clusters (OAGC; 190 OL loci) + ompW species control	available	nucl	cluster	integrated	gapit(Hangzhou CDC)
+vch_oagc	Vibrio cholerae O-antigen gene clusters (OAGC; 190 OL loci) + ompW species control	bundled	nucl	cluster	integrated	gapit(Hangzhou CDC)
 vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	gene	-	USTC (VFDB)
 victors	Victors virulence factors	available	nucl	gene	-	University of Chicago
 vpa_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	cluster	integrated	gapit-curated (vpasero)
@@ -280,6 +280,7 @@ wheel 发布，因为它们的再分发条款和来源风险不应由 MIT 包承
 | `shi_sero` | 志贺菌分子血清型 marker 面板（95 条 ShigaTyper 公共领域标记，`ipaH_c` 拆成两段对照片段；首批保守规则） | 2026-11-02 | `gapit.serotype/1`（ShigaTyper marker 规则） |
 | `vch_vf` | 霍乱弧菌 CTX 核心/RS2 基因 + ctxB classical/El Tor + tcpA classical/El Tor/O139 标记（13 条记录） | 2026-11-02 | -（仅筛查） |
 | `vpa_pai` | 副溶血弧菌 VPaI-1..VPaI-10 致病岛（10 个 locus，cluster 类；RIMD 2210633 + AQ3810） | 2026-11-02 | -（仅筛查） |
+| `vch_oagc` | 霍乱弧菌 O 抗原基因簇（190 个 OL 位点 + ompW 内参；cluster 类；Murase 2022 PRJDB8600） | 2026-11-06 | `gapit.typing/2`（`o_group`、`species`） |
 | `vpa_ok` | 副溶血性弧菌 O/K 抗原位点（195 个位点，vpautils OAgc+CPSgc；cluster 类） | 2026-10-12 | `gapit.typing/2`（`o_group`、`k_group`、`serotype` 三方案） |
 | `lpn_sero` | 嗜肺军团菌血清群 1-15 LPS 位点（16 位点，Nakaue 2021；cluster 类） | 2026-11-06 | `gapit.typing/2`（`lps_serogroup`） |
 | `lpn_vf` | 嗜肺军团菌毒力因子蛋白（275，LegionProfiler；蛋白类） | 2026-11-06 | -（仅筛查） |
@@ -554,7 +555,7 @@ Kaptive 的 GPL-3.0）禁止随 MIT 许可的发行版再分发；即使是许�
 | `resfinder` | DTU CGE | CGE ResFinder acquired resistance genes | nucl |
 | `argannot` | IHU Méditerranée-Infection | ARG-ANNOT acquired resistance genes | nucl |
 | `nme_sero` | MDU-PHL | 脑膜炎奈瑟菌血清群 + ctrA + sodC 内参（非 MLST）；见 [nme_sero.zh.md](./nme_sero.zh.md) | nucl |
-| `vch_oagc` | gapit(Hangzhou CDC) | 霍乱弧菌 O 抗原基因簇（190 个 OL locus + ompW 内参；cluster，NCBI efetch） | nucl |
+| `vch_oagc` | gapit(Hangzhou CDC) | 霍乱弧菌 O 抗原基因簇（190 个 OL locus + ompW 内参；cluster，NCBI efetch；同一面板亦内置快照） | nucl |
 | `plasmidfinder` | DTU CGE | CGE PlasmidFinder replicons | nucl |
 | `megares` | MEG Lab | MEGARes antimicrobial resistance genes | nucl |
 | `ecoh` | Holt lab (srst2) | E. coli O and H antigens (srst2 EcOH) | nucl |

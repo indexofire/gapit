@@ -125,8 +125,9 @@ def screen_db(sample: Path, datadir: Path, name: str, *extra: str) -> Result:
 
 def test_bundled_discovery_finds_all_bundled() -> None:
     """Given the wheel's data dir, When bundled databases are discovered,
-    Then exactly the twelve gapit-curated bundles ship in name order — nine
-    gene-kind plus the vpa_ok/vpa_pai cluster-kind — each metadata parses
+    Then exactly the thirteen gapit-curated bundles ship in name order —
+    eight gene-kind plus the lpn_sero/pau_sero/vch_oagc/vpa_ok/vpa_pai
+    cluster-kind — each metadata parses
     (vendor/dbtype/kind/snapshot date), eco_dec/lmo_sero/cje_cps carry
     their typing documents, shi_sero is the first serotype prototype,
     vch_vf is the CTX/tcpA panel, and vpa_ok/vpa_pai carry cluster feature
@@ -141,6 +142,7 @@ def test_bundled_discovery_finds_all_bundled() -> None:
         "sag_sero",
         "shi_sero",
         "str_lancefield",
+        "vch_oagc",
         "vch_vf",
         "vpa_ok",
         "vpa_pai",
@@ -220,6 +222,7 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
         "sag_sero": 14,
         "shi_sero": 96,
         "str_lancefield": 29,
+        "vch_oagc": 191,
         "vch_vf": 13,
         "vpa_ok": VPA_OK_LOCI,
         "vpa_pai": 10,

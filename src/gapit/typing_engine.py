@@ -32,6 +32,7 @@ from gapit.typing_results import LocusEvidence, ScoreComponent, ScoredRule
 from gapit.typing_rules import (
     ClusterMatchRule,
     ExactSetRule,
+    KeyGenesComponent,
     LearnedLinearRule,
     WeightedGenesRule,
     parse_feature_name,
@@ -131,30 +132,46 @@ def _locus_evidence(locus: LocusCall) -> LocusEvidence:
     )
 
 
+def _key_gene_fraction(calls: dict[str, GeneCall], key_genes: KeyGenesComponent) -> float:
+    """Fraction of the best key-gene set present in this locus.
+
+    ``groups`` models mutually exclusive alternative loci (O1 Inaba vs
+    Ogawa): only the genes of the locus actually present can match, so the
+    union fraction would permanently cap the component at 1/len(groups).
+    Without groups the historical union fraction applies.
+    """
+
+    def fraction(ids: list[str]) -> float:
+        if not ids:
+            return 0.0
+        present = sum(
+            1
+            for gene_id in ids
+            if calls.get(gene_id) is not None and calls[gene_id].verdict == "present"
+        )
+        return present / len(ids)
+
+    if key_genes.groups:
+        return max(fraction(group) for group in key_genes.groups)
+    return fraction(key_genes.genes)
+
+
 def score_cluster_match(
     rule: ClusterMatchRule, report: ClusterReport
 ) -> tuple[float, tuple[ScoreComponent, ...], LocusEvidence | None]:
     """Best covered locus's weighted component sum (raw, not normalized):
     below-floor coverage or identity zeroes THAT locus's score; key genes
     are the fraction of the listed ids present inside the locus (an empty
-    list scores 0). Ties keep the earlier rank. The third element is the
-    winning locus's evidence (None when no locus cleared the floors) —
-    what the gapit.cluster/2 per-scheme columns surface."""
+    list scores 0), or the best alternative set when groups are declared.
+    Ties keep the earlier rank. The third element is the winning locus's
+    evidence (None when no locus cleared the floors) — what the
+    gapit.cluster/2 per-scheme columns surface."""
     winner: tuple[float, tuple[ScoreComponent, ...], LocusEvidence] | None = None
     for locus in report.loci:
         if locus.coverage_pct < rule.coverage.floor or locus.identity_pct < rule.identity.floor:
             continue
         calls = {call.gene_id: call for call in locus.genes}
-        key_fraction = (
-            sum(
-                1
-                for gene_id in rule.key_genes.genes
-                if calls.get(gene_id) is not None and calls[gene_id].verdict == "present"
-            )
-            / len(rule.key_genes.genes)
-            if rule.key_genes.genes
-            else 0.0
-        )
+        key_fraction = _key_gene_fraction(calls, rule.key_genes)
         coverage = locus.coverage_pct / 100.0
         identity = locus.identity_pct / 100.0
         components = (

@@ -1,6 +1,8 @@
 """Phase 0 smoke tests: package version and CLI entrypoint."""
 
 import json
+import tomllib
+from pathlib import Path
 
 from click.testing import CliRunner
 
@@ -13,6 +15,14 @@ runner = CliRunner()
 def test_version_is_semver() -> None:
     major, minor, patch = __version__.split(".")
     assert major.isdigit() and minor.isdigit() and patch.isdigit()
+
+
+def test_version_matches_pyproject() -> None:
+    """Given the source tree, When read, Then __version__ matches the
+    version pyproject.toml ships — release bumps cannot silently drift."""
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    document = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    assert document["project"]["version"] == __version__
 
 
 def test_cli_version_flag() -> None:

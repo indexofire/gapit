@@ -79,7 +79,7 @@ nme_sero	Neisseria meningitidis serogroup + ctrA + sodC control (non-MLST)	avail
 plasmidfinder	CGE PlasmidFinder replicons	available	nucl	gene	-	DTU CGE
 resfinder	CGE ResFinder acquired resistance genes	available	nucl	gene	-	DTU CGE
 upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	gene	-	FordeGenomics
-vch_oagc	Vibrio cholerae O-antigen gene clusters (OAGC; 190 OL loci) + ompW species control	available	nucl	cluster	integrated	gapit(Hangzhou CDC)
+vch_oagc	Vibrio cholerae O-antigen gene clusters (OAGC; 190 OL loci) + ompW species control	bundled	nucl	cluster	integrated	gapit(Hangzhou CDC)
 vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	gene	-	USTC (VFDB)
 victors	Victors virulence factors	available	nucl	gene	-	University of Chicago
 vpa_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	cluster	integrated	gapit-curated (vpasero)
@@ -285,7 +285,7 @@ wheel's notes without rebuilding anything.
 
 Most databases download from upstream at `db fetch` time because their licenses forbid
 redistribution (see [Providers](#providers)). A small set of **bundled** databases ships
-inside the gapit wheel instead — twelve gapit-curated databases whose content provenance
+inside the gapit wheel instead — thirteen gapit-curated databases whose content provenance
 was audited record-by-record (public-domain sources plus the MIT `vpa_ok` panel). The
 policy is stricter than "the license permits it": third-party provider snapshots
 (`ncbi`, `card`, `ecoh`, `resfinder`, ...) never ride the wheel, because their
@@ -300,6 +300,7 @@ Nothing to download, nothing to accept: a bundled database works out of the box.
 | `shi_sero` | Shigella molecular serotype marker panel (95 ShigaTyper public-domain markers, `ipaH_c` split into two control fragments; first conservative rules) | 2026-11-02 | `gapit.serotype/1` (ShigaTyper marker rules) |
 | `vch_vf` | V. cholerae CTX core/RS2 genes + ctxB classical/El Tor + tcpA classical/El Tor/O139 markers (13 records) | 2026-11-02 | - (screen-only) |
 | `vpa_pai` | V. parahaemolyticus VPaI-1..VPaI-10 pathogenicity islands (10 loci, cluster kind; RIMD 2210633 + AQ3810) | 2026-11-02 | - (screen-only) |
+| `vch_oagc` | V. cholerae O-antigen gene clusters (190 OL loci + ompW control; cluster kind; Murase 2022 PRJDB8600) | 2026-11-06 | `gapit.typing/2` (schemes `o_group`, `species`) |
 | `vpa_ok` | V. parahaemolyticus O and K antigen loci (195 loci, vpautils OAgc+CPSgc; cluster kind) | 2026-10-12 | `gapit.typing/2` (schemes `o_group`, `k_group`, `serotype`) |
 | `lpn_sero` | L. pneumophila serogroup 1-15 LPS loci (16 loci, Nakaue 2021; cluster kind) | 2026-11-06 | `gapit.typing/2` (scheme `lps_serogroup`) |
 | `lpn_vf` | L. pneumophila virulence-factor proteins (275, LegionProfiler; protein kind) | 2026-11-06 | - (screen-only) |
@@ -633,7 +634,9 @@ Cluster databases screen through the minimap2 cluster engine
 
 `vch_oagc` fetches the 190 O-antigen locus records of Murase et al. 2022 from NCBI
 (LC594800–LC594991 subset) as one efetch batch, appends a committed `ompW` control
-locus, and installs a committed `gapit.typing/2` asset (`o_group` + `species`). Many OL
+locus, and installs a committed `gapit.typing/2` asset (`o_group` + `species`). The
+same audited panel also ships as a bundled snapshot (`db setup`); `db fetch`
+rebuilds it from NCBI. Many OL
 clusters are not serologically verified; `OUT` means no reference locus matched, not
 non-O1/non-O139, and OLU loci are not in this build yet. `ctxA/ctxB` and the
 CTX/RS2/tcpA markers are in the separate bundled `vch_vf` panel, not this O-antigen
