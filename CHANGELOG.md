@@ -4,6 +4,19 @@
 
 ### Added
 
+- **Multi-backend typing architecture guide (`docs/backends.md` + `.zh.md`).**
+  A comprehensive bilingual guide covering the full system: gene vs cluster
+  database kinds, FASTA vs FASTQ input paths, BLAST/minimap2/k-mer
+  algorithm backends, how they combine (key_kmers differential sets,
+  k-mer containment), weight design for multi-path rules, and real-world
+  examples from seven validated serotyping databases. Linked from the
+  docs nav, `custom-db.md` and `.zh.md` updated with k-mer substrate and
+  FASTQ sections.
+
+## Also in Unreleased
+
+### Added
+
 - **FASTQ reads-mode for cluster databases (k-mer containment path).**
   `gapit screen --r1 reads.fastq -d <cluster_db>` now works when the
   database carries a `gapit.kmerdb/1` sidecar: query canonical k-mers

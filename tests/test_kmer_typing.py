@@ -109,6 +109,7 @@ class TestFastqKmerCounting:
         """The same sequence counted as FASTA and as simulated FASTQ
         produces the same canonical k-mer set."""
         import random
+
         rng = random.Random(7)
         seq = "".join(rng.choice("ACGT") for _ in range(3000))
         fa = tmp_path / "seq.fna"
@@ -118,7 +119,7 @@ class TestFastqKmerCounting:
         with fq.open("w") as fh:
             for j, read in enumerate(reads):
                 fh.write(f"@r{j}\n{read}\n+\n{'I' * len(read)}\n")
-        from gapit.kmerdb import count_fastq_kmers, count_fasta_kmers
+        from gapit.kmerdb import count_fasta_kmers, count_fastq_kmers
 
         fa_codes = count_fasta_kmers(fa, 31)
         fq_codes = count_fastq_kmers(fq, k=31)
@@ -156,6 +157,7 @@ class TestContainmentIdentity:
         to ~0.97 but the identity estimate stays above 98% — enough for
         family-level floors while key_kmers delivers the SNP call."""
         import random
+
         from gapit.kmerdb import containment_to_identity, count_sequence_kmers
 
         rng = random.Random(3)

@@ -417,6 +417,67 @@ and re-verify with `gapit db info`.
    `description` (+ `vendor`, `references`, `caveats`, `usage`): `db list` shows the
    one-liner, `db info` shows everything.
 
+## K-mer substrate (gapit.kmerdb/1)
+
+Cluster builds accept an optional `-K/--kmerdb PATH` installing a
+`gapit.kmerdb/1` JSON document declaring k-mer sets over the loci:
+
+```json
+{
+  "schema": "gapit.kmerdb/1",
+  "k": 31,
+  "sets": {
+    "typeX.diff": {"of": "typeX", "against": ["typeY", "typeZ"]}
+  }
+}
+```
+
+At build time gapit computes the full k-mer set of every locus and the
+differential set of every declaration (the `of` locus's k-mers minus the
+union of the `against` loci), storing them as sorted uint64 arrays under
+`kmers/`. Differential sets resolve SNP-level reference pairs that locus
+coverage/identity cannot separate — a single SNP moves the identity
+component by ~0.001 but flips the differential set from 1.0 to 0.0.
+
+### key_kmers in gapit.typing/3
+
+`cluster_match` rules in a `gapit.typing/3` document may carry a
+`key_kmers` component (alongside the existing `coverage`, `identity`, and
+`key_genes`):
+
+```json
+{
+  "model": "cluster_match",
+  "phenotype": "Serotype 6A",
+  "coverage":  {"weight": 0.45, "floor": 60},
+  "identity":  {"weight": 0.20, "floor": 90},
+  "key_genes": {"weight": 0.10, "genes": ["geneA"]},
+  "key_kmers": {"weight": 0.25, "k": 31, "set": "06A.diff"}
+}
+```
+
+The score adds `weight × fraction` where fraction is the proportion of the
+declared differential set present in the query. Rules without `key_kmers`
+behave identically to typing/2 (backward compatible).
+
+### FASTQ reads for cluster databases
+
+When a cluster database carries `kmer.json`, `gapit screen --r1` routes
+to the k-mer containment path (no minimap2, no assembly):
+
+```bash
+gapit screen -d my_sero --r1 reads_R1.fastq --r2 reads_R2.fastq
+```
+
+Per-locus coverage = k-mer containment, identity = containment^(1/k)
+(mash-style ANI estimate), and `key_kmers` resolves SNP-level pairs from
+raw reads. Rules relying on `key_genes` score 0 in this path (no gene
+calls without alignment) — design weights so `coverage + identity +
+key_kmers` alone can reach the cutoff.
+
+See [Multi-backend typing architecture](./backends.md) for the full
+picture of how alignment and k-mer backends combine.
+
 ## Troubleshooting
 
 | Symptom | Error (exit code) | Fix |

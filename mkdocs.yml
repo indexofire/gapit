@@ -94,6 +94,7 @@ nav:
       - Summarizing reports: summary.md
       - Outputs: outputs.md
       - Custom databases: custom-db.md
+      - Multi-backend architecture: backends.md
       - Typing schemes: typing.md
       - Meningococcal serogroup typing (nme_sero): nme_sero.md
   - Databases:

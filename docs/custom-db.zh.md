@@ -449,6 +449,61 @@ sequences.nto
    `description`（+ `vendor`/`references`/`caveats`/`usage`）——`db list` 只显示这一行，
    `db info` 显示全部细节。
 
+## k-mer 底座（gapit.kmerdb/1）
+
+cluster 构建接受可选的 `-K/--kmerdb PATH`，安装一份声明位点 k-mer 集
+的 `gapit.kmerdb/1` JSON 文档：
+
+```json
+{
+  "schema": "gapit.kmerdb/1",
+  "k": 31,
+  "sets": {
+    "typeX.diff": {"of": "typeX", "against": ["typeY", "typeZ"]}
+  }
+}
+```
+
+构建时 gapit 计算每位点的全 k-mer 集和每个声明的差异集（`of` 位点的
+k-mer 减去 `against` 位点并集），以排序 uint64 数组存储于 `kmers/`。
+差异集解决位点覆盖/同一性无法分离的 SNP 级参考对——单个 SNP 使同一性
+分量偏移 ~0.001，但使差异集从 1.0 翻转为 0.0。
+
+### gapit.typing/3 中的 key_kmers
+
+`gapit.typing/3` 文档中的 `cluster_match` 规则可携带 `key_kmers`
+分量（与现有 `coverage`、`identity`、`key_genes` 并列）：
+
+```json
+{
+  "model": "cluster_match",
+  "phenotype": "Serotype 6A",
+  "coverage":  {"weight": 0.45, "floor": 60},
+  "identity":  {"weight": 0.20, "floor": 90},
+  "key_genes": {"weight": 0.10, "genes": ["geneA"]},
+  "key_kmers": {"weight": 0.25, "k": 31, "set": "06A.diff"}
+}
+```
+
+得分增加 `weight × fraction`，其中 fraction 是查询中存在的差异集
+占比。无 `key_kmers` 的规则行为与 typing/2 完全一致（向后兼容）。
+
+### cluster 数据库的 FASTQ reads
+
+当 cluster 库携带 `kmer.json` 时，`gapit screen --r1` 路由到
+k-mer containment 路径（无 minimap2、免组装）：
+
+```bash
+gapit screen -d my_sero --r1 reads_R1.fastq --r2 reads_R2.fastq
+```
+
+每位点覆盖度 = k-mer containment、同一性 = containment^(1/k)
+（mash 式 ANI 估计）、`key_kmers` 从原始 reads 解析 SNP 级对。
+依赖 `key_genes` 的规则在此路径得 0 分（无比对无基因调用）——
+设计权重使 `coverage + identity + key_kmers` 单独可达 cutoff。
+
+完整的多后端组合架构见[多后端分型架构](./backends.zh.md)。
+
 ## 故障排查
 
 | 症状 | 错误（退出码） | 修复 |
