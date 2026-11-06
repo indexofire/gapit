@@ -129,12 +129,67 @@ def _verify_cluster(loci: Sequence[LocusSequence], sequences_path: Path) -> None
 _TABLE_CONTROL = "\t\r\n"
 
 
+def deduplicate_locus_genes(loci: Sequence[LocusSequence]) -> list[LocusSequence]:
+    """Auto-deduplicate gene IDs within each locus and duplicate locus IDs.
+
+    Gene level: Kaptive-style upstream databases routinely carry paralogous
+    gene names within a single locus (wzy appears twice in KL42; wza/wzb/wzc
+    repeat in many Kpsc_K loci). We make each duplicate unique with its start
+    coordinate: ``wzy@1234`` — deterministic, collision-free.
+
+    Locus level: some upstream databases reuse an accession for two different
+    loci (Kpsc_O has LT174602 twice at different lengths). We append ``_2``,
+    ``_3`` etc. to subsequent occurrences — deterministic and traceable.
+    """
+    from gapit.gbfeatures import GeneFeature
+
+    # Pass 1: locus-ID deduplication
+    seen_loci: set[str] = set()
+    locus_renamed: list[tuple[str, LocusSequence]] = []
+    for locus in loci:
+        locus_id = locus.features.id
+        if locus_id in seen_loci:
+            suffix = 2
+            while f"{locus_id}_{suffix}" in seen_loci:
+                suffix += 1
+            new_id = f"{locus_id}_{suffix}"
+            new_features = locus.features.model_copy(update={"id": new_id})
+            locus = locus.model_copy(update={"features": new_features})
+            locus_id = new_id
+        seen_loci.add(locus_id)
+        locus_renamed.append((locus_id, locus))
+
+    # Pass 2: gene-ID deduplication within each locus
+    resolved: list[LocusSequence] = []
+    for _, locus in locus_renamed:
+        genes = list(locus.features.genes)
+        counts: dict[str, int] = {}
+        for gene in genes:
+            counts[gene.gene_id] = counts.get(gene.gene_id, 0) + 1
+        if all(count == 1 for count in counts.values()):
+            resolved.append(locus)
+            continue
+        new_genes: list[GeneFeature] = []
+        for gene in genes:
+            if counts[gene.gene_id] == 1:
+                new_genes.append(gene)
+                continue
+            new_id = f"{gene.gene_id}@{gene.start}"
+            new_genes.append(gene.model_copy(update={"gene_id": new_id}))
+        new_features = locus.features.model_copy(update={"genes": tuple(new_genes)})
+        resolved.append(locus.model_copy(update={"features": new_features}))
+    return resolved
+
+
 def _validate_loci(loci: Sequence[LocusSequence]) -> None:
     """Reject invalid locus tables before any artifact write.
 
     Generated loci are keyed by id in features.json and by target name in the
     cluster engine, so duplicate ids would silently make two records share one
-    set of alignments and typing references.
+    set of alignments and typing references. Within-locus duplicate gene ids
+    are auto-deduplicated upstream (see ``deduplicate_locus_genes``) —
+    Kaptive databases routinely carry them; the validation here only catches
+    what the deduplication missed (should be impossible).
     """
     seen_ids: set[str] = set()
     for locus in loci:
@@ -212,6 +267,7 @@ def build_cluster_database(
             code="BUILD_INVALID",
             context={"db": name},
         )
+    loci = deduplicate_locus_genes(loci)
     _validate_loci(loci)
     sequences_path = db_dir / "sequences"
     _write_locus_fasta(loci, sequences_path)
