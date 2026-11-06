@@ -1,51 +1,6 @@
 # Changelog
 
-## [Unreleased]
-
-### Added
-
-- **Provider modules for GPL-3.0 databases (`spy_emm` + `spn_sero`).**
-  `gapit db fetch -d spy_emm` downloads the CDC emm database via emmtyper
-  (MDU-PHL, GPLv3) and builds a gene database with dual typing schemes;
-  `gapit db fetch -d spn_sero` downloads the SeroBA reference (Sanger,
-  GPLv3), pyrodigal-annotates it into a GFF3 via the new `ClusterProvider
-  preprocess` hook, and builds a cluster database with `gapit.typing/3`
-  key_kmers differential sets (k=31) — both FASTA and FASTQ paths validated.
-  New `preprocess` and `finalize` hooks on `ClusterProvider`; `_merged_loci`
-  scans the entire workdir (not just source_url basenames) for cluster-input
-  files. Committed wheel assets: `spy_emm_typing.json`, `spn_sero_typing.json`,
-  `spn_sero_kmer.json`, `tuf.fna`. pyrodigal added to dependencies.
-
-## Also in Unreleased
-
-### Added
-
-- **Multi-backend typing architecture guide (`docs/backends.md` + `.zh.md`).**
-  A comprehensive bilingual guide covering the full system: gene vs cluster
-  database kinds, FASTA vs FASTQ input paths, BLAST/minimap2/k-mer
-  algorithm backends, how they combine (key_kmers differential sets,
-  k-mer containment), weight design for multi-path rules, and real-world
-  examples from seven validated serotyping databases. Linked from the
-  docs nav, `custom-db.md` and `.zh.md` updated with k-mer substrate and
-  FASTQ sections.
-
-## Also in Unreleased
-
-### Added
-
-- **FASTQ reads-mode for cluster databases (k-mer containment path).**
-  `gapit screen --r1 reads.fastq -d <cluster_db>` now works when the
-  database carries a `gapit.kmerdb/1` sidecar: query canonical k-mers
-  are counted directly from reads (no assembly, no minimap2), per-locus
-  containment provides the coverage/identity evidence (mash-style ANI
-  estimate), and `key_kmers` differential sets deliver SNP-level calls.
-  Validated on S. pneumoniae: 8 simulated FASTQ serotype panels (4, 19A,
-  6A/6B, 9A/9V, 15B/15C) all resolve correctly — including the SNP pairs.
-  New `screening_kmer.py` module; `kmerdb.py` gains `count_fastq_kmers`,
-  `locus_containment`, `containment_to_identity`, and materializes
-  per-locus `.full.u64` k-mer sets alongside differential sets.
-
-- **`gapit.typing/3` `key_kmers` component + `gapit.kmerdb/1` k-mer substrate.**
+## [0.7.0] - 2026-11-06
 
 ### Added
 
@@ -58,19 +13,43 @@
   coverage/identity cannot separate (a single SNP moves identity by
   ~0.001) resolve as 1.0-vs-0.0 by the differential set. Validated on
   S. pneumoniae: 100 serotype references now resolve as 100 individual
-  serotypes (previously 20 SNP-level complexes); 7 unit tests in
+  serotypes (previously 20 SNP-level complexes). 12 unit tests in
   `test_kmer_typing.py`.
 
+- **FASTQ reads-mode for cluster databases (k-mer containment path).**
+  `gapit screen --r1 reads.fastq -d <cluster_db>` now works when the
+  database carries a `gapit.kmerdb/1` sidecar: query canonical k-mers
+  are counted directly from reads (no assembly, no minimap2), per-locus
+  containment provides the coverage/identity evidence (mash-style ANI
+  estimate), and `key_kmers` differential sets deliver SNP-level calls.
+  Validated on S. pneumoniae: 8 simulated FASTQ serotype panels all
+  resolve correctly — including the SNP pairs (6A/6B, 9A/9V, 15B/15C).
+  New `screening_kmer.py` module; `kmerdb.py` gains `count_fastq_kmers`,
+  `locus_containment`, `containment_to_identity`.
 
-### Added
+- **Provider modules for GPL-3.0 databases (`spy_emm` + `spn_sero`).**
+  `gapit db fetch -d spy_emm` downloads the CDC emm database via emmtyper
+  (MDU-PHL, GPLv3) and builds a gene database with dual typing schemes;
+  `gapit db fetch -d spn_sero` downloads the SeroBA reference (Sanger,
+  GPLv3), pyrodigal-annotates it into a GFF3 via the new `ClusterProvider
+  preprocess` hook, and builds a cluster database with `gapit.typing/3`
+  key_kmers (k=31) — both FASTA and FASTQ paths validated. New
+  `preprocess` and `finalize` hooks on `ClusterProvider`; `_merged_loci`
+  scans the entire workdir for cluster-input files. pyrodigal added to
+  dependencies.
 
-- **Custom-database provenance rules (docs).** `docs/custom-db.md`/`.zh.md` now
-  mandate a provenance and license metadata section for every `gapit db build`:
-  source citation + software version + accessions + build date in the manifest
-  `note`, the upstream `license` as declared, origin `source_urls`, an
-  author-objection contact clause when redistribution rights are unclear, and a
-  one-line `info.json` sidecar description so `db list` stays brief while
-  `db info` carries the detail. `AGENTS.md` enforces the same for agents.
+- **Multi-backend typing architecture guide (`docs/backends.md` + `.zh.md`).**
+  A bilingual guide covering gene vs cluster database kinds, FASTA vs
+  FASTQ input paths, BLAST/minimap2/k-mer algorithm backends, combination
+  patterns (key_kmers, containment), weight design, and real-world examples
+  from seven validated serotyping databases.
+
+- **Custom-database provenance rules (docs).** `docs/custom-db.md`/`.zh.md`
+  mandate a provenance and license metadata section for every
+  `gapit db build`: source citation + software version + accessions +
+  build date in the manifest `note`, the upstream `license` as declared,
+  origin `source_urls`, an author-objection contact clause, and a one-line
+  `info.json` sidecar description. `AGENTS.md` enforces the same for agents.
 
 ## [0.6.8] - 2026-11-03
 

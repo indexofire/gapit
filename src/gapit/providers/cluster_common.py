@@ -158,7 +158,7 @@ def _merged_loci(provider: ClusterProvider, workdir: Path) -> list[LocusSequence
     """Parse every cluster-input file in the workdir (declaration order).
     Source-url basenames first (preserving provider declaration order),
     then any additional .gff3/.gbk files a preprocess hook created."""
-    from gapit.clusterbuild import is_cluster_input, parse_cluster_input
+    from gapit.clusterbuild import is_cluster_input
 
     loci: list[LocusSequence] = []
     parsed_names: set[str] = set()
