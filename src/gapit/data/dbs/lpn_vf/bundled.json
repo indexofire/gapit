@@ -1,0 +1,27 @@
+{
+  "name": "lpn_vf",
+  "description": "L. pneumophila virulence factor proteins (LegionProfiler)",
+  "vendor": "LegionProfiler 2025 (MIT)",
+  "dbtype": "prot",
+  "kind": "gene",
+  "snapshotted": "2026-11-06",
+  "license": "MIT (LegionProfiler, Oluwafemi Sarumi, 2025)",
+  "note": "275 virulence-factor proteins of L. pneumophila (Philadelphia-1 UniProt entries) from LegionProfiler (Sarumi 2025, PMID 40726111; MIT). Source FASTA repaired: Q5ZZC1 header restored. Screen-only.",
+  "guidance": {
+    "references": [
+      {
+        "citation": "Sarumi OA, et al. LegionProfiler: a computational tool for the identification of virulence factors and classification of Legionella pneumophila serogroup 1 isolates. Bioinformatics 2025. PMID 40726111.",
+        "doi": "",
+        "url": "https://imigitlab.uni-muenster.de/heiderlab/legionprofiler"
+      }
+    ],
+    "caveats": [
+      "Panel is Philadelphia-1 (SG1)-derived: non-SG1 isolates systematically undercount",
+      "The Huber VF-count risk classifier is NOT included - screen, then post-process the count vs threshold 0.19 for SG1 isolates only",
+      "Source FASTA repaired: Q5ZZC1 header had lost '>' and was merged into Q5ZZD0"
+    ],
+    "usage": [
+      "gapit screen -d leg_vf *.fna"
+    ]
+  }
+}

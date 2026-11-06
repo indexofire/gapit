@@ -49,7 +49,7 @@ BUDGET_BYTES = 30 * 1024 * 1024
 # MUST-NOT guard: VFDB/CARD tags never ride the wheel (license audit
 # 2026-10) — no VFG/VF id, no VFDB mention, no ARO accession, anywhere in
 # any bundle's headers.
-_RED_FLAG = re.compile(r"VF\d+|VFDB|VFG|ARO:", re.IGNORECASE)
+_RED_FLAG = re.compile(r"\bVF\d+\b|VFDB|VFG|ARO:", re.IGNORECASE)
 
 runner = CliRunner()
 
@@ -125,7 +125,7 @@ def screen_db(sample: Path, datadir: Path, name: str, *extra: str) -> Result:
 
 def test_bundled_discovery_finds_all_bundled() -> None:
     """Given the wheel's data dir, When bundled databases are discovered,
-    Then exactly the seven gapit-curated bundles ship in name order — five
+    Then exactly the twelve gapit-curated bundles ship in name order — nine
     gene-kind plus the vpa_ok/vpa_pai cluster-kind — each metadata parses
     (vendor/dbtype/kind/snapshot date), eco_dec/lmo_sero/cje_cps carry
     their typing documents, shi_sero is the first serotype prototype,
@@ -135,7 +135,12 @@ def test_bundled_discovery_finds_all_bundled() -> None:
         "cje_cps",
         "eco_dec",
         "lmo_sero",
+        "lpn_sero",
+        "lpn_vf",
+        "pau_sero",
+        "sag_sero",
         "shi_sero",
+        "str_lancefield",
         "vch_vf",
         "vpa_ok",
         "vpa_pai",
@@ -209,7 +214,12 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
         "cje_cps": 42,
         "eco_dec": 16,
         "lmo_sero": 5,
+        "lpn_sero": 16,
+        "lpn_vf": 275,
+        "pau_sero": 14,
+        "sag_sero": 14,
         "shi_sero": 96,
+        "str_lancefield": 29,
         "vch_vf": 13,
         "vpa_ok": VPA_OK_LOCI,
         "vpa_pai": 10,

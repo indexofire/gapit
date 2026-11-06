@@ -58,6 +58,12 @@ PROVIDER = ClusterProvider(
             ),
         ),
         caveats=(
+            "Upstream GenBank files carry duplicate gene names within single loci"
+            " (paralogous wzy/wza/wzb/wzc, repeated manC/gnd, generic"
+            " 'hypothetical'); gapit auto-deduplicates them with an @start suffix"
+            " (e.g. wzy@1234) at build time — the original names remain searchable"
+            " as prefixes. Kpsc_O also reuses accession LT174602 for two different"
+            " loci; the second builds as LT174602_2.",
             "Only E. coli group 2 and group 3 capsules are covered; group 1 and group 4"
             " capsules have no locus here and fall back to the untypeable call.",
             "The K locus is not the O antigen and is not the pathotype: K typing answers"

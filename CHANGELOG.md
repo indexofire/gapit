@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.7.2] - 2026-11-06
+
+### Added
+
+- **Five more bundled databases** (license-clean, install-time ready):
+  `lpn_sero` (L. pneumophila LPS serogroup 1-15, cluster), `lpn_vf`
+  (LegionProfiler proteins, prot gene), `str_lancefield` (Streptococcus
+  Lancefield A/B/C/G + tuf), `sag_sero` (GBS serotypes + III subtypes,
+  GBS-SBG MIT), `pau_sero` (P. aeruginosa OSA serogroups + wzyB, pasty
+  Apache-2.0). Bundled root grows to 10.5 MiB (30 MiB budget).
+  GPL-3.0 content (`spn_sero`, `spy_emm`) stays fetch-on-demand.
+
+### Fixed
+
+- **Cluster builds auto-deduplicate gene and locus IDs** (Kaptive
+  upstream compatibility): paralogous gene names within a locus get an
+  `@start` suffix (`wzy@1234`); a reused locus accession gets `_2`.
+  All four previously-failing Kaptive databases (`ecoli_kps`, `kosc_k`,
+  `kpsc_k`, `kpsc_o`) now fetch successfully; the upstream defect is
+  documented in their `db info` caveats.
+- Bundled-header red-flag regex tightened with word boundaries
+  (`\bVF\d+\b`) so UniProt accessions like `Q5ZVF1` no longer trip it.
+
 ## [0.7.1] - 2026-11-06
 
 ### Added

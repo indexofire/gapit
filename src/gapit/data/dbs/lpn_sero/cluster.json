@@ -1,0 +1,4 @@
+{"schema":"gapit.cluster_profile/1","coverage_mode":"primary_secondary","fallback_evidence":true,
+ "min_gene_cov":50.0,"locus_typeable_coverage":50.0,"locus_typeable_identity":90.0,
+ "locus_quality_min_coverage":80.0,"locus_quality_min_identity":90.0,
+ "locus_quality_max_missing_genes":3,"locus_quality_max_extra_panel_genes":2}

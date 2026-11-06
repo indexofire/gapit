@@ -1,0 +1,193 @@
+{
+ "schema": "gapit.typing/2",
+ "schemes": [
+  {
+   "name": "lancefield",
+   "cutoff": 1.0,
+   "ambiguity_margin": 0.0,
+   "fallback": "non-groupable (no A/B/C/G antigen profile, non-streptococcal, or hybrid/novel locus variant)",
+   "control_gene": "tuf",
+   "rules": [
+    {
+     "model": "exact_set",
+     "phenotype": "Lancefield group A",
+     "requires": [
+      "gA1",
+      "gA2"
+     ],
+     "requires_any": [
+      "gA3",
+      "gA4"
+     ],
+     "excludes": [
+      "gB1",
+      "gB2",
+      "gB3",
+      "gB4",
+      "gC1",
+      "gC2",
+      "gC3",
+      "gC4",
+      "gG1",
+      "gG2",
+      "gG3",
+      "gG4",
+      "gC1",
+      "gC2",
+      "gC3",
+      "gC4",
+      "gC5",
+      "gC6",
+      "gC7",
+      "gC8"
+     ],
+     "identity_floor": 90.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "Group A markers, dual-strain paired alleles"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Lancefield group B",
+     "requires": [
+      "gB1",
+      "gB2"
+     ],
+     "requires_any": [
+      "gB3",
+      "gB4"
+     ],
+     "excludes": [
+      "gA1",
+      "gA2",
+      "gA3",
+      "gA4",
+      "gC1",
+      "gC2",
+      "gC3",
+      "gC4",
+      "gG1",
+      "gG2",
+      "gG3",
+      "gG4",
+      "gC1",
+      "gC2",
+      "gC3",
+      "gC4",
+      "gC5",
+      "gC6",
+      "gC7",
+      "gC8"
+     ],
+     "identity_floor": 90.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "Group B markers, dual-strain paired alleles"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Lancefield group C",
+     "requires": [
+      "gC1",
+      "gC2"
+     ],
+     "requires_any": [
+      "gC3",
+      "gC4"
+     ],
+     "excludes": [
+      "gA1",
+      "gA2",
+      "gA3",
+      "gA4",
+      "gB1",
+      "gB2",
+      "gB3",
+      "gB4",
+      "gG1",
+      "gG2",
+      "gG3",
+      "gG4"
+     ],
+     "identity_floor": 90.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "Group C variant (MGCS35922) markers"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Lancefield group C",
+     "requires": [
+      "gC5",
+      "gC6"
+     ],
+     "requires_any": [
+      "gC7",
+      "gC8"
+     ],
+     "excludes": [
+      "gA1",
+      "gA2",
+      "gA3",
+      "gA4",
+      "gB1",
+      "gB2",
+      "gB3",
+      "gB4",
+      "gG1",
+      "gG2",
+      "gG3",
+      "gG4"
+     ],
+     "identity_floor": 90.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "Group C variant (SEZ_H70) markers"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Lancefield group G",
+     "requires": [
+      "gG1",
+      "gG2"
+     ],
+     "requires_any": [
+      "gG3",
+      "gG4"
+     ],
+     "excludes": [
+      "gA1",
+      "gA2",
+      "gA3",
+      "gA4",
+      "gB1",
+      "gB2",
+      "gB3",
+      "gB4",
+      "gC1",
+      "gC2",
+      "gC3",
+      "gC4",
+      "gC1",
+      "gC2",
+      "gC3",
+      "gC4",
+      "gC5",
+      "gC6",
+      "gC7",
+      "gC8"
+     ],
+     "identity_floor": 90.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "Group G markers"
+     ]
+    }
+   ]
+  }
+ ]
+}

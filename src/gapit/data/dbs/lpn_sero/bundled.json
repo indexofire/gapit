@@ -1,0 +1,27 @@
+{
+  "name": "lpn_sero",
+  "description": "L. pneumophila serogroup 1-15 LPS locus typing (Nakaue 2021)",
+  "vendor": "Nakaue 2021 (INSDC/DDBJ)",
+  "dbtype": "nucl",
+  "kind": "cluster",
+  "snapshotted": "2026-11-06",
+  "license": "Public domain (INSDC/DDBJ sequences); paper copyright ASM, cited only",
+  "note": "16 LPS biosynthetic loci (lpg0745-lpg0779 span) of L. pneumophila serogroups 1-15 (Nakaue 2021, doi:10.1128/JCM.00157-21, INSDC accessions), plus Lens NC_006369 as a second SG1 reference; 13 cluster_match rules. SG3/15 and SG6/12 are sequence-identical complexes. Bundled snapshot of the local build; regenerated from the same INSDC sources.",
+  "guidance": {
+    "references": [
+      {
+        "citation": "Nakaue R, Qin T, Morita M, et al. Development of a Multiplex-PCR Serotyping Assay for Characterizing Legionella pneumophila Serogroups Based on the Diversity of Lipopolysaccharide Biosynthetic Loci. J Clin Microbiol 2021;59:e00157-21.",
+        "doi": "10.1128/JCM.00157-21",
+        "url": ""
+      }
+    ],
+    "caveats": [
+      "SG3/15 and SG6/12 are sequence-identical LPS complexes - reported as complexes, never resolved to single serogroups",
+      "130b-like strains (IS-disrupted LPS locus) fall below coverage floors and report untypeable with best-locus evidence",
+      "Assembly-contig input only (no FASTQ)"
+    ],
+    "usage": [
+      "gapit screen -d lpn_sero -C 60 -G 90 *.fna"
+    ]
+  }
+}

@@ -1,0 +1,337 @@
+{
+ "schema": "gapit.typing/2",
+ "schemes": [
+  {
+   "name": "lps_serogroup",
+   "cutoff": 0.75,
+   "ambiguity_margin": 0.05,
+   "fallback": "untypeable (novel/atypical LPS locus or non-pneumophila)",
+   "rules": [
+    {
+     "model": "cluster_match",
+     "phenotype": "SG1",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG1_023",
+       "SG1_029",
+       "SG1_028",
+       "SG1_031",
+       "SG1b_031",
+       "SG1b_030",
+       "SG1b_033",
+       "SG1b_023"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG1 LPS locus (lpg0745-lpg0779); multi-reference serogroup: references capture intra-serogroup LPS diversity (Philadelphia-1 + Lens); Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG10 (serogroup 10)",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG10_029",
+       "SG10_030",
+       "SG10_017",
+       "SG10_009"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG10 LPS locus (lpg0745-lpg0779); reference SG10; Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG11 (serogroup 11)",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG11_049",
+       "SG11_034",
+       "SG11_033",
+       "SG11_043"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG11 LPS locus (lpg0745-lpg0779); reference SG11; Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG13 (serogroup 13)",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG13_037",
+       "SG13_032",
+       "SG13_042",
+       "SG13_038"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG13 LPS locus (lpg0745-lpg0779); reference SG13; Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG14 (serogroup 14)",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG14_028",
+       "SG14_039",
+       "SG14_037",
+       "SG14_025"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG14 LPS locus (lpg0745-lpg0779); reference SG14; Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG2 (serogroup 2)",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG2_040",
+       "SG2_037",
+       "SG2_025",
+       "SG2_038"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG2 LPS locus (lpg0745-lpg0779); reference SG2; Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG3/15",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG15_026",
+       "SG15_046",
+       "SG15_032",
+       "SG15_027",
+       "SG3_026",
+       "SG3_045",
+       "SG3_032",
+       "SG3_027"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG3/15 LPS locus (lpg0745-lpg0779); serogroup complex: reference loci identical, inseparable by LPS sequence; Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG4 (serogroup 4)",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG4_025",
+       "SG4_038",
+       "SG4_034",
+       "SG4_033"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG4 LPS locus (lpg0745-lpg0779); reference SG4; Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG5 (serogroup 5)",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG5_022",
+       "SG5_034",
+       "SG5_014",
+       "SG5_044"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG5 LPS locus (lpg0745-lpg0779); reference SG5; Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG6/12",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG12_038",
+       "SG12_041",
+       "SG12_025",
+       "SG12_039",
+       "SG6_038",
+       "SG6_041",
+       "SG6_025",
+       "SG6_039"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG6/12 LPS locus (lpg0745-lpg0779); serogroup complex: reference loci identical, inseparable by LPS sequence; Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG7 (serogroup 7)",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG7_035",
+       "SG7_022",
+       "SG7_014",
+       "SG7_034"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG7 LPS locus (lpg0745-lpg0779); reference SG7; Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG8 (serogroup 8)",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG8_006",
+       "SG8_039",
+       "SG8_005",
+       "SG8_038"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG8 LPS locus (lpg0745-lpg0779); reference SG8; Nakaue 2021 JCM e00157-21"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "SG9 (serogroup 9)",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 60.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "SG9_016",
+       "SG9_033",
+       "SG9_025",
+       "SG9_015"
+      ]
+     },
+     "notes": [
+      "L. pneumophila SG9 LPS locus (lpg0745-lpg0779); reference SG9; Nakaue 2021 JCM e00157-21"
+     ]
+    }
+   ]
+  }
+ ]
+}

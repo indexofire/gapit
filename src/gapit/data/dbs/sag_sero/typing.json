@@ -1,0 +1,234 @@
+{
+ "schema": "gapit.typing/2",
+ "schemes": [
+  {
+   "name": "serotype",
+   "cutoff": 1.0,
+   "ambiguity_margin": 0.0,
+   "fallback": "non-typeable (non-encapsulated or non-GBS)",
+   "control_gene": "tuf",
+   "rules": [
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype Ia",
+     "requires": [],
+     "requires_any": [
+      "Ia"
+     ],
+     "excludes": [],
+     "identity_floor": 95.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "GBS capsular serotype Ia"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype Ib",
+     "requires": [],
+     "requires_any": [
+      "Ib"
+     ],
+     "excludes": [],
+     "identity_floor": 95.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "GBS capsular serotype Ib"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype II",
+     "requires": [],
+     "requires_any": [
+      "II"
+     ],
+     "excludes": [],
+     "identity_floor": 95.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "GBS capsular serotype II"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype III",
+     "requires": [],
+     "requires_any": [
+      "III_1",
+      "III_2",
+      "III_3",
+      "III_4"
+     ],
+     "excludes": [],
+     "identity_floor": 95.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "GBS capsular serotype III (subtypes I-IV merged; see serotype_III scheme)"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype IV",
+     "requires": [],
+     "requires_any": [
+      "IV"
+     ],
+     "excludes": [],
+     "identity_floor": 95.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "GBS capsular serotype IV"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype V",
+     "requires": [],
+     "requires_any": [
+      "V"
+     ],
+     "excludes": [],
+     "identity_floor": 95.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "GBS capsular serotype V"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype VI",
+     "requires": [],
+     "requires_any": [
+      "VI"
+     ],
+     "excludes": [],
+     "identity_floor": 95.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "GBS capsular serotype VI"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype VII",
+     "requires": [],
+     "requires_any": [
+      "VII"
+     ],
+     "excludes": [],
+     "identity_floor": 95.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "GBS capsular serotype VII"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype VIII",
+     "requires": [],
+     "requires_any": [
+      "VIII"
+     ],
+     "excludes": [],
+     "identity_floor": 95.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "GBS capsular serotype VIII"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype IX",
+     "requires": [],
+     "requires_any": [
+      "IX"
+     ],
+     "excludes": [],
+     "identity_floor": 95.0,
+     "coverage_floor": 90.0,
+     "notes": [
+      "GBS capsular serotype IX"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "serotype_iii",
+   "cutoff": 1.0,
+   "ambiguity_margin": 0.0,
+   "fallback": "not serotype III",
+   "control_gene": "tuf",
+   "rules": [
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype III subtype 1",
+     "requires": [
+      "III_1"
+     ],
+     "excludes": [
+      "III_2",
+      "III_3",
+      "III_4"
+     ],
+     "identity_floor": 99.3,
+     "coverage_floor": 95.0,
+     "notes": [
+      "III subtype III-1 (SNP-level; identity_floor 99.3%)"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype III subtype 2",
+     "requires": [
+      "III_2"
+     ],
+     "excludes": [
+      "III_1",
+      "III_3",
+      "III_4"
+     ],
+     "identity_floor": 99.3,
+     "coverage_floor": 95.0,
+     "notes": [
+      "III subtype III-2 (SNP-level; identity_floor 99.3%)"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype III subtype 3",
+     "requires": [
+      "III_3"
+     ],
+     "excludes": [
+      "III_1",
+      "III_2",
+      "III_4"
+     ],
+     "identity_floor": 99.3,
+     "coverage_floor": 95.0,
+     "notes": [
+      "III subtype III-3 (SNP-level; identity_floor 99.3%)"
+     ]
+    },
+    {
+     "model": "exact_set",
+     "phenotype": "Serotype III subtype 4",
+     "requires": [
+      "III_4"
+     ],
+     "excludes": [
+      "III_1",
+      "III_2",
+      "III_3"
+     ],
+     "identity_floor": 99.3,
+     "coverage_floor": 95.0,
+     "notes": [
+      "III subtype III-4 (SNP-level; identity_floor 99.3%)"
+     ]
+    }
+   ]
+  }
+ ]
+}

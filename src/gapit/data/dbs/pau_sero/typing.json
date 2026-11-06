@@ -1,0 +1,352 @@
+{
+ "schema": "gapit.typing/2",
+ "schemes": [
+  {
+   "name": "osa_serogroup",
+   "cutoff": 0.75,
+   "ambiguity_margin": 0.05,
+   "fallback": "non-typeable (novel/recombinant OSA or non-aeruginosa)",
+   "rules": [
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O1",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O1__009",
+       "O1__010",
+       "O1__004",
+       "O1__008"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O1"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O10",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O10__009",
+       "O10__010",
+       "O10__007",
+       "O10__005"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O10"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O11",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O11__006",
+       "O11__010",
+       "O11__004",
+       "O11__009"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O11"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O12",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O12__015",
+       "O12__013",
+       "O12__014",
+       "O12__006"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O12"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O13",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O13__008",
+       "O13__010",
+       "O13__007",
+       "O13__004"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O13"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O15",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O15__004",
+       "O15__007",
+       "O15__003",
+       "O15__005"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O15"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O17",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O17__008",
+       "O17__007",
+       "O17__017",
+       "O17__010"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O17"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O2",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O2__018",
+       "O2__015",
+       "O2__020",
+       "O2__008"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O2"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O3",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O3__008",
+       "O3__007",
+       "O3__013",
+       "O3__011"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O3"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O4",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O4__008",
+       "O4__010",
+       "O4__011",
+       "O4__006"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O4"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O6",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O6__006",
+       "O6__008",
+       "O6__011",
+       "O6__005"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O6"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O7",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O7__012",
+       "O7__015",
+       "O7__005",
+       "O7__004"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O7"
+     ]
+    },
+    {
+     "model": "cluster_match",
+     "phenotype": "Serogroup O9",
+     "coverage": {
+      "weight": 0.5,
+      "floor": 50.0
+     },
+     "identity": {
+      "weight": 0.25,
+      "floor": 85.0
+     },
+     "key_genes": {
+      "weight": 0.25,
+      "genes": [
+       "O9__014",
+       "O9__012",
+       "O9__006",
+       "O9__010"
+      ]
+     },
+     "notes": [
+      "P. aeruginosa OSA gene cluster O9"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "wzyb",
+   "cutoff": 0.75,
+   "ambiguity_margin": 0.05,
+   "fallback": "wzyB absent",
+   "rules": [
+    {
+     "model": "cluster_match",
+     "phenotype": "wzyB marker (B-band OSA present)",
+     "coverage": {
+      "weight": 0.6,
+      "floor": 90.0
+     },
+     "identity": {
+      "weight": 0.4,
+      "floor": 90.0
+     },
+     "key_genes": {
+      "weight": 0.0,
+      "genes": []
+     },
+     "notes": [
+      "wzyB presence indicates B-band OSA biosynthesis; co-occurs with O1 OSA in some strains (PAst reports as O1+wzyB)"
+     ]
+    }
+   ]
+  }
+ ]
+}

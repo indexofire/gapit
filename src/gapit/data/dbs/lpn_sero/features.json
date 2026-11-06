@@ -1,0 +1,5381 @@
+{
+  "schema": "gapit.features/1",
+  "loci": [
+    {
+      "id": "SG1",
+      "label": "SG1",
+      "type": "SG1",
+      "genes": [
+        {
+          "gene_id": "SG1_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_002",
+          "start": 1303,
+          "end": 1583,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_003",
+          "start": 2309,
+          "end": 3816,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_004",
+          "start": 3856,
+          "end": 4673,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_005",
+          "start": 4834,
+          "end": 6215,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_006",
+          "start": 6216,
+          "end": 6976,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_007",
+          "start": 6974,
+          "end": 7614,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_008",
+          "start": 7628,
+          "end": 8325,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_009",
+          "start": 8323,
+          "end": 9344,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_010",
+          "start": 9345,
+          "end": 10477,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_011",
+          "start": 10468,
+          "end": 11075,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_012",
+          "start": 11087,
+          "end": 12588,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_013",
+          "start": 12679,
+          "end": 13241,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_014",
+          "start": 13243,
+          "end": 14126,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_015",
+          "start": 14087,
+          "end": 15165,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_016",
+          "start": 15220,
+          "end": 16703,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_017",
+          "start": 16859,
+          "end": 17733,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_018",
+          "start": 17755,
+          "end": 18710,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_019",
+          "start": 18695,
+          "end": 19698,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_020",
+          "start": 19814,
+          "end": 20055,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_021",
+          "start": 20058,
+          "end": 20581,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_022",
+          "start": 20714,
+          "end": 21054,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_023",
+          "start": 21156,
+          "end": 22951,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_024",
+          "start": 22955,
+          "end": 24072,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_025",
+          "start": 24084,
+          "end": 25084,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_026",
+          "start": 25075,
+          "end": 26165,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_027",
+          "start": 26179,
+          "end": 26897,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_028",
+          "start": 27214,
+          "end": 28730,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_029",
+          "start": 28964,
+          "end": 30645,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_030",
+          "start": 30612,
+          "end": 31462,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_031",
+          "start": 31460,
+          "end": 32883,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_032",
+          "start": 32890,
+          "end": 34037,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_033",
+          "start": 34052,
+          "end": 34740,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_034",
+          "start": 35549,
+          "end": 35655,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_035",
+          "start": 35724,
+          "end": 36796,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_036",
+          "start": 36910,
+          "end": 37802,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1_037",
+          "start": 37797,
+          "end": 38815,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG10",
+      "label": "SG10",
+      "type": "SG10",
+      "genes": [
+        {
+          "gene_id": "SG10_001",
+          "start": 2,
+          "end": 768,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_002",
+          "start": 763,
+          "end": 1682,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_003",
+          "start": 1770,
+          "end": 2482,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_004",
+          "start": 2443,
+          "end": 3266,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_005",
+          "start": 3267,
+          "end": 4174,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_006",
+          "start": 4191,
+          "end": 4996,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_007",
+          "start": 5452,
+          "end": 6725,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_008",
+          "start": 6738,
+          "end": 7981,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_009",
+          "start": 8078,
+          "end": 9510,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_010",
+          "start": 9526,
+          "end": 10661,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_011",
+          "start": 10667,
+          "end": 11649,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_012",
+          "start": 11640,
+          "end": 12727,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_013",
+          "start": 12747,
+          "end": 13459,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_014",
+          "start": 13450,
+          "end": 14072,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_015",
+          "start": 14364,
+          "end": 15664,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_016",
+          "start": 16005,
+          "end": 16951,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_017",
+          "start": 16971,
+          "end": 18724,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_018",
+          "start": 19153,
+          "end": 20309,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_019",
+          "start": 20307,
+          "end": 21748,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_020",
+          "start": 21923,
+          "end": 22938,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_021",
+          "start": 22923,
+          "end": 23878,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_022",
+          "start": 23897,
+          "end": 24771,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_023",
+          "start": 24927,
+          "end": 26410,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_024",
+          "start": 26647,
+          "end": 27551,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_025",
+          "start": 27589,
+          "end": 28652,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_026",
+          "start": 28613,
+          "end": 29496,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_027",
+          "start": 29498,
+          "end": 30060,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_028",
+          "start": 30092,
+          "end": 31782,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_029",
+          "start": 31837,
+          "end": 33302,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_030",
+          "start": 33300,
+          "end": 34135,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_031",
+          "start": 34142,
+          "end": 35640,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_032",
+          "start": 35652,
+          "end": 36259,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_033",
+          "start": 36250,
+          "end": 37382,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_034",
+          "start": 37383,
+          "end": 38404,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_035",
+          "start": 38402,
+          "end": 39105,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_036",
+          "start": 39108,
+          "end": 39748,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_037",
+          "start": 39746,
+          "end": 40506,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_038",
+          "start": 40507,
+          "end": 41855,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_039",
+          "start": 42046,
+          "end": 42863,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_040",
+          "start": 42903,
+          "end": 44410,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_041",
+          "start": 45425,
+          "end": 45705,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG10_042",
+          "start": 45860,
+          "end": 46848,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG11",
+      "label": "SG11",
+      "type": "SG11",
+      "genes": [
+        {
+          "gene_id": "SG11_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_002",
+          "start": 1145,
+          "end": 1425,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_003",
+          "start": 2440,
+          "end": 3947,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_004",
+          "start": 3987,
+          "end": 4804,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_005",
+          "start": 4968,
+          "end": 5290,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_006",
+          "start": 5239,
+          "end": 5489,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_007",
+          "start": 5578,
+          "end": 6434,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_008",
+          "start": 6398,
+          "end": 6585,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_009",
+          "start": 6715,
+          "end": 6908,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_010",
+          "start": 6906,
+          "end": 7927,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_011",
+          "start": 7928,
+          "end": 9060,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_012",
+          "start": 9051,
+          "end": 9658,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_013",
+          "start": 9670,
+          "end": 11171,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_014",
+          "start": 11262,
+          "end": 11824,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_015",
+          "start": 11826,
+          "end": 12709,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_016",
+          "start": 12670,
+          "end": 13748,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_017",
+          "start": 13803,
+          "end": 15286,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_018",
+          "start": 15442,
+          "end": 16316,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_019",
+          "start": 16338,
+          "end": 17293,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_020",
+          "start": 17278,
+          "end": 18281,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_021",
+          "start": 18986,
+          "end": 19299,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_022",
+          "start": 19388,
+          "end": 20514,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_023",
+          "start": 20535,
+          "end": 21289,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_024",
+          "start": 21521,
+          "end": 22551,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_025",
+          "start": 22534,
+          "end": 23315,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_026",
+          "start": 23329,
+          "end": 24320,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_027",
+          "start": 24352,
+          "end": 25643,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_028",
+          "start": 25679,
+          "end": 26457,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_029",
+          "start": 26451,
+          "end": 27286,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_030",
+          "start": 27301,
+          "end": 28136,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_031",
+          "start": 28154,
+          "end": 28728,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_032",
+          "start": 28741,
+          "end": 29981,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_033",
+          "start": 29987,
+          "end": 31887,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_034",
+          "start": 31909,
+          "end": 33866,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_035",
+          "start": 34037,
+          "end": 34443,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_036",
+          "start": 34493,
+          "end": 34869,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_037",
+          "start": 35032,
+          "end": 35378,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_038",
+          "start": 35376,
+          "end": 35641,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_039",
+          "start": 35701,
+          "end": 35909,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_040",
+          "start": 35978,
+          "end": 37176,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_041",
+          "start": 37758,
+          "end": 37978,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_042",
+          "start": 37998,
+          "end": 38605,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_043",
+          "start": 38730,
+          "end": 40177,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_044",
+          "start": 40273,
+          "end": 40478,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_045",
+          "start": 40442,
+          "end": 41298,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_046",
+          "start": 41387,
+          "end": 41637,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_047",
+          "start": 41919,
+          "end": 42652,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_048",
+          "start": 42673,
+          "end": 43757,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_049",
+          "start": 43794,
+          "end": 46273,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_050",
+          "start": 46384,
+          "end": 47405,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_051",
+          "start": 47390,
+          "end": 47646,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_052",
+          "start": 47590,
+          "end": 47954,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_053",
+          "start": 47958,
+          "end": 48871,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_054",
+          "start": 48869,
+          "end": 50034,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_055",
+          "start": 50253,
+          "end": 51547,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_056",
+          "start": 51541,
+          "end": 52493,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_057",
+          "start": 52576,
+          "end": 53312,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_058",
+          "start": 53317,
+          "end": 54308,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_059",
+          "start": 54405,
+          "end": 54652,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_060",
+          "start": 54790,
+          "end": 55883,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_061",
+          "start": 56377,
+          "end": 57779,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_062",
+          "start": 57847,
+          "end": 58052,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_063",
+          "start": 58016,
+          "end": 58872,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_064",
+          "start": 58961,
+          "end": 59211,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_065",
+          "start": 59368,
+          "end": 59711,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_066",
+          "start": 59721,
+          "end": 60763,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_067",
+          "start": 60943,
+          "end": 61649,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG11_068",
+          "start": 61882,
+          "end": 62900,
+          "strand": "+",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG12",
+      "label": "SG12",
+      "type": "SG12",
+      "genes": [
+        {
+          "gene_id": "SG12_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_002",
+          "start": 1145,
+          "end": 1425,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_003",
+          "start": 1828,
+          "end": 3335,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_004",
+          "start": 3375,
+          "end": 4192,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_005",
+          "start": 4353,
+          "end": 5734,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_006",
+          "start": 5735,
+          "end": 6495,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_007",
+          "start": 6493,
+          "end": 7133,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_008",
+          "start": 7147,
+          "end": 7844,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_009",
+          "start": 7842,
+          "end": 8863,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_010",
+          "start": 8864,
+          "end": 9996,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_011",
+          "start": 9987,
+          "end": 10594,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_012",
+          "start": 10606,
+          "end": 12104,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_013",
+          "start": 12111,
+          "end": 12946,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_014",
+          "start": 12944,
+          "end": 14418,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_015",
+          "start": 14517,
+          "end": 16102,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_016",
+          "start": 16133,
+          "end": 16695,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_017",
+          "start": 16697,
+          "end": 17580,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_018",
+          "start": 17541,
+          "end": 18604,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_019",
+          "start": 18642,
+          "end": 19546,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_020",
+          "start": 19783,
+          "end": 21266,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_021",
+          "start": 21422,
+          "end": 22296,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_022",
+          "start": 22315,
+          "end": 23270,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_023",
+          "start": 23255,
+          "end": 24270,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_024",
+          "start": 24445,
+          "end": 25886,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_025",
+          "start": 25884,
+          "end": 27040,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_026",
+          "start": 27128,
+          "end": 27591,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_027",
+          "start": 27546,
+          "end": 28624,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_028",
+          "start": 28637,
+          "end": 29925,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_029",
+          "start": 29931,
+          "end": 30700,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_030",
+          "start": 30852,
+          "end": 31417,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_031",
+          "start": 31423,
+          "end": 32186,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_032",
+          "start": 32181,
+          "end": 32797,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_033",
+          "start": 32827,
+          "end": 33992,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_034",
+          "start": 34026,
+          "end": 34852,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_035",
+          "start": 34850,
+          "end": 36015,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_036",
+          "start": 36122,
+          "end": 37047,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_037",
+          "start": 37128,
+          "end": 38077,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_038",
+          "start": 38047,
+          "end": 39608,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_039",
+          "start": 39681,
+          "end": 40771,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_040",
+          "start": 41183,
+          "end": 42078,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_041",
+          "start": 42097,
+          "end": 43421,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_042",
+          "start": 43521,
+          "end": 44425,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG12_043",
+          "start": 44420,
+          "end": 45186,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG13",
+      "label": "SG13",
+      "type": "SG13",
+      "genes": [
+        {
+          "gene_id": "SG13_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_002",
+          "start": 1203,
+          "end": 2584,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_003",
+          "start": 2691,
+          "end": 4240,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_004",
+          "start": 4238,
+          "end": 5055,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_005",
+          "start": 5246,
+          "end": 6594,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_006",
+          "start": 6595,
+          "end": 7355,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_007",
+          "start": 7353,
+          "end": 7993,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_008",
+          "start": 7996,
+          "end": 8699,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_009",
+          "start": 8697,
+          "end": 9718,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_010",
+          "start": 9719,
+          "end": 10851,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_011",
+          "start": 10842,
+          "end": 11449,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_012",
+          "start": 11461,
+          "end": 12959,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_013",
+          "start": 12966,
+          "end": 13801,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_014",
+          "start": 13799,
+          "end": 15258,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_015",
+          "start": 15313,
+          "end": 17003,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_016",
+          "start": 17035,
+          "end": 17597,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_017",
+          "start": 17599,
+          "end": 18482,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_018",
+          "start": 18443,
+          "end": 19521,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_019",
+          "start": 19576,
+          "end": 21059,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_020",
+          "start": 21287,
+          "end": 22089,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_021",
+          "start": 22108,
+          "end": 23063,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_022",
+          "start": 23048,
+          "end": 24063,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_023",
+          "start": 24238,
+          "end": 25679,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_024",
+          "start": 25677,
+          "end": 26905,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_025",
+          "start": 27261,
+          "end": 29014,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_026",
+          "start": 29034,
+          "end": 29980,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_027",
+          "start": 30320,
+          "end": 31620,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_028",
+          "start": 31912,
+          "end": 32534,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_029",
+          "start": 32525,
+          "end": 33237,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_030",
+          "start": 33257,
+          "end": 34344,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_031",
+          "start": 34335,
+          "end": 35317,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_032",
+          "start": 35323,
+          "end": 36449,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_033",
+          "start": 36653,
+          "end": 38034,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_034",
+          "start": 38123,
+          "end": 39543,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_035",
+          "start": 39541,
+          "end": 40289,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_036",
+          "start": 40765,
+          "end": 41648,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_037",
+          "start": 41665,
+          "end": 43094,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_038",
+          "start": 43142,
+          "end": 44163,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_039",
+          "start": 44276,
+          "end": 44859,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_040",
+          "start": 44999,
+          "end": 45834,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_041",
+          "start": 46022,
+          "end": 46815,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_042",
+          "start": 46813,
+          "end": 47858,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_043",
+          "start": 47942,
+          "end": 48174,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_044",
+          "start": 49255,
+          "end": 50489,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_045",
+          "start": 50502,
+          "end": 51979,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_046",
+          "start": 52197,
+          "end": 53002,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_047",
+          "start": 53019,
+          "end": 53926,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_048",
+          "start": 53927,
+          "end": 54750,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_049",
+          "start": 54711,
+          "end": 55423,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_050",
+          "start": 55511,
+          "end": 56430,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG13_051",
+          "start": 56425,
+          "end": 57191,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG14",
+      "label": "SG14",
+      "type": "SG14",
+      "genes": [
+        {
+          "gene_id": "SG14_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_002",
+          "start": 1145,
+          "end": 1425,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_003",
+          "start": 2458,
+          "end": 3965,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_004",
+          "start": 4005,
+          "end": 4822,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_005",
+          "start": 5013,
+          "end": 6361,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_006",
+          "start": 6362,
+          "end": 7122,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_007",
+          "start": 7120,
+          "end": 7760,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_008",
+          "start": 7763,
+          "end": 8466,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_009",
+          "start": 8464,
+          "end": 9485,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_010",
+          "start": 9486,
+          "end": 10618,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_011",
+          "start": 10609,
+          "end": 11216,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_012",
+          "start": 11228,
+          "end": 12726,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_013",
+          "start": 12733,
+          "end": 13568,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_014",
+          "start": 13566,
+          "end": 15067,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_015",
+          "start": 15123,
+          "end": 16813,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_016",
+          "start": 16845,
+          "end": 17407,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_017",
+          "start": 17409,
+          "end": 18292,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_018",
+          "start": 18253,
+          "end": 19316,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_019",
+          "start": 19354,
+          "end": 20258,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_020",
+          "start": 20495,
+          "end": 21978,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_021",
+          "start": 22134,
+          "end": 23008,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_022",
+          "start": 23027,
+          "end": 23982,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_023",
+          "start": 23967,
+          "end": 24982,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_024",
+          "start": 25157,
+          "end": 26598,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_025",
+          "start": 26596,
+          "end": 27089,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_026",
+          "start": 28178,
+          "end": 28476,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_027",
+          "start": 28483,
+          "end": 28637,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_028",
+          "start": 28900,
+          "end": 29921,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_029",
+          "start": 29942,
+          "end": 30888,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_030",
+          "start": 31229,
+          "end": 32529,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_031",
+          "start": 32710,
+          "end": 33443,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_032",
+          "start": 33434,
+          "end": 34146,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_033",
+          "start": 34166,
+          "end": 35253,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_034",
+          "start": 35244,
+          "end": 36226,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_035",
+          "start": 36232,
+          "end": 37367,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_036",
+          "start": 37389,
+          "end": 38821,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_037",
+          "start": 38907,
+          "end": 39406,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_038",
+          "start": 39676,
+          "end": 39938,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_039",
+          "start": 40485,
+          "end": 41161,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_040",
+          "start": 41878,
+          "end": 42683,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_041",
+          "start": 42700,
+          "end": 43607,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_042",
+          "start": 43608,
+          "end": 44431,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_043",
+          "start": 44392,
+          "end": 45104,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_044",
+          "start": 45177,
+          "end": 46105,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG14_045",
+          "start": 46100,
+          "end": 46866,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG15",
+      "label": "SG15",
+      "type": "SG15",
+      "genes": [
+        {
+          "gene_id": "SG15_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_002",
+          "start": 1303,
+          "end": 1583,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_003",
+          "start": 2306,
+          "end": 3813,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_004",
+          "start": 3853,
+          "end": 4670,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_005",
+          "start": 4831,
+          "end": 6212,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_006",
+          "start": 6213,
+          "end": 6973,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_007",
+          "start": 6971,
+          "end": 7611,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_008",
+          "start": 7625,
+          "end": 8322,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_009",
+          "start": 8320,
+          "end": 9341,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_010",
+          "start": 9342,
+          "end": 10474,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_011",
+          "start": 10465,
+          "end": 11072,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_012",
+          "start": 11084,
+          "end": 12582,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_013",
+          "start": 12589,
+          "end": 13424,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_014",
+          "start": 13422,
+          "end": 14881,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_015",
+          "start": 14985,
+          "end": 16570,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_016",
+          "start": 16602,
+          "end": 17164,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_017",
+          "start": 17166,
+          "end": 18049,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_018",
+          "start": 18010,
+          "end": 19073,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_019",
+          "start": 19111,
+          "end": 20015,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_020",
+          "start": 20252,
+          "end": 21735,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_021",
+          "start": 21891,
+          "end": 22765,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_022",
+          "start": 22784,
+          "end": 23739,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_023",
+          "start": 23724,
+          "end": 24760,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_024",
+          "start": 25215,
+          "end": 26188,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_025",
+          "start": 26603,
+          "end": 27666,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_026",
+          "start": 27750,
+          "end": 29911,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_027",
+          "start": 29977,
+          "end": 31043,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_028",
+          "start": 31041,
+          "end": 32014,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_029",
+          "start": 31981,
+          "end": 32951,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_030",
+          "start": 32939,
+          "end": 33327,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_031",
+          "start": 33447,
+          "end": 34888,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_032",
+          "start": 34886,
+          "end": 36048,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_033",
+          "start": 36136,
+          "end": 36593,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_034",
+          "start": 36548,
+          "end": 37626,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_035",
+          "start": 37638,
+          "end": 38926,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_036",
+          "start": 38932,
+          "end": 39701,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_037",
+          "start": 39854,
+          "end": 40401,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_038",
+          "start": 40407,
+          "end": 41170,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_039",
+          "start": 41165,
+          "end": 41781,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_040",
+          "start": 41811,
+          "end": 42976,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_041",
+          "start": 43010,
+          "end": 43836,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_042",
+          "start": 43834,
+          "end": 44999,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_043",
+          "start": 45016,
+          "end": 45818,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_044",
+          "start": 45828,
+          "end": 46030,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_045",
+          "start": 46111,
+          "end": 47042,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_046",
+          "start": 47030,
+          "end": 48621,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_047",
+          "start": 48693,
+          "end": 49747,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_048",
+          "start": 49906,
+          "end": 51374,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_049",
+          "start": 51391,
+          "end": 52709,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_050",
+          "start": 52707,
+          "end": 53581,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_051",
+          "start": 53723,
+          "end": 54705,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_052",
+          "start": 54940,
+          "end": 56423,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_053",
+          "start": 56428,
+          "end": 57476,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_054",
+          "start": 57608,
+          "end": 58506,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG15_055",
+          "start": 58501,
+          "end": 59267,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG1b",
+      "label": "SG1b",
+      "type": "SG1b",
+      "genes": [
+        {
+          "gene_id": "SG1b_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_002",
+          "start": 1145,
+          "end": 1425,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_003",
+          "start": 1834,
+          "end": 3341,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_004",
+          "start": 3381,
+          "end": 4198,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_005",
+          "start": 4359,
+          "end": 5740,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_006",
+          "start": 5741,
+          "end": 6501,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_007",
+          "start": 6499,
+          "end": 7139,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_008",
+          "start": 7153,
+          "end": 7850,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_009",
+          "start": 7848,
+          "end": 8869,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_010",
+          "start": 8870,
+          "end": 10002,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_011",
+          "start": 9993,
+          "end": 10600,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_012",
+          "start": 10612,
+          "end": 12113,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_013",
+          "start": 12204,
+          "end": 12766,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_014",
+          "start": 12768,
+          "end": 13651,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_015",
+          "start": 13612,
+          "end": 14690,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_016",
+          "start": 14745,
+          "end": 16228,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_017",
+          "start": 16384,
+          "end": 17258,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_018",
+          "start": 17280,
+          "end": 18235,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_019",
+          "start": 18220,
+          "end": 19220,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_020",
+          "start": 19239,
+          "end": 20083,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_021",
+          "start": 20283,
+          "end": 21310,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_022",
+          "start": 21308,
+          "end": 21444,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_023",
+          "start": 21637,
+          "end": 22919,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_024",
+          "start": 22954,
+          "end": 23981,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_025",
+          "start": 24575,
+          "end": 24711,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_026",
+          "start": 24872,
+          "end": 25998,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_027",
+          "start": 26010,
+          "end": 27010,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_028",
+          "start": 27001,
+          "end": 28091,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_029",
+          "start": 28105,
+          "end": 28823,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_030",
+          "start": 29026,
+          "end": 30545,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_031",
+          "start": 30882,
+          "end": 32563,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_032",
+          "start": 32530,
+          "end": 33380,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_033",
+          "start": 33378,
+          "end": 34801,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_034",
+          "start": 34808,
+          "end": 35964,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_035",
+          "start": 36088,
+          "end": 37160,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_036",
+          "start": 37330,
+          "end": 38222,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG1b_037",
+          "start": 38217,
+          "end": 39235,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG2",
+      "label": "SG2",
+      "type": "SG2",
+      "genes": [
+        {
+          "gene_id": "SG2_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_002",
+          "start": 1145,
+          "end": 1425,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_003",
+          "start": 2440,
+          "end": 3947,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_004",
+          "start": 3987,
+          "end": 4804,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_005",
+          "start": 4995,
+          "end": 6343,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_006",
+          "start": 6344,
+          "end": 7104,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_007",
+          "start": 7102,
+          "end": 7742,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_008",
+          "start": 7745,
+          "end": 8448,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_009",
+          "start": 8446,
+          "end": 9467,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_010",
+          "start": 9468,
+          "end": 10600,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_011",
+          "start": 10591,
+          "end": 11198,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_012",
+          "start": 11210,
+          "end": 12708,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_013",
+          "start": 12715,
+          "end": 13550,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_014",
+          "start": 13548,
+          "end": 15022,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_015",
+          "start": 15121,
+          "end": 16706,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_016",
+          "start": 16737,
+          "end": 17299,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_017",
+          "start": 17301,
+          "end": 18184,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_018",
+          "start": 18145,
+          "end": 19208,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_019",
+          "start": 19246,
+          "end": 20150,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_020",
+          "start": 20387,
+          "end": 21870,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_021",
+          "start": 22013,
+          "end": 22887,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_022",
+          "start": 22906,
+          "end": 23861,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_023",
+          "start": 23846,
+          "end": 24861,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_024",
+          "start": 25017,
+          "end": 26458,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_025",
+          "start": 26456,
+          "end": 27612,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_026",
+          "start": 27703,
+          "end": 28166,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_027",
+          "start": 28121,
+          "end": 29199,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_028",
+          "start": 29211,
+          "end": 30499,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_029",
+          "start": 30493,
+          "end": 31274,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_030",
+          "start": 31429,
+          "end": 31976,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_031",
+          "start": 31982,
+          "end": 32745,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_032",
+          "start": 32740,
+          "end": 33356,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_033",
+          "start": 33386,
+          "end": 34551,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_034",
+          "start": 34585,
+          "end": 35411,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_035",
+          "start": 35409,
+          "end": 36574,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_036",
+          "start": 36591,
+          "end": 37606,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_037",
+          "start": 37772,
+          "end": 39162,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_038",
+          "start": 39267,
+          "end": 40291,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_039",
+          "start": 40351,
+          "end": 41315,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_040",
+          "start": 41273,
+          "end": 42852,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_041",
+          "start": 42924,
+          "end": 43978,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_042",
+          "start": 44137,
+          "end": 45605,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_043",
+          "start": 45622,
+          "end": 46940,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_044",
+          "start": 46938,
+          "end": 47812,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_045",
+          "start": 47961,
+          "end": 48943,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_046",
+          "start": 49123,
+          "end": 50663,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_047",
+          "start": 50668,
+          "end": 51716,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_048",
+          "start": 51849,
+          "end": 52747,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG2_049",
+          "start": 52742,
+          "end": 53508,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG3",
+      "label": "SG3",
+      "type": "SG3",
+      "genes": [
+        {
+          "gene_id": "SG3_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_002",
+          "start": 1303,
+          "end": 1583,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_003",
+          "start": 2306,
+          "end": 3813,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_004",
+          "start": 3853,
+          "end": 4670,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_005",
+          "start": 4831,
+          "end": 6212,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_006",
+          "start": 6213,
+          "end": 6973,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_007",
+          "start": 6971,
+          "end": 7611,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_008",
+          "start": 7625,
+          "end": 8322,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_009",
+          "start": 8320,
+          "end": 9341,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_010",
+          "start": 9342,
+          "end": 10474,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_011",
+          "start": 10465,
+          "end": 11072,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_012",
+          "start": 11084,
+          "end": 12582,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_013",
+          "start": 12589,
+          "end": 13424,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_014",
+          "start": 13422,
+          "end": 14881,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_015",
+          "start": 14985,
+          "end": 16570,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_016",
+          "start": 16602,
+          "end": 17164,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_017",
+          "start": 17166,
+          "end": 18049,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_018",
+          "start": 18010,
+          "end": 19073,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_019",
+          "start": 19111,
+          "end": 20015,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_020",
+          "start": 20252,
+          "end": 21735,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_021",
+          "start": 21891,
+          "end": 22765,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_022",
+          "start": 22784,
+          "end": 23739,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_023",
+          "start": 23724,
+          "end": 24760,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_024",
+          "start": 25215,
+          "end": 26188,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_025",
+          "start": 26603,
+          "end": 27666,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_026",
+          "start": 27750,
+          "end": 29911,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_027",
+          "start": 29977,
+          "end": 31043,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_028",
+          "start": 31041,
+          "end": 32014,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_029",
+          "start": 31981,
+          "end": 32951,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_030",
+          "start": 32939,
+          "end": 33327,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_031",
+          "start": 33447,
+          "end": 34888,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_032",
+          "start": 34886,
+          "end": 36048,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_033",
+          "start": 36136,
+          "end": 36593,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_034",
+          "start": 36548,
+          "end": 37626,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_035",
+          "start": 37638,
+          "end": 38926,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_036",
+          "start": 38932,
+          "end": 39701,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_037",
+          "start": 39854,
+          "end": 40401,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_038",
+          "start": 40407,
+          "end": 41170,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_039",
+          "start": 41165,
+          "end": 41781,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_040",
+          "start": 41811,
+          "end": 42976,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_041",
+          "start": 43010,
+          "end": 43836,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_042",
+          "start": 43834,
+          "end": 44999,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_043",
+          "start": 45016,
+          "end": 46031,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_044",
+          "start": 46112,
+          "end": 47043,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_045",
+          "start": 47031,
+          "end": 48622,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_046",
+          "start": 48694,
+          "end": 49748,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_047",
+          "start": 49907,
+          "end": 51375,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_048",
+          "start": 51392,
+          "end": 52710,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_049",
+          "start": 52708,
+          "end": 53582,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_050",
+          "start": 53724,
+          "end": 54706,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_051",
+          "start": 54941,
+          "end": 56424,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_052",
+          "start": 56429,
+          "end": 57477,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_053",
+          "start": 57609,
+          "end": 58507,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG3_054",
+          "start": 58502,
+          "end": 59268,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG4",
+      "label": "SG4",
+      "type": "SG4",
+      "genes": [
+        {
+          "gene_id": "SG4_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_002",
+          "start": 1145,
+          "end": 1425,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_003",
+          "start": 2440,
+          "end": 3947,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_004",
+          "start": 3987,
+          "end": 4804,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_005",
+          "start": 4995,
+          "end": 6343,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_006",
+          "start": 6344,
+          "end": 7104,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_007",
+          "start": 7102,
+          "end": 7742,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_008",
+          "start": 7745,
+          "end": 8448,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_009",
+          "start": 8446,
+          "end": 9467,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_010",
+          "start": 9468,
+          "end": 10600,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_011",
+          "start": 10591,
+          "end": 11198,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_012",
+          "start": 11210,
+          "end": 12708,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_013",
+          "start": 12715,
+          "end": 13550,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_014",
+          "start": 13548,
+          "end": 15013,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_015",
+          "start": 15069,
+          "end": 16750,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_016",
+          "start": 16782,
+          "end": 17344,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_017",
+          "start": 17346,
+          "end": 18226,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_018",
+          "start": 18187,
+          "end": 19265,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_019",
+          "start": 19305,
+          "end": 20803,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_020",
+          "start": 20959,
+          "end": 21833,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_021",
+          "start": 21852,
+          "end": 22807,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_022",
+          "start": 22792,
+          "end": 23813,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_023",
+          "start": 23992,
+          "end": 25433,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_024",
+          "start": 25431,
+          "end": 26587,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_025",
+          "start": 27042,
+          "end": 28711,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_026",
+          "start": 28732,
+          "end": 29678,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_027",
+          "start": 29669,
+          "end": 29802,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_028",
+          "start": 30013,
+          "end": 31313,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_029",
+          "start": 31461,
+          "end": 32194,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_030",
+          "start": 32185,
+          "end": 32897,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_031",
+          "start": 32917,
+          "end": 34004,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_032",
+          "start": 33995,
+          "end": 34977,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_033",
+          "start": 34983,
+          "end": 36106,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_034",
+          "start": 36171,
+          "end": 37642,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_035",
+          "start": 37636,
+          "end": 38528,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_036",
+          "start": 38812,
+          "end": 39863,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_037",
+          "start": 40280,
+          "end": 41391,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_038",
+          "start": 41401,
+          "end": 42890,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_039",
+          "start": 43011,
+          "end": 44281,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_040",
+          "start": 44294,
+          "end": 45771,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_041",
+          "start": 46025,
+          "end": 46830,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_042",
+          "start": 46845,
+          "end": 47752,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_043",
+          "start": 47753,
+          "end": 48576,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_044",
+          "start": 48537,
+          "end": 49249,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_045",
+          "start": 49337,
+          "end": 50256,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG4_046",
+          "start": 50251,
+          "end": 51017,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG5",
+      "label": "SG5",
+      "type": "SG5",
+      "genes": [
+        {
+          "gene_id": "SG5_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_002",
+          "start": 1098,
+          "end": 2605,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_003",
+          "start": 2645,
+          "end": 3447,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_004",
+          "start": 3462,
+          "end": 5005,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_005",
+          "start": 5006,
+          "end": 5766,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_006",
+          "start": 5764,
+          "end": 6404,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_007",
+          "start": 6416,
+          "end": 7113,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_008",
+          "start": 7111,
+          "end": 8132,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_009",
+          "start": 8133,
+          "end": 9265,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_010",
+          "start": 9256,
+          "end": 9863,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_011",
+          "start": 9875,
+          "end": 11373,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_012",
+          "start": 11380,
+          "end": 12215,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_013",
+          "start": 12213,
+          "end": 13693,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_014",
+          "start": 13776,
+          "end": 15328,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_015",
+          "start": 15361,
+          "end": 15923,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_016",
+          "start": 15925,
+          "end": 16808,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_017",
+          "start": 16769,
+          "end": 17847,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_018",
+          "start": 17902,
+          "end": 19385,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_019",
+          "start": 19541,
+          "end": 20415,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_020",
+          "start": 20434,
+          "end": 21389,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_021",
+          "start": 21374,
+          "end": 22389,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_022",
+          "start": 22497,
+          "end": 24124,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_023",
+          "start": 24145,
+          "end": 25091,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_024",
+          "start": 25128,
+          "end": 26428,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_025",
+          "start": 26478,
+          "end": 27121,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_026",
+          "start": 27209,
+          "end": 27882,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_027",
+          "start": 27889,
+          "end": 28895,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_028",
+          "start": 28883,
+          "end": 29931,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_029",
+          "start": 29929,
+          "end": 30386,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_030",
+          "start": 30400,
+          "end": 31040,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_031",
+          "start": 31094,
+          "end": 31764,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_032",
+          "start": 31741,
+          "end": 32360,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_033",
+          "start": 32365,
+          "end": 33050,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_034",
+          "start": 33120,
+          "end": 34741,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_035",
+          "start": 34732,
+          "end": 35657,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_036",
+          "start": 35683,
+          "end": 36689,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_037",
+          "start": 36683,
+          "end": 37881,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_038",
+          "start": 38141,
+          "end": 39441,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_039",
+          "start": 39643,
+          "end": 40376,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_040",
+          "start": 40367,
+          "end": 41079,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_041",
+          "start": 41099,
+          "end": 42186,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_042",
+          "start": 42177,
+          "end": 43159,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_043",
+          "start": 43165,
+          "end": 44300,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_044",
+          "start": 44314,
+          "end": 45746,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_045",
+          "start": 45850,
+          "end": 47027,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_046",
+          "start": 47106,
+          "end": 48379,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_047",
+          "start": 48685,
+          "end": 49490,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_048",
+          "start": 49502,
+          "end": 50409,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_049",
+          "start": 50410,
+          "end": 51233,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_050",
+          "start": 51194,
+          "end": 51906,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_051",
+          "start": 51986,
+          "end": 52905,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG5_052",
+          "start": 52900,
+          "end": 53666,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG6",
+      "label": "SG6",
+      "type": "SG6",
+      "genes": [
+        {
+          "gene_id": "SG6_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_002",
+          "start": 1145,
+          "end": 1425,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_003",
+          "start": 1828,
+          "end": 3335,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_004",
+          "start": 3375,
+          "end": 4192,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_005",
+          "start": 4353,
+          "end": 5734,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_006",
+          "start": 5735,
+          "end": 6495,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_007",
+          "start": 6493,
+          "end": 7133,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_008",
+          "start": 7147,
+          "end": 7844,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_009",
+          "start": 7842,
+          "end": 8863,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_010",
+          "start": 8864,
+          "end": 9996,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_011",
+          "start": 9987,
+          "end": 10594,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_012",
+          "start": 10606,
+          "end": 12104,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_013",
+          "start": 12111,
+          "end": 12946,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_014",
+          "start": 12944,
+          "end": 14418,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_015",
+          "start": 14517,
+          "end": 16102,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_016",
+          "start": 16133,
+          "end": 16695,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_017",
+          "start": 16697,
+          "end": 17580,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_018",
+          "start": 17541,
+          "end": 18604,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_019",
+          "start": 18642,
+          "end": 19546,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_020",
+          "start": 19783,
+          "end": 21266,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_021",
+          "start": 21422,
+          "end": 22296,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_022",
+          "start": 22315,
+          "end": 23270,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_023",
+          "start": 23255,
+          "end": 24270,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_024",
+          "start": 24445,
+          "end": 25886,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_025",
+          "start": 25884,
+          "end": 27040,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_026",
+          "start": 27128,
+          "end": 27591,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_027",
+          "start": 27546,
+          "end": 28624,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_028",
+          "start": 28637,
+          "end": 29925,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_029",
+          "start": 29931,
+          "end": 30700,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_030",
+          "start": 30852,
+          "end": 31417,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_031",
+          "start": 31423,
+          "end": 32186,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_032",
+          "start": 32181,
+          "end": 32797,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_033",
+          "start": 32827,
+          "end": 33992,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_034",
+          "start": 34026,
+          "end": 34852,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_035",
+          "start": 34850,
+          "end": 36015,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_036",
+          "start": 36032,
+          "end": 37047,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_037",
+          "start": 37128,
+          "end": 38077,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_038",
+          "start": 38047,
+          "end": 39608,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_039",
+          "start": 39681,
+          "end": 40771,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_040",
+          "start": 41183,
+          "end": 42078,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_041",
+          "start": 42097,
+          "end": 43421,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_042",
+          "start": 43521,
+          "end": 44425,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG6_043",
+          "start": 44420,
+          "end": 45186,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG7",
+      "label": "SG7",
+      "type": "SG7",
+      "genes": [
+        {
+          "gene_id": "SG7_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_002",
+          "start": 1188,
+          "end": 2695,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_003",
+          "start": 2735,
+          "end": 3552,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_004",
+          "start": 3671,
+          "end": 5097,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_005",
+          "start": 5098,
+          "end": 5858,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_006",
+          "start": 5856,
+          "end": 6496,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_007",
+          "start": 6508,
+          "end": 7205,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_008",
+          "start": 7203,
+          "end": 8224,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_009",
+          "start": 8225,
+          "end": 9357,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_010",
+          "start": 9348,
+          "end": 9955,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_011",
+          "start": 9967,
+          "end": 11465,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_012",
+          "start": 11472,
+          "end": 12307,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_013",
+          "start": 12305,
+          "end": 13785,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_014",
+          "start": 13868,
+          "end": 15420,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_015",
+          "start": 15453,
+          "end": 16015,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_016",
+          "start": 16017,
+          "end": 16900,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_017",
+          "start": 16861,
+          "end": 17939,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_018",
+          "start": 17994,
+          "end": 19477,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_019",
+          "start": 19705,
+          "end": 20507,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_020",
+          "start": 20526,
+          "end": 21481,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_021",
+          "start": 21466,
+          "end": 22481,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_022",
+          "start": 22611,
+          "end": 24190,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_023",
+          "start": 24211,
+          "end": 25157,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_024",
+          "start": 25194,
+          "end": 26494,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_025",
+          "start": 26674,
+          "end": 28055,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_026",
+          "start": 28196,
+          "end": 29613,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_027",
+          "start": 29611,
+          "end": 30380,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_028",
+          "start": 30611,
+          "end": 31374,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_029",
+          "start": 31395,
+          "end": 32149,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_030",
+          "start": 32113,
+          "end": 33074,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_031",
+          "start": 33072,
+          "end": 33811,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_032",
+          "start": 34421,
+          "end": 35472,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_033",
+          "start": 35480,
+          "end": 36255,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_034",
+          "start": 36275,
+          "end": 37737,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_035",
+          "start": 37726,
+          "end": 39647,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_036",
+          "start": 39811,
+          "end": 41261,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_037",
+          "start": 41373,
+          "end": 42625,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_038",
+          "start": 42638,
+          "end": 43911,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_039",
+          "start": 44368,
+          "end": 45173,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_040",
+          "start": 45188,
+          "end": 46095,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_041",
+          "start": 46096,
+          "end": 46919,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_042",
+          "start": 46880,
+          "end": 47592,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_043",
+          "start": 47680,
+          "end": 48599,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG7_044",
+          "start": 48594,
+          "end": 49360,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG8",
+      "label": "SG8",
+      "type": "SG8",
+      "genes": [
+        {
+          "gene_id": "SG8_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_002",
+          "start": 1145,
+          "end": 1425,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_003",
+          "start": 2140,
+          "end": 3647,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_004",
+          "start": 3687,
+          "end": 4504,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_005",
+          "start": 5241,
+          "end": 5533,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_006",
+          "start": 5584,
+          "end": 6527,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_007",
+          "start": 6736,
+          "end": 6926,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_008",
+          "start": 6929,
+          "end": 8277,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_009",
+          "start": 8278,
+          "end": 9038,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_010",
+          "start": 9036,
+          "end": 9676,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_011",
+          "start": 9679,
+          "end": 10382,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_012",
+          "start": 10380,
+          "end": 11401,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_013",
+          "start": 11402,
+          "end": 12534,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_014",
+          "start": 12525,
+          "end": 13132,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_015",
+          "start": 13144,
+          "end": 14642,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_016",
+          "start": 14649,
+          "end": 15484,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_017",
+          "start": 15482,
+          "end": 16965,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_018",
+          "start": 17021,
+          "end": 18711,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_019",
+          "start": 18743,
+          "end": 19305,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_020",
+          "start": 19307,
+          "end": 20190,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_021",
+          "start": 20151,
+          "end": 21214,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_022",
+          "start": 21252,
+          "end": 22156,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_023",
+          "start": 22393,
+          "end": 23876,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_024",
+          "start": 24032,
+          "end": 24906,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_025",
+          "start": 24925,
+          "end": 25880,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_026",
+          "start": 25865,
+          "end": 26880,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_027",
+          "start": 27055,
+          "end": 28496,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_028",
+          "start": 28494,
+          "end": 29650,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_029",
+          "start": 30119,
+          "end": 31833,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_030",
+          "start": 31854,
+          "end": 32800,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_031",
+          "start": 33141,
+          "end": 34441,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_032",
+          "start": 34733,
+          "end": 35355,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_033",
+          "start": 35346,
+          "end": 36058,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_034",
+          "start": 36078,
+          "end": 37165,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_035",
+          "start": 37156,
+          "end": 38138,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_036",
+          "start": 38144,
+          "end": 39279,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_037",
+          "start": 39293,
+          "end": 40725,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_038",
+          "start": 40821,
+          "end": 41086,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_039",
+          "start": 41202,
+          "end": 41614,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_040",
+          "start": 41740,
+          "end": 42488,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_041",
+          "start": 42486,
+          "end": 43906,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_042",
+          "start": 44099,
+          "end": 45315,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_043",
+          "start": 45328,
+          "end": 46601,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_044",
+          "start": 47058,
+          "end": 47863,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_045",
+          "start": 47880,
+          "end": 48787,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_046",
+          "start": 48788,
+          "end": 49611,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_047",
+          "start": 49572,
+          "end": 50284,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_048",
+          "start": 50372,
+          "end": 51291,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG8_049",
+          "start": 51286,
+          "end": 52052,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "SG9",
+      "label": "SG9",
+      "type": "SG9",
+      "genes": [
+        {
+          "gene_id": "SG9_001",
+          "start": 2,
+          "end": 990,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_002",
+          "start": 1259,
+          "end": 2292,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_003",
+          "start": 2352,
+          "end": 2632,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_004",
+          "start": 4133,
+          "end": 5640,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_005",
+          "start": 5680,
+          "end": 6497,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_006",
+          "start": 6658,
+          "end": 8039,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_007",
+          "start": 8040,
+          "end": 8800,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_008",
+          "start": 8798,
+          "end": 9438,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_009",
+          "start": 9452,
+          "end": 10149,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_010",
+          "start": 10147,
+          "end": 11168,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_011",
+          "start": 11169,
+          "end": 12301,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_012",
+          "start": 12292,
+          "end": 12899,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_013",
+          "start": 12911,
+          "end": 14409,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_014",
+          "start": 14416,
+          "end": 15251,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_015",
+          "start": 15249,
+          "end": 16714,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_016",
+          "start": 16754,
+          "end": 18639,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_017",
+          "start": 18720,
+          "end": 19282,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_018",
+          "start": 19284,
+          "end": 20167,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_019",
+          "start": 20128,
+          "end": 21191,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_020",
+          "start": 21229,
+          "end": 22133,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_021",
+          "start": 22370,
+          "end": 23853,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_022",
+          "start": 24009,
+          "end": 24883,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_023",
+          "start": 24902,
+          "end": 25857,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_024",
+          "start": 25842,
+          "end": 26857,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_025",
+          "start": 27022,
+          "end": 28541,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_026",
+          "start": 28483,
+          "end": 28637,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_027",
+          "start": 28708,
+          "end": 29420,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_028",
+          "start": 29422,
+          "end": 30521,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_029",
+          "start": 30516,
+          "end": 31513,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_030",
+          "start": 31517,
+          "end": 32634,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_031",
+          "start": 33641,
+          "end": 34968,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_032",
+          "start": 35172,
+          "end": 35302,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_033",
+          "start": 35729,
+          "end": 37284,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_034",
+          "start": 37278,
+          "end": 38488,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_035",
+          "start": 38501,
+          "end": 39774,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_036",
+          "start": 40706,
+          "end": 41607,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "SG9_037",
+          "start": 41602,
+          "end": 42368,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    }
+  ]
+}

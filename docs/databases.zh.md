@@ -281,6 +281,11 @@ wheel 发布，因为它们的再分发条款和来源风险不应由 MIT 包承
 | `vch_vf` | 霍乱弧菌 CTX 核心/RS2 基因 + ctxB classical/El Tor + tcpA classical/El Tor/O139 标记（13 条记录） | 2026-11-02 | -（仅筛查） |
 | `vpa_pai` | 副溶血弧菌 VPaI-1..VPaI-10 致病岛（10 个 locus，cluster 类；RIMD 2210633 + AQ3810） | 2026-11-02 | -（仅筛查） |
 | `vpa_ok` | 副溶血性弧菌 O/K 抗原位点（195 个位点，vpautils OAgc+CPSgc；cluster 类） | 2026-10-12 | `gapit.typing/2`（`o_group`、`k_group`、`serotype` 三方案） |
+| `lpn_sero` | 嗜肺军团菌血清群 1-15 LPS 位点（16 位点，Nakaue 2021；cluster 类） | 2026-11-06 | `gapit.typing/2`（`lps_serogroup`） |
+| `lpn_vf` | 嗜肺军团菌毒力因子蛋白（275，LegionProfiler；蛋白类） | 2026-11-06 | -（仅筛查） |
+| `str_lancefield` | 链球菌 Lancefield A/B/C/G 标记 + `tuf` 内参（29 条） | 2026-11-06 | `gapit.typing/2`（`lancefield`） |
+| `sag_sero` | GBS 荚膜血清型，10 型 + III 亚型（14 条，GBS-SBG） | 2026-11-06 | `gapit.typing/2`（`serotype`、`serotype_iii`） |
+| `pau_sero` | 铜绿假单胞菌 OSA 血清群 O1-O17 + wzyB（14 位点，pasty；cluster 类） | 2026-11-06 | `gapit.typing/2`（`osa_serogroup`、`wzyb`） |
 
 **许可证来源声明。** `eco_dec` 的每条记录都取自公共领域的一级提交（NCBI
 RefSeq/GenBank/DDBJ 收录号，与权利方面板等位相同）；2026-10 审计中发现原面板里

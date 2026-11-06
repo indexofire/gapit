@@ -58,6 +58,12 @@ PROVIDER = ClusterProvider(
             ),
         ),
         caveats=(
+            "Upstream GenBank files carry duplicate gene names within single loci"
+            " (paralogous wzy/wza/wzb/wzc, repeated manC/gnd, generic"
+            " 'hypothetical'); gapit auto-deduplicates them with an @start suffix"
+            " (e.g. wzy@1234) at build time — the original names remain searchable"
+            " as prefixes. Kpsc_O also reuses accession LT174602 for two different"
+            " loci; the second builds as LT174602_2.",
             "The panel covers the K. oxytoca species complex specifically; screening other"
             " Klebsiella species against it produces misleading best-locus calls.",
             "Locus calls are not serotype calls until calibrated against antisera for the"

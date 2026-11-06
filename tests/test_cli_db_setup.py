@@ -61,31 +61,41 @@ def patch_synthetic_provider(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
 
 def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
     """Given the fixture, When db setup runs and then databases are listed,
-    Then exit 0, all seven bundled databases materialize (one stderr note
+    Then exit 0, all twelve bundled databases materialize (one stderr note
     each, alphabetical — vpa_ok/vpa_pai count loci) alongside tinyamr's
     Indexed line, and the listing carries all eight databases."""
     datadir = make_datadir(tmp_path)
     setup = runner.invoke(app, ["db", "setup", "--datadir", str(datadir)])
     assert setup.exit_code == 0
     stderr_lines = setup.stderr.splitlines()
-    assert stderr_lines[:7] == [
-        f"gapit: materializing bundled database {name} ({records} records) into {datadir}"
-        for name, records in (
-            ("cje_cps", 42),
-            ("eco_dec", 16),
-            ("lmo_sero", 5),
-            ("shi_sero", 96),
-            ("vch_vf", 13),
+    expected_materialize = [
+        f"gapit: materializing bundled database {name} ({count}) into {datadir}"
+        for name, count in (
+            ("cje_cps", "42 records"),
+            ("eco_dec", "16 records"),
+            ("lmo_sero", "5 records"),
+            ("lpn_sero", "16 loci"),
+            ("lpn_vf", "275 records"),
+            ("pau_sero", "14 loci"),
+            ("sag_sero", "14 records"),
+            ("shi_sero", "96 records"),
+            ("str_lancefield", "29 records"),
+            ("vch_vf", "13 records"),
+            ("vpa_ok", "195 loci"),
+            ("vpa_pai", "10 loci"),
         )
-    ] + [
-        f"gapit: materializing bundled database vpa_ok (195 loci) into {datadir}",
-        f"gapit: materializing bundled database vpa_pai (10 loci) into {datadir}",
     ]
-    assert stderr_lines[7:] == [
+    assert stderr_lines[:12] == expected_materialize
+    assert stderr_lines[12:] == [
         "gapit: indexed cje_cps (42 sequences, nucl)",
         "gapit: indexed eco_dec (16 sequences, nucl)",
         "gapit: indexed lmo_sero (5 sequences, nucl)",
+        "gapit: indexed lpn_sero (16 sequences, nucl)",
+        "gapit: indexed lpn_vf (275 sequences, prot)",
+        "gapit: indexed pau_sero (14 sequences, nucl)",
+        "gapit: indexed sag_sero (14 sequences, nucl)",
         "gapit: indexed shi_sero (96 sequences, nucl)",
+        "gapit: indexed str_lancefield (29 sequences, nucl)",
         "gapit: indexed tinyamr (3 sequences, nucl)",
         "gapit: indexed vch_vf (13 sequences, nucl)",
         "gapit: indexed vpa_ok (195 sequences, nucl)",
@@ -93,17 +103,23 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
     ]
 
     infos = list_databases(datadir, reindex=False)
-    assert [info.name for info in infos] == [
+    expected_names = [
         "cje_cps",
         "eco_dec",
         "lmo_sero",
+        "lpn_sero",
+        "lpn_vf",
+        "pau_sero",
+        "sag_sero",
         "shi_sero",
+        "str_lancefield",
         "tinyamr",
         "vch_vf",
         "vpa_ok",
         "vpa_pai",
     ]
-    tinyamr = infos[4]
+    assert [info.name for info in infos] == sorted(expected_names)
+    tinyamr = next(info for info in infos if info.name == "tinyamr")
     assert tinyamr.n_sequences == 3
     assert tinyamr.dbtype == "nucl"
     assert re.fullmatch(r"\d{4}-[A-Za-z]{3}-\d{2}", tinyamr.date)

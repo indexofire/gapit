@@ -1,0 +1,40 @@
+{
+  "name": "str_lancefield",
+  "description": "Streptococcus Lancefield groups A/B/C/G markers + tuf control",
+  "vendor": "gac/gcc panel (INSDC/RefSeq)",
+  "dbtype": "nucl",
+  "kind": "gene",
+  "snapshotted": "2026-11-06",
+  "license": "Public domain (INSDC/RefSeq sequences); papers cited only",
+  "note": "16 Lancefield group markers from gac/gcc variable regions (van Sorge 2011 doi:10.1093/infdis/jiq035; Zorzoli 2019 doi:10.1074/jbc.RA119.009894) plus the tuf single-copy control. gacA/gacB-anchored locus windows, pyrodigal CDS, group-unique key genes. Dual schemes: 5 exact_set rules + control.",
+  "guidance": {
+    "references": [
+      {
+        "citation": "van Sorge NM, Cole JN, Kwiatkowski K, et al. The Classical Lancefield Antigen of Group A Streptococcus Is a Virulence Determinant with Implications for Vaccine Design. J Infect Dis 2011;203(3):338-348.",
+        "doi": "10.1093/infdis/jiq035",
+        "url": ""
+      },
+      {
+        "citation": "Zorzoli A, Meyer BH, Adair E, et al. Group A, B, C, and G Streptococcus Lancefield antigen biosynthesis is initiated by a conserved alpha-D-GlcNAc-beta-1,4-L-rhamnosyltransferase. J Biol Chem 2019;294:15237-15256.",
+        "doi": "10.1074/jbc.RA119.009894",
+        "url": ""
+      },
+      {
+        "citation": "Shimomura Y, et al. Complete genome sequencing and analysis of a Lancefield group G Streptococcus dysgalactiae subsp. equisimilis strain (GGS_124). BMC Genomics 2011;12:17.",
+        "doi": "10.1186/1471-2164-12-17",
+        "url": ""
+      }
+    ],
+    "caveats": [
+      "Groups D/E/F/H/L and S. anginosus-group antigens not covered; S. canis (group G) untested",
+      "Group C carries two locus variants (human SDSE ST20 + animal S. equi) as two same-phenotype rules",
+      "Antigen-locus typing outranks emm-prefix inference (stC74a strain with GGS_124-identical locus is group G)",
+      "Hybrid gac/gcc loci (GA-SDSE) report the antigen actually carried, matching latex agglutination",
+      "Reads mode: tuf single-copy control anchors min_relative_depth false-positive filtering"
+    ],
+    "usage": [
+      "gapit screen -d str_lancefield *.fna -o lc.tsv",
+      "gapit typing lc.tsv"
+    ]
+  }
+}

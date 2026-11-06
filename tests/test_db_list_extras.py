@@ -137,7 +137,12 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
         ("cje_cps", "bundled"),
         ("eco_dec", "bundled"),
         ("lmo_sero", "bundled"),
+        ("lpn_sero", "bundled"),
+        ("lpn_vf", "bundled"),
+        ("pau_sero", "bundled"),
+        ("sag_sero", "bundled"),
         ("shi_sero", "bundled"),
+        ("str_lancefield", "bundled"),
         ("vch_vf", "bundled"),
         ("vpa_ok", "bundled"),
         ("vpa_pai", "bundled"),
@@ -145,7 +150,7 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
     for entry in with_source:
         assert entry["installed"] is False
         assert "records" not in entry
-        assert entry["dbtype"] == "nucl"
+        assert entry["dbtype"] in {"nucl", "prot"}
     assert (
         next(entry for entry in with_source if entry["name"] == "eco_dec")["vendor"]
         == "gapit-curated (public-domain sources)"

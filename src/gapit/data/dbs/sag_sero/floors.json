@@ -1,0 +1,7 @@
+{
+ "schema": "gapit.floors/1",
+ "default": 95.0,
+ "genes": {
+  "tuf": 85.0
+ }
+}

@@ -1,0 +1,1636 @@
+{
+  "schema": "gapit.features/1",
+  "loci": [
+    {
+      "id": "O1",
+      "label": "O1",
+      "type": "O1",
+      "genes": [
+        {
+          "gene_id": "O1__001",
+          "start": 2,
+          "end": 285,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__002",
+          "start": 316,
+          "end": 629,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__003",
+          "start": 1045,
+          "end": 2081,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__004",
+          "start": 2743,
+          "end": 4055,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__005",
+          "start": 4115,
+          "end": 5061,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__006",
+          "start": 5067,
+          "end": 5650,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__007",
+          "start": 5648,
+          "end": 6729,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__008",
+          "start": 6727,
+          "end": 7958,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__009",
+          "start": 7959,
+          "end": 9385,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__010",
+          "start": 9441,
+          "end": 10864,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__011",
+          "start": 10871,
+          "end": 11760,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__012",
+          "start": 11832,
+          "end": 12103,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__013",
+          "start": 12120,
+          "end": 13084,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__014",
+          "start": 13115,
+          "end": 14262,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__015",
+          "start": 14260,
+          "end": 15218,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__016",
+          "start": 15216,
+          "end": 16240,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O1__017",
+          "start": 16372,
+          "end": 18368,
+          "strand": "+",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O10",
+      "label": "O10",
+      "type": "O10",
+      "genes": [
+        {
+          "gene_id": "O10__001",
+          "start": 2,
+          "end": 285,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__002",
+          "start": 320,
+          "end": 618,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__003",
+          "start": 875,
+          "end": 1956,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__004",
+          "start": 2164,
+          "end": 3248,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__005",
+          "start": 3330,
+          "end": 4597,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__006",
+          "start": 4676,
+          "end": 5937,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__007",
+          "start": 5931,
+          "end": 7264,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__008",
+          "start": 7262,
+          "end": 8103,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__009",
+          "start": 8242,
+          "end": 10385,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__010",
+          "start": 10395,
+          "end": 12046,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__011",
+          "start": 12053,
+          "end": 13227,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__012",
+          "start": 13225,
+          "end": 14177,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__013",
+          "start": 14178,
+          "end": 15193,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O10__014",
+          "start": 15546,
+          "end": 17635,
+          "strand": "+",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O11",
+      "label": "O11",
+      "type": "O11",
+      "genes": [
+        {
+          "gene_id": "O11__001",
+          "start": 2,
+          "end": 285,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__002",
+          "start": 327,
+          "end": 568,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__003",
+          "start": 656,
+          "end": 1716,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__004",
+          "start": 1843,
+          "end": 3038,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__005",
+          "start": 3039,
+          "end": 4042,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__006",
+          "start": 4040,
+          "end": 5274,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__007",
+          "start": 5268,
+          "end": 6301,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__008",
+          "start": 6306,
+          "end": 7423,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__009",
+          "start": 7442,
+          "end": 8571,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__010",
+          "start": 8590,
+          "end": 9791,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__011",
+          "start": 9792,
+          "end": 10732,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__012",
+          "start": 10834,
+          "end": 11858,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O11__013",
+          "start": 11872,
+          "end": 13868,
+          "strand": "+",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O12",
+      "label": "O12",
+      "type": "O12",
+      "genes": [
+        {
+          "gene_id": "O12__001",
+          "start": 2,
+          "end": 285,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__002",
+          "start": 315,
+          "end": 655,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__003",
+          "start": 887,
+          "end": 1935,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__004",
+          "start": 2216,
+          "end": 3195,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__005",
+          "start": 3204,
+          "end": 4354,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__006",
+          "start": 4352,
+          "end": 5505,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__007",
+          "start": 5510,
+          "end": 6594,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__008",
+          "start": 6604,
+          "end": 7259,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__009",
+          "start": 7280,
+          "end": 8325,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__010",
+          "start": 8323,
+          "end": 9332,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__011",
+          "start": 9330,
+          "end": 10027,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__012",
+          "start": 10022,
+          "end": 10779,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__013",
+          "start": 10851,
+          "end": 12115,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__014",
+          "start": 12178,
+          "end": 13406,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__015",
+          "start": 13426,
+          "end": 14729,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__016",
+          "start": 14727,
+          "end": 15868,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__017",
+          "start": 15866,
+          "end": 16479,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__018",
+          "start": 16482,
+          "end": 17263,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__019",
+          "start": 17298,
+          "end": 18331,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__020",
+          "start": 18336,
+          "end": 19456,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__021",
+          "start": 19468,
+          "end": 20597,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__022",
+          "start": 20606,
+          "end": 21858,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__023",
+          "start": 21856,
+          "end": 22811,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__024",
+          "start": 22841,
+          "end": 23832,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O12__025",
+          "start": 23868,
+          "end": 25864,
+          "strand": "+",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O13",
+      "label": "O13",
+      "type": "O13",
+      "genes": [
+        {
+          "gene_id": "O13__001",
+          "start": 2,
+          "end": 1998,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__002",
+          "start": 2184,
+          "end": 3223,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__003",
+          "start": 3221,
+          "end": 4182,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__004",
+          "start": 4180,
+          "end": 5309,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__005",
+          "start": 5390,
+          "end": 6459,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__006",
+          "start": 6466,
+          "end": 7400,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__007",
+          "start": 7382,
+          "end": 8616,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__008",
+          "start": 8604,
+          "end": 9892,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__009",
+          "start": 9955,
+          "end": 10979,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__010",
+          "start": 10990,
+          "end": 12254,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__011",
+          "start": 12342,
+          "end": 13390,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__012",
+          "start": 13743,
+          "end": 14002,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O13__013",
+          "start": 14033,
+          "end": 14316,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O15",
+      "label": "O15",
+      "type": "O15",
+      "genes": [
+        {
+          "gene_id": "O15__001",
+          "start": 4,
+          "end": 1007,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O15__002",
+          "start": 1046,
+          "end": 1863,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O15__003",
+          "start": 1854,
+          "end": 3250,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O15__004",
+          "start": 3245,
+          "end": 5685,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O15__005",
+          "start": 5686,
+          "end": 6962,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O15__006",
+          "start": 6975,
+          "end": 8203,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O15__007",
+          "start": 8204,
+          "end": 10257,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O15__008",
+          "start": 10245,
+          "end": 11155,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O15__009",
+          "start": 11149,
+          "end": 12026,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O15__010",
+          "start": 12024,
+          "end": 13105,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O15__011",
+          "start": 13110,
+          "end": 15085,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O15__012",
+          "start": 15083,
+          "end": 15675,
+          "strand": "+",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O17",
+      "label": "O17",
+      "type": "O17",
+      "genes": [
+        {
+          "gene_id": "O17__001",
+          "start": 4,
+          "end": 1055,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__002",
+          "start": 1060,
+          "end": 2129,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__003",
+          "start": 2127,
+          "end": 3022,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__004",
+          "start": 3026,
+          "end": 3909,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__005",
+          "start": 3910,
+          "end": 4454,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__006",
+          "start": 4455,
+          "end": 5272,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__007",
+          "start": 5263,
+          "end": 6644,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__008",
+          "start": 6649,
+          "end": 9659,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__009",
+          "start": 10143,
+          "end": 11104,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__010",
+          "start": 11253,
+          "end": 12355,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__011",
+          "start": 12356,
+          "end": 13458,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__012",
+          "start": 13437,
+          "end": 14362,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__013",
+          "start": 14356,
+          "end": 15233,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__014",
+          "start": 15231,
+          "end": 16312,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__015",
+          "start": 16317,
+          "end": 18073,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__016",
+          "start": 18235,
+          "end": 18545,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__017",
+          "start": 18643,
+          "end": 19919,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__018",
+          "start": 19859,
+          "end": 20556,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__019",
+          "start": 20554,
+          "end": 20942,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O17__020",
+          "start": 20940,
+          "end": 21520,
+          "strand": "+",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O2",
+      "label": "O2",
+      "type": "O2",
+      "genes": [
+        {
+          "gene_id": "O2__001",
+          "start": 2,
+          "end": 1998,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__002",
+          "start": 2314,
+          "end": 2513,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__003",
+          "start": 2718,
+          "end": 2941,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__004",
+          "start": 2999,
+          "end": 3540,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__005",
+          "start": 3560,
+          "end": 3678,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__006",
+          "start": 3757,
+          "end": 4775,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__007",
+          "start": 4837,
+          "end": 5798,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__008",
+          "start": 5796,
+          "end": 7036,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__009",
+          "start": 7081,
+          "end": 8144,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__010",
+          "start": 8142,
+          "end": 9277,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__011",
+          "start": 9278,
+          "end": 10407,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__012",
+          "start": 10546,
+          "end": 11300,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__013",
+          "start": 11301,
+          "end": 11908,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__014",
+          "start": 11906,
+          "end": 13140,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__015",
+          "start": 13138,
+          "end": 14453,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__016",
+          "start": 14458,
+          "end": 15536,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__017",
+          "start": 15540,
+          "end": 16114,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__018",
+          "start": 16112,
+          "end": 18000,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__019",
+          "start": 18070,
+          "end": 19019,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__020",
+          "start": 19094,
+          "end": 20403,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__021",
+          "start": 21211,
+          "end": 22256,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__022",
+          "start": 22321,
+          "end": 22604,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__023",
+          "start": 22693,
+          "end": 22988,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O2__024",
+          "start": 23020,
+          "end": 23303,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O3",
+      "label": "O3",
+      "type": "O3",
+      "genes": [
+        {
+          "gene_id": "O3__001",
+          "start": 2,
+          "end": 1980,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__002",
+          "start": 2094,
+          "end": 3121,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__003",
+          "start": 3315,
+          "end": 4519,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__004",
+          "start": 4562,
+          "end": 5196,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__005",
+          "start": 5194,
+          "end": 5792,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__006",
+          "start": 5790,
+          "end": 7006,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__007",
+          "start": 7004,
+          "end": 8835,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__008",
+          "start": 8845,
+          "end": 10985,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__009",
+          "start": 10983,
+          "end": 11995,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__010",
+          "start": 11989,
+          "end": 13052,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__011",
+          "start": 13040,
+          "end": 14289,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__012",
+          "start": 14297,
+          "end": 15531,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__013",
+          "start": 15667,
+          "end": 16928,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__014",
+          "start": 16961,
+          "end": 18081,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__015",
+          "start": 18278,
+          "end": 19332,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__016",
+          "start": 19591,
+          "end": 19892,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O3__017",
+          "start": 19927,
+          "end": 20210,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O4",
+      "label": "O4",
+      "type": "O4",
+      "genes": [
+        {
+          "gene_id": "O4__001",
+          "start": 2,
+          "end": 1998,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__002",
+          "start": 2034,
+          "end": 3052,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__003",
+          "start": 3055,
+          "end": 4010,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__004",
+          "start": 4008,
+          "end": 5260,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__005",
+          "start": 5271,
+          "end": 6400,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__006",
+          "start": 6423,
+          "end": 7537,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__007",
+          "start": 7542,
+          "end": 8575,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__008",
+          "start": 8578,
+          "end": 9881,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__009",
+          "start": 9890,
+          "end": 10776,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__010",
+          "start": 10764,
+          "end": 12043,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__011",
+          "start": 12058,
+          "end": 13289,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__012",
+          "start": 13389,
+          "end": 14422,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__013",
+          "start": 14693,
+          "end": 14967,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O4__014",
+          "start": 14999,
+          "end": 15279,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O6",
+      "label": "O6",
+      "type": "O6",
+      "genes": [
+        {
+          "gene_id": "O6__001",
+          "start": 2,
+          "end": 1998,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__002",
+          "start": 2197,
+          "end": 3236,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__003",
+          "start": 3234,
+          "end": 4195,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__004",
+          "start": 4193,
+          "end": 5322,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__005",
+          "start": 5367,
+          "end": 6517,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__006",
+          "start": 6515,
+          "end": 8397,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__007",
+          "start": 8403,
+          "end": 9448,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__008",
+          "start": 9571,
+          "end": 10994,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__009",
+          "start": 11002,
+          "end": 11198,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__010",
+          "start": 11196,
+          "end": 12217,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__011",
+          "start": 12259,
+          "end": 13526,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__012",
+          "start": 13637,
+          "end": 14700,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__013",
+          "start": 15086,
+          "end": 15339,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O6__014",
+          "start": 15366,
+          "end": 15649,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O7",
+      "label": "O7",
+      "type": "O7",
+      "genes": [
+        {
+          "gene_id": "O7__001",
+          "start": 2,
+          "end": 285,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__002",
+          "start": 315,
+          "end": 616,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__003",
+          "start": 825,
+          "end": 1915,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__004",
+          "start": 1968,
+          "end": 3178,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__005",
+          "start": 3392,
+          "end": 4605,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__006",
+          "start": 5100,
+          "end": 6097,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__007",
+          "start": 6102,
+          "end": 7261,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__008",
+          "start": 7259,
+          "end": 7947,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__009",
+          "start": 7949,
+          "end": 9027,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__010",
+          "start": 9021,
+          "end": 9670,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__011",
+          "start": 9671,
+          "end": 10725,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__012",
+          "start": 10800,
+          "end": 12352,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__013",
+          "start": 12350,
+          "end": 13143,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__014",
+          "start": 13141,
+          "end": 14096,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__015",
+          "start": 14104,
+          "end": 15443,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__016",
+          "start": 15454,
+          "end": 16403,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__017",
+          "start": 16447,
+          "end": 17465,
+          "strand": "+",
+          "product": ""
+        },
+        {
+          "gene_id": "O7__018",
+          "start": 17639,
+          "end": 19617,
+          "strand": "+",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "O9",
+      "label": "O9",
+      "type": "O9",
+      "genes": [
+        {
+          "gene_id": "O9__001",
+          "start": 2,
+          "end": 1998,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__002",
+          "start": 2130,
+          "end": 3154,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__003",
+          "start": 3152,
+          "end": 4110,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__004",
+          "start": 4108,
+          "end": 5291,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__005",
+          "start": 5289,
+          "end": 6253,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__006",
+          "start": 6270,
+          "end": 7423,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__007",
+          "start": 7438,
+          "end": 8384,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__008",
+          "start": 8409,
+          "end": 9463,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__009",
+          "start": 9468,
+          "end": 10021,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__010",
+          "start": 10019,
+          "end": 11121,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__011",
+          "start": 11119,
+          "end": 11825,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__012",
+          "start": 11823,
+          "end": 12982,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__013",
+          "start": 12987,
+          "end": 13984,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__014",
+          "start": 14021,
+          "end": 15270,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__015",
+          "start": 15398,
+          "end": 16443,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__016",
+          "start": 16644,
+          "end": 16948,
+          "strand": "-",
+          "product": ""
+        },
+        {
+          "gene_id": "O9__017",
+          "start": 16980,
+          "end": 17263,
+          "strand": "-",
+          "product": ""
+        }
+      ]
+    },
+    {
+      "id": "wzyB",
+      "label": "wzyB",
+      "type": "wzyB",
+      "genes": [
+        {
+          "gene_id": "wzyB__001",
+          "start": 2,
+          "end": 1140,
+          "strand": "+",
+          "product": ""
+        }
+      ]
+    }
+  ]
+}

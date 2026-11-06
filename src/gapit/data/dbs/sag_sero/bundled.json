@@ -1,0 +1,34 @@
+{
+  "name": "sag_sero",
+  "description": "GBS capsular serotyping - 10 serotypes + III subtypes (GBS-SBG)",
+  "vendor": "GBS-SBG 2021 (MIT)",
+  "dbtype": "nucl",
+  "kind": "gene",
+  "snapshotted": "2026-11-06",
+  "license": "MIT (GBS-SBG, Swaine Chen 2021); sequences INSDC public domain",
+  "note": "13 S. agalactiae cps variable-region references (GBS-SBG, Tiruvayipati & Chen 2021, doi:10.1099/mgen.0.000688; MIT) covering Ia/Ib/II-IX with 4 subtypes of III, plus tuf control. Dual schemes: serotype (III merged) and serotype_iii (SNP-level, identity_floor 99.3%).",
+  "guidance": {
+    "references": [
+      {
+        "citation": "Tiruvayipati S, Chen SL. GBS-SBG: GBS Serotyping by Genome Sequencing. Microb Genom 2021;7(12):mgen000688.",
+        "doi": "10.1099/mgen.0.000688",
+        "url": "https://github.com/swainechen/GBS-SBG"
+      },
+      {
+        "citation": "Sheppard AE, Vaughan A, Jones N, et al. Capsular Typing Method for Streptococcus agalactiae Using Whole-Genome Sequence Data. J Clin Microbiol 2016;54(5):1388-90.",
+        "doi": "10.1128/JCM.03142-15",
+        "url": ""
+      }
+    ],
+    "caveats": [
+      "III subtypes (I-IV) differ at SNP level (99.3-99.6% identity); serotype_iii scheme resolves with identity_floor 99.3%",
+      "Screen minid 90 (not 95) to allow tuf cross-species detection; discrimination at typing identity_floor 95%",
+      "Non-encapsulated GBS (cps-null) reports non-typeable",
+      "MIT license: CAN be bundled into the gapit wheel"
+    ],
+    "usage": [
+      "gapit screen -d sag_sero assembly.fna -o gbs.tsv",
+      "gapit typing gbs.tsv"
+    ]
+  }
+}
