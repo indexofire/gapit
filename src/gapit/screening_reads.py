@@ -118,9 +118,25 @@ def _screen_lanes(
     resolved = resolve_read_preset(lanes, read_type, quiet)
     database = find_database(resolve_screen_datadir(datadir, db_name), db_name, quiet=quiet)
     if database.kind == "cluster":
-        usage_fail(
-            "cluster databases are assembly-contig screening only;"
-            " --r1/--r2 and --aligner minimap2 are not available"
+        from gapit.kmerdb import read_kmerdb
+
+        if read_kmerdb(database.path) is None:
+            usage_fail(
+                "cluster databases are assembly-contig screening only;"
+                " --r1/--r2 and --aligner minimap2 are not available"
+                " (this database has no kmer.json sidecar — build with -K"
+                " to enable the k-mer reads path)"
+            )
+        from gapit.screening_kmer import screen_cluster_kmer
+
+        return screen_cluster_kmer(
+            [p for p, _ in lanes],
+            [p for _, p in lanes if p is not None] or None,
+            db_name,
+            datadir,
+            min_cluster_cov=60.0,
+            output_format=output_format,
+            quiet=quiet,
         )
     read_files = [r1_path for r1_path, _ in lanes] + [
         r2_path for _, r2_path in lanes if r2_path is not None

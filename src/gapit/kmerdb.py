@@ -5,7 +5,7 @@ k-mer sets over its loci, materialized at build time as sorted arrays of
 canonical k-mer codes (little-endian uint64) under ``kmers/``:
 
     {"schema": "gapit.kmerdb/1",
-     "k": 51,
+     "k": 31,
      "sets": {"06A.diff": {"of": "06A", "against": ["06B", "06F", "06G"], "n": 1182}}}
 
 ``of`` names the anchor locus; ``against`` the sibling loci whose union is
@@ -20,6 +20,13 @@ reverse complement, packed two bits per base (A=0, C=1, G=2, T=3) — the
 same convention as the gmlst cgMLST prefilter. Counting is a single
 streaming pass; query codes are counted once per file and intersected with
 each declared set (sets are small: hundreds to a few thousand members).
+
+FASTQ support (P2): ``count_fastq_kmers`` reads Illumina/PacBio/ONT reads
+directly — no assembly needed. Per-locus containment (fraction of the
+locus's full k-mer set present in the reads) provides the coverage/identity
+evidence for the k-mer-only screening path; the mash-style identity
+estimate ``containment**(1/k)`` is accurate enough for the family-level
+call while ``key_kmers`` delivers SNP-level resolution.
 """
 
 from __future__ import annotations
@@ -33,7 +40,6 @@ from pydantic import BaseModel, Field, field_validator
 from gapit.errors import DatabaseError
 
 _BASE_INDEX = {"A": 0, "C": 1, "G": 2, "T": 3}
-_COMPLEMENT = str.maketrans("ACGTN", "TGCAN")
 
 
 def iter_canonical_kmer_codes(sequence: str, k: int) -> Iterator[int]:
@@ -66,9 +72,7 @@ def count_sequence_kmers(sequence: str, k: int) -> set[int]:
 
 
 def count_fasta_kmers(path: Path, k: int) -> set[int]:
-    """Distinct canonical k-mer codes over every record of a FASTA file
-    (plain or gzip/bzip2 via the shared text opener). Sequence lines are
-    upper-cased; the whole file is one set."""
+    """Distinct canonical k-mer codes over every record of a FASTA file."""
     from gapit.fasta import open_text
 
     codes: set[int] = set()
@@ -84,6 +88,41 @@ def count_fasta_kmers(path: Path, k: int) -> set[int]:
     if chunks:
         codes.update(iter_canonical_kmer_codes("".join(chunks), k))
     return codes
+
+
+def count_fastq_kmers(*paths: Path, k: int) -> set[int]:
+    """Distinct canonical k-mer codes over every read of one or more FASTQ
+    files (plain or gzip/bzip2). Sequences are lines 2, 6, 10, ... of each
+    4-line record; quality/header lines are skipped."""
+    from gapit.fasta import open_text
+
+    codes: set[int] = set()
+    for path in paths:
+        with open_text(path) as handle:
+            for line_no, line in enumerate(handle, start=1):
+                if line_no % 4 == 2:
+                    codes.update(iter_canonical_kmer_codes(line.strip(), k))
+    return codes
+
+
+# ---------------------------------------------------------------------------
+# Identity estimate (mash-style ANI from k-mer containment)
+# ---------------------------------------------------------------------------
+
+
+def containment_to_identity(containment: float, k: int) -> float:
+    """Mash-style identity estimate: ``containment**(1/k)`` maps the k-mer
+    containment ratio to per-base identity. Accurate to ~0.1% at k=31 for
+    divergence <= 5%; below ~0.5 containment the estimate degrades (but the
+    family-level call is already wrong there — the floors catch it)."""
+    if containment <= 0.0:
+        return 0.0
+    return 100.0 * containment ** (1.0 / k)
+
+
+# ---------------------------------------------------------------------------
+# k-mer set document + materialization
+# ---------------------------------------------------------------------------
 
 
 class KmerSetSpec(BaseModel, frozen=True):
@@ -113,9 +152,7 @@ class KmerDbDocument(BaseModel, frozen=True):
 
 def read_kmerdb(db_dir: Path) -> KmerDbDocument | None:
     """Load ``<db_dir>/kmer.json``; None when the database carries no
-    k-mer substrate. A malformed file is a typed database error (the
-    typing rules may reference its sets, so a silent fallback would
-    under-call rules)."""
+    k-mer substrate."""
     path = db_dir / "kmer.json"
     if not path.is_file():
         return None
@@ -135,23 +172,27 @@ def _pack(codes: set[int]) -> bytes:
 
 def materialize_kmer_sets(db_dir: Path, document: KmerDbDocument, sequences: Path) -> None:
     """Compute every declared set from the locus FASTA and write it as a
-    sorted little-endian uint64 array under ``kmers/``, updating each
-    spec's ``n`` in the stored ``kmer.json``. Validates that every ``of``
-    and ``against`` locus exists (a stale set name is a build error, not a
-    silent empty set)."""
+    sorted little-endian uint64 array under ``kmers/``, plus a full set
+    per locus for the reads-mode containment path, updating each spec's
+    ``n`` in the stored ``kmer.json``."""
     from gapit.fasta import iter_fasta
 
     loci: dict[str, str] = {}
     for record in iter_fasta(sequences):
         loci[record.id] = record.sequence.upper()
-    missing = sorted(
-        {name for spec in document.sets.values() for name in (spec.of, *spec.against)} - set(loci)
+    stray = sorted(
+        {
+            name
+            for spec in document.sets.values()
+            for name in (spec.of, *spec.against)
+            if name not in loci
+        }
     )
-    if missing:
+    if stray:
         raise DatabaseError(
-            f"kmer sets reference unknown loci: {missing}",
+            f"kmer sets reference unknown loci: {stray}",
             code="KMERDB_UNKNOWN_LOCUS",
-            context={"loci": ", ".join(missing)},
+            context={"loci": ", ".join(stray)},
         )
     kmers_dir = db_dir / "kmers"
     kmers_dir.mkdir(parents=True, exist_ok=True)
@@ -164,6 +205,9 @@ def materialize_kmer_sets(db_dir: Path, document: KmerDbDocument, sequences: Pat
             codes -= cache.setdefault(other, count_sequence_kmers(loci[other], document.k))
         (kmers_dir / f"{name}.u64").write_bytes(_pack(codes))
         sized[name] = KmerSetSpec(of=spec.of, against=spec.against, n=len(codes))
+    for locus_id, sequence in loci.items():
+        full = cache.setdefault(locus_id, count_sequence_kmers(sequence, document.k))
+        (kmers_dir / f"{locus_id}.full.u64").write_bytes(_pack(full))
     updated = KmerDbDocument(k=document.k, sets=sized)
     (db_dir / "kmer.json").write_text(
         updated.model_dump_json(indent=1, by_alias=True), encoding="utf-8"
@@ -171,8 +215,7 @@ def materialize_kmer_sets(db_dir: Path, document: KmerDbDocument, sequences: Pat
 
 
 def load_kmer_set(db_dir: Path, name: str) -> frozenset[int]:
-    """Read one materialized set back. Missing files are a typed error
-    (the db validated set names at build/screen time)."""
+    """Read one materialized set back (differential or ``.full``)."""
     path = db_dir / "kmers" / f"{name}.u64"
     if not path.is_file():
         raise DatabaseError(
@@ -186,20 +229,29 @@ def load_kmer_set(db_dir: Path, name: str) -> frozenset[int]:
 
 def set_hit_fraction(query: set[int], reference: frozenset[int]) -> float:
     """|query ∩ reference| / |reference| — the fraction of the declared
-    set the query carries. An empty declared set scores 0.0 (a curator
-    artifact: the locus shares every k-mer with its siblings)."""
+    set the query carries. An empty declared set scores 0.0."""
     if not reference:
         return 0.0
     return sum(1 for code in reference if code in query) / len(reference)
 
 
+def locus_containment(query: set[int], db_dir: Path, locus_id: str) -> float:
+    """Fraction of a locus's full k-mer set present in the query — the
+    reads-mode coverage proxy."""
+    full = load_kmer_set(db_dir, f"{locus_id}.full")
+    return set_hit_fraction(query, full)
+
+
 __all__ = [
     "KmerDbDocument",
     "KmerSetSpec",
+    "containment_to_identity",
     "count_fasta_kmers",
+    "count_fastq_kmers",
     "count_sequence_kmers",
     "iter_canonical_kmer_codes",
     "load_kmer_set",
+    "locus_containment",
     "materialize_kmer_sets",
     "read_kmerdb",
     "set_hit_fraction",

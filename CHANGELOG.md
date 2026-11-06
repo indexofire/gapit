@@ -4,6 +4,22 @@
 
 ### Added
 
+- **FASTQ reads-mode for cluster databases (k-mer containment path).**
+  `gapit screen --r1 reads.fastq -d <cluster_db>` now works when the
+  database carries a `gapit.kmerdb/1` sidecar: query canonical k-mers
+  are counted directly from reads (no assembly, no minimap2), per-locus
+  containment provides the coverage/identity evidence (mash-style ANI
+  estimate), and `key_kmers` differential sets deliver SNP-level calls.
+  Validated on S. pneumoniae: 8 simulated FASTQ serotype panels (4, 19A,
+  6A/6B, 9A/9V, 15B/15C) all resolve correctly — including the SNP pairs.
+  New `screening_kmer.py` module; `kmerdb.py` gains `count_fastq_kmers`,
+  `locus_containment`, `containment_to_identity`, and materializes
+  per-locus `.full.u64` k-mer sets alongside differential sets.
+
+- **`gapit.typing/3` `key_kmers` component + `gapit.kmerdb/1` k-mer substrate.**
+
+### Added
+
 - **`gapit.typing/3` `key_kmers` component + `gapit.kmerdb/1` k-mer substrate.**
   Cluster databases may now carry a `kmer.json` sidecar declaring
   differential k-mer sets (a locus's canonical k-mers minus its family

@@ -5,13 +5,13 @@ discrimination that locus coverage/identity cannot deliver (a single SNP
 moves the identity component by ~0.001 but flips the differential set from
 1.0 to 0.0)."""
 
-import json
 from pathlib import Path
 
 import pytest
 
 from gapit.kmerdb import (
     KmerDbDocument,
+    KmerSetSpec,
     count_sequence_kmers,
     iter_canonical_kmer_codes,
     load_kmer_set,
@@ -47,6 +47,7 @@ class TestDifferentialSet:
         differential k-mer set fully covers itself and zero-covers the
         other."""
         import random
+
         rng = random.Random(42)
         base = "".join(rng.choice("ACGT") for _ in range(1200))
         pos = 600
@@ -77,8 +78,8 @@ class TestMaterializeSets:
         doc = KmerDbDocument(
             k=31,
             sets={
-                "locA.diff": {"of": "locA", "against": ["locB"]},
-                "locB.diff": {"of": "locB", "against": ["locA"]},
+                "locA.diff": KmerSetSpec(of="locA", against=("locB",)),
+                "locB.diff": KmerSetSpec(of="locB", against=("locA",)),
             },
         )
         materialize_kmer_sets(tmp_path, doc, sequences)
@@ -96,8 +97,73 @@ class TestMaterializeSets:
     def test_unknown_locus_fails(self, tmp_path: Path):
         sequences = tmp_path / "sequences"
         sequences.write_text(">locA\nACGT\n")
-        doc = KmerDbDocument(k=31, sets={"x": {"of": "ghost", "against": []}})
+        doc = KmerDbDocument(k=31, sets={"x": KmerSetSpec(of="ghost")})
         from gapit.errors import DatabaseError
 
         with pytest.raises(DatabaseError):
             materialize_kmer_sets(tmp_path, doc, sequences)
+
+
+class TestFastqKmerCounting:
+    def test_fastq_kmers_match_fasta(self, tmp_path: Path):
+        """The same sequence counted as FASTA and as simulated FASTQ
+        produces the same canonical k-mer set."""
+        import random
+        rng = random.Random(7)
+        seq = "".join(rng.choice("ACGT") for _ in range(3000))
+        fa = tmp_path / "seq.fna"
+        fa.write_text(f">seq\n{seq}\n")
+        fq = tmp_path / "seq.fastq"
+        reads = [seq[i : i + 250] for i in range(0, len(seq) - 250, 125)]
+        with fq.open("w") as fh:
+            for j, read in enumerate(reads):
+                fh.write(f"@r{j}\n{read}\n+\n{'I' * len(read)}\n")
+        from gapit.kmerdb import count_fastq_kmers, count_fasta_kmers
+
+        fa_codes = count_fasta_kmers(fa, 31)
+        fq_codes = count_fastq_kmers(fq, k=31)
+        # Reads tile with overlap; edge k-mers may differ slightly
+        assert fq_codes <= fa_codes  # no spurious k-mers
+        assert len(fq_codes & fa_codes) / len(fa_codes) > 0.95  # >95% recall
+
+    def test_paired_fastq(self, tmp_path: Path):
+        """Two FASTQ files concatenated count the union."""
+        seq = "ACGT" * 100
+        r1 = tmp_path / "r1.fastq"
+        r2 = tmp_path / "r2.fastq"
+        r1.write_text(f"@a\n{seq[:200]}\n+\n{'I' * 200}\n")
+        r2.write_text(f"@b\n{seq[200:]}\n+\n{'I' * len(seq[200:])}\n")
+        from gapit.kmerdb import count_fastq_kmers, count_sequence_kmers
+
+        union = count_fastq_kmers(r1, r2, k=31)
+        full = count_sequence_kmers(seq, 31)
+        assert union == full
+
+
+class TestContainmentIdentity:
+    def test_perfect_match(self):
+        from gapit.kmerdb import containment_to_identity
+
+        assert containment_to_identity(1.0, 31) == 100.0
+
+    def test_zero(self):
+        from gapit.kmerdb import containment_to_identity
+
+        assert containment_to_identity(0.0, 31) == 0.0
+
+    def test_snp_level_containment(self):
+        """A single SNP in a 1200bp sequence at k=31 reduces containment
+        to ~0.97 but the identity estimate stays above 98% — enough for
+        family-level floors while key_kmers delivers the SNP call."""
+        import random
+        from gapit.kmerdb import containment_to_identity, count_sequence_kmers
+
+        rng = random.Random(3)
+        base = "".join(rng.choice("ACGT") for _ in range(1200))
+        snp = base[:600] + ("A" if base[600] != "A" else "C") + base[601:]
+        codes_a = count_sequence_kmers(base, 31)
+        codes_b = count_sequence_kmers(snp, 31)
+        containment = len(codes_a & codes_b) / len(codes_a)
+        ident = containment_to_identity(containment, 31)
+        assert containment > 0.95
+        assert ident > 98.0
