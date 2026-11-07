@@ -5,7 +5,7 @@
 ### Changed
 
 - **gspec-only.** The pre-0.9 compatibility surface is gone: schema ids,
-  the manifest filename, the FASTA header prefix, the `GAPIT_*` environment
+  the manifest filename, the FASTA header prefix, the pre-0.9 environment
   variables and the pre-0.9 home-directory fallback are no longer read. A
   datadir written by an older release must be migrated once
   (`gspec-manifest.json`, `gspec|` headers, `gspec.*` sidecar ids); the
@@ -513,7 +513,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- **gspec now uses `gseek.compat` for `GAPIT_ENGINE`.** The shared switch
+- **gspec now uses `gseek.compat` for the engine switch.** The shared switch
   replaces gspec's duplicate mode parser and shadow fallback; legacy remains
   the default and gspec still owns its result mapping.
 
@@ -525,7 +525,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Optional gseek engine for BLAST and minimap2.** `GAPIT_ENGINE=legacy|gseek|shadow`
+- **Optional gseek engine for BLAST and minimap2.** `GSPEC_ENGINE=legacy|gseek|shadow`
   routes contig/protein screening, reads, and cluster minimap2 through
   [gseek](https://github.com/indexofire/gseek). `legacy` remains the default and is
   retained on every path; `shadow` logs coarse differences and returns the legacy
@@ -600,7 +600,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   bytes on every gspec-owned surface; a net dependency diet (typer/shellingham/annotated-doc
   out, click in). Framework-rendered help is now plain click, and shell completion moved
   from typer's `--install-completion`/`--show-completion` flags to the
-  `_GAPIT_COMPLETE=bash_source` env-var activation model (bash/zsh/fish; docs updated).
+  `_GSPEC_COMPLETE=bash_source` env-var activation model (bash/zsh/fish; docs updated).
 
 - **`gspec db list`: DESCRIPTION now precedes PROVIDER** (TSV and the rich table), and the
   rich table renders with uniformly thin rule lines (was a heavy header separator).

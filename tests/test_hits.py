@@ -11,8 +11,8 @@ TET_A_TITLE = TET_A_ID + " tetracycline efflux pump TetA"
 SUL1_ID = "tinyamr~~~sul1~~~U12338.4:1-940~~~SULFONAMIDE"
 # A native gspec/v1 seqid (dbcodec encoding of gene "de|mo%A=1" and function
 # classes ampicillin;gentamicin) plus its makeblastdb-style stitle.
-GAPIT_ID = "gspec|db=tinyamr|gene=de%7Cmo%25A%3D1|acc=SYN-DEMO-001|func=ampicillin%3Bgentamicin"
-GAPIT_TITLE = GAPIT_ID + " demo beta-lactamase, variant A"
+TAGGED_ID = "gspec|db=tinyamr|gene=de%7Cmo%25A%3D1|acc=SYN-DEMO-001|func=ampicillin%3Bgentamicin"
+TAGGED_TITLE = TAGGED_ID + " demo beta-lactamase, variant A"
 
 
 def row(
@@ -226,7 +226,7 @@ def test_gspec_seqid_decodes_tagged_fields() -> None:
     """Given a native gspec/v1 sseqid (metachar gene, joined function classes),
     When processed, Then the gene decodes verbatim and function renders in the
     abricate display form 'a;b'."""
-    (hit,) = process([row(sseqid=GAPIT_ID, stitle=GAPIT_TITLE)])
+    (hit,) = process([row(sseqid=TAGGED_ID, stitle=TAGGED_TITLE)])
     assert hit.gene == "de|mo%A=1"
     assert hit.database == "tinyamr"
     assert hit.accession == "SYN-DEMO-001"
@@ -237,7 +237,7 @@ def test_gspec_stitle_strips_leading_tagged_seqid() -> None:
     """Given a makeblastdb-style stitle prefixed with the tagged seqid, When
     processed, Then the leading token is dropped and commas/tabs are stripped
     (same cleanup as the ~~~ rule, minus the comma in the fixture)."""
-    (hit,) = process([row(sseqid=GAPIT_ID, stitle=GAPIT_TITLE)])
+    (hit,) = process([row(sseqid=TAGGED_ID, stitle=TAGGED_TITLE)])
     assert hit.product == "demo beta-lactamase variant A"
 
 
@@ -245,8 +245,8 @@ def test_gspec_bare_seqid_stitle_stays() -> None:
     """Given a stitle that is only the tagged seqid (no description), When
     processed, Then it stays verbatim — the Perl leading-token regex requires
     trailing whitespace, so a bare id is never stripped (quirk parity)."""
-    (hit,) = process([row(sseqid=GAPIT_ID, stitle=GAPIT_ID)])
-    assert hit.product == GAPIT_ID
+    (hit,) = process([row(sseqid=TAGGED_ID, stitle=TAGGED_ID)])
+    assert hit.product == TAGGED_ID
 
 
 def test_gspec_and_legacy_rows_decode_side_by_side() -> None:
@@ -255,7 +255,7 @@ def test_gspec_and_legacy_rows_decode_side_by_side() -> None:
     product cleanup (distinct query spans, so dedup keeps both)."""
     rows = [
         row(),
-        row(sseqid=GAPIT_ID, stitle=GAPIT_TITLE, qstart=200, qend=439, qlen=439),
+        row(sseqid=TAGGED_ID, stitle=TAGGED_TITLE, qstart=200, qend=439, qlen=439),
     ]
     legacy, native = process(rows)
     assert legacy.gene == "tetA"

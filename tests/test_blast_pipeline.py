@@ -47,11 +47,11 @@ def test_blastn_receives_normalized_fasta_on_stdin(
     the native converter feeds blast verbatim (the old pipe's contract)."""
     bin_dir = fake_path(monkeypatch, tmp_path)
     dump = tmp_path / "stdin.txt"
-    monkeypatch.setenv("GAPIT_STDIN_DUMP", str(dump))
+    monkeypatch.setenv("GSPEC_STDIN_DUMP", str(dump))
     write_fake_blastn(
         bin_dir,
         "import os, sys\n"
-        "with open(os.environ['GAPIT_STDIN_DUMP'], 'w') as fh:\n"
+        "with open(os.environ['GSPEC_STDIN_DUMP'], 'w') as fh:\n"
         "    fh.write(sys.stdin.read())\n"
         "sys.exit(0)\n",
     )

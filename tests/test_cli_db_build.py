@@ -36,8 +36,8 @@ AMINO = "".join(
 PLAIN_FASTA = f">demov2 demo beta-lactamase variant 2\n{SEQ_A}\n>demov3 demo efflux pump\n{SEQ_B}\n"
 TILDE_SEQID = "olddb~~~tilde1~~~SYN-001~~~SULFONAMIDE"
 TILDE_FASTA = f">{TILDE_SEQID} tilde demo protein\n{SEQ_C}\n"
-GAPIT_SEQID = "gspec|db=olddb|gene=tagged1|acc=SYN-002|func=ampicillin;gentamicin"
-GAPIT_FASTA = f">{GAPIT_SEQID} tagged demo protein\n{SEQ_D}\n"
+TAGGED_SEQID = "gspec|db=olddb|gene=tagged1|acc=SYN-002|func=ampicillin;gentamicin"
+TAGGED_FASTA = f">{TAGGED_SEQID} tagged demo protein\n{SEQ_D}\n"
 
 runner = CliRunner()
 envelope_adapter = TypeAdapter(ErrorEnvelope)
@@ -137,7 +137,7 @@ def test_db_build_gspec_headers_roundtrip(tmp_path: Path) -> None:
     accession and the multi-class function decode back through screening
     (roundtrip) and source_id keeps the original id token."""
     fasta = tmp_path / "tagged.fa"
-    fasta.write_text(GAPIT_FASTA, encoding="utf-8")
+    fasta.write_text(TAGGED_FASTA, encoding="utf-8")
     datadir = tmp_path / "datadir"
     datadir.mkdir()
 
@@ -163,7 +163,7 @@ def test_db_build_mixed_header_file(tmp_path: Path) -> None:
     """Given one FASTA mixing plain, `~~~` and gspec| headers, When built,
     Then each record is parsed per its own header kind (db = NAME for all)."""
     fasta = tmp_path / "mixed.fa"
-    fasta.write_text(f"{PLAIN_FASTA}{TILDE_FASTA}{GAPIT_FASTA}", encoding="utf-8")
+    fasta.write_text(f"{PLAIN_FASTA}{TILDE_FASTA}{TAGGED_FASTA}", encoding="utf-8")
     datadir = tmp_path / "datadir"
     datadir.mkdir()
 
