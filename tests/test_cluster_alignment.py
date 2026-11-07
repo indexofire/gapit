@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Literal
 
-from gapit.cluster_alignment import build_locus_alignment, gene_query_spans
-from gapit.cluster_math import parse_cs, parse_cs_steps
-from gapit.gbfeatures import GeneFeature, LocusFeatures
-from gapit.paf import PafRecord
+from gspec.cluster_alignment import build_locus_alignment, gene_query_spans
+from gspec.cluster_math import parse_cs, parse_cs_steps
+from gspec.gbfeatures import GeneFeature, LocusFeatures
+from gspec.paf import PafRecord
 
 LOCUS = LocusFeatures(
     id="OL1",

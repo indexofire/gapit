@@ -19,20 +19,20 @@ from typing import Literal
 import pytest
 from click.testing import CliRunner
 
-from gapit import screening, screening_cluster
-from gapit.blast import BlastRow
-from gapit.cli import app
-from gapit.cluster import ClusterParams, ClusterReport, load_features, screen_cluster_file
-from gapit.db import Database, make_blast_db
-from gapit.fasta import iter_fasta
-from gapit.formats.cluster_md import cluster_md_file_chunk, cluster_md_head, render_cluster_md
-from gapit.formats.md import md_report_chunk, md_report_preamble, render_markdown
-from gapit.formats.tsv import format_tsv, tsv_file_chunk, tsv_preamble
-from gapit.gbfeatures import FeaturesDocument
-from gapit.hits import process_rows
-from gapit.report import Report, ScreeningParams
-from gapit.screening import OutputFormat, find_database, run_screen
-from gapit.screening_cluster import run_cluster_screen
+from gspec import screening, screening_cluster
+from gspec.blast import BlastRow
+from gspec.cli import app
+from gspec.cluster import ClusterParams, ClusterReport, load_features, screen_cluster_file
+from gspec.db import Database, make_blast_db
+from gspec.fasta import iter_fasta
+from gspec.formats.cluster_md import cluster_md_file_chunk, cluster_md_head, render_cluster_md
+from gspec.formats.md import md_report_chunk, md_report_preamble, render_markdown
+from gspec.formats.tsv import format_tsv, tsv_file_chunk, tsv_preamble
+from gspec.gbfeatures import FeaturesDocument
+from gspec.hits import process_rows
+from gspec.report import Report, ScreeningParams
+from gspec.screening import OutputFormat, find_database, run_screen
+from gspec.screening_cluster import run_cluster_screen
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"

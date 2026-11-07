@@ -8,14 +8,14 @@ real binary).
 
 import pytest
 
-from gapit.cluster_math import (
+from gspec.cluster_math import (
     PARTIAL_MIN_COV,
     gene_verdict,
     intersect_coverage,
     locus_sort_key,
     parse_cs,
 )
-from gapit.errors import GapitError
+from gspec.errors import GapitError
 
 
 class TestParseCs:

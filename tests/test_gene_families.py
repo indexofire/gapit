@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from gapit.errors import DatabaseError
-from gapit.gbfeatures import FeaturesDocument, GeneFeature, LocusFeatures
-from gapit.gene_families import (
+from gspec.errors import DatabaseError
+from gspec.gbfeatures import FeaturesDocument, GeneFeature, LocusFeatures
+from gspec.gene_families import (
     GeneFamilyDocument,
     HomologyHit,
     build_family_document,

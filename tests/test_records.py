@@ -5,9 +5,9 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from gapit.errors import InputError
-from gapit.formats.json import ToolDocument
-from gapit.records import (
+from gspec.errors import InputError
+from gspec.formats.json import ToolDocument
+from gspec.records import (
     Manifest,
     Record,
     count_records,

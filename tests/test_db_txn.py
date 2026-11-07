@@ -6,12 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from gapit import db as db_module
-from gapit import db_build_ops
-from gapit.db import discover_databases, make_blast_db
-from gapit.db_build_ops import perform_build
-from gapit.db_txn import staged_database
-from gapit.errors import DatabaseError, DependencyError
+from gspec import db as db_module
+from gspec import db_build_ops
+from gspec.db import discover_databases, make_blast_db
+from gspec.db_build_ops import perform_build
+from gspec.db_txn import staged_database
+from gspec.errors import DatabaseError, DependencyError
 
 SEQ = "ACGT" * 20
 

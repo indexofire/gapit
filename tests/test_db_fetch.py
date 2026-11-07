@@ -13,8 +13,8 @@ import pytest
 from click.testing import CliRunner
 from pydantic import TypeAdapter
 
-from gapit.cli import app
-from gapit.errors import ErrorEnvelope
+from gspec.cli import app
+from gspec.errors import ErrorEnvelope
 
 runner = CliRunner()
 envelope_adapter = TypeAdapter(ErrorEnvelope)

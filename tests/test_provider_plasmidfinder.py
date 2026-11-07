@@ -17,9 +17,9 @@ import zipfile
 from collections.abc import Mapping
 from pathlib import Path
 
-from gapit.providers.common import Provider
-from gapit.providers.plasmidfinder import PROVIDER, transform
-from gapit.records import Record
+from gspec.providers.common import Provider
+from gspec.providers.plasmidfinder import PROVIDER, transform
+from gspec.records import Record
 
 FIXTURES = Path(__file__).parent / "data" / "providers" / "plasmidfinder"
 TOP = "fake-pf-xyz"  # arbitrary bitbucket-style top-level directory

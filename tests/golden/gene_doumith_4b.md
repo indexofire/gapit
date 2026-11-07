@@ -1,6 +1,6 @@
 ---
 schema: gapit.report/1
-tool: gspec 0.8.0
+tool: gspec 0.8.1
 created_at: 2026-10-01T12:00:00Z
 db: doumith
 minid: 80.0

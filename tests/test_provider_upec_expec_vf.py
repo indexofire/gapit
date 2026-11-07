@@ -6,7 +6,7 @@ upstream ``abricate-get_db get_upec_expec_vf`` semantics — rows keyed by
 ``Accession/Source:Begin-End``, and function the locked ``virulence``
 constant (the TSV Class column is source metadata, NOT the function slot —
 Wave F2c). Sequences stay RAW here: normalization, sequence dedupe, and
-sorting belong to the generic :func:`gapit.providers.common.fetch_provider`
+sorting belong to the generic :func:`gspec.providers.common.fetch_provider`
 pipeline.
 """
 
@@ -15,8 +15,8 @@ from pathlib import Path
 
 import pytest
 
-from gapit.errors import DatabaseError
-from gapit.records import Record
+from gspec.errors import DatabaseError
+from gspec.records import Record
 
 FIXTURE = Path(__file__).parent / "data" / "providers" / "upec_expec_vf"
 
@@ -40,7 +40,7 @@ def test_transform_yields_exact_records_when_fixture_is_well_formed(
     well-formed rows become Records in file order — db/gene/source_id set,
     accession joined as Accession/Source:Begin-End, product from
     Description, function the locked virulence constant."""
-    from gapit.providers.upec_expec_vf import transform
+    from gspec.providers.upec_expec_vf import transform
 
     records = tuple(transform(workdir_with_fixture(tmp_path)))
 
@@ -72,7 +72,7 @@ def test_transform_keeps_first_occurrence_when_gene_name_duplicates(
     """Given two rows sharing Gene name 'chuA' with entirely different data,
     When transformed, Then only the FIRST row survives (upstream ||=) — the
     later duplicate's accession, sequence, and product are nowhere."""
-    from gapit.providers.upec_expec_vf import transform
+    from gspec.providers.upec_expec_vf import transform
 
     records = tuple(transform(workdir_with_fixture(tmp_path)))
 
@@ -88,7 +88,7 @@ def test_transform_skips_row_when_sequence_is_empty(tmp_path: Path) -> None:
     """Given a row whose Sequence column is empty, When transformed, Then no
     Record is emitted for that gene (upstream would splice undef pieces; the
     deviation is noted in the Phase 7 notepad)."""
-    from gapit.providers.upec_expec_vf import transform
+    from gspec.providers.upec_expec_vf import transform
 
     records = tuple(transform(workdir_with_fixture(tmp_path)))
 
@@ -102,7 +102,7 @@ def test_transform_function_is_locked_constant_when_class_is_multi_word(
     transformed, Then function is exactly the locked ('virulence',)
     constant — the TSV Class column is source metadata and must NOT leak
     into the function slot (Wave F2c)."""
-    from gapit.providers.upec_expec_vf import transform
+    from gspec.providers.upec_expec_vf import transform
 
     records = tuple(transform(workdir_with_fixture(tmp_path)))
 
@@ -117,7 +117,7 @@ def test_transform_raises_when_required_column_missing_from_header(
     transformed, Then DatabaseError PROVIDER_MALFORMED (exit 4) names the
     file and the missing columns in required-order (parse, don't validate:
     upstream would silently build all-undef records instead)."""
-    from gapit.providers.upec_expec_vf import transform
+    from gspec.providers.upec_expec_vf import transform
 
     workdir = tmp_path / "work"
     workdir.mkdir()
@@ -139,7 +139,7 @@ def test_provider_metadata_when_inspected() -> None:
     """Given the module's PROVIDER value, When inspected, Then name,
     description, source URLs, dbtype, and the transform wiring match the
     frozen Wave B contract exactly."""
-    from gapit.providers.upec_expec_vf import PROVIDER, transform
+    from gspec.providers.upec_expec_vf import PROVIDER, transform
 
     assert PROVIDER.name == "upec_expec_vf"
     assert PROVIDER.description == "UPEC/ExPEC virulence genes (FordeGenomics)"

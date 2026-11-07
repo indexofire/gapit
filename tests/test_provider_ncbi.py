@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from gapit.providers.ncbi import PROVIDER, transform
-from gapit.records import Record
+from gspec.providers.ncbi import PROVIDER, transform
+from gspec.records import Record
 
 WORKDIR = Path(__file__).parent / "data" / "providers" / "ncbi"
 

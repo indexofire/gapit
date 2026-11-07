@@ -20,13 +20,13 @@ from typing import Any
 import pytest
 from click.testing import CliRunner, Result
 
-from gapit.cli import app
-from gapit.cluster import ClusterParams, load_features, screen_cluster_file
-from gapit.db import discover_databases
-from gapit.fasta import iter_fasta
-from gapit.formats.cluster import format_cluster_tsv, render_cluster_json
-from gapit.formats.cluster_md import render_cluster_md
-from gapit.mcp import serve
+from gspec.cli import app
+from gspec.cluster import ClusterParams, load_features, screen_cluster_file
+from gspec.db import discover_databases
+from gspec.fasta import iter_fasta
+from gspec.formats.cluster import format_cluster_tsv, render_cluster_json
+from gspec.formats.cluster_md import render_cluster_md
+from gspec.mcp import serve
 
 DATA = Path(__file__).parent / "data" / "cluster"
 GENE_DB = Path(__file__).parent / "data" / "db"

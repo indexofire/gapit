@@ -18,10 +18,10 @@ from typing import Any
 
 import pytest
 
-from gapit.fasta import iter_fasta
-from gapit.mcp import serve
-from gapit.providers.common import Provider
-from gapit.records import Manifest, Record, read_manifest, write_manifest, write_records
+from gspec.fasta import iter_fasta
+from gspec.mcp import serve
+from gspec.providers.common import Provider
+from gspec.records import Manifest, Record, read_manifest, write_manifest, write_records
 
 SYN = "synamr"
 SEQ = "ACGTAG" * 10  # 60 bp, the synthetic-fixture convention
@@ -360,11 +360,11 @@ def syn_transform(workdir: Path) -> Iterable[Record]:
 
 
 def patch_file_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """One file:// provider in gapit.db_ops.REGISTRY + an empty datadir."""
+    """One file:// provider in gspec.db_ops.REGISTRY + an empty datadir."""
     source = tmp_path / "upstream.fa"
     source.write_text(UPSTREAM_FASTA, encoding="utf-8")
     monkeypatch.setattr(
-        "gapit.db_ops.REGISTRY",
+        "gspec.db_ops.REGISTRY",
         {
             SYN: Provider(
                 name=SYN,
@@ -449,7 +449,7 @@ def test_db_fetch_default_set_downloads_card_vfdb(
     source.write_text(UPSTREAM_FASTA, encoding="utf-8")
     url = source.as_uri()
     monkeypatch.setattr(
-        "gapit.db_ops.REGISTRY",
+        "gspec.db_ops.REGISTRY",
         {
             name: Provider(
                 name=name,

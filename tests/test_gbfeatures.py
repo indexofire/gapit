@@ -1,4 +1,4 @@
-"""Tests for the GenBank FEATURES/ORIGIN parser (gapit.gbfeatures).
+"""Tests for the GenBank FEATURES/ORIGIN parser (gspec.gbfeatures).
 
 Fixtures under tests/data/cluster cover both real-world styles the cluster
 databases ship in: Bakta/modern (LOCUS id + CDS qualifiers) and kaptive-style
@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from gapit.errors import InputError
-from gapit.gbfeatures import parse_genbank_features
+from gspec.errors import InputError
+from gspec.gbfeatures import parse_genbank_features
 
 DATA = Path(__file__).parent / "data" / "cluster"
 REAL_CPS = Path("/tmp/opencode/vpautils/src/vpautils/database/serotype/CPSgc.gbk")

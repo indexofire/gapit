@@ -1,8 +1,8 @@
 """Relative-depth presence gating and the DEPTH_RATIO table column."""
 
-from gapit.formats.reads_tsv import reads_tsv_chunk, reads_tsv_preamble
-from gapit.paf import PafRecord
-from gapit.reads import GeneCoverage, ReadsReport, aggregate_coverage
+from gspec.formats.reads_tsv import reads_tsv_chunk, reads_tsv_preamble
+from gspec.paf import PafRecord
+from gspec.reads import GeneCoverage, ReadsReport, aggregate_coverage
 
 LPXA = "db~~~lpxA~~~ACC~~~CONTROL"
 GENE_A = "db~~~geneA~~~ACC~~~RES"
@@ -113,8 +113,8 @@ def test_tsv_appends_depth_ratio_in_relative_mode() -> None:
 def test_reads2_json_carries_relative_depth_when_active() -> None:
     from datetime import UTC, datetime
 
-    from gapit.formats.reads_json import render_reads2_json
-    from gapit.reads import ReadsParams
+    from gspec.formats.reads_json import render_reads2_json
+    from gspec.reads import ReadsParams
 
     report = ReadsReport(
         reads=("sample",),

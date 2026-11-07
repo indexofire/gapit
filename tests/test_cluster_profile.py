@@ -7,16 +7,16 @@ from pathlib import Path
 
 import pytest
 
-from gapit.bundled import find_bundled
-from gapit.cluster import runs_by_locus
-from gapit.cluster_profile import (
+from gspec.bundled import find_bundled
+from gspec.cluster import runs_by_locus
+from gspec.cluster_profile import (
     CLUSTER_PROFILE_FILENAME,
     load_cluster_profile,
 )
-from gapit.db import Database
-from gapit.errors import DatabaseError
-from gapit.paf import PafRecord
-from gapit.screening_cluster import resolve_cluster_params
+from gspec.db import Database
+from gspec.errors import DatabaseError
+from gspec.paf import PafRecord
+from gspec.screening_cluster import resolve_cluster_params
 
 
 def _database(tmp_path: Path) -> Database:
@@ -139,9 +139,9 @@ def test_fallback_evidence_is_scheme_family_scoped() -> None:
     """Given a low-confidence O/K fallback, When evidence is enabled, Then
     O reports the best OL locus and K reports the best KL locus — never a
     cross-family locus."""
-    from gapit.cluster import ClusterReport, LocusCall
-    from gapit.typing_cluster2 import evaluate_cluster2
-    from gapit.typing_models import TypingDocument
+    from gspec.cluster import ClusterReport, LocusCall
+    from gspec.typing_cluster2 import evaluate_cluster2
+    from gspec.typing_models import TypingDocument
 
     ol = LocusCall(
         locus="OL3",

@@ -197,7 +197,7 @@ distinct genes; cells are `;`-joined original metric strings in file order
 | Databases, providers, bundles, headers | `docs/databases.md`, `docs/datadir.md` |
 | gseek engine | `docs/gseek-engine.md` |
 | MCP | `docs/mcp.md` |
-| Output schemas | `gspec schema <name>` (`gapit.schema` registry) |
+| Output schemas | `gspec schema <name>` (`gspec.schema` registry) |
 
 ## 8. Change policy
 

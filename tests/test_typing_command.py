@@ -18,17 +18,17 @@ from typing import Any
 import pytest
 from click.testing import CliRunner
 
-from gapit import cmd_typing
-from gapit.cli import app
-from gapit.cluster import GeneCall, load_typing
-from gapit.db import discover_databases
-from gapit.formats.typing_result import (
+from gspec import cmd_typing
+from gspec.cli import app
+from gspec.cluster import GeneCall, load_typing
+from gspec.db import discover_databases
+from gspec.formats.typing_result import (
     TypingFileResult,
     render_typing_md,
     render_typing_result_json,
 )
-from gapit.typing_gene import evaluate_gene_calls
-from gapit.typing_input import read_typing_input
+from gspec.typing_gene import evaluate_gene_calls
+from gspec.typing_input import read_typing_input
 
 DATA = Path(__file__).parent / "data" / "typing"
 GOLDEN = Path(__file__).parent / "golden"

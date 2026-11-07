@@ -1,4 +1,4 @@
-"""Tests for the GFF3 cluster parser (gapit.gffparse).
+"""Tests for the GFF3 cluster parser (gspec.gffparse).
 
 Embedded ``##FASTA`` sections and sidecar ``<stem>.fa`` files must both work;
 each FASTA sequence becomes one locus and CDS rows become its genes. GFF
@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from gapit.errors import InputError
-from gapit.gffparse import parse_gff3_features
+from gspec.errors import InputError
+from gspec.gffparse import parse_gff3_features
 
 DATA = Path(__file__).parent / "data" / "cluster"
 

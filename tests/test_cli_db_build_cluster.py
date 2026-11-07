@@ -14,11 +14,11 @@ from pathlib import Path
 from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
 
-from gapit.cli import app
-from gapit.errors import ErrorEnvelope
-from gapit.gbfeatures import FeaturesDocument
-from gapit.records import read_manifest
-from gapit.typing_models import read_typing_document
+from gspec.cli import app
+from gspec.errors import ErrorEnvelope
+from gspec.gbfeatures import FeaturesDocument
+from gspec.records import read_manifest
+from gspec.typing_models import read_typing_document
 
 DATA = Path(__file__).parent / "data" / "cluster"
 DB = "myclusters"

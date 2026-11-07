@@ -53,9 +53,11 @@ Build and upload from the project environment, not from whatever `twine` happens
 to be first on `PATH`:
 
 ```bash
-pixi run python -m build
-pixi run python -m twine check dist/*
-pixi run python -m twine upload dist/gspec-*
+pixi run python -m build                      # gspec wheel/sdist
+pixi run python -m build packaging/gapit-shim # gapit compatibility package
+pixi run python -m twine check dist/* packaging/gapit-shim/dist/*
+pixi run python -m twine upload dist/gspec-*  # gspec first: the shim depends on it
+pixi run python -m twine upload packaging/gapit-shim/dist/gapit-*
 ```
 
 The wheel declares `Metadata-Version: 2.5` (PEP 639 `License-Expression`), which

@@ -1,0 +1,94 @@
+"""megares database provider — MEGARes v3 antimicrobial resistance genes.
+
+Transform-only Wave B9 module: ``PROVIDER`` wires the pinned metadata into
+the frozen B0 :class:`gspec.providers.common.Provider` contract and
+:func:`transform` unpacks the downloaded ``megares_v3.00.zip`` and parses
+every ``megares_drugs_*.fasta`` inside it into typed Records.
+"""
+
+import zipfile
+from collections.abc import Iterator
+from pathlib import Path
+
+from gspec.db_info_models import DbGuidance, DbReference
+from gspec.fasta import iter_fasta
+from gspec.providers.common import Provider, safe_extractall
+from gspec.records import Record
+
+NAME = "megares"
+ARCHIVE = "megares_v3.00.zip"
+_DATABASE_GLOB = "megares_drugs_*.fasta"
+
+
+def transform(workdir: Path) -> Iterator[Record]:
+    """Extract ``workdir/megares_v3.00.zip`` and parse every nested
+    ``megares_drugs_*.fasta`` into Records (db = megares).
+
+    MEGARes v3 header convention (abricate-get_db ``get_megares``):
+    ``>id|type|class|mech|group|note`` where the note field exists only on
+    records requiring SNP confirmation — a non-empty note skips the record
+    (SPEC §8). Keepers map gene=group, accession=source_id=id (the MEG_
+    number), product=colon-joined type/class/mech/group; function = the
+    ``class`` field (x[2], e.g. Tetracyclines) as a 1-tuple — upstream
+    sets no ABX, the class IS the functional category. Archives often nest
+    the fasta one directory deep — upstream
+    ``unzip -j`` flattens, here the glob is recursive (sorted, so multi-file
+    archives parse deterministically).
+
+    Documented deviation: upstream perl splits into six list variables and
+    keeps records even when fields are missing (undef gene, empty product
+    pieces); gspec skips ids with fewer than 5 pipe-fields or an empty among
+    the 5 leading ones. ``split('|', 5)`` mirrors perl's implicit
+    list-assignment limit: any pipes past the group fold into the note, and
+    a folded note is non-empty, so over-long ids skip exactly like upstream.
+    """
+    with zipfile.ZipFile(workdir / ARCHIVE) as archive:
+        safe_extractall(archive, workdir)
+    for fasta_path in sorted(workdir.rglob(_DATABASE_GLOB)):
+        for fasta in iter_fasta(fasta_path):
+            parts = fasta.id.split("|", 5)
+            if len(parts) < 5 or "" in parts[:5]:
+                continue
+            if len(parts) == 6 and parts[5]:
+                continue
+            yield Record(
+                db=NAME,
+                gene=parts[4],
+                accession=parts[0],
+                function=(parts[2],),
+                product=":".join(parts[1:5]),
+                sequence=fasta.sequence,
+                source_id=parts[0],
+            )
+
+
+PROVIDER = Provider(
+    name=NAME,
+    description="MEGARes antimicrobial resistance genes",
+    vendor="MEG Lab",
+    source_urls=("https://www.meglab.org/downloads/megares_v3.00.zip",),
+    dbtype="nucl",
+    transform=transform,
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Bonin N, Doster E, Worley H, Pinnell LJ, Bravo JE, Ferm P, et al."
+                    " MEGARes and AMR++, v3.0: an updated comprehensive database of"
+                    " antimicrobial resistance determinants and an improved software pipeline"
+                    " for classification using high-throughput sequencing."
+                    " Nucleic Acids Res 2023;51(D1):D744-D752."
+                ),
+                doi="10.1093/nar/gkac1047",
+            ),
+        ),
+        caveats=(
+            "MEGARes is a hierarchical classification (class / mechanism / group), built for"
+            " read classification with AMR++. Screening it with blastn gives presence of a"
+            " determinant, not AMR++'s abundance-weighted resistome profile.",
+            "The nucleotide panel mixes point-mutation and gene records; a mutation record"
+            " only matches when the surrounding gene is present, so absence is not evidence"
+            " of susceptibility.",
+        ),
+    ),
+)

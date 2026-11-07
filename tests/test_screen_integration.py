@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from gapit.blast import screen_file
-from gapit.db import Database, discover_databases, make_blast_db
-from gapit.errors import InputError
-from gapit.report import ScreeningParams
+from gspec.blast import screen_file
+from gspec.db import Database, discover_databases, make_blast_db
+from gspec.errors import InputError
+from gspec.report import ScreeningParams
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"

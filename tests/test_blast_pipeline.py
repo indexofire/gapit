@@ -12,10 +12,10 @@ from pathlib import Path
 
 import pytest
 
-from gapit.blast import run_blastn
-from gapit.db import Database
-from gapit.errors import DependencyError, GapitError
-from gapit.report import ScreeningParams
+from gspec.blast import run_blastn
+from gspec.db import Database
+from gspec.errors import DependencyError, GapitError
+from gspec.report import ScreeningParams
 
 LOWERCASE_FASTA = ">contig1\nacgtacgtac\n"
 

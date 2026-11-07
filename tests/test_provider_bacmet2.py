@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pytest
 
-from gapit.providers.bacmet2 import PROVIDER, transform
-from gapit.records import Record
+from gspec.providers.bacmet2 import PROVIDER, transform
+from gspec.records import Record
 
 FIXTURE = Path(__file__).parent / "data" / "providers" / "bacmet2" / "BacMet2_EXP_database.fasta"
 

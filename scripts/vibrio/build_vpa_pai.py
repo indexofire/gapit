@@ -30,7 +30,7 @@ from collections.abc import Iterable
 from datetime import UTC, datetime
 from pathlib import Path
 
-from gapit.gbfeatures import GeneFeature, LocusFeatures, write_features_document
+from gspec.gbfeatures import GeneFeature, LocusFeatures, write_features_document
 
 #: (locus id, source record, start, end).  Coordinates are 1-based and
 #: inclusive.  VPaI-1..7 use the published RIMD coordinates (the 2026

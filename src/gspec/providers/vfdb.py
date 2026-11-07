@@ -1,0 +1,120 @@
+"""VFDB provider (set A, nucleotide) — transform only.
+
+Download-on-fetch only: VFDB content is CC BY-NC (non-commercial), which an
+MIT-licensed wheel must not redistribute (license audit 2026-09).
+
+Upstream ``get_vfdb`` (abricate-get_db 1.4.0) decompresses
+``VFDB_setA_nt.fas.gz`` and, per record, pulls the accession from the
+``<gene>(<db>|<acc>.<version>)`` id suffix and renames the gene to the
+leading paren group of the description::
+
+    >VFG000676(gb|AAD32411) (lef) anthrax toxin lethal factor precursor ...
+
+Perl quirk: a record failing either regex keeps the PREVIOUS record's $1/$2
+(stale fields). We skip such records instead — see the phase 7 notepad.
+
+Encoding quirk (Wave E): the real ``VFDB_setA_nt.fas.gz`` is not UTF-8-clean
+(a latin-1 0xA0 nbsp crashes ``gspec.fasta``'s strict decoder), so the
+decompressed bytes are decoded as latin-1 before parsing — see the comment
+in :func:`transform`.
+"""
+
+import gzip
+import re
+from collections.abc import Iterable
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+
+from gspec.db_info_models import DbGuidance, DbReference
+from gspec.fasta import iter_fasta
+from gspec.providers.common import Provider
+from gspec.records import Record
+
+_NAME = "vfdb"
+
+# Upstream regexes verbatim (abricate issue #64 comment by @VGalata):
+# accession = group 2; group 3 (".2" version suffix) is consumed, not used.
+_ID = re.compile(r"^(\w+)\(\w+\|(\w+)(\.\d+)?\)$")
+_DESC = re.compile(r"^\((.*?)\)")
+
+
+def transform(workdir: Path) -> Iterable[Record]:
+    """Yield Records from ``workdir/VFDB_setA_nt.fas.gz``.
+
+    The gunzipped text is decoded as latin-1 into a scratch UTF-8 file for
+    :func:`gspec.fasta.iter_fasta` (it takes a path); the scratch file is
+    removed on completion or early generator close (argannot precedent).
+
+    A record failing EITHER regex is skipped; product keeps the full
+    description (upstream leaves DESC untouched) and source_id keeps the
+    original id.
+    """
+    # Byte-preserving decode: upstream perl is byte-oriented here, and
+    # latin-1 maps every byte 1:1 — descriptions keep the character and
+    # sequence junk flows on to fetch_provider's N-normalization. Our
+    # JSONL/FASTA outputs are UTF-8 by contract, so writing the scratch
+    # file as UTF-8 re-encodes the character deterministically. Never
+    # errors="replace": that would silently rewrite the data.
+    text = gzip.decompress((workdir / "VFDB_setA_nt.fas.gz").read_bytes()).decode("latin-1")
+    with NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        newline="\n",
+        prefix=".vfdb.",
+        suffix=".fas",
+        dir=workdir,
+        delete=False,
+    ) as handle:
+        handle.write(text)
+        scratch = Path(handle.name)
+    try:
+        for fasta in iter_fasta(scratch):
+            id_match = _ID.match(fasta.id)
+            desc_match = _DESC.match(fasta.description)
+            if id_match is None or desc_match is None:
+                continue
+            yield Record(
+                db=_NAME,
+                gene=desc_match.group(1),
+                sequence=fasta.sequence,
+                accession=id_match.group(2),
+                function=("virulence",),
+                product=fasta.description,
+                source_id=fasta.id,
+            )
+    finally:
+        scratch.unlink(missing_ok=True)
+
+
+PROVIDER = Provider(
+    name=_NAME,
+    description="VFDB virulence factors (set A, nucleotide)",
+    vendor="USTC (VFDB)",
+    source_urls=("https://www.mgc.ac.cn/VFs/Down/VFDB_setA_nt.fas.gz",),
+    dbtype="nucl",
+    transform=transform,
+    license="CC BY-NC 4.0 (non-commercial)",
+    guidance=DbGuidance(
+        references=(
+            DbReference(
+                citation=(
+                    "Liu B, Zheng D, Zhou S, Chen L, Yang J. VFDB 2022: a general"
+                    " classification scheme for bacterial virulence factors."
+                    " Nucleic Acids Res 2022;50(D1):D912-D917."
+                ),
+                doi="10.1093/nar/gkab1107",
+            ),
+        ),
+        caveats=(
+            "VFDB set A/B records are virulence factor families, not pathotype markers:"
+            " presence of a VF gene says the genetic potential exists, not that it is"
+            " expressed or that the isolate is virulent.",
+            "Many VF genes are core-genome housekeeping-adjacent or horizontally mobile;"
+            " report the class (adhesin, toxin, secretion system) rather than a single hit"
+            " as a virulence verdict.",
+            "VFDB content is CC BY-NC: nothing ships in the wheel, and `db fetch vfdb`"
+            " downloads at fetch time — check the licence before redistributing results"
+            " bundles that embed the sequences.",
+        ),
+    ),
+)

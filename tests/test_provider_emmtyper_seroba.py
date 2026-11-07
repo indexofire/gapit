@@ -7,7 +7,7 @@ conversion with NT-reference exclusion."""
 import random
 from pathlib import Path
 
-from gapit.providers import REGISTRY
+from gspec.providers import REGISTRY
 
 
 class TestEmmtyperProvider:
@@ -21,7 +21,7 @@ class TestEmmtyperProvider:
         assert "GPL" in (REGISTRY["spy_emm"].license or "")
 
     def test_transform_parses_emm_headers(self, tmp_path: Path):
-        from gapit.providers.emmtyper import transform
+        from gspec.providers.emmtyper import transform
 
         emm = tmp_path / "emm.fna"
         emm.write_text(
@@ -42,7 +42,7 @@ class TestEmmtyperProvider:
         assert "Group G strep" in by_gene["STG62647.0"].product
 
     def test_tuf_included_when_data_file_exists(self, tmp_path: Path):
-        from gapit.providers.emmtyper import transform
+        from gspec.providers.emmtyper import transform
 
         emm = tmp_path / "emm.fna"
         emm.write_text(">EMM1.0 test\nACGT\n")
@@ -58,7 +58,7 @@ class TestSerobaProvider:
         assert "spn_sero" in REGISTRY
 
     def test_kind_is_cluster(self):
-        from gapit.providers.cluster_common import ClusterProvider
+        from gspec.providers.cluster_common import ClusterProvider
 
         provider = REGISTRY["spn_sero"]
         assert isinstance(provider, ClusterProvider)
@@ -68,7 +68,7 @@ class TestSerobaProvider:
         assert "GPL" in (REGISTRY["spn_sero"].license or "")
 
     def test_preprocess_and_finalize_hooks(self):
-        from gapit.providers.cluster_common import ClusterProvider
+        from gspec.providers.cluster_common import ClusterProvider
 
         provider = REGISTRY["spn_sero"]
         assert isinstance(provider, ClusterProvider)
@@ -76,7 +76,7 @@ class TestSerobaProvider:
         assert provider.finalize is not None
 
     def test_preprocess_creates_gff3(self, tmp_path: Path):
-        from gapit.providers.seroba import preprocess
+        from gspec.providers.seroba import preprocess
 
         rng = random.Random(11)
         seq1 = "".join(rng.choice("ACGT") for _ in range(1200))
@@ -92,7 +92,7 @@ class TestSerobaProvider:
         assert "CDS" in text
 
     def test_preprocess_drops_nt_references(self, tmp_path: Path):
-        from gapit.providers.seroba import preprocess
+        from gspec.providers.seroba import preprocess
 
         rng = random.Random(12)
         seq = "".join(rng.choice("ACGT") for _ in range(1200))
@@ -114,7 +114,7 @@ class TestStaphscopeProvider:
 
     def test_transform_builds_spa_type_sequences(self, tmp_path: Path):
         """sparepeats.fasta + spatypes.txt → concatenated repeat arrays."""
-        from gapit.providers.staphscope import transform
+        from gspec.providers.staphscope import transform
 
         (tmp_path / "sparepeats.fasta").write_text(
             ">r01\n"
@@ -137,7 +137,7 @@ class TestStaphscopeProvider:
     def test_transform_numeric_order(self, tmp_path: Path):
         """Records are emitted in numeric type order (t214 before t10303):
         BLAST culling tie-breaking depends on subject order."""
-        from gapit.providers.staphscope import transform
+        from gspec.providers.staphscope import transform
 
         (tmp_path / "sparepeats.fasta").write_text(">r01\n" + "ACGT" * 6 + "\n")
         (tmp_path / "spatypes.txt").write_text("t10303,01\nt214,01\n")

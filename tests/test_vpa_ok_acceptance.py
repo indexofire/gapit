@@ -19,9 +19,9 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from gapit.bundled import find_bundled
-from gapit.cli import app
-from gapit.fasta import iter_fasta
+from gspec.bundled import find_bundled
+from gspec.cli import app
+from gspec.fasta import iter_fasta
 
 runner = CliRunner()
 

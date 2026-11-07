@@ -6,8 +6,8 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from gapit import __version__
-from gapit.cli import app
+from gspec import __version__
+from gspec.cli import app
 
 runner = CliRunner()
 
@@ -51,6 +51,6 @@ def test_both_command_names_ship() -> None:
     pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
     document = tomllib.loads(pyproject.read_text(encoding="utf-8"))
     scripts = document["project"]["scripts"]
-    assert scripts["gspec"] == "gapit.cli:app"
-    assert scripts["gapit"] == "gapit.cli:app"
+    assert scripts["gspec"] == "gspec.cli:app"
+    assert scripts["gspec"] == "gspec.cli:app"
     assert document["project"]["name"] == "gspec"

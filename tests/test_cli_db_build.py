@@ -16,9 +16,9 @@ import pytest
 from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
 
-from gapit.cli import app
-from gapit.errors import ErrorEnvelope
-from gapit.records import Record, read_manifest, read_records
+from gspec.cli import app
+from gspec.errors import ErrorEnvelope
+from gspec.records import Record, read_manifest, read_records
 
 DB = "myamr"
 OTHER_DB = "myamr2"

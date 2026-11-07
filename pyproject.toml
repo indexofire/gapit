@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gspec"
-version = "0.8.0"
+version = "0.8.1"
 description = "Declarative typing databases for bacterial genomes: gene-panel and locus screening, serotype/AMR/virulence designation, machine-readable contracts"
 readme = "README.md"
 authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]
@@ -37,17 +37,17 @@ Source = "https://github.com/indexofire/gspec"
 Issues = "https://github.com/indexofire/gspec/issues"
 
 [project.scripts]
-gspec = "gapit.cli:app"
-gspec-mcp = "gapit.mcp:main"
-# Pre-0.8 names, kept as aliases so existing pipelines keep working.
-gapit = "gapit.cli:app"
-gapit-mcp = "gapit.mcp:main"
+gspec = "gspec.cli:app"
+gspec-mcp = "gspec.mcp:main"
+# The pre-0.8 `gapit` / `gapit-mcp` scripts are owned by the `gapit`
+# compatibility distribution (packaging/gapit-shim): pip installs it last, so
+# the files survive the uninstall of a pre-0.8 `gapit` that shares their paths.
 
 [project.optional-dependencies]
 gseek = ["gseek>=0.10.4"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/gapit"]
+packages = ["src/gspec"]
 # Hatchling's `packages` selection ships every non-gitignored file under the
 # package dir (no setuptools-style package_data needed). The only database
 # content riding the wheel is the audited public-domain panel under
@@ -67,7 +67,7 @@ select = ["E", "W", "F", "I", "UP", "B", "C4", "SIM", "RET", "RUF"]
 [tool.ruff.lint.per-file-ignores]
 # mcp_schemas: keyword-style dict(...) is deliberate — it compacts the tool
 # property maps; C408's literal rewrite would re-inflate the module.
-"src/gapit/mcp_schemas.py" = ["C408"]
+"src/gspec/mcp_schemas.py" = ["C408"]
 
 [tool.basedpyright]
 typeCheckingMode = "strict"

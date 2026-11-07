@@ -13,10 +13,10 @@ from pathlib import Path
 
 import pytest
 
-from gapit.db import Database
-from gapit.errors import DependencyError, GapitError
-from gapit.minimap2_run import run_minimap2
-from gapit.paf import PafRecord
+from gspec.db import Database
+from gspec.errors import DependencyError, GapitError
+from gspec.minimap2_run import run_minimap2
+from gspec.paf import PafRecord
 
 # > 64 KB so the child's stderr write blocks unless something drains it.
 STDERR_SPEW = "spew-line-that-never-ends\n" * 3000
@@ -177,7 +177,7 @@ def test_input_paths_are_absolute_and_stdin_is_devnull(
 def test_iter_minimap2_yields_rows_lazily(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Given a Popen that produces PAF rows, When iter_minimap2 is consumed,
     Then the first row is available without materializing the whole lane."""
-    from gapit.minimap2_run import iter_minimap2
+    from gspec.minimap2_run import iter_minimap2
 
     database = Database(name="fakedb", path=tmp_path, sequences_path=Path("sequences"))
     reads = tmp_path / "reads.fq"
@@ -197,8 +197,8 @@ def test_screen_reads_consumes_an_iterator(tmp_path: Path, monkeypatch: pytest.M
     pipeline consumes it without requiring a materialized list."""
     from collections.abc import Iterator
 
-    from gapit.paf import PafRecord
-    from gapit.reads import screen_reads
+    from gspec.paf import PafRecord
+    from gspec.reads import screen_reads
 
     sequences = tmp_path / "sequences"
     sequences.write_text(">gapit|db=db|gene=g1|acc=A|func=f product\n" + "ACGT" * 25 + "\n")
@@ -225,7 +225,7 @@ def test_screen_reads_consumes_an_iterator(tmp_path: Path, monkeypatch: pytest.M
     def fake_iter(*args: object, **kwargs: object) -> Iterator[PafRecord]:
         return rows()
 
-    monkeypatch.setattr("gapit.reads.iter_minimap2", fake_iter)
+    monkeypatch.setattr("gspec.reads.iter_minimap2", fake_iter)
     report = screen_reads(
         [(reads, None)],
         database,

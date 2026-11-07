@@ -1,0 +1,352 @@
+"""Wave A3 build pipeline: records.jsonl -> a fully built gspec-native database.
+
+``build_database`` turns a directory's truth source (``records.jsonl``) into
+the three artifacts consumers rely on — the ``sequences`` FASTA projection,
+its BLAST index, and the ``gapit-manifest.json`` provenance sidecar written
+LAST (it certifies the artifacts). Every step is deterministic, atomic where
+it matters, and self-verifying: the generated headers must decode back
+through :mod:`gspec.dbcodec` before anything is indexed. No minimap2 index
+is persisted: reads mode indexes the ``sequences`` FASTA in memory only
+(docs/reads.md).
+"""
+
+import hashlib
+import os
+import shutil
+from collections.abc import Sequence
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from typing import Literal
+
+from gspec.db import DbHeader, make_blast_db
+from gspec.db_txn import staged_database
+from gspec.dbcodec import decode_seqid, encode_seqid
+from gspec.errors import DatabaseError, DependencyError
+from gspec.fasta import iter_fasta
+from gspec.proctools import note, run_tool
+from gspec.records import (
+    Manifest,
+    Record,
+    count_records,
+    read_records,
+    write_manifest,
+    write_records,
+)
+
+_WRAP_COLUMNS = 60
+_CHUNK_BYTES = 1 << 20
+
+# Sidecars a gene database may carry. typing/floors reference gene ids and the
+# info sidecar holds the database's own literature/caveats; none of them carry
+# the db name, so a re-projection must carry them across verbatim.
+SIDECARS = (
+    "typing.json",
+    "floors.json",
+    "screen.json",
+    "info.json",
+    "markers.json",
+    "serotype.json",
+)
+
+
+def generate_sequences(records_path: Path, sequences_path: Path) -> None:
+    """Stream ``records.jsonl`` into the ``sequences`` FASTA projection.
+
+    One header line per record (``encode_seqid(...)`` + space + product),
+    sequence wrapped at 60 columns, LF endings, UTF-8. Bytes land in a temp
+    file in the target directory and are ``os.replace``d only after the whole
+    file was written, so a failure never leaves a partial ``sequences``.
+
+    Raises DatabaseError ``BUILD_INVALID`` (exit 4) for a record whose product
+    contains a line break or whose sequence is empty, and for a records file
+    with zero records (makeblastdb cannot index nothing); the per-record
+    errors carry the record's gene in context. Duplicate ``(db, gene)`` pairs
+    are allowed and preserved — upstream databases contain them and
+    records.jsonl order is the truth.
+    """
+    temp_path: Path | None = None
+    n_written = 0
+    try:
+        with NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            newline="\n",
+            dir=sequences_path.parent,
+            prefix=f".{sequences_path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as temp:
+            temp_path = Path(temp.name)
+            for record in read_records(records_path):
+                _check_record(record)
+                seqid = encode_seqid(record.db, record.gene, record.accession, record.function)
+                temp.write(f">{seqid} {record.product}\n")
+                for offset in range(0, len(record.sequence), _WRAP_COLUMNS):
+                    temp.write(f"{record.sequence[offset : offset + _WRAP_COLUMNS]}\n")
+                n_written += 1
+        if n_written == 0:
+            raise DatabaseError(
+                f"cannot build {sequences_path}: {records_path} contains no records",
+                code="BUILD_INVALID",
+                context={"file": str(records_path)},
+            )
+        assert temp_path is not None
+        os.replace(temp_path, sequences_path)
+    finally:
+        if temp_path is not None:
+            temp_path.unlink(missing_ok=True)
+
+
+_TABLE_CONTROL = "\t\r\n"
+
+
+def _check_record(record: Record) -> None:
+    """Generation-time validation: the record shapes that would produce a
+    broken FASTA or break the 15-column table contract."""
+    if any(control in record.product for control in _TABLE_CONTROL):
+        raise DatabaseError(
+            f"record {record.gene!r}: product contains a table delimiter",
+            code="BUILD_INVALID",
+            context={"gene": record.gene, "field": "product"},
+        )
+    if not record.sequence:
+        raise DatabaseError(
+            f"record {record.gene!r}: empty sequence",
+            code="BUILD_INVALID",
+            context={"gene": record.gene},
+        )
+    fields: tuple[tuple[str, str], ...] = (
+        ("db", record.db),
+        ("gene", record.gene),
+        ("accession", record.accession),
+        *((f"function[{index}]", value) for index, value in enumerate(record.function)),
+    )
+    for field, value in fields:
+        if any(control in value for control in _TABLE_CONTROL):
+            raise DatabaseError(
+                f"record {record.gene!r}: {field} contains a table delimiter",
+                code="BUILD_INVALID",
+                context={"gene": record.gene, "field": field},
+            )
+
+
+def validate_records(records: Sequence[Record]) -> None:
+    """Validate records before any database artifact is written.
+
+    This is the build boundary's table-safety gate: a tab/newline in a
+    database field would corrupt the frozen 15-column TSV, so it is a typed
+    BUILD_INVALID error, never a silent render-time surprise.
+    """
+    for record in records:
+        _check_record(record)
+
+
+def drop_exact_duplicates(records: Sequence[Record]) -> tuple[list[Record], int]:
+    """Drop records whose ``(gene, sequence)`` pair repeats an earlier one.
+
+    The FIRST occurrence survives (stable input order); a byte-identical
+    sequence under a DIFFERENT gene name is kept — that may be a legitimate
+    alias. Returns the kept records and the number dropped. Build hygiene
+    only: two records for one gene make reads mode (which aggregates per
+    record) report the gene twice, while the blastn path's culling keeps
+    one — dropping the duplicate at build time aligns both surfaces.
+    """
+    seen: set[tuple[str, str]] = set()
+    kept: list[Record] = []
+    dropped = 0
+    for record in records:
+        key = (record.gene, record.sequence)
+        if key in seen:
+            dropped += 1
+            continue
+        seen.add(key)
+        kept.append(record)
+    return kept, dropped
+
+
+def _self_check_failed(gene: str, reason: str) -> DatabaseError:
+    """The uniform self-check failure: gene located, machine-stable reason."""
+    return DatabaseError(
+        f"self-check failed at gene {gene!r} ({reason})",
+        code="BUILD_SELF_CHECK_FAILED",
+        context={"gene": gene, "reason": reason},
+    )
+
+
+def verify_sequences(sequences_path: Path, records_path: Path, name: str) -> None:
+    """Self-check: every generated FASTA record decodes back to its record.
+
+    Streams ``sequences`` and ``records.jsonl`` in parallel; the header (via
+    :func:`gspec.dbcodec.decode_seqid` with ``default_db=name``) and the
+    sequence must match record-for-record, in order. The FASTA description
+    (product) is deliberately not compared: the reader strips leading and
+    trailing whitespace by design, so it is a display field, not a truth
+    field. Any decode failure, field mismatch, or count mismatch raises
+    ``BUILD_SELF_CHECK_FAILED`` (a structurally invalid FASTA surfaces as its
+    native InputError instead — either way the build stops before indexing).
+    """
+    fasta_stream = iter_fasta(sequences_path)
+    for record in read_records(records_path):
+        fasta = next(fasta_stream, None)
+        if fasta is None:
+            raise _self_check_failed(record.gene, "missing_fasta_record")
+        try:
+            header = decode_seqid(fasta.id, default_db=name)
+        except DatabaseError as exc:
+            raise _self_check_failed(record.gene, f"decode:{exc.code}") from exc
+        expected = DbHeader(
+            database=record.db or name,
+            gene=record.gene,
+            accession=record.accession,
+            function=";".join(record.function),
+        )
+        if header != expected:
+            raise _self_check_failed(record.gene, "header_mismatch")
+        if fasta.sequence != record.sequence:
+            raise _self_check_failed(record.gene, "sequence_mismatch")
+    if next(fasta_stream, None) is not None:
+        raise _self_check_failed("", "extra_fasta_record")
+
+
+def sha256_file(path: Path) -> str:
+    """Streaming SHA256 of a file's bytes (1 MiB chunks)."""
+    hasher = hashlib.sha256()
+    with path.open("rb") as handle:
+        while chunk := handle.read(_CHUNK_BYTES):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def tool_version_line(argv: list[str]) -> str:
+    """First line of a version command's stdout ('' when it printed nothing)."""
+    stdout = run_tool(argv).stdout
+    return stdout.splitlines()[0].strip() if stdout else ""
+
+
+def optional_tool_version_line(argv: list[str]) -> str:
+    """Like :func:`tool_version_line`, but a missing binary yields ``""``.
+
+    Gene/cluster database builds do not need minimap2; recording its version
+    must not turn reads-only tooling into a hard build dependency.
+    """
+    try:
+        return tool_version_line(argv)
+    except DependencyError:
+        return ""
+
+
+def build_database(
+    db_dir: Path,
+    *,
+    name: str,
+    dbtype: Literal["nucl", "prot"],
+    source_urls: Sequence[str],
+    fetched_at: str,
+    upstream_version: str = "",
+    content_license: str = "",
+    content_note: str = "",
+    typing_schema: str = "",
+    source: Literal["bundled"] | None = None,
+    quiet: bool = True,
+    debug: bool = False,
+) -> Manifest:
+    """Build every gspec-native artifact in ``db_dir`` from its records.jsonl.
+
+    Pipeline — each step runs only after the previous one succeeded, and the
+    manifest is written LAST (it certifies the artifacts):
+
+    1. ``generate_sequences`` -> ``db_dir/sequences``
+    2. self-check: every header decodes back (``BUILD_SELF_CHECK_FAILED``)
+    3. streaming SHA256 of ``sequences``
+    4. ``makeblastdb`` with the EXPLICIT ``dbtype`` — the manifest declares
+       the type, so the mol_type heuristic is skipped
+    5. count records and capture ``blastn -version`` / ``minimap2 --version``
+    6. write ``db_dir/gapit-manifest.json`` and return the Manifest
+
+    ``content_license``/``content_note`` stamp database-content provenance into
+    the manifest when the provider pins one (kaptive GPL, card McMaster terms,
+    vfdb CC BY-NC); empty means omitted (the cluster builder's pair).
+
+    No ``.mmi`` is built for either dbtype: reads mode indexes the FASTA in
+    memory with the invocation preset's own parameters (minimap2 is
+    nucleotide-only, which is why prot databases never participated anyway).
+    """
+    records_path = db_dir / "records.jsonl"
+    sequences_path = db_dir / "sequences"
+    generate_sequences(records_path, sequences_path)
+    note(quiet, f"generated {sequences_path}")
+    verify_sequences(sequences_path, records_path, name)
+    note(quiet, f"self-check passed for {name}")
+    sha256 = sha256_file(sequences_path)
+    make_blast_db(sequences_path, name, dbtype=dbtype, debug=debug)
+    note(quiet, f"BLAST index built ({dbtype})")
+    manifest = Manifest(
+        name=name,
+        source_urls=tuple(source_urls),
+        fetched_at=fetched_at,
+        sha256=sha256,
+        n_records=count_records(records_path),
+        dbtype=dbtype,
+        upstream_version=upstream_version,
+        typing_schema=typing_schema or None,
+        license=content_license or None,
+        note=content_note or None,
+        source=source,
+        makeblastdb_version=tool_version_line(["makeblastdb", "-version"]),
+        # Kept although no .mmi is built: environment provenance for the
+        # machine that produced the artifacts (spec'd in gapit.manifest/1).
+        minimap2_version=optional_tool_version_line(["minimap2", "--version"]),
+    )
+    write_manifest(manifest, db_dir / "gapit-manifest.json")
+    return manifest
+
+
+def copy_sidecars(source: Path, target: Path) -> None:
+    """Copy the optional typing/floors/info sidecars verbatim."""
+    for sidecar in SIDECARS:
+        if (source / sidecar).is_file():
+            shutil.copyfile(source / sidecar, target / sidecar)
+
+
+def rebuild_from_records(
+    source: Path,
+    target: Path,
+    manifest: Manifest,
+    *,
+    name: str | None = None,
+    quiet: bool = True,
+) -> int:
+    """Re-project ``source/records.jsonl`` into ``target`` through the pipeline.
+
+    The curation entry point behind ``db build NAME`` (no INPUT) and the gene
+    branch of ``db rename``: records are republished **as written** (no
+    dedupe — ``records.jsonl`` is the truth, and the build-time duplicate
+    dropper cleans provider input, not a curator's file), sidecars travel
+    verbatim, and the manifest provenance is preserved. ``name`` re-points every
+    record's ``db`` field (rename); None keeps them as written (rebuild).
+
+    Staged, so a malformed record or an unresolvable typing reference leaves the
+    installed database untouched. Returns the rebuilt record count.
+    """
+    db_name = name or manifest.name
+    with staged_database(target) as build_dir:
+        records = [
+            record if name is None else record.model_copy(update={"db": db_name})
+            for record in read_records(source / "records.jsonl")
+        ]
+        write_records(records, build_dir / "records.jsonl")
+        copy_sidecars(source, build_dir)
+        build_database(
+            build_dir,
+            name=db_name,
+            dbtype=manifest.dbtype,
+            source_urls=manifest.source_urls,
+            fetched_at=manifest.fetched_at,
+            upstream_version=manifest.upstream_version,
+            content_license=manifest.license or "",
+            content_note=manifest.note or "",
+            typing_schema=manifest.typing_schema or "",
+            source=manifest.source,
+            quiet=quiet,
+        )
+        return count_records(build_dir / "records.jsonl")

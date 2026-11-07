@@ -13,11 +13,11 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from gapit.bundled import find_bundled, materialize_bundled
-from gapit.cli import app
-from gapit.dbcodec import decode_seqid
-from gapit.fasta import iter_fasta
-from gapit.records import read_manifest
+from gspec.bundled import find_bundled, materialize_bundled
+from gspec.cli import app
+from gspec.dbcodec import decode_seqid
+from gspec.fasta import iter_fasta
+from gspec.records import read_manifest
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 

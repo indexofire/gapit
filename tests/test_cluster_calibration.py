@@ -14,8 +14,8 @@ from typing import Protocol, runtime_checkable
 import pytest
 from click.testing import CliRunner
 
-from gapit.cli import app
-from gapit.fasta import iter_fasta
+from gspec.cli import app
+from gspec.fasta import iter_fasta
 
 SCRIPT = Path(__file__).parent.parent / "scripts" / "cluster_calibration.py"
 DATA = Path(__file__).parent / "data" / "cluster"

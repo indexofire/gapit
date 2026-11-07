@@ -1,0 +1,363 @@
+"""Database layer: discovery, ``~~~`` header parsing, makeblastdb/blastdbcmd wrappers."""
+
+import os
+import re
+import shlex
+import shutil
+import sys
+import tempfile
+from pathlib import Path
+from typing import Literal
+
+from pydantic import BaseModel
+
+from gspec.db_txn import TXN_PREFIX, database_lock
+from gspec.errors import DatabaseError, DependencyError, InputError, UsageError
+from gspec.fasta import iter_fasta, iter_fasta_headers
+from gspec.proctools import run_tool
+
+IDSEP = "~~~"
+
+
+class DbHeader(BaseModel, frozen=True):
+    """Parsed ``~~~`` fields of a database sequence id (SPEC.md §4 step 5).
+
+    ``function`` carries functional categories (AMR classes, virulence, ...):
+    the legacy ``~~~`` branch fills it with abricate's 4th resistance field
+    verbatim — same bytes, better name (Wave F1).
+    """
+
+    database: str
+    gene: str
+    accession: str
+    function: str
+
+
+class BlastDbInfo(BaseModel, frozen=True):
+    """Introspection of one built BLAST database (``blastdbcmd -info``)."""
+
+    n_sequences: int
+    dbtype: Literal["nucl", "prot"]
+    title: str
+    date: str
+
+
+class Database(BaseModel, frozen=True):
+    """One discovered database directory under the datadir. ``kind`` comes
+    from the gspec manifest (cluster databases declare it); legacy/abricate
+    directories without a manifest are gene databases."""
+
+    name: str
+    path: Path
+    sequences_path: Path
+    kind: Literal["gene", "cluster"] = "gene"
+
+
+class DatabaseInfo(BaseModel, frozen=True):
+    """One row of ``gspec list`` output."""
+
+    name: str
+    n_sequences: int
+    dbtype: Literal["nucl", "prot"]
+    date: str
+
+
+def validate_database_name(name: str) -> None:
+    """Reject a database NAME that could escape the datadir or corrupt a table.
+
+    ``Path(datadir) / name`` REPLACES the base when ``name`` is absolute (and
+    ``..`` escapes it), so only plain names are allowed; tabs/line breaks would
+    break the frozen 15-column table. Both failures are usage errors.
+    """
+    if not name or name in (".", "..") or "/" in name or "\\" in name:
+        raise UsageError(
+            f"database name must be a plain name without path separators: {name!r}",
+            code="USAGE_ERROR",
+            context={"name": name},
+        )
+    if any(control in name for control in "\t\r\n"):
+        raise UsageError(
+            f"database name must not contain tabs or line breaks: {name!r}",
+            code="USAGE_ERROR",
+            context={"name": name},
+        )
+
+
+def parse_db_header(seqid: str, default_db: str) -> DbHeader:
+    """Split a seqid on ``~~~`` into (database, gene, accession, function).
+
+    Without any ``~~~`` the whole seqid is the gene and the default database is
+    used; partial headers leave trailing fields empty; an empty database field
+    also falls back to ``default_db`` (SPEC.md §4 step 5).
+    """
+    fields = seqid.split(IDSEP)
+    if len(fields) == 1:
+        return DbHeader(database=default_db, gene=seqid, accession="", function="")
+    fields += [""] * (4 - len(fields))
+    database, gene, accession, function = fields[:4]
+    return DbHeader(
+        database=database or default_db,
+        gene=gene,
+        accession=accession,
+        function=function,
+    )
+
+
+_AGTC_TABLE = str.maketrans("", "", "AGTCagtc")
+
+
+def mol_type(letters: str) -> Literal["nucl", "prot"]:
+    """Abricate heuristic (SPEC.md §2): protein iff non-[AGTC] letters are
+    strictly more than half of the input (empty input is nucleotide)."""
+    non_agtc = len(letters.translate(_AGTC_TABLE))
+    return "prot" if 2 * non_agtc > len(letters) else "nucl"
+
+
+def make_blast_db(
+    sequences_path: Path,
+    name: str,
+    *,
+    dbtype: Literal["nucl", "prot"] | None = None,
+    debug: bool = False,
+) -> None:
+    """(Re)build the BLAST index for one database directory.
+
+    ``dbtype=None`` (the default) keeps the abricate ``mol_type`` heuristic;
+    an explicit ``"nucl"``/``"prot"`` — e.g. from a gspec manifest, which
+    declares the type — skips the heuristic entirely. With ``debug``, echo
+    the makeblastdb argv to stderr (abricate --debug parity).
+    """
+    if dbtype is None:
+        letters = "".join(record.sequence for record in iter_fasta(sequences_path))
+        dbtype = mol_type(letters)
+    if shutil.which("makeblastdb") is None:
+        raise DependencyError(
+            "required binary not found on PATH: makeblastdb",
+            code="MISSING_DEPENDENCY",
+            context={"binary": "makeblastdb"},
+        )
+    with tempfile.TemporaryDirectory(dir=sequences_path.parent, prefix=".gspec-index.") as tmp:
+        temp_prefix = Path(tmp) / sequences_path.name
+        argv = [
+            "makeblastdb",
+            "-in",
+            str(sequences_path),
+            "-out",
+            str(temp_prefix),
+            "-title",
+            name,
+            "-dbtype",
+            dbtype,
+            "-logfile",
+            "/dev/null",
+        ]
+        if debug:
+            print(f"gspec: run: {shlex.join(argv)}", file=sys.stderr)
+        result = run_tool(argv)
+        if result.returncode != 0:
+            raise DatabaseError(
+                f"makeblastdb failed for {name}: {result.stderr.strip()}",
+                code="MAKEBLASTDB_FAILED",
+            )
+        generated = sorted(Path(tmp).glob(f"{sequences_path.name}.*"))
+        if not generated:
+            raise DatabaseError(
+                f"makeblastdb produced no index files for {name}",
+                code="MAKEBLASTDB_FAILED",
+            )
+        for index_file in sequences_path.parent.glob(f"{sequences_path.name}.[np]??"):
+            index_file.unlink()
+        for index_file in generated:
+            os.replace(index_file, sequences_path.parent / index_file.name)
+
+
+def minimap2_target_names_safe(sequences_path: Path) -> bool:
+    """Whether every target name survives minimap2's ``.mmi`` index.
+
+    minimap2 replaces names longer than 255 characters with numeric sequence
+    indices in ``.mmi``; a cluster DB with such ids must keep using the FASTA
+    target so the locus ids in PAF stay stable.
+    """
+    return all(len(seqid) <= 255 for seqid, _ in iter_fasta_headers(sequences_path))
+
+
+def make_minimap2_index(
+    sequences_path: Path, preset: str = "asm20", *, debug: bool = False
+) -> Path | None:
+    """Build/replace the ``sequences.<preset>.mmi`` target index.
+
+    Cluster DBs can use a prebuilt minimap2 index in legacy mode; without it
+    every input file reindexes the locus FASTA in memory. The index is
+    derived data (``db setup`` rebuilds it) and optional: when minimap2 is
+    absent, or any target name exceeds minimap2's 255-character index limit
+    (the index would replace names with numeric ids), return None and let
+    legacy fall back to the FASTA target. A minimap2 present but failing to
+    index is a build error, not a silent fallback — the same binary is
+    required to screen the DB.
+    """
+    if shutil.which("minimap2") is None:
+        return None
+    if not minimap2_target_names_safe(sequences_path):
+        return None
+    target = sequences_path.parent / f"{sequences_path.name}.{preset}.mmi"
+    with tempfile.TemporaryDirectory(dir=sequences_path.parent, prefix=".gspec-mmi.") as tmp:
+        temp = Path(tmp) / target.name
+        argv = ["minimap2", "-x", preset, "-d", str(temp), str(sequences_path)]
+        if debug:
+            print(f"gspec: run: {shlex.join(argv)}", file=sys.stderr)
+        result = run_tool(argv)
+        if result.returncode != 0:
+            raise DatabaseError(
+                f"minimap2 failed to build the {preset} index for {sequences_path.name}:"
+                f" {result.stderr.strip()}",
+                code="MINIMAP2_INDEX_FAILED",
+            )
+        if not temp.is_file():
+            raise DatabaseError(
+                f"minimap2 produced no {preset} index for {sequences_path.name}",
+                code="MINIMAP2_INDEX_FAILED",
+            )
+        os.replace(temp, target)
+    return target
+
+
+_SEQUENCES_RE = re.compile(r"([\d,]+)\s+sequences;")
+_TITLE_RE = re.compile(r"^Database:[ \t]*(.*)$", re.MULTILINE)
+_DATE_RE = re.compile(r"Date:\s*([A-Za-z]{3})\s+(\d{1,2}),\s+(\d{4})")
+
+
+def parse_blastdbcmd_info(text: str) -> BlastDbInfo:
+    """Parse ``blastdbcmd -info`` output (SPEC.md §2)."""
+    sequences_match = _SEQUENCES_RE.search(text)
+    title_match = _TITLE_RE.search(text)
+    date_match = _DATE_RE.search(text)
+    if sequences_match is None or title_match is None or date_match is None:
+        raise DatabaseError(
+            f"could not parse blastdbcmd output: {text!r}",
+            code="BLASTDBCMD_PARSE_FAILED",
+        )
+    month, day, year = date_match.group(1), date_match.group(2), date_match.group(3)
+    return BlastDbInfo(
+        n_sequences=int(sequences_match.group(1).replace(",", "")),
+        dbtype="prot" if "total residues" in text else "nucl",
+        title=title_match.group(1).strip(),
+        date=f"{year}-{month}-{int(day):02d}",
+    )
+
+
+def blast_db_info(db_prefix: Path) -> BlastDbInfo:
+    """Introspect a built BLAST database via ``blastdbcmd -info``."""
+    result = run_tool(["blastdbcmd", "-info", "-db", str(db_prefix)])
+    if result.returncode != 0:
+        raise DatabaseError(
+            f"Database {db_prefix} is not indexed, please try: gspec db setup",
+            code="DATABASE_NOT_INDEXED",
+            context={"db": str(db_prefix)},
+        )
+    return parse_blastdbcmd_info(result.stdout)
+
+
+def discover_databases(datadir: Path) -> list[Database]:
+    """Immediate subdirectories of the datadir holding a readable ``sequences``
+    file, sorted by name, each tagged gene/cluster from its manifest. A
+    missing datadir yields no databases: catalog listing (``db list``) must
+    work on a fresh install before any datadir exists."""
+    if not datadir.is_dir():
+        return []
+    databases: list[Database] = []
+    for child in datadir.iterdir():
+        if child.name.startswith(TXN_PREFIX):
+            # hidden siblings are transactional build/backup/lock entries
+            continue
+        sequences = child / "sequences"
+        if child.is_dir() and sequences.is_file() and os.access(sequences, os.R_OK):
+            databases.append(
+                Database(
+                    name=child.name,
+                    path=child,
+                    sequences_path=sequences,
+                    kind=_manifest_kind(child),
+                )
+            )
+    return sorted(databases, key=lambda database: database.name)
+
+
+def _manifest_kind(db_dir: Path) -> Literal["gene", "cluster"]:
+    """The kind declared by the database's gspec manifest, ``"gene"`` for
+    legacy (manifest-less) directories. Same propagation contract as
+    :func:`_manifest_dbtype` (a malformed manifest is never swallowed)."""
+    from gspec.records import read_manifest
+
+    try:
+        return read_manifest(db_dir / "gapit-manifest.json").kind
+    except InputError as exc:
+        if exc.code != "INPUT_NOT_FOUND":
+            raise
+        return "gene"
+
+
+def _manifest_dbtype(db_dir: Path) -> Literal["nucl", "prot"] | None:
+    """The dbtype declared by a database's gspec manifest, or ``None`` when the
+    directory has none (abricate-built) — the caller then falls back to the
+    ``mol_type`` heuristic. A malformed manifest propagates (no silent
+    degradation).
+
+    Lazy import: records -> formats.json -> reads -> db is a cycle at module
+    level (Wave C-a notepad hazard).
+    """
+    from gspec.records import read_manifest
+
+    try:
+        return read_manifest(db_dir / "gapit-manifest.json").dbtype
+    except InputError as exc:
+        if exc.code != "INPUT_NOT_FOUND":
+            raise
+        return None
+
+
+def list_databases(
+    datadir: Path,
+    *,
+    reindex: bool,
+    debug: bool = False,
+    names: frozenset[str] | None = None,
+) -> list[DatabaseInfo]:
+    """Enumerate databases (rebuilding indices first when ``reindex``), requiring
+    every database to be indexed; returns one DatabaseInfo per database.
+    ``names`` restricts the set (``None`` means every discovered database)."""
+    infos: list[DatabaseInfo] = []
+    databases = discover_databases(datadir)
+    if names is not None:
+        databases = [database for database in databases if database.name in names]
+    for database in databases:
+        if reindex:
+            with database_lock(database.path):
+                make_blast_db(
+                    database.sequences_path,
+                    database.name,
+                    dbtype=_manifest_dbtype(database.path),
+                    debug=debug,
+                )
+                if database.kind == "cluster":
+                    make_minimap2_index(database.sequences_path, "asm20", debug=debug)
+        sequences = database.sequences_path
+        index_exists = any(
+            (sequences.parent / f"{sequences.name}{suffix}").exists() for suffix in (".nin", ".pin")
+        )
+        if not index_exists:
+            raise DatabaseError(
+                f"Database {database.name} is not indexed, please try:"
+                f" gspec db setup {database.name}",
+                code="DATABASE_NOT_INDEXED",
+                context={"db": database.name},
+            )
+        info = blast_db_info(sequences)
+        infos.append(
+            DatabaseInfo(
+                name=database.name,
+                n_sequences=info.n_sequences,
+                dbtype=info.dbtype,
+                date=info.date,
+            )
+        )
+    return infos

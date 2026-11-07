@@ -24,9 +24,9 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from gapit.paf import parse_paf_row
-from gapit.typing_models import TypingDocument
-from gapit.typing_rules import ClusterMatchRule, KeyGenesComponent
+from gspec.paf import parse_paf_row
+from gspec.typing_models import TypingDocument
+from gspec.typing_rules import ClusterMatchRule, KeyGenesComponent
 
 GENE_FEATURE = re.compile(r"^ {5}gene\s+\S.*?(?=^ {5}\S|\Z)", re.M | re.S)
 HOMOLOG_IDENTITY = 0.95

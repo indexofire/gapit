@@ -13,11 +13,11 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from gapit.cli import app
-from gapit.db import DatabaseInfo, list_databases
-from gapit.fasta import iter_fasta
-from gapit.providers.common import Provider
-from gapit.records import Record
+from gspec.cli import app
+from gspec.db import DatabaseInfo, list_databases
+from gspec.fasta import iter_fasta
+from gspec.providers.common import Provider
+from gspec.records import Record
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 
@@ -49,11 +49,11 @@ def patch_synthetic_provider(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
         transform=transform,
     )
     registry = {name: provider}
-    # perform_setup reads gapit.providers.REGISTRY for membership and
-    # perform_fetch reads gapit.db_ops.REGISTRY for the download; both must
+    # perform_setup reads gspec.providers.REGISTRY for membership and
+    # perform_fetch reads gspec.db_ops.REGISTRY for the download; both must
     # see the synthetic catalogue.
-    monkeypatch.setattr("gapit.providers.REGISTRY", registry)
-    monkeypatch.setattr("gapit.db_ops.REGISTRY", registry)
+    monkeypatch.setattr("gspec.providers.REGISTRY", registry)
+    monkeypatch.setattr("gspec.db_ops.REGISTRY", registry)
     datadir = tmp_path / "datadir"
     datadir.mkdir()
     return datadir, name
@@ -146,7 +146,7 @@ def test_setup_bootstraps_a_missing_datadir(
 ) -> None:
     """Given a datadir path that does not exist, When db setup runs, Then the
     root is created before the bundled/index work (fresh-machine bootstrap)."""
-    import gapit.db_setup_ops as setup_module
+    import gspec.db_setup_ops as setup_module
 
     # Keep this a bootstrap test: no bundle materialization or index build.
     def no_bundles() -> list[str]:

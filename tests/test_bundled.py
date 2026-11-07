@@ -23,13 +23,13 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner, Result
 
-from gapit.bundled import BUNDLED_ROOT, bundled_databases, bundled_names, find_bundled
-from gapit.cli import app
-from gapit.dbcodec import decode_seqid
-from gapit.errors import DatabaseError
-from gapit.fasta import iter_fasta
-from gapit.records import read_manifest
-from gapit.screening import find_database
+from gspec.bundled import BUNDLED_ROOT, bundled_databases, bundled_names, find_bundled
+from gspec.cli import app
+from gspec.dbcodec import decode_seqid
+from gspec.errors import DatabaseError
+from gspec.fasta import iter_fasta
+from gspec.records import read_manifest
+from gspec.screening import find_database
 
 TYPING = Path(__file__).parent / "data" / "typing"
 GOLDEN = Path(__file__).parent / "golden"
@@ -263,7 +263,7 @@ def test_find_database_tolerates_concurrent_first_use(
         (target / "sequences").write_text(">g\nACGT\n", encoding="utf-8")
         raise DatabaseError("won by another writer", code="DB_ALREADY_EXISTS")
 
-    monkeypatch.setattr("gapit.screening.materialize_bundled", wins_the_race)
+    monkeypatch.setattr("gspec.screening.materialize_bundled", wins_the_race)
 
     database = find_database(datadir, "eco_dec", quiet=True)
 

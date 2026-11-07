@@ -63,9 +63,9 @@ gspec --version
 
 ```console
 $ gspec --version
-gspec 0.8.0
+gspec 0.8.1
 $ gspec --version --json
-{"schema":"gapit.version/1","name":"gspec","version":"0.8.0"}
+{"schema":"gapit.version/1","name":"gspec","version":"0.8.1"}
 ```
 
 ## 可选 gseek 引擎
@@ -144,7 +144,7 @@ eval "$(_GSPEC_COMPLETE=zsh_source gspec)"
 Fish：
 
 ```fish
-_GSPEC_COMPLETE=fish_source gspec > ~/.config/fish/completions/gapit.fish
+_GSPEC_COMPLETE=fish_source gspec > ~/.config/fish/completions/gspec.fish
 ```
 
 生成的脚本（bash 上结尾是 `complete -o nosort -F _gspec_completion gspec`）在补全时

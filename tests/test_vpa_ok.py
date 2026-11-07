@@ -18,12 +18,12 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-import gapit
-from gapit.bundled import find_bundled
-from gapit.cli import app
-from gapit.fasta import iter_fasta
+import gspec
+from gspec.bundled import find_bundled
+from gspec.cli import app
+from gspec.fasta import iter_fasta
 
-TYPING_ASSET = Path(gapit.__file__).resolve().parent / "data" / "dbs" / "vpa_ok" / "typing.json"
+TYPING_ASSET = Path(gspec.__file__).resolve().parent / "data" / "dbs" / "vpa_ok" / "typing.json"
 VPA_OK_LOCI = 195
 
 runner = CliRunner()

@@ -6,13 +6,13 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
-from gapit.formats.summary import (
+from gspec.formats.summary import (
     SummaryDocument,
     format_summary_tsv,
     render_summary_json,
     render_summary_md,
 )
-from gapit.summary import SummaryParams, build_summary
+from gspec.summary import SummaryParams, build_summary
 
 FIXTURES = Path(__file__).parent / "data" / "summary"
 PINNED_NOW = datetime(2026, 9, 17, 12, 0, 0, tzinfo=UTC)

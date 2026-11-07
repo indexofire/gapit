@@ -9,7 +9,7 @@ import re
 
 from click.testing import CliRunner
 
-from gapit.cli import app
+from gspec.cli import app
 
 runner = CliRunner()
 

@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from gapit.errors import DatabaseError
-from gapit.providers.card import (
+from gspec.errors import DatabaseError
+from gspec.providers.card import (
     DBTYPE,
     DESCRIPTION,
     NAME,
@@ -21,7 +21,7 @@ from gapit.providers.card import (
     SOURCE_URLS,
     transform,
 )
-from gapit.records import Record
+from gspec.records import Record
 
 _FIXTURE = Path(__file__).parent / "data" / "providers" / "card" / "card.json"
 

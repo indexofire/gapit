@@ -10,8 +10,8 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner, Result
 
-from gapit.cli import app
-from gapit.db import make_blast_db
+from gspec.cli import app
+from gspec.db import make_blast_db
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"

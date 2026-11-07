@@ -1,12 +1,12 @@
-"""Unit tests for datadir resolution precedence (gapit.config)."""
+"""Unit tests for datadir resolution precedence (gspec.config)."""
 
 import stat
 from pathlib import Path
 
 import pytest
 
-from gapit.config import datadir_path, datadir_source, ensure_datadir, resolve_datadir
-from gapit.errors import DatabaseError
+from gspec.config import datadir_path, datadir_source, ensure_datadir, resolve_datadir
+from gspec.errors import DatabaseError
 
 
 def make_datadir(path: Path) -> Path:

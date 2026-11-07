@@ -2,9 +2,9 @@
 
 import pytest
 
-from gapit.blast import BlastRow
-from gapit.errors import DatabaseError
-from gapit.hits import Hit, process_rows
+from gspec.blast import BlastRow
+from gspec.errors import DatabaseError
+from gspec.hits import Hit, process_rows
 
 TET_A_ID = "tinyamr~~~tetA~~~NC_000913.3:100-900~~~TETRACYCLINE"
 TET_A_TITLE = TET_A_ID + " tetracycline efflux pump TetA"

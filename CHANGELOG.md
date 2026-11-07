@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.8.1] - 2026-11-07
+
+### Changed
+
+- **The import package moved to `gspec`.** 0.8.0 shipped the code under
+  `gapit/`, which made a metadata-only transition package impossible: pip
+  installs `gspec` first, then uninstalls the old `gapit`, and that uninstall
+  deletes every path the old RECORD lists — including gspec's freshly
+  installed `gapit/*` files. `pip install -U gapit` therefore left a broken
+  install. The code now lives in `gspec/`, so an upgrade only replaces files
+  the old release actually owned.
+- The `gapit` / `gapit-mcp` command aliases moved to the `gapit`
+  compatibility distribution (`packaging/gapit-shim/`) for the same reason:
+  pip installs it last, after the old package's scripts are removed.
+
+### Added
+
+- `packaging/gapit-shim/` — the `gapit` compatibility package. It depends on
+  `gspec>=0.8.1,<0.9`, ships the `gapit` and `gapit-mcp` commands, and
+  provides `import gapit` by aliasing the `gspec` package tree. Modules whose
+  identity matters (errors, config, records, typing models) are aliased
+  eagerly, so `except gapit.errors.GapitError` still catches what `gspec`
+  raises.
+
+### Migration
+
+| From | Command | Result |
+|---|---|---|
+| 0.7.3 or 0.8.0 | `pip install -U gapit` | both names, both imports, both commands |
+| 0.7.3 or 0.8.0 | `pip install -U gspec` | `gspec` only (add `gapit` for the legacy import/commands) |
+| fresh | `pip install gspec` | `gspec` only |
+
 ## [0.8.0] - 2026-11-07
 
 ### Changed

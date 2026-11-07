@@ -5,7 +5,7 @@ width = 15 - (broken?1:0); scale = length/width; xi = int(x/scale);
 yi = int(y/scale); '=' where xi <= i <= yi; '/' after box width//2 when broken.
 """
 
-from gapit.minimap import minimap
+from gspec.minimap import minimap
 
 
 def test_full_length_hit_on_short_gene_all_equals() -> None:

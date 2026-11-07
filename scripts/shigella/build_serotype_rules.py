@@ -18,7 +18,7 @@ import argparse
 import json
 from pathlib import Path
 
-from gapit.serotype_models import SerotypeDocument, SerotypeRule
+from gspec.serotype_models import SerotypeDocument, SerotypeRule
 
 POAC = ("gtrI", "gtrII", "gtrIV", "gtrV", "gtrX", "gtrIC", "Oac", "Oac1b", "Xv")
 #: IS629 interrupts S. boydii serotype 6 wbaM at ~252/957 (26.3%); 20% leaves

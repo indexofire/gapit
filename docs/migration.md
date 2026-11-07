@@ -1,7 +1,7 @@
-# Migrating from gapit (pre-0.8)
+# Migrating from gspec (pre-0.8)
 
 `gspec` is the same software as `gapit` 0.7.x under a new name. The rename
-exists because "gapit" collides in literature and code search with
+exists because "gspec" collides in literature and code search with
 **GAPIT**, the genome-wide association package — every search for the tool
 returned the GWAS package instead.
 
@@ -10,11 +10,11 @@ exactly what moved, what was added as an alias, and what stayed frozen.
 
 ## What changed
 
-| Surface | Before (≤0.7.3) | From 0.8.0 |
+| Surface | Before (≤0.7.3) | From 0.8.1 |
 |---|---|---|
 | PyPI distribution | `gapit` | `gspec` (`gapit` becomes a shim that depends on `gspec`) |
 | Command | `gapit` | `gspec` — the `gapit` command still ships and works |
-| Version banner | `gapit 0.7.3` | `gspec 0.8.0` |
+| Version banner | `gspec 0.7.3` | `gspec 0.8.1` |
 | `--version --json` `name` | `gapit` | `gspec` (the `gapit.version/1` schema id is unchanged) |
 | Datadir env var | `GAPIT_DATADIR` | `GSPEC_DATADIR`; the old name is still read |
 | Engine env var | `GAPIT_ENGINE` | `GSPEC_ENGINE`; the old name is still read |
@@ -32,8 +32,10 @@ archived results and pipelines, so they keep the pre-0.8 spelling:
 - **Database manifest filename** — `gapit-manifest.json`.
 - **Native FASTA header prefix** — `gapit|db=…|gene=…|acc=…|func=…`, and the
   manifest `header_format` value `gapit/v1`.
-- **Python import package** — `import gapit` (the distribution is `gspec`;
-  distribution name and import name are independent).
+- **Python import package** — the implementation imports as `gspec`. The
+  pre-0.8 `import gapit` keeps working through the `gapit` compatibility
+  package (`pip install gapit`), which aliases the same modules, so
+  `except gapit.errors.GapitError` still catches what `gspec` raises.
 - **Existing database directories** — unchanged on disk and still readable.
 
 ## Upgrading
@@ -65,4 +67,4 @@ mv ~/.local/share/gapit ~/.local/share/gspec
 
 Cite `gspec` (see `CITATION.cff`). For work that used 0.7.x, the old name
 still identifies the same software; the Zenodo record for 0.7.3 remains
-citable and the 0.8.0 record declares it as a previous version.
+citable and the 0.8.1 record declares it as a previous version.

@@ -8,20 +8,20 @@ from pathlib import Path
 
 import pytest
 
-from gapit.cluster import (
+from gspec.cluster import (
     ClusterParams,
     ClusterReport,
     GeneCall,
     LocusCall,
     screen_cluster_file,
 )
-from gapit.cluster_alignment import QuerySpan, build_locus_alignment
-from gapit.db import Database
-from gapit.formats.locus_map import render_locus_map_json
-from gapit.gbfeatures import FeaturesDocument, GeneFeature, LocusFeatures
-from gapit.gene_families import GeneFamily, GeneFamilyDocument, LocusFamilySet
-from gapit.locus_map import build_locus_map
-from gapit.paf import PafRecord
+from gspec.cluster_alignment import QuerySpan, build_locus_alignment
+from gspec.db import Database
+from gspec.formats.locus_map import render_locus_map_json
+from gspec.gbfeatures import FeaturesDocument, GeneFeature, LocusFeatures
+from gspec.gene_families import GeneFamily, GeneFamilyDocument, LocusFamilySet
+from gspec.locus_map import build_locus_map
+from gspec.paf import PafRecord
 
 LOCUS = LocusFeatures(
     id="OL1",
@@ -240,7 +240,7 @@ def test_screen_cluster_file_detail_attaches_locus_map(
     def _fake_rows(*args: object, **kwargs: object) -> Iterator[PafRecord]:
         return iter([row])
 
-    monkeypatch.setattr("gapit.cluster.iter_minimap2", _fake_rows)
+    monkeypatch.setattr("gspec.cluster.iter_minimap2", _fake_rows)
     params = ClusterParams(db="test")
     detailed = screen_cluster_file(tmp_path / "sample.fna", database, FEATURES, params, detail=True)
     assert "OL1" in detailed.locus_maps

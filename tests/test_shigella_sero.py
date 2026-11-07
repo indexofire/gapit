@@ -9,10 +9,10 @@ from typing import TextIO
 import pytest
 from click.testing import CliRunner
 
-from gapit.bundled import find_bundled
-from gapit.cli import app
-from gapit.dbcodec import decode_seqid
-from gapit.fasta import iter_fasta
+from gspec.bundled import find_bundled
+from gspec.cli import app
+from gspec.dbcodec import decode_seqid
+from gspec.fasta import iter_fasta
 
 runner = CliRunner()
 

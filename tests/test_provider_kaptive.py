@@ -15,10 +15,10 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from gapit.cli import app
-from gapit.providers import REGISTRY
-from gapit.providers.cluster_common import ClusterProvider
-from gapit.records import read_manifest
+from gspec.cli import app
+from gspec.providers import REGISTRY
+from gspec.providers.cluster_common import ClusterProvider
+from gspec.records import read_manifest
 
 DATA = Path(__file__).parent / "data" / "cluster"
 FIXTURE = DATA / "kaptive_style.gbk"  # two kaptive-style loci: KL106, KL107
@@ -75,7 +75,7 @@ def kaptive_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     empty datadir."""
     url = FIXTURE.as_uri()
     monkeypatch.setattr(
-        "gapit.db_ops.REGISTRY",
+        "gspec.db_ops.REGISTRY",
         {
             name: ClusterProvider(
                 name=name,
@@ -170,7 +170,7 @@ def test_fetched_kaptive_db_screens_as_cluster(
     datadir.mkdir()
     url = (DATA / "screening.gbk").as_uri()
     monkeypatch.setattr(
-        "gapit.db_ops.REGISTRY",
+        "gspec.db_ops.REGISTRY",
         {
             "ecoli_kps": ClusterProvider(
                 name="ecoli_kps",

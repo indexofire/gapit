@@ -1,0 +1,424 @@
+"""The cluster-db build pipeline with self-check (the gspec.dbbuild sibling).
+
+Turns parsed loci into a cluster database directory: locus FASTA
+``sequences`` (one bare-id record per locus), the ``gapit.features/1``
+feature table (``features.json``), an optional validated ``gapit.typing``
+spec (v1 or v2; single-scheme docs render gapit.cluster/1, multi-scheme
+docs render gapit.cluster/2 after build-time gene-id resolution) copied in
+as ``typing.json``, the makeblastdb nucl index (the gene-view
+screening surface for stage 2), and the manifest — written LAST, certifying
+every artifact, with ``kind: cluster`` and plain locus-id headers.
+
+Input kind is suffix-based: GBK family (.gbk/.gbff/.gb[.gz/.bz2]) parses
+through gspec.gbfeatures, GFF family (.gff/.gff3[.gz/.bz2]) through
+gspec.gffparse; every other suffix is a gene-pipeline input (db_build_ops
+routes those to gspec.dbbuild). ``--typing`` specs are validated BEFORE any
+artifact is written, so a malformed spec leaves no half-built database.
+"""
+
+import os
+import shutil
+from collections import Counter
+from collections.abc import Sequence
+from datetime import UTC, datetime
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from typing import Literal
+
+from gspec.db import make_blast_db, make_minimap2_index
+from gspec.dbbuild import optional_tool_version_line, sha256_file, tool_version_line
+from gspec.errors import DatabaseError
+from gspec.fasta import iter_fasta
+from gspec.gbfeatures import (
+    FeaturesDocument,
+    LocusSequence,
+    parse_genbank_features,
+    write_features_document,
+)
+from gspec.gffparse import parse_gff3_features
+from gspec.proctools import note
+from gspec.records import Manifest, write_manifest
+from gspec.typing_models import (
+    TypingDocument,
+    read_typing_document,
+    typing_schema_of,
+    uses_cluster_v2,
+    validate_references,
+)
+from gspec.typing_rules import ClusterMatchRule
+
+_WRAP_COLUMNS = 60
+
+
+def _with_compression(suffixes: tuple[str, ...]) -> tuple[str, ...]:
+    """A suffix tuple plus its .gz/.bz2 wrapped variants."""
+    return suffixes + tuple(f"{s}{ext}" for ext in (".gz", ".bz2") for s in suffixes)
+
+
+_GBK_SUFFIXES: tuple[str, ...] = (".gbk", ".gbff", ".gb")
+_GFF_SUFFIXES: tuple[str, ...] = (".gff", ".gff3")
+_COMPRESSED_SUFFIXES = _with_compression(_GBK_SUFFIXES + _GFF_SUFFIXES)
+
+
+def is_cluster_input(path: Path) -> bool:
+    """Suffix sniff: GBK/GFF-family inputs (plain or compressed) build
+    cluster databases; everything else runs the gene pipeline."""
+    return path.name.lower().endswith(_COMPRESSED_SUFFIXES)
+
+
+def parse_cluster_input(path: Path) -> list[LocusSequence]:
+    """Dispatch the cluster parser by suffix (GFF family vs GBK family)."""
+    if path.name.lower().endswith(_with_compression(_GFF_SUFFIXES)):
+        return parse_gff3_features(path)
+    return parse_genbank_features(path)
+
+
+def _check_failed(locus: str, reason: str) -> DatabaseError:
+    """The cluster-build self-check failure: locus located, stable reason."""
+    return DatabaseError(
+        f"self-check failed at locus {locus!r} ({reason})",
+        code="BUILD_SELF_CHECK_FAILED",
+        context={"locus": locus, "reason": reason},
+    )
+
+
+def _write_locus_fasta(loci: Sequence[LocusSequence], sequences_path: Path) -> None:
+    """Stream parsed loci into the ``sequences`` FASTA: one bare-id header
+    per locus, sequence wrapped at 60 columns (the generate_sequences
+    atomicity pattern — temp file + os.replace, no partial ``sequences``)."""
+    temp_path: Path | None = None
+    try:
+        with NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            newline="\n",
+            dir=sequences_path.parent,
+            prefix=f".{sequences_path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as temp:
+            temp_path = Path(temp.name)
+            for locus in loci:
+                temp.write(f">{locus.features.id}\n")
+                for offset in range(0, len(locus.sequence), _WRAP_COLUMNS):
+                    temp.write(f"{locus.sequence[offset : offset + _WRAP_COLUMNS]}\n")
+        assert temp_path is not None
+        os.replace(temp_path, sequences_path)
+    finally:
+        if temp_path is not None:
+            temp_path.unlink(missing_ok=True)
+
+
+def _verify_cluster(loci: Sequence[LocusSequence], sequences_path: Path) -> None:
+    """Self-check: every locus round-trips through the written FASTA — same
+    count, same order, same id, same sequence bytes (gene bounds were proven
+    at parse time; this certifies the artifact)."""
+    fasta_stream = iter_fasta(sequences_path)
+    for locus in loci:
+        fasta = next(fasta_stream, None)
+        if fasta is None:
+            raise _check_failed(locus.features.id, "missing_fasta_record")
+        if fasta.id != locus.features.id:
+            raise _check_failed(locus.features.id, "id_mismatch")
+        if fasta.sequence != locus.sequence:
+            raise _check_failed(locus.features.id, "sequence_mismatch")
+    if next(fasta_stream, None) is not None:
+        raise _check_failed("", "extra_fasta_record")
+
+
+_TABLE_CONTROL = "\t\r\n"
+
+
+def deduplicate_locus_genes(loci: Sequence[LocusSequence]) -> list[LocusSequence]:
+    """Auto-deduplicate gene IDs within each locus and duplicate locus IDs.
+
+    Gene level: Kaptive-style upstream databases routinely carry paralogous
+    gene names within a single locus (wzy appears twice in KL42; wza/wzb/wzc
+    repeat in many Kpsc_K loci). We make each duplicate unique with its start
+    coordinate: ``wzy@1234`` — deterministic, collision-free.
+
+    Locus level: some upstream databases reuse an accession for two different
+    loci (Kpsc_O has LT174602 twice at different lengths). We append ``_2``,
+    ``_3`` etc. to subsequent occurrences — deterministic and traceable.
+    """
+    from gspec.gbfeatures import GeneFeature
+
+    # Pass 1: locus-ID deduplication
+    seen_loci: set[str] = set()
+    locus_renamed: list[tuple[str, LocusSequence]] = []
+    for locus in loci:
+        locus_id = locus.features.id
+        if locus_id in seen_loci:
+            suffix = 2
+            while f"{locus_id}_{suffix}" in seen_loci:
+                suffix += 1
+            new_id = f"{locus_id}_{suffix}"
+            new_features = locus.features.model_copy(update={"id": new_id})
+            locus = locus.model_copy(update={"features": new_features})
+            locus_id = new_id
+        seen_loci.add(locus_id)
+        locus_renamed.append((locus_id, locus))
+
+    # Pass 2: gene-ID deduplication within each locus
+    resolved: list[LocusSequence] = []
+    for _, locus in locus_renamed:
+        genes = list(locus.features.genes)
+        counts: dict[str, int] = {}
+        for gene in genes:
+            counts[gene.gene_id] = counts.get(gene.gene_id, 0) + 1
+        if all(count == 1 for count in counts.values()):
+            resolved.append(locus)
+            continue
+        new_genes: list[GeneFeature] = []
+        for gene in genes:
+            if counts[gene.gene_id] == 1:
+                new_genes.append(gene)
+                continue
+            new_id = f"{gene.gene_id}@{gene.start}"
+            new_genes.append(gene.model_copy(update={"gene_id": new_id}))
+        new_features = locus.features.model_copy(update={"genes": tuple(new_genes)})
+        resolved.append(locus.model_copy(update={"features": new_features}))
+    return resolved
+
+
+def _validate_loci(loci: Sequence[LocusSequence]) -> None:
+    """Reject invalid locus tables before any artifact write.
+
+    Generated loci are keyed by id in features.json and by target name in the
+    cluster engine, so duplicate ids would silently make two records share one
+    set of alignments and typing references. Within-locus duplicate gene ids
+    are auto-deduplicated upstream (see ``deduplicate_locus_genes``) —
+    Kaptive databases routinely carry them; the validation here only catches
+    what the deduplication missed (should be impossible).
+    """
+    seen_ids: set[str] = set()
+    for locus in loci:
+        if locus.features.id in seen_ids:
+            raise DatabaseError(
+                f"duplicate locus id: {locus.features.id!r}",
+                code="BUILD_INVALID",
+                context={"locus": locus.features.id, "field": "id", "reason": "duplicate"},
+            )
+        seen_ids.add(locus.features.id)
+        gene_ids = [gene.gene_id for gene in locus.features.genes]
+        duplicate_genes = sorted({gene_id for gene_id in gene_ids if gene_ids.count(gene_id) > 1})
+        if duplicate_genes:
+            raise DatabaseError(
+                f"locus {locus.features.id!r} has duplicate gene id(s):"
+                f" {', '.join(duplicate_genes)}",
+                code="BUILD_INVALID",
+                context={
+                    "locus": locus.features.id,
+                    "field": "gene_id",
+                    "reason": "duplicate",
+                },
+            )
+        for field, value in (
+            ("id", locus.features.id),
+            ("label", locus.features.label),
+            ("type", locus.features.type),
+        ):
+            if any(control in value for control in _TABLE_CONTROL):
+                raise DatabaseError(
+                    f"locus {locus.features.id!r}: {field} contains a table delimiter",
+                    code="BUILD_INVALID",
+                    context={"locus": locus.features.id, "field": field},
+                )
+        for gene in locus.features.genes:
+            for field, value in (("gene_id", gene.gene_id), ("product", gene.product)):
+                if any(control in value for control in _TABLE_CONTROL):
+                    raise DatabaseError(
+                        f"locus {locus.features.id!r}: {field} contains a table delimiter",
+                        code="BUILD_INVALID",
+                        context={
+                            "locus": locus.features.id,
+                            "gene": gene.gene_id,
+                            "field": field,
+                        },
+                    )
+
+
+def build_cluster_database(
+    db_dir: Path,
+    *,
+    name: str,
+    loci: Sequence[LocusSequence],
+    typing: Path | None,
+    source_urls: Sequence[str],
+    fetched_at: str,
+    typing_schema: str = "",
+    quiet: bool = True,
+    debug: bool = False,
+    content_license: str = "",
+    content_note: str = "",
+    source: Literal["bundled"] | None = None,
+) -> Manifest:
+    """Build every cluster-db artifact in ``db_dir`` (manifest written LAST):
+    locus FASTA -> features.json -> self-check -> optional typing copy ->
+    makeblastdb (nucl; cluster loci are always nucleotide) -> manifest.
+    ``typing_schema`` records the installed spec's gapit.typing version in
+    the manifest. ``content_license``/``content_note`` carry database-content
+    provenance (kaptive-style providers); both default to empty and
+    serialize only when set. ``source: "bundled"`` stamps a wheel-materialized
+    build (gapit.bundled); None serializes away (every other caller)."""
+    if any(control in name for control in "\t\r\n"):
+        raise DatabaseError(
+            f"database name must not contain tabs or line breaks: {name!r}",
+            code="BUILD_INVALID",
+            context={"db": name},
+        )
+    loci = deduplicate_locus_genes(loci)
+    _validate_loci(loci)
+    sequences_path = db_dir / "sequences"
+    _write_locus_fasta(loci, sequences_path)
+    note(quiet, f"generated {sequences_path}")
+    write_features_document(tuple(locus.features for locus in loci), db_dir / "features.json")
+    _verify_cluster(loci, sequences_path)
+    note(quiet, f"self-check passed for {name}")
+    if typing is not None:
+        shutil.copyfile(typing, db_dir / "typing.json")
+    sha256 = sha256_file(sequences_path)
+    make_blast_db(sequences_path, name, dbtype="nucl", debug=debug)
+    note(quiet, "BLAST index built (nucl)")
+    make_minimap2_index(sequences_path, "asm20", debug=debug)
+    manifest = Manifest(
+        name=name,
+        source_urls=tuple(source_urls),
+        fetched_at=fetched_at,
+        sha256=sha256,
+        n_records=len(loci),
+        dbtype="nucl",
+        kind="cluster",
+        header_format="plain",
+        typing_schema=typing_schema or None,
+        makeblastdb_version=tool_version_line(["makeblastdb", "-version"]),
+        minimap2_version=optional_tool_version_line(["minimap2", "--version"]),
+        license=content_license or None,
+        note=content_note or None,
+        source=source,
+    )
+    write_manifest(manifest, db_dir / "gapit-manifest.json")
+    return manifest
+
+
+def resolve_gene_ids(loci: Sequence[LocusSequence]) -> list[LocusSequence]:
+    """Make every gene id globally unique for a gapit.cluster/2 build
+    (typing rules key on gene ids, so a shared ``/gene`` name across loci
+    would make sibling-locus rules collide). Deterministic two passes:
+
+    1. Count the primary ids (the parse-time /gene -> /locus_tag -> /note
+       -> ``<locus>_NN`` derivation, untouched); ids occurring exactly once
+       globally stay verbatim.
+    2. Walk the colliding genes in document order (loci in record order,
+       genes in coordinate order) and take the raw ``/locus_tag`` when one
+       exists and is unclaimed, else ``{locus_id}:{primary_id}@{start}`` —
+       the start coordinate makes the synthesized form unique with no error
+       path. Gene order within each locus is preserved verbatim.
+    """
+    counts = Counter(gene.gene_id for locus in loci for gene in locus.features.genes)
+    used = {gene_id for gene_id, total in counts.items() if total == 1}
+    resolved: list[LocusSequence] = []
+    for locus in loci:
+        order = sorted(
+            range(len(locus.features.genes)), key=lambda i: locus.features.genes[i].start
+        )
+        final_ids: dict[int, str] = {}
+        for index in order:
+            gene = locus.features.genes[index]
+            if counts[gene.gene_id] == 1:
+                final_id = gene.gene_id
+            elif gene.locus_tag is not None and gene.locus_tag not in used:
+                final_id = gene.locus_tag
+            else:
+                final_id = f"{locus.features.id}:{gene.gene_id}@{gene.start}"
+            used.add(final_id)
+            final_ids[index] = final_id
+        genes = tuple(
+            gene.model_copy(update={"gene_id": final_ids[index]})
+            for index, gene in enumerate(locus.features.genes)
+        )
+        features = locus.features.model_copy(update={"genes": genes})
+        resolved.append(locus.model_copy(update={"features": features}))
+    return resolved
+
+
+def perform_cluster_build(
+    name: str,
+    fasta: Path,
+    typing: Path | None,
+    db_dir: Path,
+    *,
+    kmer_db: Path | None = None,
+    quiet: bool = True,
+) -> Manifest:
+    """The cluster branch of the build use-case: parse the GBK/GFF input,
+    validate the typing spec (schema and referenced ids) — a multi-scheme
+    document additionally runs build-time gene-id resolution first, so its
+    rules reference the resolved ids (gapit.cluster/2) — so a bad spec
+    fails before any artifact is written, then build (callers shape the
+    receipt). ``kmer_db`` optionally installs a ``gapit.kmerdb/1`` sidecar
+    and materializes its sets from the built locus FASTA."""
+    loci = parse_cluster_input(fasta)
+    typing_schema = ""
+    if typing is not None:
+        document = read_typing_document(typing)
+        if uses_cluster_v2(document):
+            loci = resolve_gene_ids(loci)
+        validate_references(document, FeaturesDocument(loci=tuple(item.features for item in loci)))
+        typing_schema = typing_schema_of(typing)
+        if kmer_db is not None:
+            _validate_kmer_references(document, kmer_db, loci)
+    db_dir.mkdir(parents=True, exist_ok=True)
+    manifest = build_cluster_database(
+        db_dir,
+        name=name,
+        loci=loci,
+        typing=typing,
+        source_urls=("local",),
+        fetched_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        typing_schema=typing_schema,
+        quiet=quiet,
+    )
+    if kmer_db is not None:
+        from gspec.kmerdb import KmerDbDocument, materialize_kmer_sets
+
+        document_k = KmerDbDocument.model_validate_json(kmer_db.read_text(encoding="utf-8"))
+        materialize_kmer_sets(db_dir, document_k, db_dir / "sequences")
+    return manifest
+
+
+def _validate_kmer_references(
+    document: TypingDocument, kmer_db: Path, loci: Sequence[LocusSequence]
+) -> None:
+    """Every ``key_kmers.set`` in the typing document must be declared in
+    the kmerdb sidecar (TYPING_UNKNOWN_KMERSET at build time, the
+    unknown-gene precedent)."""
+    from gspec.kmerdb import KmerDbDocument
+
+    kmer_document = KmerDbDocument.model_validate_json(kmer_db.read_text(encoding="utf-8"))
+    known = set(kmer_document.sets)
+    locus_ids = {item.features.id for item in loci}
+    referenced = {
+        rule.key_kmers.set
+        for scheme in document.schemes
+        for rule in scheme.rules
+        if isinstance(rule, ClusterMatchRule) and rule.key_kmers is not None
+    }
+    missing_sets = sorted(referenced - known)
+    if missing_sets:
+        raise DatabaseError(
+            f"typing rules reference undeclared kmer sets: {missing_sets}",
+            code="TYPING_UNKNOWN_KMERSET",
+            context={"sets": ", ".join(missing_sets)},
+        )
+    stray = sorted(
+        name
+        for name, spec in kmer_document.sets.items()
+        if spec.of not in locus_ids or any(other not in locus_ids for other in spec.against)
+    )
+    if stray:
+        raise DatabaseError(
+            f"kmer sets reference loci absent from the input: {stray}",
+            code="KMERDB_UNKNOWN_LOCUS",
+            context={"sets": ", ".join(stray)},
+        )

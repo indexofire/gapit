@@ -1,6 +1,6 @@
 """CLI integration tests: `gspec db fetch -d NAME` (provider path) + `db list`.
 
-Offline by construction: ``gapit.db_ops.REGISTRY`` is monkeypatched down to
+Offline by construction: ``gspec.db_ops.REGISTRY`` is monkeypatched down to
 two synthetic Providers whose source_urls point at a ``file://`` fasta fixture
 in tmp_path, so the full download -> transform -> build pipeline runs against
 the pixi env's real makeblastdb/minimap2 without touching the network (the
@@ -18,13 +18,13 @@ from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
 from rich.console import Console
 
-from gapit.cli import app
-from gapit.cmd_db import db_list_command
-from gapit.db_ops import DbListEntry, db_list_table
-from gapit.errors import ErrorEnvelope
-from gapit.fasta import iter_fasta
-from gapit.providers.common import Provider
-from gapit.records import Record
+from gspec.cli import app
+from gspec.cmd_db import db_list_command
+from gspec.db_ops import DbListEntry, db_list_table
+from gspec.errors import ErrorEnvelope
+from gspec.fasta import iter_fasta
+from gspec.providers.common import Provider
+from gspec.records import Record
 
 SYN = "synamr"
 OTHER = "synavail"
@@ -57,14 +57,14 @@ def make_transform(db_name: str):
 
 
 def patch_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """Point ``gapit.db_ops.REGISTRY`` at two synthetic file:// providers
+    """Point ``gspec.db_ops.REGISTRY`` at two synthetic file:// providers
     (SYN fetchable, OTHER never fetched) and create an empty datadir under
     tmp_path; returns that datadir."""
     source = tmp_path / "upstream.fa"
     source.write_text(UPSTREAM_FASTA, encoding="utf-8")
     url = source.as_uri()
     monkeypatch.setattr(
-        "gapit.db_ops.REGISTRY",
+        "gspec.db_ops.REGISTRY",
         {
             SYN: Provider(
                 name=SYN,
@@ -421,7 +421,7 @@ def test_db_fetch_all_installs_default_dbs(tmp_path: Path, monkeypatch: pytest.M
     source.write_text(UPSTREAM_FASTA, encoding="utf-8")
     url = source.as_uri()
     monkeypatch.setattr(
-        "gapit.db_ops.REGISTRY",
+        "gspec.db_ops.REGISTRY",
         {
             name: Provider(
                 name=name,

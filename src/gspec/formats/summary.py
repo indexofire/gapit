@@ -1,0 +1,118 @@
+"""Summary output formats: abricate-parity TSV/CSV, gapit.summary/1 JSON, Markdown."""
+
+import json
+from datetime import datetime
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from gspec import __version__
+from gspec.formats.csvutil import delimited_line
+from gspec.formats.json import ToolDocument, utc_timestamp
+from gspec.formats.md import md_cell
+from gspec.summary import ABSENT, FIELDSEP, SummaryMatrix, SummaryRow
+
+
+class SummaryParamsDocument(BaseModel, frozen=True):
+    """The summary parameters in effect (metric is explicit)."""
+
+    metric: Literal["%COVERAGE", "%IDENTITY"]
+    metrics: list[Literal["%COVERAGE", "%IDENTITY"]]
+    nopath: bool
+
+
+class SummaryRowDocument(BaseModel, frozen=True):
+    """One matrix row: label, distinct-gene count, per-gene value lists."""
+
+    file: str
+    num_found: int
+    cells: dict[str, list[str]]
+
+
+class SummaryDocument(BaseModel, frozen=True):
+    """gapit.summary/1 — machine-readable summary matrix."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_name: Literal["gapit.summary/1"] = Field(default="gapit.summary/1", alias="schema")
+    tool: ToolDocument = ToolDocument()
+    created_at: str
+    params: SummaryParamsDocument
+    genes: list[str]
+    rows: list[SummaryRowDocument]
+
+
+def _display_cell(matrix: SummaryMatrix, row: SummaryRow, gene: str) -> str:
+    """One table cell: '+', presence / '-', absence by default; the
+    ';'-joined metric values ('.' absent) under -i/-c."""
+    if gene not in row.cells:
+        return "-" if matrix.params.presence_cells else ABSENT
+    if matrix.params.presence_cells:
+        return "+"
+    return FIELDSEP.join(row.cells[gene])
+
+
+def format_summary_tsv(matrix: SummaryMatrix, *, csv: bool) -> str:
+    """Render the matrix in abricate --summary shape: '#FILE NUM_FOUND <genes>'
+    header, one row per input ('+'/'-' presence cells by default; metric
+    values under -i/-c). Each row goes through the shared CSV/TSV line
+    writer, so comma-bearing gene/file cells are quoted in CSV."""
+    lines = [delimited_line(("#FILE", "NUM_FOUND", *matrix.genes), as_csv=csv)]
+    for row in matrix.rows:
+        cells = [_display_cell(matrix, row, gene) for gene in matrix.genes]
+        lines.append(delimited_line((row.file, str(row.num_found), *cells), as_csv=csv))
+    return "".join(lines)
+
+
+def render_summary_json(matrix: SummaryMatrix, *, now: datetime) -> str:
+    """Serialize the matrix as gapit.summary/1 (indented, schema first)."""
+    document = SummaryDocument(
+        created_at=utc_timestamp(now),
+        params=SummaryParamsDocument(
+            metric=matrix.params.metric,
+            metrics=list(matrix.params.metrics),
+            nopath=matrix.params.nopath,
+        ),
+        genes=list(matrix.genes),
+        rows=[
+            SummaryRowDocument(
+                file=row.file,
+                num_found=row.num_found,
+                cells={gene: list(values) for gene, values in row.cells.items()},
+            )
+            for row in matrix.rows
+        ],
+    )
+    return document.model_dump_json(indent=2, by_alias=True)
+
+
+def _md_cell(value: str) -> str:
+    """Escape Markdown table metacharacters so cells cannot break the table."""
+    return md_cell(value)
+
+
+def render_summary_md(matrix: SummaryMatrix, *, now: datetime) -> str:
+    """Render the matrix as deterministic Markdown: YAML frontmatter, then a
+    File x gene table with escaped cells ('.' = absent, ';' = multi-value)."""
+    columns = ("File", "Num found", *matrix.genes)
+    lines: list[str] = [
+        "---",
+        "schema: gapit.summary/1",
+        f"tool: gspec {__version__}",
+        f"created_at: {utc_timestamp(now)}",
+        f"metric: '{matrix.params.metric}'",
+        f"metrics: {json.dumps(list(matrix.params.metrics))}",
+        f"nopath: {str(matrix.params.nopath).lower()}",
+        f"files: {len(matrix.rows)}",
+        f"genes: {len(matrix.genes)}",
+        "---",
+        "",
+        "# gspec summary matrix",
+        "",
+        "| " + " | ".join(_md_cell(column) for column in columns) + " |",
+        "|" + "---|" * len(columns),
+    ]
+    for row in matrix.rows:
+        cells = [_md_cell(_display_cell(matrix, row, gene)) for gene in matrix.genes]
+        lines.append("| " + " | ".join((_md_cell(row.file), str(row.num_found), *cells)) + " |")
+    return "\n".join(lines) + "\n"

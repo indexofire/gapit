@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pytest
 
-from gapit.providers.ecoli_vf import PROVIDER, transform
-from gapit.records import Record
+from gspec.providers.ecoli_vf import PROVIDER, transform
+from gspec.records import Record
 
 FIXTURE = Path(__file__).parent / "data" / "providers" / "ecoli_vf"
 SOURCE_FILE = "repaired_ecoli_vfs_shortnames.ffn"

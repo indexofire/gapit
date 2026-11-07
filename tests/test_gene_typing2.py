@@ -24,12 +24,12 @@ from typing import Any
 import pytest
 from click.testing import CliRunner
 
-from gapit.blast import ensure_blast, screen_file
-from gapit.cli import app
-from gapit.db import discover_databases
-from gapit.formats.json import render_json
-from gapit.formats.md import render_markdown
-from gapit.report import ScreeningParams
+from gspec.blast import ensure_blast, screen_file
+from gspec.cli import app
+from gspec.db import discover_databases
+from gspec.formats.json import render_json
+from gspec.formats.md import render_markdown
+from gspec.report import ScreeningParams
 
 DATA = Path(__file__).parent / "data" / "typing"
 GOLDEN = Path(__file__).parent / "golden"

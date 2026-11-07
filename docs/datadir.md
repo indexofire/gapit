@@ -231,7 +231,7 @@ docker run --rm -it \
   --user "$(id -u):$(id -g)" \
   -v gspec-data:/data/gspec \
   -e GSPEC_DATADIR=/data/gspec \
-  gspec:0.8.0 gspec db list
+  gspec:0.8.1 gspec db list
 ```
 
 For CI, mount or cache a workspace directory and pin versions:
@@ -240,7 +240,7 @@ For CI, mount or cache a workspace directory and pin versions:
 docker run --rm \
   -v "$PWD/.gspec-db:/data/gspec" \
   -e GSPEC_DATADIR=/data/gspec \
-  gspec:0.8.0 gspec screen sample.fna --db eco_dec
+  gspec:0.8.1 gspec screen sample.fna --db eco_dec
 ```
 
 You can bake reference databases into an image for **read-only** screening:

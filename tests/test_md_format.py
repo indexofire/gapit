@@ -7,12 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from gapit.blast import screen_file
-from gapit.db import Database, make_blast_db
-from gapit.formats.md import render_markdown, render_reads_markdown
-from gapit.hits import Hit
-from gapit.reads import GeneCoverage, ReadsParams, ReadsReport
-from gapit.report import Report, ScreeningParams
+from gspec.blast import screen_file
+from gspec.db import Database, make_blast_db
+from gspec.formats.md import render_markdown, render_reads_markdown
+from gspec.hits import Hit
+from gspec.reads import GeneCoverage, ReadsParams, ReadsReport
+from gspec.report import Report, ScreeningParams
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
@@ -105,7 +105,7 @@ def test_lf_endings_and_trailing_newline(reports: list[Report]) -> None:
 def test_cli_format_md(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from click.testing import CliRunner
 
-    from gapit.cli import app
+    from gspec.cli import app
 
     monkeypatch.chdir(CONTIGS)
     result = CliRunner().invoke(
@@ -205,7 +205,7 @@ def test_md_cell_turns_newlines_into_br() -> None:
     """Given a cell containing a newline and a pipe, When escaped, Then the
     newline becomes <br> and the pipe is backslash-escaped, so the table row
     cannot be split."""
-    from gapit.formats.md import md_cell
+    from gspec.formats.md import md_cell
 
     assert md_cell("a\nb|c") == "a<br>b\\|c"
 
@@ -216,8 +216,8 @@ def test_md_frontmatter_quotes_a_yaml_breaking_db_name() -> None:
     unquoted so existing goldens remain byte-identical."""
     from datetime import UTC, datetime
 
-    from gapit.formats.md import md_report_preamble
-    from gapit.report import ScreeningParams
+    from gspec.formats.md import md_report_preamble
+    from gspec.report import ScreeningParams
 
     now = datetime(2026, 10, 22, tzinfo=UTC)
     quoted = md_report_preamble(ScreeningParams(db="x: y#z"), now=now)

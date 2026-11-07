@@ -1,4 +1,4 @@
-"""Unit tests for positional-FASTQ sample auto-pairing (gapit.readpairs).
+"""Unit tests for positional-FASTQ sample auto-pairing (gspec.readpairs).
 
 The wildcard workflow: ``gspec screen -d db *.fastq.gz`` hands gspec a flat
 glob of reads files; pair_samples infers per-sample lanes from filename
@@ -8,7 +8,7 @@ conventions (rightsholder request: sample_1/2.fastq.gz, R1/R2 styles).
 from collections.abc import Callable
 from pathlib import Path
 
-from gapit.readpairs import SampleLanes, pair_samples
+from gspec.readpairs import SampleLanes, pair_samples
 
 
 def collect_warnings() -> tuple[list[str], Callable[[str], None]]:

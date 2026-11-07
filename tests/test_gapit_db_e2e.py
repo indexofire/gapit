@@ -17,11 +17,11 @@ import pytest
 from click.testing import CliRunner
 from pydantic import TypeAdapter
 
-from gapit.cli import app
-from gapit.dbbuild import build_database
-from gapit.formats.json import ReportDocument
-from gapit.formats.reads_json import ReadsDocument
-from gapit.records import Record, write_records
+from gspec.cli import app
+from gspec.dbbuild import build_database
+from gspec.formats.json import ReportDocument
+from gspec.formats.reads_json import ReadsDocument
+from gspec.records import Record, write_records
 
 DB = "tinygapit"
 SEQ_LEN = 240

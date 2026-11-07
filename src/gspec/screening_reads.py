@@ -1,0 +1,324 @@
+"""The minimap2 screening use-cases (docs/reads.md): ``--r1``/``--r2`` reads and
+positional assemblies via ``--aligner minimap2``.
+
+Split from screening.py so each use-case module stays under the 250 pure-LOC
+ceiling; screening.py keeps the blastn contig pipeline and shared helpers.
+"""
+
+from datetime import UTC, datetime
+from pathlib import Path
+
+import click
+
+from gspec.bundled import resolve_screen_datadir
+from gspec.errors import ensure_input_file, usage_fail
+from gspec.formats.md import render_reads2_markdown, render_reads_markdown
+from gspec.formats.reads_json import render_reads2_json, render_reads_json
+from gspec.formats.reads_tsv import reads_tsv_chunk, reads_tsv_preamble
+from gspec.reads import (
+    ReadFileKind,
+    ReadsParams,
+    ReadTypeEnum,
+    detect_read_kind,
+    screen_reads,
+)
+from gspec.screening import AlignerEnum, OutputFormat, find_database
+
+
+def _pair_read_lanes(r1: list[Path], r2: list[Path] | None) -> list[tuple[Path, Path | None]]:
+    """Pair per-lane --r1/--r2 file lists (r2 None = single-end)."""
+    if r2 is not None and len(r2) != len(r1):
+        usage_fail(f"--r2 has {len(r2)} files but --r1 has {len(r1)} (lanes must pair up)")
+    if r2 is None:
+        return [(path, None) for path in r1]
+    return list(zip(r1, r2, strict=True))
+
+
+def resolve_read_preset(
+    lanes: list[tuple[Path, Path | None]], read_type: ReadTypeEnum | None, quiet: bool
+) -> ReadTypeEnum:
+    """Detect every input's kind from content and resolve the minimap2 preset:
+    assembly FASTA forces map-ont (one stderr note unless quiet/explicit),
+    FASTQ keeps sr unless a preset was given. Mixed kinds and FASTA paired-end
+    are usage errors."""
+    r1_kinds = {detect_read_kind(r1_path) for r1_path, _ in lanes}
+    if len(r1_kinds) > 1:
+        usage_fail("mixed FASTA and FASTQ inputs")
+    r2_kinds = {detect_read_kind(r2_path) for _, r2_path in lanes if r2_path is not None}
+    if r2_kinds and ReadFileKind.fasta in r1_kinds | r2_kinds:
+        usage_fail("paired-end requires FASTQ")
+    if ReadFileKind.fasta not in r1_kinds:
+        return read_type if read_type is not None else ReadTypeEnum.sr
+    if read_type is not None and read_type is not ReadTypeEnum.map_ont:
+        usage_fail("assembly FASTA requires map-ont")
+    if read_type is None and not quiet:
+        click.echo("assembly FASTA detected; using map-ont", err=True)
+    return ReadTypeEnum.map_ont
+
+
+def reject_blastn_thresholds(minid: float, mincov: float, mode: str) -> None:
+    """--minid/--mincov are blastn-only; every minimap2 entry point rejects
+    them instead of silently ignoring them (reads thresholds have their own
+    flags). ``mode`` names the invocation in the frozen message."""
+    if minid != 80.0 or mincov != 80.0:
+        usage_fail(
+            f"--minid/--mincov apply to blastn only; use --min-identity/--min-breadth with {mode}"
+        )
+
+
+def validate_reads_usage(
+    min_breadth: float,
+    min_identity: float,
+    min_mapq: int,
+    threads: int,
+    min_depth: float = 0.0,
+    min_relative_depth: float = 0.0,
+) -> None:
+    """Usage gates shared by the minimap2 entry points, in the frozen order
+    (thresholds), before any file is touched. Every output format is legal in
+    reads mode: tsv is the default (the streaming table), json/md the
+    explicit opt-ins."""
+    if not 0.0 <= min_breadth <= 100.0:
+        usage_fail(f"--min-breadth must be in [0, 100]: got {min_breadth}")
+    if not 0.0 <= min_identity <= 100.0:
+        usage_fail(f"--min-identity must be in [0, 100]: got {min_identity}")
+    if min_mapq < 0:
+        usage_fail(f"--min-mapq must be >= 0: got {min_mapq}")
+    if min_depth < 0.0:
+        usage_fail(f"--min-depth must be >= 0: got {min_depth}")
+    if not 0.0 <= min_relative_depth <= 1.0:
+        usage_fail(f"--min-relative-depth must be in [0, 1]: got {min_relative_depth}")
+    if threads < 1:
+        usage_fail(f"--threads must be >= 1: got {threads}")
+
+
+def _screen_lanes(
+    lanes: list[tuple[Path, Path | None]],
+    db_name: str,
+    datadir: Path | None,
+    read_type: ReadTypeEnum | None,
+    min_breadth: float,
+    min_identity: float,
+    min_mapq: int,
+    threads: int,
+    output_format: OutputFormat | None,
+    quiet: bool,
+    debug: bool,
+    all_genes: bool = False,
+    min_depth: float = 0.0,
+    min_relative_depth: float = 0.0,
+    relative_to: str = "lpxA",
+) -> str:
+    """Minimap2 engine core shared by both entry points: preset resolution,
+    screening, rendering; tsv is the default format (the streaming table —
+    tsv is the human default on every surface, json/md the agent opt-ins,
+    docs/reads.md). Either reads/2 threshold on selects the gapit.reads/2
+    document; both off keep gapit.reads/1 byte-identical. Returns the
+    rendered output for the caller to echo."""
+    resolved = resolve_read_preset(lanes, read_type, quiet)
+    database = find_database(resolve_screen_datadir(datadir, db_name), db_name, quiet=quiet)
+    if database.kind == "cluster":
+        from gspec.kmerdb import read_kmerdb
+
+        if read_kmerdb(database.path) is None:
+            usage_fail(
+                "cluster databases are assembly-contig screening only;"
+                " --r1/--r2 and --aligner minimap2 are not available"
+                " (this database has no kmer.json sidecar — build with -K"
+                " to enable the k-mer reads path)"
+            )
+        from gspec.screening_kmer import screen_cluster_kmer
+
+        return screen_cluster_kmer(
+            [p for p, _ in lanes],
+            [p for _, p in lanes if p is not None] or None,
+            db_name,
+            datadir,
+            min_cluster_cov=60.0,
+            output_format=output_format,
+            quiet=quiet,
+        )
+    read_files = [r1_path for r1_path, _ in lanes] + [
+        r2_path for _, r2_path in lanes if r2_path is not None
+    ]
+    read_list = ", ".join(str(path) for path in read_files)
+    if not quiet:
+        click.echo(f"Screening reads: {read_list}", err=True)
+    report = screen_reads(
+        lanes,
+        database,
+        read_type=resolved.value,
+        min_breadth=min_breadth,
+        threads=threads,
+        debug=debug,
+        min_identity=min_identity,
+        min_mapq=min_mapq,
+        min_depth=min_depth,
+        min_relative_depth=min_relative_depth,
+        relative_to=relative_to,
+    )
+    present = sum(1 for gene in report.genes if gene.present)
+    if not quiet:
+        click.echo(f"Detected {present} present genes in {read_list}", err=True)
+    params = ReadsParams(
+        db=db_name,
+        read_type=resolved.value,
+        min_breadth=min_breadth,
+        threads=threads,
+        min_identity=min_identity,
+        min_mapq=min_mapq,
+        min_depth=min_depth,
+        min_relative_depth=min_relative_depth,
+        relative_to=relative_to,
+    )
+    now = datetime.now(UTC)
+    reads2 = min_identity > 0.0 or min_mapq > 0 or min_relative_depth > 0.0
+    relative = min_relative_depth > 0.0
+    fmt = output_format if output_format is not None else OutputFormat.tsv
+    if fmt is OutputFormat.tsv or fmt is OutputFormat.csv:
+        # The default table: single sample, so one chunk — preamble + chunk
+        # concatenate to format_reads_tsv exactly (the positional path's
+        # streaming unit; here the run is one lane-union entry).
+        csv = fmt is OutputFormat.csv
+        output = reads_tsv_preamble(reads2=reads2, relative=relative, csv=csv) + reads_tsv_chunk(
+            report, reads2=reads2, relative=relative, csv=csv, all_genes=all_genes
+        )
+    elif fmt is OutputFormat.md:
+        output = (
+            render_reads2_markdown([report], params, now=now)
+            if reads2
+            else (render_reads_markdown([report], params, now=now))
+        )
+    else:
+        output = (
+            render_reads2_json([report], params, now=now)
+            if reads2
+            else (render_reads_json([report], params, now=now))
+        )
+    return output
+
+
+def run_screen_reads(
+    r1: list[Path],
+    r2: list[Path] | None,
+    db_name: str,
+    datadir: Path | None,
+    read_type: ReadTypeEnum | None,
+    min_breadth: float,
+    min_identity: float,
+    min_mapq: int,
+    threads: int,
+    output_format: OutputFormat | None,
+    quiet: bool,
+    debug: bool = False,
+    aligner: AlignerEnum | None = None,
+    minid: float = 80.0,
+    mincov: float = 80.0,
+    all_genes: bool = False,
+    min_depth: float = 0.0,
+    min_relative_depth: float = 0.0,
+    relative_to: str = "lpxA",
+) -> str:
+    """Screen FASTQ reads or assembly FASTA given as already-split per-lane
+    --r1/--r2 file lists (the CLI owns the comma-splitting; MCP passes arrays
+    natively, so commas in filenames survive). Per-lane minimap2, sample-level
+    union; tsv is the default format (the streaming table; json/md the
+    explicit opt-ins, docs/reads.md). A nonzero
+    --min-identity/--min-mapq turns on gapit.reads/2 alignment filtering.
+    Returns the rendered output."""
+    if aligner is AlignerEnum.blastn:
+        usage_fail("--aligner blastn is not available for --r1/--r2 reads input")
+    validate_reads_usage(
+        min_breadth, min_identity, min_mapq, threads, min_depth, min_relative_depth
+    )
+    reject_blastn_thresholds(minid, mincov, "--r1/--r2")
+    lanes = _pair_read_lanes(r1, r2)
+    for path in [r1_path for r1_path, _ in lanes] + [
+        r2_path for _, r2_path in lanes if r2_path is not None
+    ]:
+        ensure_input_file(path, "reads file")
+    return _screen_lanes(
+        lanes,
+        db_name,
+        datadir,
+        read_type,
+        min_breadth,
+        min_identity,
+        min_mapq,
+        threads,
+        output_format,
+        quiet,
+        debug,
+        all_genes=all_genes,
+        min_depth=min_depth,
+        min_relative_depth=min_relative_depth,
+        relative_to=relative_to,
+    )
+
+
+def run_screen_assemblies(
+    files: list[Path] | None,
+    fofn: Path | None,
+    db_name: str,
+    datadir: Path | None,
+    read_type: ReadTypeEnum | None,
+    min_breadth: float,
+    min_identity: float,
+    min_mapq: int,
+    threads: int,
+    jobs: int,
+    noheader: bool,
+    nopath: bool,
+    output_format: OutputFormat | None,
+    quiet: bool,
+    debug: bool = False,
+    minid: float = 80.0,
+    mincov: float = 80.0,
+    all_genes: bool = False,
+    min_depth: float = 0.0,
+    min_relative_depth: float = 0.0,
+    relative_to: str = "lpxA",
+) -> str:
+    """Screen positional assembly FASTA file(s) with the minimap2 engine
+    (--aligner minimap2): every input must be FASTA(.gz) content — FASTQ
+    content is a usage error, undetectable content keeps the typed input
+    error. Preset resolution and output follow the reads contract (SPEC §10);
+    the blastn-engine-only flags --fofn/--jobs/--noheader/--nopath and the
+    blastn thresholds --minid/--mincov are rejected here instead of silently
+    ignored. A nonzero --min-identity/--min-mapq turns on gapit.reads/2
+    filtering.     Returns the rendered output."""
+    validate_reads_usage(
+        min_breadth, min_identity, min_mapq, threads, min_depth, min_relative_depth
+    )
+    if fofn is not None:
+        usage_fail("--fofn is not available with --aligner minimap2")
+    if jobs != 1:
+        usage_fail("--jobs is not available with --aligner minimap2")
+    if noheader:
+        usage_fail("--noheader is not available with --aligner minimap2")
+    if nopath:
+        usage_fail("--nopath is not available with --aligner minimap2")
+    reject_blastn_thresholds(minid, mincov, "--aligner minimap2")
+    if not files:
+        usage_fail("no input files given (positional FILEs)")
+    for path in files:
+        ensure_input_file(path)
+        if detect_read_kind(path) is not ReadFileKind.fasta:
+            usage_fail("minimap2 engine requires FASTA assemblies")
+    return _screen_lanes(
+        [(path, None) for path in files],
+        db_name,
+        datadir,
+        read_type,
+        min_breadth,
+        min_identity,
+        min_mapq,
+        threads,
+        output_format,
+        quiet,
+        debug,
+        all_genes=all_genes,
+        min_depth=min_depth,
+        min_relative_depth=min_relative_depth,
+        relative_to=relative_to,
+    )

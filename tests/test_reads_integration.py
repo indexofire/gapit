@@ -12,9 +12,9 @@ from pathlib import Path
 
 import pytest
 
-from gapit.db import Database, discover_databases
-from gapit.errors import InputError
-from gapit.reads import ReadFileKind, detect_read_kind, screen_reads
+from gspec.db import Database, discover_databases
+from gspec.errors import InputError
+from gspec.reads import ReadFileKind, detect_read_kind, screen_reads
 
 READS_DB_DIR = Path(__file__).parent / "data" / "reads_db"
 TINYAMR_DB_DIR = Path(__file__).parent / "data" / "db"

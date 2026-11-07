@@ -7,11 +7,11 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
-from gapit.blast import BlastRow, screen_file
-from gapit.db import make_blast_db
-from gapit.formats.json import HitDocument, ReportDocument, render_json
-from gapit.hits import process_rows
-from gapit.report import Report, ScreeningParams
+from gspec.blast import BlastRow, screen_file
+from gspec.db import make_blast_db
+from gspec.formats.json import HitDocument, ReportDocument, render_json
+from gspec.hits import process_rows
+from gspec.report import Report, ScreeningParams
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
@@ -35,7 +35,7 @@ def reports(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> list[Report]:
     """Real-pipeline reports for the four fixture files, run from CONTIGS so
     Report.file is a stable bare filename."""
     monkeypatch.chdir(CONTIGS)
-    from gapit.db import Database
+    from gspec.db import Database
 
     database = Database(
         name="tinyamr", path=datadir / "tinyamr", sequences_path=datadir / "tinyamr" / "sequences"
@@ -139,7 +139,7 @@ def test_cli_format_json(
     gapit.report/1 (created_at unpinned, just structurally checked)."""
     from click.testing import CliRunner
 
-    from gapit.cli import app
+    from gspec.cli import app
 
     monkeypatch.chdir(CONTIGS)
     result = CliRunner().invoke(

@@ -50,8 +50,8 @@ jobs:
           gspec schema report > /dev/null
           gspec db path --json > /dev/null
           # The pre-0.8 command name must keep working after the rename.
-          gapit --version
-          gapit schema report > /dev/null
+          gspec --version
+          gspec schema report > /dev/null
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -94,7 +94,7 @@ jobs:
             gh release edit "$GITHUB_REF_NAME" --notes-file notes.md
           else
             gh release create "$GITHUB_REF_NAME" \
-              --title "gapit ${GITHUB_REF_NAME#v}" \
+              --title "gspec ${GITHUB_REF_NAME#v}" \
               --notes-file notes.md \
               --verify-tag
           fi

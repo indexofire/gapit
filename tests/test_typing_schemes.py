@@ -23,14 +23,14 @@ from typing import Any
 import pytest
 from click.testing import CliRunner
 
-from gapit.blast import ensure_blast, screen_file
-from gapit.cli import app
-from gapit.db import discover_databases
-from gapit.fasta import iter_fasta
-from gapit.formats.json import render_json
-from gapit.formats.md import render_markdown
-from gapit.report import ScreeningParams
-from gapit.typing_models import read_typing_document, template_placeholders
+from gspec.blast import ensure_blast, screen_file
+from gspec.cli import app
+from gspec.db import discover_databases
+from gspec.fasta import iter_fasta
+from gspec.formats.json import render_json
+from gspec.formats.md import render_markdown
+from gspec.report import ScreeningParams
+from gspec.typing_models import read_typing_document, template_placeholders
 
 SCHEMES = Path(__file__).parent / "data" / "typing" / "schemes"
 TYPING = Path(__file__).parent / "data" / "typing"

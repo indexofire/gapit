@@ -13,7 +13,7 @@ Version, as one JSON line:
 
 ```console
 $ gspec --version --json
-{"schema":"gapit.version/1","name":"gspec","version":"0.8.0"}
+{"schema":"gapit.version/1","name":"gspec","version":"0.8.1"}
 ```
 
 Output schemas. Eighteen documents are introspectable: `report`, `typing_result`,

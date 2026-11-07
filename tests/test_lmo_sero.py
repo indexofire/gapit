@@ -19,18 +19,18 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from gapit.bundled import find_bundled
-from gapit.cli import app
-from gapit.fasta import iter_fasta
-from gapit.records import read_manifest
-from gapit.typing_models import read_typing_document
-from gapit.typing_rules import ExactSetRule
+from gspec.bundled import find_bundled
+from gspec.cli import app
+from gspec.fasta import iter_fasta
+from gspec.records import read_manifest
+from gspec.typing_models import read_typing_document
+from gspec.typing_rules import ExactSetRule
 
 SCHEMES = Path(__file__).parent / "data" / "typing" / "schemes"
 GOLDEN = Path(__file__).parent / "golden"
 PANEL = SCHEMES / "lmo_sero.fa"
 SPEC = SCHEMES / "lmo_sero.json"
-BUNDLE = Path(__file__).parents[1] / "src" / "gapit" / "data" / "dbs" / "lmo_sero"
+BUNDLE = Path(__file__).parents[1] / "src" / "gspec" / "data" / "dbs" / "lmo_sero"
 
 runner = CliRunner()
 

@@ -8,12 +8,12 @@ from pathlib import Path
 
 from click.testing import CliRunner, Result
 
-from gapit.blast import screen_file
-from gapit.cli import app
-from gapit.db import Database, make_blast_db
-from gapit.formats.json import render_json
-from gapit.formats.md import render_markdown
-from gapit.report import Report, ScreeningParams
+from gspec.blast import screen_file
+from gspec.cli import app
+from gspec.db import Database, make_blast_db
+from gspec.formats.json import render_json
+from gspec.formats.md import render_markdown
+from gspec.report import Report, ScreeningParams
 
 FIXTURES = Path(__file__).parent / "data" / "fragments"
 GOLDEN = Path(__file__).parent / "golden"

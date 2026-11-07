@@ -9,7 +9,7 @@ Database setup is covered in [./databases.md](./databases.md); a full walk-throu
 
 ## Options
 
-Transcribed from `gspec screen --help` (gspec 0.8.0). Flags marked *reads mode* apply only when
+Transcribed from `gspec screen --help` (gspec 0.8.1). Flags marked *reads mode* apply only when
 you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 
 Every option also accepts the single-dash short form listed in the **Short** column (e.g.
@@ -115,7 +115,7 @@ $ gspec screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gapit.report/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.0"
+    "version": "0.8.1"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {

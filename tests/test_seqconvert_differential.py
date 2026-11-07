@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from gapit.seqconvert import to_fasta_lines
+from gspec.seqconvert import to_fasta_lines
 
 CONVERT = Path(__file__).parent / "data" / "convert"
 ANY2FASTA = shutil.which("any2fasta")

@@ -25,8 +25,8 @@ import argparse
 import json
 from pathlib import Path
 
-from gapit.gbfeatures import FeaturesDocument
-from gapit.typing_models import read_typing_document, validate_references
+from gspec.gbfeatures import FeaturesDocument
+from gspec.typing_models import read_typing_document, validate_references
 
 
 def _parser() -> argparse.ArgumentParser:

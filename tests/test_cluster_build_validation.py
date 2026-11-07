@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from gapit.clusterbuild import build_cluster_database
-from gapit.errors import DatabaseError
-from gapit.gbfeatures import GeneFeature, LocusFeatures, LocusSequence
+from gspec.clusterbuild import build_cluster_database
+from gspec.errors import DatabaseError
+from gspec.gbfeatures import GeneFeature, LocusFeatures, LocusSequence
 
 
 def _locus(gene_id: str, *, locus_id: str = "L1") -> LocusSequence:
@@ -48,7 +48,7 @@ def test_cluster_build_auto_deduplicates_locus_ids(tmp_path: Path) -> None:
     """Given two loci with the same id, When built, Then the second locus
     gets a _2 suffix and the build succeeds (Kaptive upstream data has
     duplicate accessions, e.g. Kpsc_O LT174602)."""
-    from gapit.clusterbuild import deduplicate_locus_genes
+    from gspec.clusterbuild import deduplicate_locus_genes
 
     loci = [_locus("g1"), _locus("g2")]
     resolved = deduplicate_locus_genes(loci)
@@ -82,7 +82,7 @@ def test_cluster_build_auto_deduplicates_gene_ids_within_a_locus(tmp_path: Path)
     """Given two CDS sharing one gene id inside a locus, When deduplicated,
     Then each gets a @start suffix and the ids are unique (Kaptive upstream
     data routinely carries paralogous gene names within a locus)."""
-    from gapit.clusterbuild import deduplicate_locus_genes
+    from gspec.clusterbuild import deduplicate_locus_genes
 
     locus = LocusSequence(
         features=LocusFeatures(

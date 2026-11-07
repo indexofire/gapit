@@ -15,10 +15,10 @@ from pathlib import Path
 from click.testing import CliRunner, Result
 from rich.console import Console
 
-from gapit.cli import app
-from gapit.db_ops import db_list_entries, db_list_table
-from gapit.providers import REGISTRY
-from gapit.records import Manifest, write_manifest
+from gspec.cli import app
+from gspec.db_ops import db_list_entries, db_list_table
+from gspec.providers import REGISTRY
+from gspec.records import Manifest, write_manifest
 
 DATA = Path(__file__).parent / "data" / "cluster"
 
@@ -206,7 +206,7 @@ def test_db_list_manifestless_dir_counts_fasta_and_detects_dbtype(tmp_path: Path
 def test_db_list_json_surfaces_a_bundled_content_license(tmp_path: Path) -> None:
     """Given the bundled vpa_ok row, When listed, Then its pinned MIT content
     license is carried in the gapit.dblist/1 entry."""
-    from gapit.db_ops import db_list_entries
+    from gspec.db_ops import db_list_entries
 
     entries = {entry.name: entry for entry in db_list_entries(tmp_path)}
     assert entries["vpa_ok"].license == "MIT (database content)"

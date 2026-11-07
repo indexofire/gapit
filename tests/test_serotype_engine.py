@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from gapit.cluster import GeneCall
-from gapit.serotype_engine import evaluate_serotype
-from gapit.serotype_models import SerotypeDocument, SerotypeRule
+from gspec.cluster import GeneCall
+from gspec.serotype_engine import evaluate_serotype
+from gspec.serotype_models import SerotypeDocument, SerotypeRule
 
 
 def _call(

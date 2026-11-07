@@ -8,16 +8,16 @@ from pathlib import Path
 
 import pytest
 
-from gapit import __version__, dbbuild
-from gapit.dbbuild import (
+from gspec import __version__, dbbuild
+from gspec.dbbuild import (
     build_database,
     drop_exact_duplicates,
     generate_sequences,
     optional_tool_version_line,
     verify_sequences,
 )
-from gapit.errors import DatabaseError
-from gapit.records import Record, read_manifest, write_records
+from gspec.errors import DatabaseError
+from gspec.records import Record, read_manifest, write_records
 
 DB = "tinyamr"
 SEQ_WRAPPED = "A" * 70  # exercises the 60-col wrap: 60 + 10

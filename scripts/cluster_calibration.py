@@ -27,12 +27,12 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from gapit import config
-from gapit.cluster import ClusterParams, load_features, load_typing, screen_cluster_file
-from gapit.screening import find_database
-from gapit.typing_decide import decide_typing
-from gapit.typing_engine import score_rules
-from gapit.typing_models import uses_cluster_v2
+from gspec import config
+from gspec.cluster import ClusterParams, load_features, load_typing, screen_cluster_file
+from gspec.screening import find_database
+from gspec.typing_decide import decide_typing
+from gspec.typing_engine import score_rules
+from gspec.typing_models import uses_cluster_v2
 
 NO_CALL = "(no call)"
 AMBIGUOUS = "-"

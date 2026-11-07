@@ -144,7 +144,7 @@ consumes abricate-built datadirs.
 - MCP reads tools — added 2026-09-22, post-phase: the `screen_reads` tool (FASTQ via
   minimap2, `gapit.reads/1`/`reads/2`) and `screen`'s `aligner`/`min_breadth`/`min_identity`/
   `min_mapq` parameters (minimap2 assembly survey), both delegating to the shared
-  `run_screen_reads`/`run_screen_assemblies` use-cases. Additive `gapit.mcp` contract
+  `run_screen_reads`/`run_screen_assemblies` use-cases. Additive `gspec.mcp` contract
   (9 tools; the other 8 entries byte-identical), no output-schema version bump. See
   docs/mcp.md.
 - **PyPI published (first release 0.2.2, 2026-09-27):** `pip install gspec`; passwordless

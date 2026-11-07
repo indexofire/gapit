@@ -8,7 +8,7 @@ import json
 from io import StringIO
 from typing import Any
 
-from gapit.mcp import serve
+from gspec.mcp import serve
 
 
 def exchange(*lines_or_messages: object) -> list[dict[str, Any]]:

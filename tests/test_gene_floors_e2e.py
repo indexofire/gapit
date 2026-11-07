@@ -19,13 +19,13 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from gapit.cli import app
-from gapit.dbcodec import decode_seqid
-from gapit.fasta import iter_fasta
+from gspec.cli import app
+from gspec.dbcodec import decode_seqid
+from gspec.fasta import iter_fasta
 
 READS2_DB = Path(__file__).parent / "data" / "reads2_db"
 READS2 = Path(__file__).parent / "data" / "reads2"
-BUNDLE = Path(__file__).parent.parent / "src" / "gapit" / "data" / "dbs" / "eco_dec"
+BUNDLE = Path(__file__).parent.parent / "src" / "gspec" / "data" / "dbs" / "eco_dec"
 
 runner = CliRunner()
 

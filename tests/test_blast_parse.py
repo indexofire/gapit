@@ -2,8 +2,8 @@
 
 import pytest
 
-from gapit.blast import BLAST_FIELDS, BlastRow, ensure_blast, parse_blast_row
-from gapit.errors import GapitError
+from gspec.blast import BLAST_FIELDS, BlastRow, ensure_blast, parse_blast_row
+from gspec.errors import GapitError
 
 # Captured verbatim from the real pipeline (any2fasta | blastn, BLAST+ 2.17).
 CANONICAL = (

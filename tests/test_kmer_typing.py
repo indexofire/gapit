@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from gapit.kmerdb import (
+from gspec.kmerdb import (
     KmerDbDocument,
     KmerSetSpec,
     count_sequence_kmers,
@@ -98,7 +98,7 @@ class TestMaterializeSets:
         sequences = tmp_path / "sequences"
         sequences.write_text(">locA\nACGT\n")
         doc = KmerDbDocument(k=31, sets={"x": KmerSetSpec(of="ghost")})
-        from gapit.errors import DatabaseError
+        from gspec.errors import DatabaseError
 
         with pytest.raises(DatabaseError):
             materialize_kmer_sets(tmp_path, doc, sequences)
@@ -119,7 +119,7 @@ class TestFastqKmerCounting:
         with fq.open("w") as fh:
             for j, read in enumerate(reads):
                 fh.write(f"@r{j}\n{read}\n+\n{'I' * len(read)}\n")
-        from gapit.kmerdb import count_fasta_kmers, count_fastq_kmers
+        from gspec.kmerdb import count_fasta_kmers, count_fastq_kmers
 
         fa_codes = count_fasta_kmers(fa, 31)
         fq_codes = count_fastq_kmers(fq, k=31)
@@ -134,7 +134,7 @@ class TestFastqKmerCounting:
         r2 = tmp_path / "r2.fastq"
         r1.write_text(f"@a\n{seq[:200]}\n+\n{'I' * 200}\n")
         r2.write_text(f"@b\n{seq[200:]}\n+\n{'I' * len(seq[200:])}\n")
-        from gapit.kmerdb import count_fastq_kmers, count_sequence_kmers
+        from gspec.kmerdb import count_fastq_kmers, count_sequence_kmers
 
         union = count_fastq_kmers(r1, r2, k=31)
         full = count_sequence_kmers(seq, 31)
@@ -143,12 +143,12 @@ class TestFastqKmerCounting:
 
 class TestContainmentIdentity:
     def test_perfect_match(self):
-        from gapit.kmerdb import containment_to_identity
+        from gspec.kmerdb import containment_to_identity
 
         assert containment_to_identity(1.0, 31) == 100.0
 
     def test_zero(self):
-        from gapit.kmerdb import containment_to_identity
+        from gspec.kmerdb import containment_to_identity
 
         assert containment_to_identity(0.0, 31) == 0.0
 
@@ -158,7 +158,7 @@ class TestContainmentIdentity:
         family-level floors while key_kmers delivers the SNP call."""
         import random
 
-        from gapit.kmerdb import containment_to_identity, count_sequence_kmers
+        from gspec.kmerdb import containment_to_identity, count_sequence_kmers
 
         rng = random.Random(3)
         base = "".join(rng.choice("ACGT") for _ in range(1200))

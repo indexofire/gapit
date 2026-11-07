@@ -13,12 +13,12 @@ import pytest
 from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
 
-from gapit import screening as gapit_screening
-from gapit.cli import app
-from gapit.db import Database, make_blast_db
-from gapit.errors import ErrorEnvelope, InputError
-from gapit.report import Report, ScreeningParams
-from gapit.screening import OutputFormat, run_screen
+from gspec import screening as gapit_screening
+from gspec.cli import app
+from gspec.db import Database, make_blast_db
+from gspec.errors import ErrorEnvelope, InputError
+from gspec.report import Report, ScreeningParams
+from gspec.screening import OutputFormat, run_screen
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"

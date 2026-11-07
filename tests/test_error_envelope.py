@@ -9,9 +9,9 @@ import pytest
 from click.testing import CliRunner
 from pydantic import TypeAdapter
 
-from gapit.cli import app
-from gapit.db import make_blast_db
-from gapit.errors import ERROR_CODES, ErrorEnvelope, InputError, ensure_input_file, render_error
+from gspec.cli import app
+from gspec.db import make_blast_db
+from gspec.errors import ERROR_CODES, ErrorEnvelope, InputError, ensure_input_file, render_error
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
@@ -166,7 +166,7 @@ def test_error_schema_exposes_the_registered_code_enum() -> None:
 def test_every_raise_site_uses_a_registered_code() -> None:
     """Given every typed raise helper/call in src/gspec, When scanned, Then
     its code is in ERROR_CODES (so the public enum cannot drift)."""
-    source = Path(__file__).parents[1] / "src" / "gapit"
+    source = Path(__file__).parents[1] / "src" / "gspec"
     names = {"_fail", "GapitError", "DatabaseError", "InputError", "UsageError", "DependencyError"}
     found: set[str] = set()
     for path in source.rglob("*.py"):

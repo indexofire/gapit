@@ -10,7 +10,7 @@ exactly what `gspec screen` writes. See [./screen.md](./screen.md) for producing
 
 ## Options
 
-Transcribed from `gspec summary --help` (gspec 0.8.0):
+Transcribed from `gspec summary --help` (gspec 0.8.1):
 
 | Flag | Type | Default | Description |
 |---|---|---|---|
@@ -150,7 +150,7 @@ $ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv 
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.0"
+    "version": "0.8.1"
   },
   "created_at": "2026-09-19T01:12:48Z",
   "params": {

@@ -67,9 +67,9 @@ gspec --version
 
 ```console
 $ gspec --version
-gspec 0.8.0
+gspec 0.8.1
 $ gspec --version --json
-{"schema":"gapit.version/1","name":"gspec","version":"0.8.0"}
+{"schema":"gapit.version/1","name":"gspec","version":"0.8.1"}
 ```
 
 ## Optional gseek engine
@@ -152,7 +152,7 @@ eval "$(_GSPEC_COMPLETE=zsh_source gspec)"
 Fish:
 
 ```fish
-_GSPEC_COMPLETE=fish_source gspec > ~/.config/fish/completions/gapit.fish
+_GSPEC_COMPLETE=fish_source gspec > ~/.config/fish/completions/gspec.fish
 ```
 
 The emitted script (on bash it ends with `complete -o nosort -F _gspec_completion gspec`)

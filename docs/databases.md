@@ -801,7 +801,7 @@ versions. A real one, from the plasmidfinder database:
   "upstream_version": "",
   "tool": {
     "name": "gspec",
-    "version": "0.8.0"
+    "version": "0.8.1"
   },
   "makeblastdb_version": "blastn: 2.17.0+",
   "minimap2_version": "2.31-r1302"

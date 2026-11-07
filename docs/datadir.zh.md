@@ -209,7 +209,7 @@ docker run --rm -it \
   --user "$(id -u):$(id -g)" \
   -v gspec-data:/data/gspec \
   -e GSPEC_DATADIR=/data/gspec \
-  gspec:0.8.0 gspec db list
+  gspec:0.8.1 gspec db list
 ```
 
 CI 中挂载或缓存 workspace 目录，并固定版本：
@@ -218,7 +218,7 @@ CI 中挂载或缓存 workspace 目录，并固定版本：
 docker run --rm \
   -v "$PWD/.gspec-db:/data/gspec" \
   -e GSPEC_DATADIR=/data/gspec \
-  gspec:0.8.0 gspec screen sample.fna --db eco_dec
+  gspec:0.8.1 gspec screen sample.fna --db eco_dec
 ```
 
 可以为**只读**筛查把参考库烤进镜像：

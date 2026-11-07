@@ -13,9 +13,9 @@ pipeline once.
 from pathlib import Path
 from zipfile import ZipFile
 
-from gapit.providers.common import Provider
-from gapit.providers.megares import PROVIDER, transform
-from gapit.records import Record
+from gspec.providers.common import Provider
+from gspec.providers.megares import PROVIDER, transform
+from gspec.records import Record
 
 FIXTURE = Path(__file__).parent / "data" / "providers" / "megares" / "megares_drugs_demo.fasta"
 ARCHIVE = "megares_v3.00.zip"

@@ -20,10 +20,10 @@ from pathlib import Path
 
 import pytest
 
-from gapit.errors import DatabaseError
-from gapit.providers.common import Provider
-from gapit.providers.resfinder import PROVIDER, transform
-from gapit.records import Record
+from gspec.errors import DatabaseError
+from gspec.providers.common import Provider
+from gspec.providers.resfinder import PROVIDER, transform
+from gspec.records import Record
 
 FIXTURES = Path(__file__).parent / "data" / "providers" / "resfinder"
 TOP = "fake-resfinder-abc123"  # arbitrary bitbucket-style top-level directory

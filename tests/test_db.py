@@ -1,16 +1,16 @@
-"""Unit tests for database discovery and blastdbcmd output parsing (gapit.db)."""
+"""Unit tests for database discovery and blastdbcmd output parsing (gspec.db)."""
 
 from pathlib import Path
 
 import pytest
 
-from gapit.db import (
+from gspec.db import (
     discover_databases,
     list_databases,
     minimap2_target_names_safe,
     parse_blastdbcmd_info,
 )
-from gapit.errors import DatabaseError
+from gspec.errors import DatabaseError
 
 # Captured verbatim from `blastdbcmd -info -db <fixture>/sequences` (BLAST+ 2.17,
 # tab-indented, "Longest sequence" sharing the Date line is authentic).

@@ -12,7 +12,7 @@ gspec 生来就是被程序驱动的。每个输出都以机器可读为设计�
 
 ```console
 $ gspec --version --json
-{"schema":"gapit.version/1","name":"gspec","version":"0.8.0"}
+{"schema":"gapit.version/1","name":"gspec","version":"0.8.1"}
 ```
 
 输出 schema。十八个文档可自省：`report`、`typing_result`、`reads`、`reads2`、

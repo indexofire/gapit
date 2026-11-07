@@ -2,8 +2,8 @@
 
 import pytest
 
-from gapit.errors import GapitError
-from gapit.paf import PafRecord, parse_paf_row
+from gspec.errors import GapitError
+from gspec.paf import PafRecord, parse_paf_row
 
 CANONICAL = (
     "r1\t150\t5\t60\t+\tdb~~~geneA~~~ACC~~~RES\t100\t10\t55\t50\t50\t60\ttp:A:P\tcm:i:12\ts1:i:50"

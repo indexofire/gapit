@@ -1,6 +1,6 @@
 """Unit tests for gapit.floors/1 per-gene identity floors (reads-mode gate).
 
-The gate contract (gapit.gene_floors): alignments to floored genes drop
+The gate contract (gspec.gene_floors): alignments to floored genes drop
 sub-floor rows BEFORE aggregation, so breadth is recomputed from the
 survivors; unfloored genes are untouched; the gapit.reads/2
 ``--min-identity`` filter and floors are conjunctive (a row must clear
@@ -12,18 +12,18 @@ from pathlib import Path
 
 import pytest
 
-from gapit.db import Database
-from gapit.errors import DatabaseError, InputError
-from gapit.gene_floors import (
+from gspec.db import Database
+from gspec.errors import DatabaseError, InputError
+from gspec.gene_floors import (
     GeneFloors,
     apply_gene_floors,
     gene_floors,
     read_floors,
     validate_floors,
 )
-from gapit.hits import Hit
-from gapit.paf import PafRecord, filter_alignments
-from gapit.reads import aggregate_coverage
+from gspec.hits import Hit
+from gspec.paf import PafRecord, filter_alignments
+from gspec.reads import aggregate_coverage
 
 GENE_A = "db~~~geneA~~~ACC~~~RES"
 GENE_B = "db~~~geneB~~~ACC~~~RES"
@@ -273,7 +273,7 @@ def test_hit_floors_apply_to_contig_mode() -> None:
     """Given default 90 and lpxA floor 80, When contig hits arrive at 89 and
     84, Then the 89% gene drops while lpxA survives — the BLAST global minid
     is only the search floor, the per-gene floor is the verdict."""
-    from gapit.gene_floors import apply_hit_floors
+    from gspec.gene_floors import apply_hit_floors
 
     floors = GeneFloors(default=90.0, genes={"lpxA": 80.0})
     kept = apply_hit_floors([hit("HS45", 89.0), hit("lpxA", 84.0)], floors)
@@ -281,7 +281,7 @@ def test_hit_floors_apply_to_contig_mode() -> None:
 
 
 def test_hit_floors_keep_row_at_the_floor() -> None:
-    from gapit.gene_floors import apply_hit_floors
+    from gspec.gene_floors import apply_hit_floors
 
     kept = apply_hit_floors([hit("HS45", 90.0)], GeneFloors(genes={"HS45": 90.0}))
     assert len(kept) == 1

@@ -10,8 +10,8 @@ from pathlib import Path
 
 from click.testing import CliRunner, Result
 
-from gapit.cli import app
-from gapit.records import Manifest, Record, write_manifest, write_records
+from gspec.cli import app
+from gspec.records import Manifest, Record, write_manifest, write_records
 
 SEQ = "ACGTAG" * 10  # 60 bp, matches the synthetic-fixture convention
 

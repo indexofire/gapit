@@ -25,9 +25,9 @@ import time
 from collections.abc import Iterator
 from pathlib import Path
 
-from gapit.fasta import iter_fasta
-from gapit.gbfeatures import FeaturesDocument
-from gapit.gene_families import (
+from gspec.fasta import iter_fasta
+from gspec.gbfeatures import FeaturesDocument
+from gspec.gene_families import (
     GENE_FAMILY_FILENAME,
     HomologyHit,
     build_family_document,
@@ -35,7 +35,7 @@ from gapit.gene_families import (
     filter_homology_hits,
     write_gene_families,
 )
-from gapit.proctools import run_tool
+from gspec.proctools import run_tool
 
 # Standard genetic code (bacterial table 11 uses the same internal codons;
 # the alternative start codons only affect the first residue).

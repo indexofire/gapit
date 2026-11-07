@@ -1,0 +1,30 @@
+"""Screening parameters and the canonical Report model."""
+
+from pydantic import BaseModel, Field
+
+from gspec.hits import Hit
+
+
+class ScreeningParams(BaseModel, frozen=True):
+    """Parameters for one screening run (SPEC.md §3 defaults and bounds)."""
+
+    db: str
+    minid: float = Field(default=80.0, gt=0.0, le=100.0)
+    mincov: float = Field(default=80.0, ge=0.0, le=100.0)
+    threads: int = Field(default=1, ge=1)
+    # Additive opt-in flag; serialized only when true so default reports stay
+    # byte-identical to the pre-merge-fragments contract.
+    merge_fragments: bool = False
+
+
+class Report(BaseModel, frozen=True):
+    """Canonical in-memory result of screening one input file.
+
+    Hits are sorted (sequence, start) before construction; the tuple is the
+    final, stable order. Screening is pure gene detection: typed and
+    untyped gene databases produce byte-identical reports (designation is
+    the ``gspec typing`` command's job).
+    """
+
+    file: str
+    hits: tuple[Hit, ...]

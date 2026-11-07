@@ -21,9 +21,9 @@ import click
 import pytest
 from click.testing import CliRunner, Result
 
-from gapit.cli import app
-from gapit.db import make_blast_db
-from gapit.records import Manifest, Record, write_manifest, write_records
+from gspec.cli import app
+from gspec.db import make_blast_db
+from gspec.records import Manifest, Record, write_manifest, write_records
 
 DATA = Path(__file__).parent / "data"
 CONTIGS = DATA / "contigs"
@@ -240,7 +240,7 @@ def test_screen_short_reads_r1_r2_match_long_form(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given reads mode spelled with -1/-2, When compared to --r1/--r2, Then
-    the gapit.reads documents match (clock field dropped; explicit
+    the gspec.reads documents match (clock field dropped; explicit
     --format json since the default is the tsv table)."""
     datadir = tmp_path / "datadir"
     shutil.copytree(DATA / "reads_db", datadir)

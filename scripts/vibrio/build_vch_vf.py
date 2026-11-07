@@ -26,7 +26,7 @@ import re
 from datetime import UTC, datetime
 from pathlib import Path
 
-from gapit.dbcodec import encode_seqid
+from gspec.dbcodec import encode_seqid
 
 #: gene name -> (source label, header regex, product)
 MARKERS: tuple[tuple[str, str, str, str], ...] = (

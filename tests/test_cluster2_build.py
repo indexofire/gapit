@@ -14,18 +14,18 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from gapit.cli import app
-from gapit.cluster import BestCall, ClusterReport
-from gapit.clusterbuild import resolve_gene_ids
-from gapit.formats.cluster2 import (
+from gspec.cli import app
+from gspec.cluster import BestCall, ClusterReport
+from gspec.clusterbuild import resolve_gene_ids
+from gspec.formats.cluster2 import (
     cluster2_columns,
     cluster2_tsv_file_chunk,
     cluster2_tsv_preamble,
     format_cluster2_tsv,
 )
-from gapit.gbfeatures import parse_genbank_features
-from gapit.typing_models import TypingDocument, read_typing_document
-from gapit.typing_results import SchemeCall
+from gspec.gbfeatures import parse_genbank_features
+from gspec.typing_models import TypingDocument, read_typing_document
+from gspec.typing_results import SchemeCall
 
 DATA = Path(__file__).parent / "data" / "cluster"
 GOLDEN = Path(__file__).parent / "golden"

@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from gapit.providers.argannot import PROVIDER, transform
-from gapit.records import Record
+from gspec.providers.argannot import PROVIDER, transform
+from gspec.records import Record
 
 FIXTURE = Path(__file__).parent / "data" / "providers" / "argannot" / "ARG-ANNOT_NT_V6_July2019.txt"
 

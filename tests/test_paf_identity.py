@@ -6,7 +6,7 @@ A row without NM cannot be assessed and counts as 100.0; a degenerate
 zero-length alignment block also counts as 100.0 (no division by zero).
 """
 
-from gapit.paf import PafRecord, alignment_identity, filter_alignments, parse_paf_row
+from gspec.paf import PafRecord, alignment_identity, filter_alignments, parse_paf_row
 
 
 def paf(

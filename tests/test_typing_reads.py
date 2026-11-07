@@ -13,9 +13,9 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from gapit.cli import app
-from gapit.fasta import iter_fasta
-from gapit.typing_input import read_typing_input
+from gspec.cli import app
+from gspec.fasta import iter_fasta
+from gspec.typing_input import read_typing_input
 
 DATA = Path(__file__).parent / "data" / "typing"
 DB = "markers"

@@ -12,10 +12,10 @@ from typing import Literal
 
 import pytest
 
-from gapit.blast import run_blastn
-from gapit.db import Database, make_blast_db
-from gapit.minimap2_run import run_minimap2
-from gapit.report import ScreeningParams
+from gspec.blast import run_blastn
+from gspec.db import Database, make_blast_db
+from gspec.minimap2_run import run_minimap2
+from gspec.report import ScreeningParams
 
 pytest.importorskip("gseek")
 

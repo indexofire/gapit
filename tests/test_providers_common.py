@@ -17,10 +17,10 @@ from typing import Literal, Self
 
 import pytest
 
-from gapit.errors import DatabaseError
-from gapit.fasta import iter_fasta
-from gapit.providers.common import Provider, fetch_provider
-from gapit.records import Record, read_manifest, read_records
+from gspec.errors import DatabaseError
+from gspec.fasta import iter_fasta
+from gspec.providers.common import Provider, fetch_provider
+from gspec.records import Record, read_manifest, read_records
 
 SYN = "synamr"
 FETCHED_AT = "2026-09-17T12:00:00Z"
@@ -348,7 +348,7 @@ def test_fetch_provider_stalled_download_raises_download_failed(
 def test_insecure_source_urls_flags_only_plain_http() -> None:
     """Given mixed source URLs, When screened, Then only plain HTTP is
     surfaced for the integrity warning."""
-    from gapit.providers.common import insecure_source_urls
+    from gspec.providers.common import insecure_source_urls
 
     assert insecure_source_urls(
         ("https://example.org/a.fa", "http://example.org/b.fa", "file:///tmp/c.fa")
@@ -360,13 +360,13 @@ def test_download_file_rejects_an_oversized_body(
 ) -> None:
     """Given a body over the configured cap, When downloaded, Then
     DOWNLOAD_TOO_LARGE fires and no destination/.part file is left."""
-    from gapit.providers.common import download_file
+    from gspec.providers.common import download_file
 
     def fake_urlopen(request: urllib.request.Request, timeout: float = -1) -> _FakeResponse:
         return _FakeResponse(b"x" * 20)
 
     monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
-    monkeypatch.setattr("gapit.providers.common._MAX_DOWNLOAD_BYTES", 8)
+    monkeypatch.setattr("gspec.providers.common._MAX_DOWNLOAD_BYTES", 8)
     dest = tmp_path / "body.bin"
 
     with pytest.raises(DatabaseError) as excinfo:
@@ -380,7 +380,7 @@ def test_download_file_rejects_an_oversized_body(
 def test_safe_extractall_rejects_parent_escape(tmp_path: Path) -> None:
     """Given a ZIP member that escapes the destination, When extracted, Then
     ARCHIVE_INVALID fires before any file is written."""
-    from gapit.providers.common import safe_extractall
+    from gspec.providers.common import safe_extractall
 
     archive_path = tmp_path / "bad.zip"
     with zipfile.ZipFile(archive_path, "w") as archive:
@@ -399,7 +399,7 @@ def test_safe_extractall_rejects_expanded_size(
 ) -> None:
     """Given an archive whose advertised uncompressed size exceeds the cap,
     When extracted, Then ARCHIVE_TOO_LARGE fires before extraction."""
-    from gapit.providers import common
+    from gspec.providers import common
 
     monkeypatch.setattr(common, "_MAX_EXTRACTED_BYTES", 1)
     archive_path = tmp_path / "big.zip"

@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from gapit import screening_reads
-from gapit.engines import OutputFormat
-from gapit.screening_reads import run_screen_reads
+from gspec import screening_reads
+from gspec.engines import OutputFormat
+from gspec.screening_reads import run_screen_reads
 
 READS_DB_DIR = Path(__file__).parent / "data" / "reads_db"
 READS = Path(__file__).parent / "data" / "reads"

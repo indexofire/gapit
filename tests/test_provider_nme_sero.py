@@ -3,9 +3,9 @@
 import json
 from pathlib import Path
 
-from gapit.gene_floors import read_floors
-from gapit.providers.nme_sero import PROVIDER, finalize, transform
-from gapit.screen_defaults import read_screen_defaults
+from gspec.gene_floors import read_floors
+from gspec.providers.nme_sero import PROVIDER, finalize, transform
+from gspec.screen_defaults import read_screen_defaults
 
 
 def _workdir(tmp_path: Path) -> Path:

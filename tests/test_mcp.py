@@ -10,9 +10,9 @@ from typing import Any
 import pytest
 from click.testing import CliRunner
 
-from gapit.cli import app
-from gapit.db import make_blast_db
-from gapit.mcp import serve
+from gspec.cli import app
+from gspec.db import make_blast_db
+from gspec.mcp import serve
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"

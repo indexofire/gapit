@@ -4,10 +4,10 @@ from pathlib import Path
 
 import pytest
 
-from gapit.db_build_ops import perform_build
-from gapit.dbbuild import validate_records
-from gapit.errors import DatabaseError
-from gapit.records import Record
+from gspec.db_build_ops import perform_build
+from gspec.dbbuild import validate_records
+from gspec.errors import DatabaseError
+from gspec.records import Record
 
 SEQ = "ACGT" * 20
 

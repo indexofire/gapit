@@ -10,7 +10,7 @@ screen` 写出的格式。如何产生报告见 [./screen.md](./screen.md)；输
 
 ## 选项
 
-转写自 `gspec summary --help`（gspec 0.8.0）：
+转写自 `gspec summary --help`（gspec 0.8.1）：
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
@@ -143,7 +143,7 @@ $ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv 
   "schema": "gapit.summary/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.0"
+    "version": "0.8.1"
   },
   "created_at": "2026-09-19T01:12:48Z",
   "params": {

@@ -9,11 +9,11 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from gapit.cli import app
-from gapit.db import discover_databases
-from gapit.fasta import iter_fasta
-from gapit.providers.common import Provider
-from gapit.records import Record, read_manifest
+from gspec.cli import app
+from gspec.db import discover_databases
+from gspec.fasta import iter_fasta
+from gspec.providers.common import Provider
+from gspec.records import Record, read_manifest
 
 DATA = Path(__file__).parent / "data" / "cluster"
 
@@ -106,7 +106,7 @@ def test_db_list_json_exposes_kind(tmp_path: Path, monkeypatch: pytest.MonkeyPat
     carries kind — cluster from the manifest, gene for the legacy dir."""
     syn, other = "synamr", "synavail"
     monkeypatch.setattr(
-        "gapit.db_ops.REGISTRY", {syn: _syn_provider(syn), other: _syn_provider(other)}
+        "gspec.db_ops.REGISTRY", {syn: _syn_provider(syn), other: _syn_provider(other)}
     )
     datadir = tmp_path / "datadir"
     datadir.mkdir()

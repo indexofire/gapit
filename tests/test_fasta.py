@@ -1,4 +1,4 @@
-"""Unit tests for the streaming FASTA reader (gapit.fasta)."""
+"""Unit tests for the streaming FASTA reader (gspec.fasta)."""
 
 import bz2
 import gzip
@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from gapit.errors import InputError
-from gapit.fasta import FastaRecord, iter_fasta, iter_fasta_headers
+from gspec.errors import InputError
+from gspec.fasta import FastaRecord, iter_fasta, iter_fasta_headers
 
 FIXTURE = Path(__file__).parent / "data" / "db" / "tinyamr" / "sequences"
 

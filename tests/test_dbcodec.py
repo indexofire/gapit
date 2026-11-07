@@ -2,9 +2,9 @@
 
 import pytest
 
-from gapit.db import parse_db_header
-from gapit.dbcodec import decode_seqid, encode_seqid, is_gapit_header
-from gapit.errors import DatabaseError
+from gspec.db import parse_db_header
+from gspec.dbcodec import decode_seqid, encode_seqid, is_gapit_header
+from gspec.errors import DatabaseError
 
 
 def test_encode_produces_tagged_wire_format() -> None:

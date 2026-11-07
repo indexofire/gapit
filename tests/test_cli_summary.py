@@ -8,10 +8,10 @@ import pytest
 from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
 
-from gapit import cmd_summary
-from gapit.cli import app
-from gapit.formats.summary import SummaryDocument, render_summary_json, render_summary_md
-from gapit.summary import SummaryParams, build_summary
+from gspec import cmd_summary
+from gspec.cli import app
+from gspec.formats.summary import SummaryDocument, render_summary_json, render_summary_md
+from gspec.summary import SummaryParams, build_summary
 
 FIXTURES = Path(__file__).parent / "data" / "summary"
 TYPING_DATA = Path(__file__).parent / "data" / "typing"
@@ -239,7 +239,7 @@ class TestStdinInput:
         result = runner.invoke(app, ["summary"])
         assert result.exit_code == 2
         assert "Usage" in result.stdout
-        assert "gapit.error" not in result.stderr
+        assert "gspec.error" not in result.stderr
 
     def test_piped_batched_table_summarizes_per_file(self) -> None:
         """Given a batched multi-FILE screen table on stdin (one input),

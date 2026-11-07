@@ -8,8 +8,8 @@ the B0 pipeline is already covered by test_providers_common.py.
 
 from pathlib import Path
 
-from gapit.providers.victors import PROVIDER, transform
-from gapit.records import Record
+from gspec.providers.victors import PROVIDER, transform
+from gspec.records import Record
 
 DATA = Path(__file__).parent / "data" / "providers" / "victors"
 

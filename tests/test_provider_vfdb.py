@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from gapit.providers.vfdb import PROVIDER, transform
-from gapit.records import Record
+from gspec.providers.vfdb import PROVIDER, transform
+from gspec.records import Record
 
 FIXTURE = Path(__file__).parent / "data" / "providers" / "vfdb" / "VFDB_setA_nt.fas"
 SEQ_DEMO = "ACGT" * 15  # 60 bp, minimap2-indexable per Wave A3

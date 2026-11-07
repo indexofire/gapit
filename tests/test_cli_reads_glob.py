@@ -1,7 +1,7 @@
 """CLI tests for the positional-FASTQ wildcard workflow (gspec screen *.gz).
 
 `gspec screen -d db *.fastq.gz` routes to the reads engine without --r1/--r2
-and auto-pairs samples from filenames (gapit.readpairs); one files[] entry
+and auto-pairs samples from filenames (gspec.readpairs); one files[] entry
 per sample, keyed by the sample name. The --r1/--r2 path is untouched (its
 own tests in test_cli_reads.py / test_cli_reads2.py stay the parity proof).
 """
@@ -15,9 +15,9 @@ import pytest
 from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
 
-from gapit.cli import app
-from gapit.cmd_screen_reads_args import reads_positional
-from gapit.formats.reads_json import Reads2Document, ReadsDocument
+from gspec.cli import app
+from gspec.cmd_screen_reads_args import reads_positional
+from gspec.formats.reads_json import Reads2Document, ReadsDocument
 
 READS_DB_DIR = Path(__file__).parent / "data" / "reads_db"
 READS = Path(__file__).parent / "data" / "reads"
@@ -241,7 +241,7 @@ def test_explicit_aligner_blastn_keeps_contig_pipeline(
     """Given an explicit --aligner blastn over FASTQ positionals, When run,
     Then the blastn contig pipeline keeps them (explicit engine beats the
     auto-detect; today's normalization path unchanged)."""
-    from gapit.db import make_blast_db
+    from gspec.db import make_blast_db
 
     make_blast_db(datadir / "tinyreads" / "sequences", "tinyreads")
     monkeypatch.chdir(READS)
@@ -252,7 +252,7 @@ def test_explicit_aligner_blastn_keeps_contig_pipeline(
     # survive --mincov 80); the point is the engine: abricate TSV shape, not
     # a reads JSON document.
     assert lines[0].startswith("#FILE\t")
-    assert "gapit.reads" not in result.stdout
+    assert "gspec.reads" not in result.stdout
 
 
 def test_explicit_aligner_minimap2_over_fastq_still_exits_2(

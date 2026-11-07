@@ -9,10 +9,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from gapit import blast, minimap2_run
-from gapit.db import Database
-from gapit.errors import DependencyError
-from gapit.gseek_engine import (
+from gspec import blast, minimap2_run
+from gspec.db import Database
+from gspec.errors import DependencyError
+from gspec.gseek_engine import (
     blast_db_ready,
     cached_target_refs,
     engine_mode,
@@ -20,8 +20,8 @@ from gapit.gseek_engine import (
     run_blast_gseek,
     supports_api_refs,
 )
-from gapit.paf import PafRecord
-from gapit.report import ScreeningParams
+from gspec.paf import PafRecord
+from gspec.report import ScreeningParams
 
 
 @dataclass
@@ -83,7 +83,7 @@ def test_blast_mapping_preserves_blast_coordinates(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     fake = _FakeGseek([_Record()])
-    monkeypatch.setattr("gapit.gseek_engine._gseek", lambda: fake)
+    monkeypatch.setattr("gspec.gseek_engine._gseek", lambda: fake)
     rows = run_blast_gseek(
         ">contig1\nACGT\n",
         _database(tmp_path),
@@ -121,7 +121,7 @@ def test_gseek_session_reuses_resolver_across_files(
     gene path slower than legacy."""
     pytest.importorskip("gseek")
     fake = _FakeGseek([_Record()])
-    monkeypatch.setattr("gapit.gseek_engine._gseek", lambda: fake)
+    monkeypatch.setattr("gspec.gseek_engine._gseek", lambda: fake)
     db = _database(tmp_path)
     run_blast_gseek(">contig1\nACGT\n", db, ScreeningParams(db="test"), dbtype="nucl")
     first = fake.kwargs["resolver"]
@@ -173,7 +173,7 @@ def test_blast_mapping_reverse_and_protein_params(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     fake = _FakeGseek([_Record(reverse=True)])
-    monkeypatch.setattr("gapit.gseek_engine._gseek", lambda: fake)
+    monkeypatch.setattr("gspec.gseek_engine._gseek", lambda: fake)
     rows = run_blast_gseek(
         ">contig1\nACGT\n",
         _database(tmp_path),
@@ -202,7 +202,7 @@ def test_paf_mapping_and_paired_query(tmp_path: Path, monkeypatch: pytest.Monkey
         tags={"NM": "1", "cs": ":100"},
     )
     fake = _FakeGseek([record])
-    monkeypatch.setattr("gapit.gseek_engine._gseek", lambda: fake)
+    monkeypatch.setattr("gspec.gseek_engine._gseek", lambda: fake)
     r1 = tmp_path / "r1.fq"
     r2 = tmp_path / "r2.fq"
     r1.write_text("@r1\nACGT\n+\nIIII\n")
@@ -336,7 +336,7 @@ def test_run_blastn_shadow_returns_legacy_and_logs(
         return [new]
 
     monkeypatch.setattr(blast, "run_blast_gseek", _new)
-    with caplog.at_level(logging.WARNING, logger="gapit.gseek"):
+    with caplog.at_level(logging.WARNING, logger="gspec.gseek"):
         result = blast.run_blastn(query, database, params, dbtype="nucl")
     assert result[0].sseqid.startswith("gapit|")
     assert "legacy and gseek results differ" in caplog.text
@@ -402,7 +402,7 @@ def test_iter_minimap2_shadow_returns_legacy_and_logs(
         return iter([new])
 
     monkeypatch.setattr(minimap2_run, "iter_paf_gseek", _rows)
-    with caplog.at_level(logging.WARNING, logger="gapit.gseek"):
+    with caplog.at_level(logging.WARNING, logger="gspec.gseek"):
         rows = list(
             minimap2_run.iter_minimap2(
                 [(tmp_path / "r.fq", None)], database, read_type="sr", threads=1
@@ -431,7 +431,7 @@ def test_run_blastn_shadow_falls_back_on_gseek_failure(
 
     monkeypatch.setattr(blast, "_pipeline", _legacy)
     monkeypatch.setattr(blast, "run_blast_gseek", _fail)
-    with caplog.at_level(logging.WARNING, logger="gapit.gseek"):
+    with caplog.at_level(logging.WARNING, logger="gspec.gseek"):
         rows = blast.run_blastn(query, database, params, dbtype="nucl")
     assert rows[0].sseqid.startswith("gapit|")
     assert "gseek path failed" in caplog.text
@@ -467,7 +467,7 @@ def test_iter_minimap2_shadow_falls_back_on_gseek_failure(
 
     monkeypatch.setattr(minimap2_run, "_iter_legacy", _legacy)
     monkeypatch.setattr(minimap2_run, "iter_paf_gseek", _fail)
-    with caplog.at_level(logging.WARNING, logger="gapit.gseek"):
+    with caplog.at_level(logging.WARNING, logger="gspec.gseek"):
         rows = list(
             minimap2_run.iter_minimap2(
                 [(tmp_path / "r.fq", None)], database, read_type="sr", threads=1
@@ -483,7 +483,7 @@ def test_minimap2_long_target_names_disable_index(
     long = Database(name="long", path=tmp_path, sequences_path=tmp_path / "long.fa")
     long.sequences_path.write_text(">" + "x" * 256 + "\nACGT\n")
     fake = _FakeGseek([])
-    monkeypatch.setattr("gapit.gseek_engine._gseek", lambda: fake)
+    monkeypatch.setattr("gspec.gseek_engine._gseek", lambda: fake)
     rows = list(
         iter_paf_gseek(
             [(tmp_path / "r.fq", None)],
@@ -507,8 +507,8 @@ class Blocker:
         if fullname == "gseek" or fullname.startswith("gseek."):
             raise ImportError("gseek blocked")
 sys.meta_path.insert(0, Blocker())
-from gapit.blast import run_blastn
-from gapit.gseek_engine import engine
+from gspec.blast import run_blastn
+from gspec.gseek_engine import engine
 assert engine().mode.value == "legacy"
 assert callable(run_blastn)
 """
@@ -526,7 +526,7 @@ def test_index_policy_cache_invalidates_when_target_changes(
 ) -> None:
     """Given a cached long-name policy, When the target is replaced with short
     names, Then the policy is recomputed instead of reusing the stale entry."""
-    from gapit import gseek_engine
+    from gspec import gseek_engine
 
     database = Database(name="changing", path=tmp_path, sequences_path=tmp_path / "changing.fa")
     database.sequences_path.write_text(">" + "x" * 256 + "\nACGT\n", encoding="utf-8")
@@ -551,7 +551,7 @@ def test_gseek_missing_minimap2_maps_to_dependency_error(
         def align(self, **kwargs: object) -> object:
             raise errors.ToolNotFoundError("minimap2: not found")
 
-    monkeypatch.setattr("gapit.gseek_engine._gseek", lambda: MissingTool())
+    monkeypatch.setattr("gspec.gseek_engine._gseek", lambda: MissingTool())
     database = _database(tmp_path)
     with pytest.raises(DependencyError) as excinfo:
         list(iter_paf_gseek([(tmp_path / "r.fq", None)], database, read_type="sr", threads=1))

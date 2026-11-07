@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from gapit.errors import InputError
-from gapit.summary import SummaryMatrix, SummaryParams, build_summary
+from gspec.errors import InputError
+from gspec.summary import SummaryMatrix, SummaryParams, build_summary
 
 FIXTURES = Path(__file__).parent / "data" / "summary"
 

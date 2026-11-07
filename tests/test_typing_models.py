@@ -1,4 +1,4 @@
-"""Tests for the gapit.typing schema (gapit.typing_models) — versions 1 and 2.
+"""Tests for the gspec.typing schema (gspec.typing_models) — versions 1 and 2.
 
 Schema + validation only — no evaluation logic. All three rule model types
 must validate; malformed documents must surface as typed DatabaseErrors with
@@ -12,10 +12,10 @@ from pathlib import Path
 
 import pytest
 
-from gapit.errors import DatabaseError, InputError
-from gapit.gbfeatures import FeaturesDocument, GeneFeature, LocusFeatures
-from gapit.typing_gene import validate_gene_typing
-from gapit.typing_models import (
+from gspec.errors import DatabaseError, InputError
+from gspec.gbfeatures import FeaturesDocument, GeneFeature, LocusFeatures
+from gspec.typing_gene import validate_gene_typing
+from gspec.typing_models import (
     V1_SCHEME_NAME,
     TypingDocument,
     TypingDocumentV1,
@@ -25,7 +25,7 @@ from gapit.typing_models import (
     uses_cluster_v2,
     validate_references,
 )
-from gapit.typing_rules import ClusterMatchRule, LearnedLinearRule, WeightedGenesRule
+from gspec.typing_rules import ClusterMatchRule, LearnedLinearRule, WeightedGenesRule
 
 DATA = Path(__file__).parent / "data" / "cluster"
 

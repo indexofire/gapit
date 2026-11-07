@@ -24,8 +24,8 @@ import re
 from datetime import UTC, datetime
 from pathlib import Path
 
-from gapit.dbcodec import encode_seqid
-from gapit.fasta import iter_fasta
+from gspec.dbcodec import encode_seqid
+from gspec.fasta import iter_fasta
 
 _NAME = re.compile(r"^(?P<family>S[bd f s]|S[bd f s]|Sd|Sb|Sf|Ss)(?P<num>\d+)?(?P<rest>.*)$", re.I)
 

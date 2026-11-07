@@ -11,9 +11,9 @@ makeblastdb — the orchestrator gates the assembled pipeline once.
 
 from pathlib import Path
 
-from gapit.providers.common import Provider
-from gapit.providers.ecoh import PROVIDER, transform
-from gapit.records import Record
+from gspec.providers.common import Provider
+from gspec.providers.ecoh import PROVIDER, transform
+from gspec.records import Record
 
 WORKDIR = Path(__file__).parent / "data" / "providers" / "ecoh"
 

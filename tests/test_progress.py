@@ -1,4 +1,4 @@
-"""Tests for the shared stderr progress bar (gapit.progress).
+"""Tests for the shared stderr progress bar (gspec.progress).
 
 The bar is a stderr-side UX layer only: stdout stays byte-identical with
 the bar on vs off, --quiet and non-TTY stderr keep today's legacy per-file
@@ -26,15 +26,15 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-import gapit.progress
-from gapit.db import make_blast_db
-from gapit.db_ops import ProviderReceipt, perform_fetch
-from gapit.fasta import iter_fasta
-from gapit.progress import IdleBatch, make_progress, screen_progress
-from gapit.providers.common import Provider
-from gapit.records import Record
-from gapit.screening import OutputFormat, run_screen
-from gapit.screening_reads_positional import run_screen_reads_positional
+import gspec.progress
+from gspec.db import make_blast_db
+from gspec.db_ops import ProviderReceipt, perform_fetch
+from gspec.fasta import iter_fasta
+from gspec.progress import IdleBatch, make_progress, screen_progress
+from gspec.providers.common import Provider
+from gspec.records import Record
+from gspec.screening import OutputFormat, run_screen
+from gspec.screening_reads_positional import run_screen_reads_positional
 
 FIXTURE_DB_DIR = Path(__file__).parent / "data" / "db"
 CONTIGS = Path(__file__).parent / "data" / "contigs"
@@ -109,7 +109,7 @@ def test_make_progress_uses_gmlst_columns_on_stderr() -> None:
 def test_quiet_yields_noop_shim(monkeypatch: pytest.MonkeyPatch) -> None:
     """Given --quiet, When the batch context opens, Then the shim is yielded
     with no task id (call sites keep printing the legacy notes)."""
-    monkeypatch.setattr(gapit.progress, "STATUS_CONSOLE", tty_console())
+    monkeypatch.setattr(gspec.progress, "STATUS_CONSOLE", tty_console())
     with screen_progress(["a.fa", "b.fa"], quiet=True) as (bar, task_id):
         assert task_id is None
         assert isinstance(bar, IdleBatch)
@@ -121,7 +121,7 @@ def test_non_tty_stderr_yields_noop_shim(monkeypatch: pytest.MonkeyPatch) -> Non
     """Given stderr is not a TTY (piped/CI), When quiet is off, Then the bar
     stays disabled — logs keep today's per-file notes, never bar frames."""
     sink = pipe_console()
-    monkeypatch.setattr(gapit.progress, "STATUS_CONSOLE", sink)
+    monkeypatch.setattr(gspec.progress, "STATUS_CONSOLE", sink)
     with screen_progress(["a.fa", "b.fa"], quiet=False) as (bar, task_id):
         assert task_id is None
         assert isinstance(bar, IdleBatch)
@@ -135,7 +135,7 @@ def test_tty_stderr_activates_the_bar(monkeypatch: pytest.MonkeyPatch) -> None:
     a real task is yielded and the captured frames show the gmlst columns
     (description, M/N, percent, elapsed)."""
     sink = tty_console()
-    monkeypatch.setattr(gapit.progress, "STATUS_CONSOLE", sink)
+    monkeypatch.setattr(gspec.progress, "STATUS_CONSOLE", sink)
     with screen_progress(["a.fa", "b.fa"], quiet=False) as (bar, task_id):
         assert task_id is not None
         bar.describe("a.fa")
@@ -151,7 +151,7 @@ def test_bar_renders_current_description_and_counts(monkeypatch: pytest.MonkeyPa
     """Given the bar mid-batch, When a file starts and one completes, Then a
     forced refresh renders the current file's basename and 1/2."""
     sink = tty_console()
-    monkeypatch.setattr(gapit.progress, "STATUS_CONSOLE", sink)
+    monkeypatch.setattr(gspec.progress, "STATUS_CONSOLE", sink)
     progress = make_progress()
     with progress:
         task_id = progress.add_task("Screening", total=2)
@@ -192,7 +192,7 @@ def test_screen_bar_keeps_stdout_byte_identical_and_suppresses_notes(
     plain_err = capsys.readouterr().err
 
     sink = tty_console()
-    monkeypatch.setattr(gapit.progress, "STATUS_CONSOLE", sink)
+    monkeypatch.setattr(gspec.progress, "STATUS_CONSOLE", sink)
     barred = screen_once(datadir, files, OutputFormat.tsv)
     barred_err = capsys.readouterr().err
 
@@ -211,7 +211,7 @@ def test_screen_md_stream_byte_identical_with_bar_on(
     identical modulo created_at (the frontmatter timestamp)."""
     files = [CONTIGS / "full.fa", CONTIGS / "gap.fa"]
     plain = screen_once(datadir, files, OutputFormat.md)
-    monkeypatch.setattr(gapit.progress, "STATUS_CONSOLE", tty_console())
+    monkeypatch.setattr(gspec.progress, "STATUS_CONSOLE", tty_console())
     barred = screen_once(datadir, files, OutputFormat.md)
     stamp = re.compile(r"created_at: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
     assert stamp.sub("created_at: TS", barred) == stamp.sub("created_at: TS", plain)
@@ -255,7 +255,7 @@ def test_reads_bar_keeps_streaming_header_first_and_suppresses_notes(
     plain_err = capsys.readouterr().err
 
     sink = tty_console()
-    monkeypatch.setattr(gapit.progress, "STATUS_CONSOLE", sink)
+    monkeypatch.setattr(gspec.progress, "STATUS_CONSOLE", sink)
     barred = reads_once(reads_datadir, files)
     barred_err = capsys.readouterr().err
 
@@ -275,8 +275,8 @@ def test_fetch_bar_advances_per_db_and_keeps_receipts(
     (db, records, dbtype) and the captured bar advances 2/2."""
     first = synthetic_provider(tmp_path, "synone")
     second = synthetic_provider(tmp_path, "syntwo")
-    monkeypatch.setattr("gapit.db_ops.REGISTRY", {first.name: first, second.name: second})
-    monkeypatch.setattr("gapit.db_ops.DEFAULT_DBS", (first.name, second.name))
+    monkeypatch.setattr("gspec.db_ops.REGISTRY", {first.name: first, second.name: second})
+    monkeypatch.setattr("gspec.db_ops.DEFAULT_DBS", (first.name, second.name))
 
     quiet_dd = tmp_path / "quiet-dd"
     quiet_dd.mkdir()
@@ -285,7 +285,7 @@ def test_fetch_bar_advances_per_db_and_keeps_receipts(
     bar_dd = tmp_path / "bar-dd"
     bar_dd.mkdir()
     sink = tty_console()
-    monkeypatch.setattr(gapit.progress, "STATUS_CONSOLE", sink)
+    monkeypatch.setattr(gspec.progress, "STATUS_CONSOLE", sink)
     bar_receipts = list(perform_fetch("all", bar_dd, quiet=False))
 
     def shape(receipts: list[ProviderReceipt]) -> list[tuple[str, int, str]]:
@@ -333,7 +333,7 @@ def test_live_batch_suspend_stops_and_restarts_the_bar(
         def __exit__(self, *args: object) -> None:
             return None
 
-    monkeypatch.setattr(gapit.progress, "make_progress", FakeProgress)
+    monkeypatch.setattr(gspec.progress, "make_progress", FakeProgress)
     with screen_progress(["a", "b"], quiet=False) as (bar, task_id):
         assert task_id == 1
         with bar.suspend():
@@ -348,8 +348,8 @@ def test_fetch_emit_callback_runs_inside_the_bar(
     same receipts are yielded and the callback sees every database."""
     first = synthetic_provider(tmp_path, "synone")
     second = synthetic_provider(tmp_path, "syntwo")
-    monkeypatch.setattr("gapit.db_ops.REGISTRY", {first.name: first, second.name: second})
-    monkeypatch.setattr("gapit.db_ops.DEFAULT_DBS", (first.name, second.name))
+    monkeypatch.setattr("gspec.db_ops.REGISTRY", {first.name: first, second.name: second})
+    monkeypatch.setattr("gspec.db_ops.DEFAULT_DBS", (first.name, second.name))
     datadir = tmp_path / "dd"
     datadir.mkdir()
     emitted: list[ProviderReceipt] = []
@@ -389,7 +389,7 @@ def test_live_batch_write_stops_the_bar_for_stdout(
         def __exit__(self, *args: object) -> None:
             return None
 
-    monkeypatch.setattr(gapit.progress, "make_progress", FakeProgress)
+    monkeypatch.setattr(gspec.progress, "make_progress", FakeProgress)
     with screen_progress(["a", "b"], quiet=False) as (bar, _task_id):
         bar.write("row\n")
     assert events == ["stop", "start"]
@@ -400,19 +400,19 @@ def test_terminal_rule_is_tty_only(monkeypatch: pytest.MonkeyPatch) -> None:
     """Given a pipe, When terminal_rule is requested, Then it is empty; on a
     TTY it is one full-width line, so redirected output stays unchanged."""
     monkeypatch.setattr(
-        gapit.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: False))
+        gspec.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: False))
     )
-    assert gapit.progress.terminal_rule() == ""
+    assert gspec.progress.terminal_rule() == ""
 
     monkeypatch.setattr(
-        gapit.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: True))
+        gspec.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: True))
     )
     monkeypatch.setattr(
-        gapit.progress.shutil,
+        gspec.progress.shutil,
         "get_terminal_size",
         _fixed_terminal_size,
     )
-    assert gapit.progress.terminal_rule() == "─" * 60 + "\n"
+    assert gspec.progress.terminal_rule() == "─" * 60 + "\n"
 
 
 def test_screen_separates_samples_only_on_interactive_tsv(
@@ -422,10 +422,10 @@ def test_screen_separates_samples_only_on_interactive_tsv(
     horizontal rule follows the header, separates the file blocks, and closes
     the table — but never appears in CSV or piped output."""
     monkeypatch.setattr(
-        gapit.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: True))
+        gspec.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: True))
     )
     monkeypatch.setattr(
-        gapit.progress.shutil,
+        gspec.progress.shutil,
         "get_terminal_size",
         _fixed_terminal_size,
     )
@@ -500,10 +500,10 @@ def test_screen_terminal_rules_for_a_single_sample_and_noheader(
     trailing rule appear; --noheader drops the header rule but keeps the
     trailing one."""
     monkeypatch.setattr(
-        gapit.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: True))
+        gspec.progress, "sys", SimpleNamespace(stdout=SimpleNamespace(isatty=lambda: True))
     )
     monkeypatch.setattr(
-        gapit.progress.shutil,
+        gspec.progress.shutil,
         "get_terminal_size",
         _fixed_terminal_size,
     )

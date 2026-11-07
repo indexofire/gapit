@@ -1,4 +1,4 @@
-"""Unit tests for gapit.seqconvert (native any2fasta -q -u replacement).
+"""Unit tests for gspec.seqconvert (native any2fasta -q -u replacement).
 
 Semantics locked here mirror the perl (see the seqconvert.py docstring for
 line references); the differential suite (test_seqconvert_differential.py,
@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from gapit.errors import InputError
-from gapit.seqconvert import SeqFormat, detect_format, to_fasta_lines
+from gspec.errors import InputError
+from gspec.seqconvert import SeqFormat, detect_format, to_fasta_lines
 
 CONVERT = Path(__file__).parent / "data" / "convert"
 TETASEQ = "ATGGTCAATTCCGCTGGCGCTGGTTATCGGTGGCACTGGCTGCGTTTTGGCGATGGTTTTCGGCAACCGTGCGCTGGCA"

@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 from typing import NoReturn
 
-from gapit.db import make_blast_db
+from gspec.db import make_blast_db
 
 PROJECT = Path(__file__).resolve().parents[2]
 CORPUS = Path(__file__).resolve().parent / "corpus"
