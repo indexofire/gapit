@@ -9,7 +9,7 @@ Database setup is covered in [./databases.md](./databases.md); a full walk-throu
 
 ## Options
 
-Transcribed from `gspec screen --help` (gspec 0.8.1). Flags marked *reads mode* apply only when
+Transcribed from `gspec screen --help` (gspec 0.9.0). Flags marked *reads mode* apply only when
 you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 
 Every option also accepts the single-dash short form listed in the **Short** column (e.g.
@@ -41,8 +41,8 @@ targeted usage error pointing at `--db`.
 | `--r2` | `-2` | str | none | *Reads mode.* Comma-separated mate FASTQ file(s); must match `--r1` count. |
 | `--read-type` | `-x` | sr\|map-ont\|map-hifi | `sr` for FASTQ, `map-ont` for FASTA | *Reads mode.* minimap2 preset; resolved from the detected input when omitted. |
 | `--min-breadth` | `-b` | float | `90.0` | *Reads mode.* Minimum %breadth for presence. |
-| `--min-identity` | `-I` | float | `0.0` | *Reads mode.* Minimum %identity per alignment, `0 <= x <= 100`; `0` = off. Any nonzero value emits `gapit.reads/2` ([./outputs.md](./outputs.md)). |
-| `--min-mapq` | `-M` | int | `0` | *Reads mode.* Minimum MAPQ per alignment; `0` = off. Any nonzero value emits `gapit.reads/2`. |
+| `--min-identity` | `-I` | float | `0.0` | *Reads mode.* Minimum %identity per alignment, `0 <= x <= 100`; `0` = off. Any nonzero value emits `gspec.reads/2` ([./outputs.md](./outputs.md)). |
+| `--min-mapq` | `-M` | int | `0` | *Reads mode.* Minimum MAPQ per alignment; `0` = off. Any nonzero value emits `gspec.reads/2`. |
 | `--min-depth` | `-e` | float | `0.0` | *Reads mode.* Minimum mean depth for presence; `0` = off. |
 | `--min-relative-depth` | `-R` | float | `0.0` | *Reads mode.* Minimum gene:control mean-depth ratio (`0 <= x <= 1`); `0` = off. |
 | `--relative-to` | `-r` | str | `lpxA` | *Reads mode.* Control gene for `--min-relative-depth`. |
@@ -53,7 +53,7 @@ targeted usage error pointing at `--db`.
 \* Positional FILEs or `--fofn`, or reads mode via `--r1`. Positional files and `--r1`/`--r2`
 are mutually exclusive.
 
-A database may ship `screen.json` (`gapit.screen/1`) with its own reads/contigs
+A database may ship `screen.json` (`gspec.screen/1`) with its own reads/contigs
 defaults. Precedence is **CLI flag > `screen.json` > global CLI default**; options you
 did not pass are filled from the database sidecar. See
 [databases.md](./databases.md#screenjson).
@@ -63,7 +63,7 @@ did not pass are filled from the database sidecar. See
 Normalization is native (no external `any2fasta`): plain FASTA, gzipped and bzip2-compressed
 FASTA, FASTQ, GBK, and EMBL all work. The converted FASTA is buffered in memory (genome-scale
 assemblies are a few MB) and fed to blastn on stdin. If normalization fails (not a sequence
-file), gspec prints a `gapit.error/1` envelope on stderr and exits 5.
+file), gspec prints a `gspec.error/1` envelope on stderr and exits 5.
 
 One exception predates normalization: when **every** positional file is FASTQ (`.fastq`/`.fq`
 ± `.gz`, or content-sniffed FASTQ under an ambiguous extension) and no `--aligner` is given,
@@ -112,10 +112,10 @@ tests/data/contigs/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.0
 ```console
 $ gspec screen tests/data/contigs/full.fa --db tinyamr --format json
 {
-  "schema": "gapit.report/1",
+  "schema": "gspec.report/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {
@@ -285,7 +285,7 @@ Long batch runs give feedback as they go, and the report can go to a file:
   data** (stderr diagnostics are unchanged).
 - **Errors mid-batch.** If file *k* fails after files 1..*k-1* streamed, the already-emitted
   output persists — on stdout it is already printed; with `--output` the file keeps the
-  header/frontmatter plus files 1..*k-1* — and then the typed `gapit.error/1` envelope prints
+  header/frontmatter plus files 1..*k-1* — and then the typed `gspec.error/1` envelope prints
   on stderr with the documented exit code. A run that fails before any output (usage,
   dependency, db errors) creates no `--output` file at all.
 
@@ -345,7 +345,7 @@ Merged-row semantics:
   keeps the raw commas; CSV quotes the cell per RFC 4180, so both dialects round-trip.
 - `START`/`END`/`STRAND` come from the **anchor**: the fragment with the largest aligned
   length (ties: first in `(contig, start)` order). `COVERAGE` is the union's bounding span.
-- JSON (`gapit.report/1`) additionally carries `"merged": true` and a `fragments` array with
+- JSON (`gspec.report/1`) additionally carries `"merged": true` and a `fragments` array with
   each fragment's `{contig, start, end, strand, identity_pct, coverage_pct}` — additive
   optional fields, absent from every non-merged row. Markdown adds one detail line per
   merged gene under the table.
@@ -404,7 +404,7 @@ are gene-engine options and are rejected on cluster databases; the three `--min-
 
 ### Phenotype calls (`typing.json`)
 
-A cluster database may carry a `gapit.typing/1` scoring spec (installed with
+A cluster database may carry a `gspec.typing/1` scoring spec (installed with
 `gspec db build --typing FILE`). When it does, each file's best call is annotated with a
 **phenotype**:
 
@@ -415,7 +415,7 @@ A cluster database may carry a `gapit.typing/1` scoring spec (installed with
   `ambiguity_margin`: a clear winner is called with `high` confidence, two rules inside the
   margin yield an `ambiguous` call (phenotype null, both candidates listed), and a
   sub-cutoff best falls back to the document's fallback string.
-- JSON (`gapit.cluster/1`) carries `best.phenotype` plus an additive `best.phenotype_detail`
+- JSON (`gspec.cluster/1`) carries `best.phenotype` plus an additive `best.phenotype_detail`
   block: `{score, confidence, components[], runner_up, ambiguous[]}` — the explainable
   per-rule/per-component breakdown.
 - The TSV/CSV header gains a **PHENOTYPE** column after TYPE (`-` when ambiguous or
@@ -446,4 +446,4 @@ kaptive-style output — with `phenotype` null.
   printed (or flushed to `--output`) once that file finishes; files emit in input order even
   with `--jobs > 1` (head-of-line: file i waits for files 1..i).
 - **Exit codes.** 2 usage, 3 missing dependency, 4 database error, 5 input error, 1 unexpected.
-  Failures print a `gapit.error/1` JSON envelope on stderr; see [./outputs.md](./outputs.md).
+  Failures print a `gspec.error/1` JSON envelope on stderr; see [./outputs.md](./outputs.md).

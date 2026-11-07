@@ -1,4 +1,4 @@
-"""CLI tests for gapit.reads/2: opt-in --min-identity/--min-mapq, document
+"""CLI tests for gspec.reads/2: opt-in --min-identity/--min-mapq, document
 selection, validation, blastn-engine rejection, schema introspection, and the
 reads/1 byte-identity lock when both thresholds are off.
 """
@@ -43,7 +43,7 @@ def envelope(stderr: str) -> dict[str, str]:
 
 def test_no_flags_emits_reads1(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Given --r1 with no new flags (and explicit --format json), When run,
-    Then the document is gapit.reads/1 (the frozen default)."""
+    Then the document is gspec.reads/1 (the frozen default)."""
     monkeypatch.chdir(READS2)
     result = runner.invoke(
         app,
@@ -60,7 +60,7 @@ def test_no_flags_emits_reads1(datadir: Path, monkeypatch: pytest.MonkeyPatch) -
         ],
     )
     assert result.exit_code == 0
-    assert json.loads(result.stdout)["schema"] == "gapit.reads/1"
+    assert json.loads(result.stdout)["schema"] == "gspec.reads/1"
 
 
 def test_explicit_off_flags_are_byte_identical_to_no_flags(
@@ -116,7 +116,7 @@ def test_run_always_adds_cs_to_minimap2_argv(
 
 
 def test_min_identity_emits_reads2(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Given --min-identity 95, When run, Then the document is gapit.reads/2
+    """Given --min-identity 95, When run, Then the document is gspec.reads/2
     with the threshold in params and mean_identity_pct on gene entries."""
     monkeypatch.chdir(READS2)
     result = runner.invoke(
@@ -137,7 +137,7 @@ def test_min_identity_emits_reads2(datadir: Path, monkeypatch: pytest.MonkeyPatc
     )
     assert result.exit_code == 0
     document = reads2_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.reads/2"
+    assert document.schema_name == "gspec.reads/2"
     assert document.params.min_identity == 95.0
     assert document.params.min_mapq == 0
     (entry,) = document.files[0].genes
@@ -146,7 +146,7 @@ def test_min_identity_emits_reads2(datadir: Path, monkeypatch: pytest.MonkeyPatc
 
 
 def test_min_mapq_emits_reads2(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Given --min-mapq 30 alone, When run, Then the document is gapit.reads/2
+    """Given --min-mapq 30 alone, When run, Then the document is gspec.reads/2
     (either flag opts in) and params carry both thresholds."""
     monkeypatch.chdir(READS2)
     result = runner.invoke(
@@ -167,14 +167,14 @@ def test_min_mapq_emits_reads2(datadir: Path, monkeypatch: pytest.MonkeyPatch) -
     )
     assert result.exit_code == 0
     document = reads2_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.reads/2"
+    assert document.schema_name == "gspec.reads/2"
     assert document.params.min_mapq == 30
     assert document.params.min_identity == 0.0
 
 
 def test_min_identity_md_output_is_reads2(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Given --min-identity with --format md, When run, Then frontmatter says
-    gapit.reads/2 and lists the threshold."""
+    gspec.reads/2 and lists the threshold."""
     monkeypatch.chdir(READS2)
     result = runner.invoke(
         app,
@@ -193,7 +193,7 @@ def test_min_identity_md_output_is_reads2(datadir: Path, monkeypatch: pytest.Mon
         ],
     )
     assert result.exit_code == 0
-    assert "schema: gapit.reads/2" in result.stdout
+    assert "schema: gspec.reads/2" in result.stdout
     assert "min_identity: 95.0" in result.stdout
     assert "| Gene | Breadth% |" in result.stdout
 
@@ -223,7 +223,7 @@ def test_min_identity_assembly_route_emits_reads2(datadir: Path, tmp_path: Path)
     )
     assert result.exit_code == 0
     document = reads2_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.reads/2"
+    assert document.schema_name == "gspec.reads/2"
     assert document.params.read_type == "map-ont"
 
 
@@ -367,7 +367,7 @@ def test_blastn_engine_rejects_mapq_flag() -> None:
 
 def test_schema_reads2_emits_valid_schema() -> None:
     """Given `gspec schema reads2`, When run, Then valid JSON Schema for the
-    gapit.reads/2 document (mean_identity_pct present, /1 const absent)."""
+    gspec.reads/2 document (mean_identity_pct present, /1 const absent)."""
     result = runner.invoke(app, ["schema", "reads2"])
     assert result.exit_code == 0
     schema = json.loads(result.stdout)

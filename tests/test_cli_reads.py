@@ -1,4 +1,4 @@
-"""CLI tests for reads mode (gapit.reads/1) plus committed goldens."""
+"""CLI tests for reads mode (gspec.reads/1) plus committed goldens."""
 
 import json
 import re
@@ -83,7 +83,7 @@ def test_r1_format_json_is_the_opt_in_document(
     datadir: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given --r1 with explicit --format json, When run, Then the
-    gapit.reads/1 JSON document on stdout and Screening/Detected chatter on
+    gspec.reads/1 JSON document on stdout and Screening/Detected chatter on
     stderr (json is the agent opt-in; the default is the tsv table)."""
     monkeypatch.chdir(READS)
     result = runner.invoke(
@@ -102,7 +102,7 @@ def test_r1_format_json_is_the_opt_in_document(
     )
     assert result.exit_code == 0
     document = reads_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.reads/1"
+    assert document.schema_name == "gspec.reads/1"
     assert document.files[0].reads == ["tetx_full.fq"]
     (entry,) = document.files[0].genes
     assert entry.gene == "tetX"
@@ -115,7 +115,7 @@ def test_reads_output_file_receives_document_stdout_empty(
     datadir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given reads mode with --output, When run, Then the single
-    gapit.reads/1 document lands in the file, stdout stays empty, and the
+    gspec.reads/1 document lands in the file, stdout stays empty, and the
     stderr chatter is unchanged (same contract as the contig engines)."""
     monkeypatch.chdir(READS)
     out_path = tmp_path / "reads.json"
@@ -139,7 +139,7 @@ def test_reads_output_file_receives_document_stdout_empty(
     assert result.stdout == ""
     assert "Screening reads:" in result.stderr
     document = reads_adapter.validate_json(out_path.read_text(encoding="utf-8"))
-    assert document.schema_name == "gapit.reads/1"
+    assert document.schema_name == "gspec.reads/1"
     (entry,) = document.files[0].genes
     assert entry.gene == "tetX"
 
@@ -369,7 +369,7 @@ def test_golden_reads_json(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
     )
     output = render_reads_json([report], PARAMS, now=PINNED_NOW)
     assert output == (GOLDEN / "reads_tinyamr.json").read_text(encoding="utf-8")
-    assert reads_adapter.validate_json(output).schema_name == "gapit.reads/1"
+    assert reads_adapter.validate_json(output).schema_name == "gspec.reads/1"
 
 
 def test_golden_reads_md(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -402,7 +402,7 @@ def _tetx_assembly(tmp_path: Path) -> Path:
 def test_fasta_assembly_screens_with_map_ont(datadir: Path, tmp_path: Path) -> None:
     """Given --r1 pointing at an assembly FASTA (the tetX gene as a contig)
     with no --read-type, When screened, Then minimap2 runs with -x map-ont,
-    gapit.reads/1 reports params.read_type map-ont with the gene present, and
+    gspec.reads/1 reports params.read_type map-ont with the gene present, and
     the detection note lands on stderr only."""
     assembly = _tetx_assembly(tmp_path)
     result = runner.invoke(
@@ -424,7 +424,7 @@ def test_fasta_assembly_screens_with_map_ont(datadir: Path, tmp_path: Path) -> N
     run_lines = [line for line in result.stderr.splitlines() if line.startswith("gspec: run:")]
     assert run_lines and run_lines[0].startswith("gspec: run: minimap2 -x map-ont ")
     document = reads_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.reads/1"
+    assert document.schema_name == "gspec.reads/1"
     assert document.params.read_type == "map-ont"
     (entry,) = document.files[0].genes
     assert entry.gene == "tetX"

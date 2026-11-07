@@ -128,7 +128,7 @@ table, one chunk for the one sample).
 ## Options
 
 Reads mode runs through the same `gspec screen` command; these are the flags that apply
-(transcribed from `gspec screen --help`, gspec 0.8.1). Contig-mode flags not listed here
+(transcribed from `gspec screen --help`, gspec 0.9.0). Contig-mode flags not listed here
 (`--minid`, `--mincov`, `--fofn`, `--noheader`, `--nopath`) do not apply; `--jobs` applies
 to the wildcard path only.
 
@@ -138,8 +138,8 @@ to the wildcard path only.
 | `--r2` | str | none | Comma-separated mate FASTQ file(s); must match `--r1` count. |
 | `--read-type` | sr\|map-ont\|map-hifi | `sr` for FASTQ, `map-ont` for FASTA | minimap2 preset; resolved from the detected input when omitted. |
 | `--min-breadth` | float | `90.0` | Minimum %breadth for presence. |
-| `--min-identity` | float | `0.0` (off) | Minimum %identity per alignment (0–100); any nonzero value turns on [gapit.reads/2](#filtering-alignments-by-identity-and-mapq-gapitreads2) filtering. |
-| `--min-mapq` | int | `0` (off) | Minimum MAPQ per alignment; any nonzero value turns on gapit.reads/2 filtering. |
+| `--min-identity` | float | `0.0` (off) | Minimum %identity per alignment (0–100); any nonzero value turns on [gspec.reads/2](#filtering-alignments-by-identity-and-mapq-gspecreads2) filtering. |
+| `--min-mapq` | int | `0` (off) | Minimum MAPQ per alignment; any nonzero value turns on gspec.reads/2 filtering. |
 | `--min-depth` | float | `0.0` (off) | Minimum mean depth for presence. |
 | `--min-relative-depth` | float | `0.0` (off) | Minimum gene:control mean-depth ratio (0..1); see [relative-depth gate](#relative-depth). |
 | `--relative-to` | str | `lpxA` | Control gene for `--min-relative-depth`. |
@@ -149,7 +149,7 @@ to the wildcard path only.
 | `--jobs` | int | `1` | Wildcard path only: screen N samples concurrently (`--r1`/`--r2` rejects it). Output order is always sample order. |
 | `--quiet` | flag | off | Silence stderr diagnostics (including the assembly-FASTA note). |
 | `--debug` | flag | off | Verbose stderr diagnostics; echoes the minimap2 command line. |
-| `--format` | tsv\|csv\|json\|md | `tsv` | Output format. Reads default to the streaming tsv table (csv = comma spelling) on every path; `--format json` is the agent's single `gapit.reads/1`(+`/2`) document, `--format md` the Markdown form. |
+| `--format` | tsv\|csv\|json\|md | `tsv` | Output format. Reads default to the streaming tsv table (csv = comma spelling) on every path; `--format json` is the agent's single `gspec.reads/1`(+`/2`) document, `--format md` the Markdown form. |
 
 `--minid` and `--mincov` do NOT apply to reads mode. Without depth gating, presence is decided by breadth (and the optional identity/MAPQ/database floors); `--min-depth` and `--min-relative-depth` add the abundance gate. Database-side defaults can fill `--min-identity`, `--min-mapq`, `--min-depth`, and the relative-depth controls (see [databases.md](./databases.md#screenjson)).
 
@@ -212,7 +212,7 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 
 (The `Screening reads:`/`Detected` lines are stderr; stdout is the table.)
 
-`--format json` produces the versioned agent document, schema `gapit.reads/1`:
+`--format json` produces the versioned agent document, schema `gspec.reads/1`:
 
 - `files[]` mirrors the input: each entry lists the reads it screened and the genes found.
 - Gene entries sort by `breadth_pct` descending, then gene name.
@@ -221,7 +221,7 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 
 `--format md` produces the Markdown form with YAML frontmatter.
 
-## Filtering alignments by identity and MAPQ (gapit.reads/2)
+## Filtering alignments by identity and MAPQ (gspec.reads/2)
 
 Reads-mode presence is breadth-only by default, which over-calls homologous gene families:
 reads from a novel allele pile onto every similar db entry as low-identity primary alignments,
@@ -238,9 +238,9 @@ reads over-call nearly everything). `--min-identity` and `--min-mapq` are the op
 - Both filters run after the primary-only rule and before aggregation; breadth, depth and
   `reads_mapped` are computed over the surviving alignments only. Genes that lose every
   alignment drop out of the output entirely.
-- With both thresholds off, nothing changes: the run stays `gapit.reads/1`, byte-identical,
+- With both thresholds off, nothing changes: the run stays `gspec.reads/1`, byte-identical,
   and the minimap2 invocation is untouched. Any nonzero value switches the output to the
-  **`gapit.reads/2`** document — same shape, plus `params.min_identity` / `params.min_mapq`
+  **`gspec.reads/2`** document — same shape, plus `params.min_identity` / `params.min_mapq`
   and a per-gene `mean_identity_pct` (alignment-length-weighted mean identity of the kept
   alignments). Introspect it with `gspec schema reads2`. Under `--format md` the frontmatter
   gains the two thresholds and each gene row gains an `Identity%` column.
@@ -271,7 +271,7 @@ $ export GSPEC_DATADIR=/tmp/gspec-demo/readdb
 $ cd tests/data/reads2
 $ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "files": [
     {
@@ -310,7 +310,7 @@ the true gene's ~98% alignments:
 ```console
 $ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format json --quiet
 {
-  "schema": "gapit.reads/2",
+  "schema": "gspec.reads/2",
   ...
   "params": {
     "db": "homologs",
@@ -349,8 +349,8 @@ The short-read fixture behaves the same with one calibration: `sr` soft-clipping
 ```console
 $ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format md --quiet
 ---
-schema: gapit.reads/2
-tool: gspec 0.8.1
+schema: gspec.reads/2
+tool: gspec 0.9.0
 created_at: 2026-09-20T14:23:33Z
 db: homologs
 read_type: map-ont
@@ -371,7 +371,7 @@ genes_found: 1
 | geneA | 100.00 | 14.98 | 15 | yes | homologs | SYN-A | true allele carried by the sample | TETRACYCLINE | 98.04 |
 ```
 
-## Per-gene identity floors (gapit.floors/1, database-side)
+## Per-gene identity floors (gspec.floors/1, database-side)
 
 Floors apply in **both** modes: reads mode drops sub-floor alignments before
 aggregation; contig mode post-filters BLAST hits after the global `--minid`.
@@ -382,11 +382,11 @@ default floor 90, lpxA/HS12 80).
 `--min-identity` is a per-run decision. Sometimes the right decision belongs to the
 database: a curated panel knows which of its genes sit inside a homologous family and
 what identity a true allele must carry. That knowledge ships as an optional
-`floors.json` sidecar beside the db `sequences` file — schema `gapit.floors/1`
+`floors.json` sidecar beside the db `sequences` file — schema `gspec.floors/1`
 (introspect it with `gspec schema floors`):
 
 ```json
-{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
+{"schema": "gspec.floors/1", "default": null, "genes": {"pic": 90.0}}
 ```
 
 - `genes` maps a gene name to its MINIMUM alignment identity (%); `default` applies to
@@ -398,7 +398,7 @@ what identity a true allele must carry. That knowledge ships as an optional
   below the presence threshold instead of over-calling the gene.
 - Floors are a **database-driven opt-in**: nothing about the CLI changes, and a database
   without the sidecar screens byte-identically to before — existing databases and the
-  published output schemas (`gapit.reads/1`, `gapit.reads/2`) are untouched. The blastn
+  published output schemas (`gspec.reads/1`, `gspec.reads/2`) are untouched. The blastn
   contig pipeline never reads floors; its `--minid` already filters on identity.
 - Floors and `--min-identity` are conjunctive: when both apply, a row must clear the
   per-gene floor AND the global filter (the stricter of the two wins per row).
@@ -417,7 +417,7 @@ it at the default 80% identity floor. The bundled `eco_dec` therefore ships
 `floors.json` with a single floor:
 
 ```json
-{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
+{"schema": "gspec.floors/1", "default": null, "genes": {"pic": 90.0}}
 ```
 
 True `pic` alleles are ≥95% identical, so the 90 floor removes only the SPATE homolog's
@@ -449,10 +449,10 @@ table. `--format json` swaps in the versioned document:
 ```console
 $ gspec screen --r1 tetx_full.fq --db tinyreads --format json
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "created_at": "2026-09-19T01:12:25Z",
   "params": {
@@ -493,7 +493,7 @@ aggregate to the same result here:
 ```console
 $ gspec screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "files": [
     {
@@ -516,7 +516,7 @@ $ gspec screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --qu
 }
 $ gspec screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "files": [
     {
@@ -546,8 +546,8 @@ $ gspec screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --q
 ```console
 $ gspec screen --r1 tetx_full.fq --db tinyreads --format md
 ---
-schema: gapit.reads/1
-tool: gspec 0.8.1
+schema: gspec.reads/1
+tool: gspec 0.9.0
 created_at: 2026-09-19T01:12:25Z
 db: tinyreads
 read_type: sr
@@ -575,7 +575,7 @@ metrics:
 ```console
 $ gspec screen --r1 suly_partial.fq --db tinyreads --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "genes": [
     {
@@ -591,7 +591,7 @@ $ gspec screen --r1 suly_partial.fq --db tinyreads --format json --quiet
 }
 $ gspec screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "genes": [
     {
@@ -630,7 +630,7 @@ FASTQ; what changes is the preset: content detection forces `map-ont` (a contigu
 contig, for example, aligns to only ~14% of its gene under `sr` because short-read soft-clipping
 wrecks long-query alignments), and gspec says so on stderr. Each contig acts as one long read:
 `reads_mapped` counts contigs, `mean_depth` hovers around the covered fraction, and `present`
-still means `breadth_pct >= --min-breadth`. The document stays `gapit.reads/1`;
+still means `breadth_pct >= --min-breadth`. The document stays `gspec.reads/1`;
 `params.read_type` reports the resolved preset. The default output is the streaming tsv
 table (one chunk, the one sample); `--format json` gives the document shown below.
 
@@ -646,10 +646,10 @@ assembly FASTA detected; using map-ont
 Screening reads: /tmp/gspec-demo/assembly.fa
 Detected 2 present genes in /tmp/gspec-demo/assembly.fa
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "created_at": "2026-09-19T14:23:00Z",
   "params": {
@@ -708,13 +708,13 @@ cost of allele-level precision. That trade suggests a two-stage workflow over ma
    pipeline, which applies the identity and coverage floors at abricate parity.
 
 Real numbers, one K. pneumoniae RefSeq assembly (GCF_000240185.1, 5.3 Mb, `--db ncbi`,
-single-threaded, gspec 0.8.1):
+single-threaded, gspec 0.9.0):
 
 ```console
 $ # Stage 1: survey, ~0.9 s
 $ gspec screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 50 --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "params": {
     "db": "ncbi",
@@ -760,7 +760,7 @@ confirmed genes appear in both lists. The differences are the point:
   `tmexD2`/`tmexD3` pair (56-60%) pass the relaxed 50% survey floor but are partial or
   divergent loci that the confirm stage's 80/80 identity/coverage thresholds reject. A
   relaxed survey floor trades precision for recall on purpose; the exact filter belongs to
-  stage 2 — except for genes whose database ships a [per-gene floor](#per-gene-identity-floors-gapitfloors1-database-side),
+  stage 2 — except for genes whose database ships a [per-gene floor](#per-gene-identity-floors-gspecfloors1-database-side),
   which the survey honors too.
 
 When you need exact alleles in one pass, use the contig pipeline directly; use the survey when

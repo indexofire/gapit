@@ -63,9 +63,9 @@ gspec --version
 
 ```console
 $ gspec --version
-gspec 0.8.1
+gspec 0.9.0
 $ gspec --version --json
-{"schema":"gapit.version/1","name":"gspec","version":"0.8.1"}
+{"schema":"gspec.version/1","name":"gspec","version":"0.9.0"}
 ```
 
 ## 可选 gseek 引擎
@@ -135,7 +135,7 @@ eval "$(_GSPEC_COMPLETE=bash_source gspec)"
 ```
 
 Zsh —— 加入 `~/.zshrc`（在 `compinit` 之后），或把生成的 `#compdef` 脚本放到 fpath
-上的 `~/.zfunc/_gapit`：
+上的 `~/.zfunc/_gspec`：
 
 ```zsh
 eval "$(_GSPEC_COMPLETE=zsh_source gspec)"

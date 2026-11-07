@@ -1,7 +1,7 @@
 """E2E: per-gene identity floors through the real CLI (db-driven opt-in).
 
 Leg 1 — the homologs fixture (tests/data/reads2_db + tests/data/reads2): a
-gapit.floors/1 sidecar DROPPED INTO the db directory flips the documented
+gspec.floors/1 sidecar DROPPED INTO the db directory flips the documented
 family-splitting over-call exactly like ``--min-identity 95`` would, but
 only for the floored gene; removing the sidecar restores the byte-identical
 floorless table (nothing about the CLI changed — the database did).
@@ -73,7 +73,7 @@ def test_homologs_sidecar_flips_only_the_floored_gene(tmp_path: Path) -> None:
     assert tsv_genes(before) == {"geneA", "geneB"}  # the reproduced over-call
 
     floors.write_text(
-        '{"schema": "gapit.floors/1", "default": null, "genes": {"geneB": 95.0}}',
+        '{"schema": "gspec.floors/1", "default": null, "genes": {"geneB": 95.0}}',
         encoding="utf-8",
     )
     floored = screen_reads_tsv(datadir, query, "homologs", "--min-breadth", "80")
@@ -109,7 +109,7 @@ def test_pic_homolog_is_absent_with_floors_present_without(tmp_path: Path) -> No
     datadir.mkdir()
 
     # Materialize the bundle by screening any panel-derived sample once.
-    # (Headers decode through the codec: the rebuilt bundle carries gapit/v1
+    # (Headers decode through the codec: the rebuilt bundle carries gspec/v1
     # headers, the pre-rebuild one carried abricate-style ~~~ headers.)
     true_seqs: list[tuple[str, str]] = []
     pic_id: str | None = None

@@ -11,7 +11,7 @@ byte-identically to before, and the blastn contig path is untouched
 
 The file's presence IS the flag — no manifest field, no CLI switch:
 
-``{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}``
+``{"schema": "gspec.floors/1", "default": null, "genes": {"pic": 90.0}}``
 
 ``default`` applies to genes not listed (null = no floor). At build time
 (``db build --floors FILE``) values are constrained to [0, 100] and every
@@ -33,6 +33,7 @@ from gspec.dbcodec import decode_seqid
 from gspec.errors import DatabaseError, InputError
 from gspec.hits import Hit
 from gspec.paf import PafRecord, alignment_identity
+from gspec.schema_ids import Canonical
 
 FLOORS_FILENAME = "floors.json"
 
@@ -46,7 +47,9 @@ class GeneFloors(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.floors/1"] = Field(default="gapit.floors/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.floors/1"], Canonical] = Field(
+        default="gspec.floors/1", alias="schema"
+    )
     default: _Pct | None = None
     genes: dict[str, _Pct] = Field(default_factory=dict)
 

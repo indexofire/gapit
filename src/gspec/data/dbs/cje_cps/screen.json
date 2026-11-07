@@ -1,5 +1,5 @@
 {
-  "schema": "gapit.screen/1",
+  "schema": "gspec.screen/1",
   "reads": {
     "min_breadth": 90.0,
     "min_identity": 80.0,

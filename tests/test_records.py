@@ -1,4 +1,4 @@
-"""Tests for the truth-source Record JSONL store and the gapit.manifest/1 sidecar."""
+"""Tests for the truth-source Record JSONL store and the gspec.manifest/1 sidecar."""
 
 from pathlib import Path
 
@@ -158,11 +158,11 @@ def test_manifest_round_trip_with_schema_alias_first(tmp_path: Path) -> None:
     """Given a manifest, When written then read, Then the bytes are indented
     JSON with the `schema` alias as first key and a trailing newline, and the
     model round-trips equal."""
-    path = tmp_path / "gapit-manifest.json"
+    path = tmp_path / "gspec-manifest.json"
     manifest = make_manifest()
     write_manifest(manifest, path)
     text = path.read_text(encoding="utf-8")
-    assert text.startswith('{\n  "schema": "gapit.manifest/1",')
+    assert text.startswith('{\n  "schema": "gspec.manifest/1",')
     assert text.endswith("}\n")
     assert read_manifest(path) == manifest
 
@@ -190,8 +190,8 @@ def test_manifest_defaults_applied() -> None:
     """Given a manifest constructed without the optional fields, Then the
     frozen-contract defaults hold."""
     manifest = make_manifest()
-    assert manifest.schema_name == "gapit.manifest/1"
-    assert manifest.header_format == "gapit/v1"
+    assert manifest.schema_name == "gspec.manifest/1"
+    assert manifest.header_format == "gspec/v1"
     assert manifest.upstream_version == ""
     assert manifest.tool == ToolDocument()
     assert manifest.makeblastdb_version == ""
@@ -209,8 +209,8 @@ def test_read_manifest_missing_file_raises_input_not_found(tmp_path: Path) -> No
 def test_read_manifest_malformed_raises_typed_error(tmp_path: Path) -> None:
     """Given a manifest with a wrong-typed field, When read, Then InputError
     MANIFEST_MALFORMED carries the file context."""
-    path = tmp_path / "gapit-manifest.json"
-    path.write_text('{"schema": "gapit.manifest/1", "name": 42}', encoding="utf-8")
+    path = tmp_path / "gspec-manifest.json"
+    path.write_text('{"schema": "gspec.manifest/1", "name": 42}', encoding="utf-8")
     with pytest.raises(InputError) as excinfo:
         read_manifest(path)
     error = excinfo.value

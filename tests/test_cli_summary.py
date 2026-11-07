@@ -159,12 +159,12 @@ def test_malformed_report_exits_5(tmp_path: Path) -> None:
 
 def test_json_output_validates(monkeypatch: pytest.MonkeyPatch) -> None:
     """Given --format json, When summarized, Then stdout parses as
-    gapit.summary/1 with the expected matrix."""
+    gspec.summary/1 with the expected matrix."""
     monkeypatch.chdir(FIXTURES)
     result = summary("--format", "json", *MULTI)
     assert result.exit_code == 0
     document = summary_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.summary/1"
+    assert document.schema_name == "gspec.summary/1"
     assert document.genes == ["feature_a", "feature_b"]
     assert [row.file for row in document.rows] == ["empty.tsv", "sample_a.tsv", "sample_b.tsv"]
 
@@ -174,7 +174,7 @@ def test_md_output_shape(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(FIXTURES)
     result = summary("--format", "md", *MULTI)
     assert result.exit_code == 0
-    assert "schema: gapit.summary/1" in result.stdout
+    assert "schema: gspec.summary/1" in result.stdout
     assert "| sample_a.tsv | 2 | + | + |" in result.stdout
 
 
@@ -209,7 +209,7 @@ def test_golden_md_render(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_schema_summary_registered() -> None:
     """Given `gspec schema summary`, When run, Then it prints the JSON Schema
-    of gapit.summary/1."""
+    of gspec.summary/1."""
     result = runner.invoke(app, ["schema", "summary"])
     assert result.exit_code == 0
     schema = json.loads(result.stdout)

@@ -1,4 +1,4 @@
-"""Typing-engine unit suites (stage 3): the pure gapit.typing/1-3 evaluators.
+"""Typing-engine unit suites (stage 3): the pure gspec.typing/1-3 evaluators.
 
 No I/O anywhere: ClusterReport/LocusCall/GeneCall values are built directly,
 rules come from typing_models, and every score/decision is asserted on the
@@ -701,7 +701,7 @@ class TestLoadTyping:
         (tmp_path / "typing.json").write_text(
             TypingDocumentV1.model_validate(
                 {
-                    "schema": "gapit.typing/1",
+                    "schema": "gspec.typing/1",
                     "rules": [
                         {
                             "model": "weighted_genes",

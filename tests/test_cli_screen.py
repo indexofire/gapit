@@ -31,7 +31,7 @@ ANSI_STYLE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 def last_envelope(stderr: str) -> ErrorEnvelope:
-    """Parse the last non-empty stderr line as the gapit.error/1 envelope."""
+    """Parse the last non-empty stderr line as the gspec.error/1 envelope."""
     lines = [line for line in stderr.splitlines() if line.strip()]
     assert lines, "expected an error envelope on stderr"
     return envelope_adapter.validate_json(lines[-1])
@@ -254,7 +254,7 @@ def test_output_file_receives_data_stdout_stays_empty(datadir: Path, tmp_path: P
 
 def test_output_json_writes_single_document(datadir: Path, tmp_path: Path) -> None:
     """Given --output with --format json, When screened, Then the file is
-    the single buffered gapit.report/1 document and stdout is empty."""
+    the single buffered gspec.report/1 document and stdout is empty."""
     out_path = tmp_path / "out.json"
     result = runner.invoke(
         app,
@@ -275,7 +275,7 @@ def test_output_json_writes_single_document(datadir: Path, tmp_path: Path) -> No
     assert result.exit_code == 0
     assert result.stdout == ""
     document = json.loads(out_path.read_text(encoding="utf-8"))
-    assert document["schema"] == "gapit.report/1"
+    assert document["schema"] == "gspec.report/1"
     assert document["params"]["db"] == "tinyamr"
 
 
@@ -325,7 +325,7 @@ def test_output_md_persists_streamed_prefix_on_midbatch_failure(
     assert result.exit_code == 5
     assert result.stdout == ""
     partial = out_path.read_text(encoding="utf-8")
-    assert partial.startswith("---\nschema: gapit.report/1\n")
+    assert partial.startswith("---\nschema: gspec.report/1\n")
     assert f"## `{CONTIGS / 'full.fa'}`" in partial
     assert f"## `{CONTIGS / 'gap.fa'}`" not in partial
 

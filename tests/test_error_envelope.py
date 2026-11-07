@@ -1,4 +1,4 @@
-"""Error envelope tests: every typed failure renders gapit.error/1 on stderr."""
+"""Error envelope tests: every typed failure renders gspec.error/1 on stderr."""
 
 import ast
 import json
@@ -44,7 +44,7 @@ def test_envelope_is_single_line_with_four_keys(tmp_path: Path) -> None:
     assert result.exit_code == 4
     lines = [line for line in result.stderr.splitlines() if line.strip()]
     assert len(lines) == 1
-    assert lines[0].startswith('{"schema":"gapit.error/1","code":')
+    assert lines[0].startswith('{"schema":"gspec.error/1","code":')
     payload = json.loads(lines[0])
     assert list(payload) == ["schema", "code", "message", "context"]
 
@@ -138,7 +138,7 @@ def test_unexpected_exception_envelope() -> None:
 
 def test_unknown_option_renders_usage_envelope() -> None:
     """Given an unknown option, When click rejects it before the command body,
-    Then stderr is still the gapit.error/1 usage envelope, not click prose."""
+    Then stderr is still the gspec.error/1 usage envelope, not click prose."""
     result = runner.invoke(app, ["screen", "--bogus"])
     assert result.exit_code == 2
     envelope = last_envelope(result.stderr)
@@ -157,7 +157,7 @@ def test_missing_required_option_renders_usage_envelope() -> None:
 
 
 def test_error_schema_exposes_the_registered_code_enum() -> None:
-    """Given gapit.error/1, When introspected, Then code carries the full
+    """Given gspec.error/1, When introspected, Then code carries the full
     machine-readable error-code enum (no doc-only list)."""
     schema = ErrorEnvelope.model_json_schema(by_alias=True)
     assert set(schema["properties"]["code"]["enum"]) == set(ERROR_CODES)

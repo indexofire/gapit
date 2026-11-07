@@ -3,7 +3,7 @@
 Real binaries (makeblastdb/blastn/minimap2 from the pixi env), synthetic
 fixtures only, everything local to tmp_path — the test_cli_db_fetch.py and
 test_gapit_db_e2e.py conventions. Header auto-detection (plain / abricate
-``~~~`` / ``gapit|``), the --tsv metadata merge, dbtype resolution, the
+``~~~`` / ``gspec|``), the --tsv metadata merge, dbtype resolution, the
 DB_ALREADY_EXISTS/--force gate, and one full E2E screen against a built
 database per header kind.
 """
@@ -36,7 +36,7 @@ AMINO = "".join(
 PLAIN_FASTA = f">demov2 demo beta-lactamase variant 2\n{SEQ_A}\n>demov3 demo efflux pump\n{SEQ_B}\n"
 TILDE_SEQID = "olddb~~~tilde1~~~SYN-001~~~SULFONAMIDE"
 TILDE_FASTA = f">{TILDE_SEQID} tilde demo protein\n{SEQ_C}\n"
-GAPIT_SEQID = "gapit|db=olddb|gene=tagged1|acc=SYN-002|func=ampicillin;gentamicin"
+GAPIT_SEQID = "gspec|db=olddb|gene=tagged1|acc=SYN-002|func=ampicillin;gentamicin"
 GAPIT_FASTA = f">{GAPIT_SEQID} tagged demo protein\n{SEQ_D}\n"
 
 runner = CliRunner()
@@ -44,7 +44,7 @@ envelope_adapter = TypeAdapter(ErrorEnvelope)
 
 
 def last_envelope(stderr: str) -> ErrorEnvelope:
-    """Parse the last non-empty stderr line as the gapit.error/1 envelope."""
+    """Parse the last non-empty stderr line as the gspec.error/1 envelope."""
     lines = [line for line in stderr.splitlines() if line.strip()]
     assert lines, "expected an error envelope on stderr"
     return envelope_adapter.validate_json(lines[-1])
@@ -86,10 +86,10 @@ def test_db_build_plain_fasta_creates_database_and_screens(tmp_path: Path) -> No
         "dbtype": "nucl",
         "destination": str(db_dir),
     }
-    for artifact in ("sequences", "sequences.nin", "gapit-manifest.json"):
+    for artifact in ("sequences", "sequences.nin", "gspec-manifest.json"):
         assert (db_dir / artifact).is_file(), artifact
     assert not (db_dir / "sequences.mmi").exists()
-    manifest = read_manifest(db_dir / "gapit-manifest.json")
+    manifest = read_manifest(db_dir / "gspec-manifest.json")
     assert manifest.source_urls == ("local",)
     assert manifest.upstream_version == ""
     assert manifest.dbtype == "nucl"
@@ -133,7 +133,7 @@ def test_db_build_abricate_tilde_headers(tmp_path: Path) -> None:
 
 
 def test_db_build_gapit_headers_roundtrip(tmp_path: Path) -> None:
-    """Given a gapit| tagged FASTA, When built and screened, Then gene,
+    """Given a gspec| tagged FASTA, When built and screened, Then gene,
     accession and the multi-class function decode back through screening
     (roundtrip) and source_id keeps the original id token."""
     fasta = tmp_path / "tagged.fa"
@@ -149,7 +149,7 @@ def test_db_build_gapit_headers_roundtrip(tmp_path: Path) -> None:
     assert record.gene == "tagged1"
     assert record.accession == "SYN-002"
     assert record.function == ("ampicillin", "gentamicin")
-    assert record.source_id.startswith("gapit|db=olddb|")
+    assert record.source_id.startswith("gspec|db=olddb|")
 
     query = tmp_path / "query.fa"
     query.write_text(f">contig1\n{SEQ_D}\n", encoding="utf-8")
@@ -160,7 +160,7 @@ def test_db_build_gapit_headers_roundtrip(tmp_path: Path) -> None:
 
 
 def test_db_build_mixed_header_file(tmp_path: Path) -> None:
-    """Given one FASTA mixing plain, `~~~` and gapit| headers, When built,
+    """Given one FASTA mixing plain, `~~~` and gspec| headers, When built,
     Then each record is parsed per its own header kind (db = NAME for all)."""
     fasta = tmp_path / "mixed.fa"
     fasta.write_text(f"{PLAIN_FASTA}{TILDE_FASTA}{GAPIT_FASTA}", encoding="utf-8")
@@ -460,7 +460,7 @@ def test_db_build_auto_detects_protein_without_flag(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.stderr
     assert json.loads(result.stdout)["dbtype"] == "prot"
-    assert read_manifest(datadir / DB / "gapit-manifest.json").dbtype == "prot"
+    assert read_manifest(datadir / DB / "gspec-manifest.json").dbtype == "prot"
 
 
 def test_db_build_refuses_existing_database_then_force_rebuilds(tmp_path: Path) -> None:
@@ -537,7 +537,7 @@ def test_db_build_allows_dash_underscore_dot_names(tmp_path: Path) -> None:
     result = build("my-db_1.x", str(fasta), "--datadir", str(datadir))
 
     assert result.exit_code == 0, result.stderr
-    assert (datadir / "my-db_1.x" / "gapit-manifest.json").is_file()
+    assert (datadir / "my-db_1.x" / "gspec-manifest.json").is_file()
 
 
 def test_db_build_creates_missing_datadir(tmp_path: Path) -> None:
@@ -552,7 +552,7 @@ def test_db_build_creates_missing_datadir(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.stderr
     assert json.loads(result.stdout)["destination"] == str(nested / DB)
-    assert (nested / DB / "gapit-manifest.json").is_file()
+    assert (nested / DB / "gspec-manifest.json").is_file()
 
 
 # ------------------------------------------------------- --floors sidecar --
@@ -565,14 +565,14 @@ def floors_document(tmp_path: Path, body: str) -> Path:
 
 
 def test_db_build_floors_copies_validated_sidecar(tmp_path: Path) -> None:
-    """Given a valid gapit.floors/1 document whose genes exist in the FASTA,
+    """Given a valid gspec.floors/1 document whose genes exist in the FASTA,
     When `db build --floors FILE`, Then exit 0 and the db dir carries
     floors.json byte-identical to the input (the file's presence is the
     flag — no manifest field changes)."""
     fasta = tmp_path / "my_genes.fa"
     fasta.write_text(PLAIN_FASTA, encoding="utf-8")
     floors = floors_document(
-        tmp_path, '{"schema": "gapit.floors/1", "default": null, "genes": {"demov2": 90.0}}'
+        tmp_path, '{"schema": "gspec.floors/1", "default": null, "genes": {"demov2": 90.0}}'
     )
     datadir = tmp_path / "datadir"
     datadir.mkdir()
@@ -582,7 +582,7 @@ def test_db_build_floors_copies_validated_sidecar(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.stderr
     installed = datadir / DB / "floors.json"
     assert installed.read_bytes() == floors.read_bytes()
-    manifest = read_manifest(datadir / DB / "gapit-manifest.json")
+    manifest = read_manifest(datadir / DB / "gspec-manifest.json")
     assert manifest.typing_schema is None  # untouched by floors
 
 
@@ -592,7 +592,7 @@ def test_db_build_floors_unknown_gene_exits_4(tmp_path: Path) -> None:
     directory is written (validation precedes every artifact)."""
     fasta = tmp_path / "my_genes.fa"
     fasta.write_text(PLAIN_FASTA, encoding="utf-8")
-    floors = floors_document(tmp_path, '{"schema": "gapit.floors/1", "genes": {"ghost": 90.0}}')
+    floors = floors_document(tmp_path, '{"schema": "gspec.floors/1", "genes": {"ghost": 90.0}}')
     datadir = tmp_path / "datadir"
     datadir.mkdir()
 
@@ -606,11 +606,11 @@ def test_db_build_floors_unknown_gene_exits_4(tmp_path: Path) -> None:
 
 
 def test_db_build_floors_malformed_exits_4(tmp_path: Path) -> None:
-    """Given floors content outside the gapit.floors/1 contract (range or
+    """Given floors content outside the gspec.floors/1 contract (range or
     structure), When built, Then exit 4 with FLOORS_MALFORMED."""
     fasta = tmp_path / "my_genes.fa"
     fasta.write_text(PLAIN_FASTA, encoding="utf-8")
-    floors = floors_document(tmp_path, '{"schema": "gapit.floors/1", "genes": {"demov2": 101.0}}')
+    floors = floors_document(tmp_path, '{"schema": "gspec.floors/1", "genes": {"demov2": 101.0}}')
     datadir = tmp_path / "datadir"
     datadir.mkdir()
 
@@ -642,7 +642,7 @@ def test_db_build_floors_rejected_on_cluster_input(tmp_path: Path) -> None:
     """Given a GBK (cluster) input and --floors, When built, Then exit 2
     usage error — floors are gene-database metadata."""
     gbk = Path(__file__).parent / "data" / "cluster" / "bakta_style.gbk"
-    floors = floors_document(tmp_path, '{"schema": "gapit.floors/1", "genes": {}}')
+    floors = floors_document(tmp_path, '{"schema": "gspec.floors/1", "genes": {}}')
     datadir = tmp_path / "datadir"
     datadir.mkdir()
 

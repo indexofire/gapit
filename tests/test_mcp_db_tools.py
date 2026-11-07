@@ -84,7 +84,7 @@ def make_db(
             dbtype="nucl",
             upstream_version=upstream_version,
         ),
-        db_dir / "gapit-manifest.json",
+        db_dir / "gspec-manifest.json",
     )
 
 
@@ -234,13 +234,13 @@ def test_db_build_then_screen_full_agent_story(
         "dbtype": "nucl",
         "destination": str(datadir / "myamr"),
     }
-    for artifact in ("sequences", "sequences.nin", "gapit-manifest.json", "records.jsonl"):
+    for artifact in ("sequences", "sequences.nin", "gspec-manifest.json", "records.jsonl"):
         assert (datadir / "myamr" / artifact).is_file(), artifact
 
     is_error, text = call_tool("screen", {"files": [str(query)], "db": "myamr"})
     assert is_error is False
     document = json.loads(text)
-    assert document["schema"] == "gapit.report/1"
+    assert document["schema"] == "gspec.report/1"
     (hit,) = document["files"][0]["hits"]
     assert hit["gene"] == "demov2"
 
@@ -305,7 +305,7 @@ def test_db_list_honors_an_explicit_datadir(tmp_path: Path) -> None:
 
     assert is_error is False
     assert explicit.is_dir()
-    assert json.loads(text)["schema"] == "gapit.dblist/1"
+    assert json.loads(text)["schema"] == "gspec.dblist/1"
 
 
 def test_db_list_bootstraps_a_missing_datadir(
@@ -322,7 +322,7 @@ def test_db_list_bootstraps_a_missing_datadir(
     assert is_error is False
     assert missing.is_dir()
     document = json.loads(text)
-    assert document["schema"] == "gapit.dblist/1"
+    assert document["schema"] == "gspec.dblist/1"
     assert any(entry["name"] == "cje_cps" for entry in document["providers"])
 
 
@@ -330,7 +330,7 @@ def test_db_list_surfaces_locally_built_databases(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given a datadir on $GSPEC_DATADIR holding a db_build product, When
-    db_list, Then the gapit.dblist/1 document gains that database as a
+    db_list, Then the gspec.dblist/1 document gains that database as a
     providers entry with the additive source=local field — locally built
     databases are not invisible to MCP agents."""
     datadir = tmp_path / "datadir"
@@ -396,7 +396,7 @@ def test_db_fetch_returns_receipt_and_builds_artifacts(
         "dbtype": "nucl",
         "destination": str(datadir / SYN),
     }
-    for artifact in ("sequences", "sequences.nin", "gapit-manifest.json"):
+    for artifact in ("sequences", "sequences.nin", "gspec-manifest.json"):
         assert (datadir / SYN / artifact).is_file(), artifact
 
 
@@ -471,7 +471,7 @@ def test_db_fetch_default_set_downloads_card_vfdb(
     assert [receipt["db"] for receipt in receipts] == ["card", "vfdb"]
     assert all(receipt["records"] == 2 for receipt in receipts)
     for name in ("card", "vfdb"):
-        assert (datadir / name / "gapit-manifest.json").is_file(), name
+        assert (datadir / name / "gspec-manifest.json").is_file(), name
 
 
 def test_db_build_forwards_typing_and_floors(tmp_path: Path) -> None:
@@ -482,7 +482,7 @@ def test_db_build_forwards_typing_and_floors(tmp_path: Path) -> None:
     typing = Path("tests/data/typing/typing_markers_v2.json")
     floors = tmp_path / "floors.json"
     floors.write_text(
-        '{"schema": "gapit.floors/1", "genes": {"marker_a": 90.0}}',
+        '{"schema": "gspec.floors/1", "genes": {"marker_a": 90.0}}',
         encoding="utf-8",
     )
 
@@ -498,7 +498,7 @@ def test_db_build_forwards_typing_and_floors(tmp_path: Path) -> None:
     )
 
     assert is_error is False, text
-    manifest = read_manifest(datadir / "typed" / "gapit-manifest.json")
-    assert manifest.typing_schema == "gapit.typing/2"
+    manifest = read_manifest(datadir / "typed" / "gspec-manifest.json")
+    assert manifest.typing_schema == "gspec.typing/2"
     assert (datadir / "typed" / "typing.json").is_file()
     assert (datadir / "typed" / "floors.json").is_file()

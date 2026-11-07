@@ -29,7 +29,7 @@ from collections import Counter
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import PurePath
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -41,6 +41,7 @@ from gspec.formats.cluster import (
 )
 from gspec.formats.csvutil import delimited_line
 from gspec.formats.json import ToolDocument, utc_timestamp
+from gspec.schema_ids import Canonical
 from gspec.typing_models import TypingDocument
 from gspec.typing_results import SchemeCall
 
@@ -78,7 +79,9 @@ class Cluster2Document(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.cluster/2"] = Field(default="gapit.cluster/2", alias="schema")
+    schema_name: Annotated[Literal["gspec.cluster/2"], Canonical] = Field(
+        default="gspec.cluster/2", alias="schema"
+    )
     tool: ToolDocument = ToolDocument()
     created_at: str
     params: ClusterParamsDocument

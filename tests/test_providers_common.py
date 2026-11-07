@@ -98,7 +98,7 @@ def test_fetch_provider_runs_full_pipeline(
         "records.jsonl",
         "sequences",
         "sequences.nin",
-        "gapit-manifest.json",
+        "gspec-manifest.json",
     ):
         assert (db_dir / name).is_file(), name
     assert not (db_dir / "sequences.mmi").exists()
@@ -108,7 +108,7 @@ def test_fetch_provider_runs_full_pipeline(
     assert manifest.dbtype == "nucl"
     assert manifest.source_urls == (url,)
     assert manifest.fetched_at == FETCHED_AT
-    assert read_manifest(db_dir / "gapit-manifest.json") == manifest
+    assert read_manifest(db_dir / "gspec-manifest.json") == manifest
 
     records = tuple(read_records(db_dir / "records.jsonl"))
     assert [record.gene for record in records] == [
@@ -151,13 +151,13 @@ def test_fetch_provider_stamps_license_into_manifest(tmp_path: Path) -> None:
     )
     manifest = fetch_provider(licensed, tmp_path / "licensed", fetched_at=FETCHED_AT)
     assert manifest.license == "CC BY-NC 4.0 (non-commercial)"
-    assert read_manifest(tmp_path / "licensed" / "gapit-manifest.json").license == (
+    assert read_manifest(tmp_path / "licensed" / "gspec-manifest.json").license == (
         "CC BY-NC 4.0 (non-commercial)"
     )
 
     plain = fetch_provider(syn_provider(url), tmp_path / "plain", fetched_at=FETCHED_AT)
     assert plain.license is None
-    assert "license" not in (tmp_path / "plain" / "gapit-manifest.json").read_text(encoding="utf-8")
+    assert "license" not in (tmp_path / "plain" / "gspec-manifest.json").read_text(encoding="utf-8")
 
 
 def test_fetch_provider_refuses_overwrite_without_force(tmp_path: Path) -> None:
@@ -185,7 +185,7 @@ def test_fetch_provider_force_rebuilds_existing_database(tmp_path: Path) -> None
     fetch_provider(syn_provider(url), db_dir, fetched_at=FETCHED_AT)
     manifest = fetch_provider(syn_provider(url), db_dir, fetched_at=FETCHED_AT, force=True)
     assert manifest.n_records == 3
-    assert read_manifest(db_dir / "gapit-manifest.json") == manifest
+    assert read_manifest(db_dir / "gspec-manifest.json") == manifest
     assert (db_dir / "sequences.nin").is_file()
     assert not (db_dir / "sequences.mmi").exists()
 
@@ -211,7 +211,7 @@ def test_fetch_provider_empty_transform_raises(tmp_path: Path) -> None:
     assert error.exit_code == 4
     assert error.context == {"db": SYN}
     assert not (db_dir / "records.jsonl").exists()
-    assert not (db_dir / "gapit-manifest.json").exists()
+    assert not (db_dir / "gspec-manifest.json").exists()
 
 
 def test_fetch_provider_missing_source_raises_download_failed(
@@ -228,7 +228,7 @@ def test_fetch_provider_missing_source_raises_download_failed(
     assert error.code == "DOWNLOAD_FAILED"
     assert error.exit_code == 4
     assert error.context == {"url": url}
-    assert not (db_dir / "gapit-manifest.json").exists()
+    assert not (db_dir / "gspec-manifest.json").exists()
     # A failed first fetch is rolled back entirely; when the target exists,
     # only cleaned-up files may remain (no .part/workdir directories).
     assert not db_dir.exists() or all(entry.is_file() for entry in db_dir.iterdir())
@@ -340,7 +340,7 @@ def test_fetch_provider_stalled_download_raises_download_failed(
     assert error.code == "DOWNLOAD_FAILED"
     assert error.exit_code == 4
     assert error.context == {"url": url}
-    assert not (db_dir / "gapit-manifest.json").exists()
+    assert not (db_dir / "gspec-manifest.json").exists()
     # The failed first fetch is rolled back; no partial target survives.
     assert not db_dir.exists() or all(entry.is_file() for entry in db_dir.iterdir())
 

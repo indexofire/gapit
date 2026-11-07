@@ -2,7 +2,7 @@
 
 import json
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -10,6 +10,7 @@ from gspec import __version__
 from gspec.formats.csvutil import delimited_line
 from gspec.formats.json import ToolDocument, utc_timestamp
 from gspec.formats.md import md_cell
+from gspec.schema_ids import Canonical
 from gspec.summary import ABSENT, FIELDSEP, SummaryMatrix, SummaryRow
 
 
@@ -34,7 +35,9 @@ class SummaryDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.summary/1"] = Field(default="gapit.summary/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.summary/1"], Canonical] = Field(
+        default="gspec.summary/1", alias="schema"
+    )
     tool: ToolDocument = ToolDocument()
     created_at: str
     params: SummaryParamsDocument
@@ -97,7 +100,7 @@ def render_summary_md(matrix: SummaryMatrix, *, now: datetime) -> str:
     columns = ("File", "Num found", *matrix.genes)
     lines: list[str] = [
         "---",
-        "schema: gapit.summary/1",
+        "schema: gspec.summary/1",
         f"tool: gspec {__version__}",
         f"created_at: {utc_timestamp(now)}",
         f"metric: '{matrix.params.metric}'",

@@ -80,7 +80,7 @@ def finalize(workdir: Path, build_dir: Path) -> None:
             typing_path.read_text(encoding="utf-8"), encoding="utf-8"
         )
     screen = {
-        "schema": "gapit.screen/1",
+        "schema": "gspec.screen/1",
         "reads": {
             "min_breadth": 90.0,
             "min_identity": 90.0,
@@ -92,7 +92,7 @@ def finalize(workdir: Path, build_dir: Path) -> None:
         "contigs": {"minid": 95.0, "mincov": 85.0, "merge_fragments": True},
     }
     (build_dir / "screen.json").write_text(json.dumps(screen, indent=2) + "\n")
-    floors = {"schema": "gapit.floors/1", "default": 95.0, "genes": {"tuf": 85.0}}
+    floors = {"schema": "gspec.floors/1", "default": 95.0, "genes": {"tuf": 85.0}}
     (build_dir / "floors.json").write_text(json.dumps(floors, indent=2) + "\n")
 
 

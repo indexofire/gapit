@@ -303,7 +303,7 @@ def test_emit_md_chunk_arrives_per_file_and_in_order(datadir: Path) -> None:
         output_format=OutputFormat.md,
         emit=collected.append,
     )
-    assert collected[0].startswith("---\nschema: gapit.report/1\n")
+    assert collected[0].startswith("---\nschema: gspec.report/1\n")
     assert "# gspec screening report" in collected[0]
     # md headings keep the path as given (--nopath rewrites only the TSV
     # FILE column), so the expected first lines carry the fixture paths.
@@ -470,7 +470,7 @@ def test_cluster_md_emits_per_file_with_own_summary_row(tmp_path: Path) -> None:
     )
     assert _without_timestamps(streamed) == _without_timestamps(buffered)
     assert _without_timestamps("".join(collected)) == _without_timestamps(buffered)
-    assert collected[0].startswith("---\nschema: gapit.cluster/1\n")
+    assert collected[0].startswith("---\nschema: gspec.cluster/1\n")
     assert "files:" not in collected[0]
     assert [chunk.splitlines()[0] for chunk in collected[1:]] == [f"## `{file}`" for file in files]
     for chunk, file in zip(collected[1:], files, strict=True):

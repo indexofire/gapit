@@ -36,6 +36,7 @@ from gspec.gbfeatures import (
     write_features_document,
 )
 from gspec.gffparse import parse_gff3_features
+from gspec.layout import MANIFEST_NAME
 from gspec.proctools import note
 from gspec.records import Manifest, write_manifest
 from gspec.typing_models import (
@@ -297,7 +298,7 @@ def build_cluster_database(
         note=content_note or None,
         source=source,
     )
-    write_manifest(manifest, db_dir / "gapit-manifest.json")
+    write_manifest(manifest, db_dir / MANIFEST_NAME)
     return manifest
 
 

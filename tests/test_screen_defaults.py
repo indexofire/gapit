@@ -1,4 +1,4 @@
-"""gapit.screen/1 per-database defaults: parsing, discovery, validation."""
+"""gspec.screen/1 per-database defaults: parsing, discovery, validation."""
 
 import json
 from pathlib import Path
@@ -17,7 +17,7 @@ from gspec.screen_defaults import (
 
 VALID = json.dumps(
     {
-        "schema": "gapit.screen/1",
+        "schema": "gspec.screen/1",
         "reads": {
             "min_breadth": 90.0,
             "min_identity": 80.0,
@@ -48,10 +48,10 @@ def test_missing_file_is_input_not_found(tmp_path: Path) -> None:
     "text",
     [
         "{nope",
-        '{"schema": "gapit.screen/2", "reads": {}}',
-        '{"schema": "gapit.screen/1", "reads": {"min_mapq": -1}}',
-        '{"schema": "gapit.screen/1", "reads": {"min_relative_depth": 1.5}}',
-        '{"schema": "gapit.screen/1", "contigs": {"minid": 101}}',
+        '{"schema": "gspec.screen/2", "reads": {}}',
+        '{"schema": "gspec.screen/1", "reads": {"min_mapq": -1}}',
+        '{"schema": "gspec.screen/1", "reads": {"min_relative_depth": 1.5}}',
+        '{"schema": "gspec.screen/1", "contigs": {"minid": 101}}',
     ],
 )
 def test_malformed_documents_are_typed(tmp_path: Path, text: str) -> None:
@@ -91,7 +91,7 @@ def test_bundled_cje_cps_ships_its_defaults(tmp_path: Path) -> None:
 
 def test_db_build_copies_screen_sidecar(tmp_path: Path) -> None:
     """Given a gene build with --screen, When it completes, Then the sidecar
-    travels into the database directory and loads as gapit.screen/1."""
+    travels into the database directory and loads as gspec.screen/1."""
     from gspec.db_build_ops import perform_build
 
     fasta = tmp_path / "genes.fa"

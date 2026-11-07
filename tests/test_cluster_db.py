@@ -31,13 +31,13 @@ def test_schema_features_selector() -> None:
 
 def test_schema_typing_selector() -> None:
     """Given the typing document, When `gspec schema typing`, Then its JSON
-    Schema prints the gapit.typing/2 surface: named schemes (each carrying
+    Schema prints the gspec.typing/2 surface: named schemes (each carrying
     rules/cutoff/margin/fallback inside the TypingScheme definition), no
     flat document-level rule fields."""
     result = runner.invoke(app, ["schema", "typing"])
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
-    assert "gapit.typing/2" in payload["properties"]["schema"]["enum"]
+    assert "gspec.typing/2" in payload["properties"]["schema"]["enum"]
     assert "schemes" in payload["properties"]
     assert not {"rules", "cutoff", "ambiguity_margin", "fallback"} & set(payload["properties"])
     scheme = payload["$defs"]["TypingScheme"]["properties"]
@@ -73,7 +73,7 @@ def test_discover_databases_reports_cluster_kind(tmp_path: Path) -> None:
         app, ["db", "build", "cps", str(DATA / "bakta_style.gbk"), "--datadir", str(datadir)]
     )
     assert result.exit_code == 0, result.stderr
-    assert read_manifest(datadir / "cps" / "gapit-manifest.json").kind == "cluster"
+    assert read_manifest(datadir / "cps" / "gspec-manifest.json").kind == "cluster"
 
     (database,) = discover_databases(datadir)
 

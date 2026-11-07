@@ -134,13 +134,13 @@ tests/data/summary/sample_a.tsv	2	+	+
 ## 输出格式
 
 `--format tsv`（默认）与 `--format csv` 打印上面的矩阵。`--format json` 和
-`--format md` 输出 `gapit.summary/1` 文档，保留每个单元格字符串并附加机器可读的
+`--format md` 输出 `gspec.summary/1` 文档，保留每个单元格字符串并附加机器可读的
 params：
 
 ```console
 $ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv --format json --quiet
 {
-  "schema": "gapit.summary/1",
+  "schema": "gspec.summary/1",
   "tool": {
     "name": "gspec",
     "version": "0.8.1"

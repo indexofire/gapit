@@ -64,7 +64,7 @@ gspec/
 ├── docs/                # user docs (bilingual) + mkdocs nav
 ├── pixi.toml, pyproject.toml, recipe/meta.yaml
 ├── .github/workflows/ci.yml   # gates + scheduled clean-gates + parity job
-├── src/gapit/
+├── src/gspec/
 │   ├── cli.py, cmd_*.py       # click entrypoints: screen / summary / typing / db / schema / mcp
 │   ├── config.py, dispatch.py, errors.py, proctools.py
 │   ├── db.py, dbcodec.py, db_txn.py, records.py, dbbuild.py
@@ -109,16 +109,16 @@ Treat this as a public API. Formats are detailed in `docs/outputs.md`, agent usa
 - **Markdown**: YAML frontmatter (tool version, db, params, ISO-8601 UTC timestamp) + tables a
   human can read and an agent can regex reliably.
 - **Errors**: failures print a JSON envelope to stderr
-  `{"schema": "gapit.error/1", "code": "...", "message": "...", "context": {...}}` and exit with a
+  `{"schema": "gspec.error/1", "code": "...", "message": "...", "context": {...}}` and exit with a
   documented code (1 unexpected, 2 usage, 3 missing dependency, 4 db error, 5 input error).
 - **Typing** `[gspec-extension]`: two-stage designation — `gspec screen -o result.tsv --db NAME`
   detects genes (screen output is phenotype-free; typed and untyped gene dbs screen
   byte-identically), then `gspec typing result.tsv [-D|-f|-o|-q]` designates from the screen
-  table (`gapit.typing_result/1`; cluster dbs refuse — their typing rides the screen).
+  table (`gspec.typing_result/1`; cluster dbs refuse — their typing rides the screen).
   The MCP `typing` tool accepts the screen table text and returns the same document.
 - **Databases** `[gspec-extension]`: `gspec db fetch|path|list|info|search|outdated|build|install|rename|setup`.
   Providers download from upstream at fetch time; only the seven gspec-curated bundles under
-  `src/gapit/data/dbs/` ship inside the wheel (policy in §6). `db build NAME` with no input
+  `src/gspec/data/dbs/` ship inside the wheel (policy in §6). `db build NAME` with no input
   re-projects an installed gene database from its edited `records.jsonl` (the curation path);
   `db rename OLD NEW` is the migration path for names that predate the convention. Anatomy,
   sharing, and Docker policy live in `docs/databases.md` and `docs/datadir.md`.
@@ -132,16 +132,16 @@ Treat this as a public API. Formats are detailed in `docs/outputs.md`, agent usa
   read-only `screen` (incl. `aligner minimap2`), `screen_reads`, `summary`, `typing`, `schema`,
   `db_path`, `db_search`, `db_outdated`; `db_list` may create the empty datadir on first use;
   the datadir-mutating `db_setup`, `db_fetch`, and `db_build` complete the set. Failures carry
-  the `gapit.error/1` envelope.
+  the `gspec.error/1` envelope.
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
 - **Self-description**: `gspec --version --json`, `gspec db list --json`, `gspec schema --help` —
   an agent must be able to discover everything without reading docs.
 
 ## 6. Bundled-database policy (what may ride the wheel)
 
-`src/gapit/data/dbs/` is the sanctioned home for license-clean content shipped inside the
+`src/gspec/data/dbs/` is the sanctioned home for license-clean content shipped inside the
 wheel: a directory qualifies by carrying `sequences` + `bundled.json` (auto-discovered by
-`gapit.bundled`; `kind: cluster` in the metadata additionally requires `features.json`).
+`gspec.bundled`; `kind: cluster` in the metadata additionally requires `features.json`).
 Materialization is kind-aware: gene bundles replay the gene-build pipeline, cluster
 bundles the cluster-build pipeline (`bundled_cluster.py` rebuilds from the committed
 locus FASTA + resolved feature table — gene ids stay snapshot-resolved, the typing spec
@@ -164,7 +164,7 @@ passes three gates, in order:
 
 Growth tiers past the budget — split rather than inflate the ceiling:
 
-- **≤ 30 MiB**: keep adding to `src/gapit/data/dbs/`. Atomic data-with-code versioning and
+- **≤ 30 MiB**: keep adding to `src/gspec/data/dbs/`. Atomic data-with-code versioning and
   zero packaging machinery.
 - **30–100 MiB**: split a separate `gspec-data` wheel with its own version (the
   `spacy[lookups]` → `spacy-lookups-data` pattern), pulled via a `gspec[datasets]` extra;
@@ -192,7 +192,7 @@ Growth tiers past the budget — split rather than inflate the ceiling:
 
 - **Databases** are directories `<datadir>/<dbname>/` holding `sequences` plus its BLAST index.
   Legacy headers are `>DB~~~GENE~~~ACCESSION~~~RESISTANCE` followed by a space and the product
-  (`SPEC.md` §2); gspec-native headers use the `gapit/v1` codec whose `func` key carries a
+  (`SPEC.md` §2); gspec-native headers use the `gspec/v1` codec whose `func` key carries a
   locked per-provider vocabulary (`docs/databases.md`). abricate cannot read gspec-native
   databases.
 - **Legacy screening** = native normalize (`seqconvert.py`) → `blastn` against one db → 15-field
@@ -207,7 +207,7 @@ Growth tiers past the budget — split rather than inflate the ceiling:
   Cluster builds (and `db setup`) write `sequences.asm20.mmi`; see `docs/screen.md`.
 - **Reads** use streaming `minimap2` PAF with breadth/depth presence rules — `docs/reads.md`.
 - **Typing** is a second stage for gene databases and rides the screen for cluster databases;
-  rules, schemes, and output live in `docs/typing.md` and `gapit.typing/1|2`.
+  rules, schemes, and output live in `docs/typing.md` and `gspec.typing/1|2`.
 
 ## 9. Git & workflow
 

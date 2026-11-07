@@ -93,7 +93,7 @@ def phenotypes_of(datadir: Path, sample: Path) -> dict[str, dict[str, object]]:
     )
     assert result.exit_code == 0, result.stderr
     report = json.loads(result.stdout)
-    assert report["schema"] == "gapit.cluster/2"
+    assert report["schema"] == "gspec.cluster/2"
     calls: dict[str, dict[str, object]] = report["files"][0]["phenotypes"]
     return calls
 

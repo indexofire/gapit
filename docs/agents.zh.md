@@ -12,7 +12,7 @@ gspec 生来就是被程序驱动的。每个输出都以机器可读为设计�
 
 ```console
 $ gspec --version --json
-{"schema":"gapit.version/1","name":"gspec","version":"0.8.1"}
+{"schema":"gspec.version/1","name":"gspec","version":"0.9.0"}
 ```
 
 输出 schema。十八个文档可自省：`report`、`typing_result`、`reads`、`reads2`、
@@ -21,35 +21,35 @@ $ gspec --version --json
 打印完整的 JSON Schema：
 
 ```console
-$ gspec schema report          # gapit.report/1 (contig screening)
-$ gspec schema typing_result   # gapit.typing_result/1 (gspec typing 判定)
-$ gspec schema reads           # gapit.reads/1  (FASTQ screening)
-$ gspec schema reads2          # gapit.reads/2  (filtered FASTQ screening)
-$ gspec schema cluster         # gapit.cluster/1 (cluster-database screening)
-$ gspec schema cluster2        # gapit.cluster/2 (multi-scheme cluster screening)
-$ gspec schema summary         # gapit.summary/1
-$ gspec schema error           # gapit.error/1
-$ gspec schema version         # gapit.version/1
-$ gspec schema dblist          # gapit.dblist/1（数据库目录）
-$ gspec schema dbsetup         # gapit.dbsetup/1（db setup 回执）
-$ gspec schema dbinfo          # gapit.dbinfo/1（单个数据库的来源与注意事项）
-$ gspec schema dboutdated      # gapit.dboutdated/1（过期报告）
-$ gspec schema datadir         # gapit.datadir/1（解析路径/来源）
-$ gspec schema features        # gapit.features/1 (cluster db feature table)
-$ gspec schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
-$ gspec schema floors          # gapit.floors/1 (per-gene identity floors, reads mode)
-$ gspec schema screen          # gapit.screen/1（数据库筛查默认值）
+$ gspec schema report          # gspec.report/1 (contig screening)
+$ gspec schema typing_result   # gspec.typing_result/1 (gspec typing 判定)
+$ gspec schema reads           # gspec.reads/1  (FASTQ screening)
+$ gspec schema reads2          # gspec.reads/2  (filtered FASTQ screening)
+$ gspec schema cluster         # gspec.cluster/1 (cluster-database screening)
+$ gspec schema cluster2        # gspec.cluster/2 (multi-scheme cluster screening)
+$ gspec schema summary         # gspec.summary/1
+$ gspec schema error           # gspec.error/1
+$ gspec schema version         # gspec.version/1
+$ gspec schema dblist          # gspec.dblist/1（数据库目录）
+$ gspec schema dbsetup         # gspec.dbsetup/1（db setup 回执）
+$ gspec schema dbinfo          # gspec.dbinfo/1（单个数据库的来源与注意事项）
+$ gspec schema dboutdated      # gspec.dboutdated/1（过期报告）
+$ gspec schema datadir         # gspec.datadir/1（解析路径/来源）
+$ gspec schema features        # gspec.features/1 (cluster db feature table)
+$ gspec schema typing          # gspec.typing/2 (db scoring spec; /1 still reads)
+$ gspec schema floors          # gspec.floors/1 (per-gene identity floors, reads mode)
+$ gspec schema screen          # gspec.screen/1（数据库筛查默认值）
 ```
 
 例如 `gspec schema version`（真实输出）：
 
 ```json
 {
-  "description": "gapit.version/1 \u2014 compact one-line self-description.",
+  "description": "gspec.version/1 \u2014 compact one-line self-description.",
   "properties": {
     "schema": {
-      "const": "gapit.version/1",
-      "default": "gapit.version/1",
+      "const": "gspec.version/1",
+      "default": "gspec.version/1",
       "title": "Schema",
       "type": "string"
     },
@@ -75,7 +75,7 @@ $ gspec schema screen          # gapit.screen/1（数据库筛查默认值）
 ```console
 $ gspec db list --json
 {
-  "schema": "gapit.dblist/1",
+  "schema": "gspec.dblist/1",
   "providers": [
     {
       "name": "argannot",
@@ -126,8 +126,8 @@ $ gspec db list --json
 
 ## JSON 稳定性策略
 
-- 每个文档用版本字符串自报家门：`gapit.report/1`、`gapit.reads/1`、
-  `gapit.cluster/1`、`gapit.summary/1`、`gapit.error/1`、`gapit.version/1`。先查
+- 每个文档用版本字符串自报家门：`gspec.report/1`、`gspec.reads/1`、
+  `gspec.cluster/1`、`gspec.summary/1`、`gspec.error/1`、`gspec.version/1`。先查
   `schema`，再按它分发。
 - schema 遵循 semver。minor 变更绝不重命名或改型既有字段；新字段可能出现，所以请
   忽略未知键而不是拒绝它们。
@@ -140,25 +140,25 @@ $ gspec db list --json
 任何失败都会向 stderr 打印恰好一行 JSON：
 
 ```json
-{"schema":"gapit.error/1","code":"...","message":"...","context":{...}}
+{"schema":"gspec.error/1","code":"...","message":"...","context":{...}}
 ```
 
 真实示例，对一个不存在的数据库筛查（退出码 4）：
 
 ```text
-{"schema":"gapit.error/1","code":"DATABASE_NOT_FOUND","message":"Database nosuchdb is not in /tmp/gspec-mcp-demo/datadir. Available: tinyamr","context":{"db":"nosuchdb","datadir":"/tmp/gspec-mcp-demo/datadir"}}
+{"schema":"gspec.error/1","code":"DATABASE_NOT_FOUND","message":"Database nosuchdb is not in /tmp/gspec-mcp-demo/datadir. Available: tinyamr","context":{"db":"nosuchdb","datadir":"/tmp/gspec-mcp-demo/datadir"}}
 ```
 
 缺外部二进制（退出码 3）：
 
 ```text
-{"schema":"gapit.error/1","code":"MISSING_DEPENDENCY","message":"required binary not found on PATH: blastn","context":{"binary":"blastn"}}
+{"schema":"gspec.error/1","code":"MISSING_DEPENDENCY","message":"required binary not found on PATH: blastn","context":{"binary":"blastn"}}
 ```
 
 解析建议：
 
 - 进度诊断（例如 `Processing: sampleA.fa`）也走 stderr。信封是 stderr 中唯一能解析
-  为带 `"schema":"gapit.error/1"` 的 JSON 的行。
+  为带 `"schema":"gspec.error/1"` 的 JSON 的行。
 - `code` 是稳定的字符串枚举（`USAGE_ERROR`、`MISSING_DEPENDENCY`、
   `DATABASE_NOT_FOUND`、`INPUT_NOT_FOUND` 等）。按 `code` 分支，不要按 `message`。
 - `context` 携带机器可读细节（文件路径、数据库名），可以安全地记录或呈现。
@@ -169,7 +169,7 @@ $ gspec db list --json
 `./mcp.md`）。
 
 1. 如果环境可能重定向数据目录，先解析生效位置（`gspec db path --json`；
-   `gapit.datadir/1` 给出路径与来源），再发现可用数据库（`gspec db list --json`，
+   `gspec.datadir/1` 给出路径与来源），再发现可用数据库（`gspec db list --json`，
    或 `db_list` MCP 工具），选一个 `db`
    名。
 
@@ -185,7 +185,7 @@ $ gspec db list --json
 
    for path in ("sampleA.json", "sampleB.json"):
        doc = json.load(open(path))
-       assert doc["schema"] == "gapit.report/1"
+       assert doc["schema"] == "gspec.report/1"
        for f in doc["files"]:
            for hit in f["hits"]:
                print(f["file"], hit["gene"], hit["identity_pct"], hit["coverage_pct"])

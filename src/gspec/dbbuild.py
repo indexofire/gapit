@@ -2,7 +2,7 @@
 
 ``build_database`` turns a directory's truth source (``records.jsonl``) into
 the three artifacts consumers rely on — the ``sequences`` FASTA projection,
-its BLAST index, and the ``gapit-manifest.json`` provenance sidecar written
+its BLAST index, and the ``gspec-manifest.json`` provenance sidecar written
 LAST (it certifies the artifacts). Every step is deterministic, atomic where
 it matters, and self-verifying: the generated headers must decode back
 through :mod:`gspec.dbcodec` before anything is indexed. No minimap2 index
@@ -23,6 +23,7 @@ from gspec.db_txn import staged_database
 from gspec.dbcodec import decode_seqid, encode_seqid
 from gspec.errors import DatabaseError, DependencyError
 from gspec.fasta import iter_fasta
+from gspec.layout import MANIFEST_NAME
 from gspec.proctools import note, run_tool
 from gspec.records import (
     Manifest,
@@ -261,7 +262,7 @@ def build_database(
     4. ``makeblastdb`` with the EXPLICIT ``dbtype`` — the manifest declares
        the type, so the mol_type heuristic is skipped
     5. count records and capture ``blastn -version`` / ``minimap2 --version``
-    6. write ``db_dir/gapit-manifest.json`` and return the Manifest
+    6. write ``db_dir/gspec-manifest.json`` and return the Manifest
 
     ``content_license``/``content_note`` stamp database-content provenance into
     the manifest when the provider pins one (kaptive GPL, card McMaster terms,
@@ -297,7 +298,7 @@ def build_database(
         # machine that produced the artifacts (spec'd in gapit.manifest/1).
         minimap2_version=optional_tool_version_line(["minimap2", "--version"]),
     )
-    write_manifest(manifest, db_dir / "gapit-manifest.json")
+    write_manifest(manifest, db_dir / MANIFEST_NAME)
     return manifest
 
 

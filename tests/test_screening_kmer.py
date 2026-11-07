@@ -89,7 +89,7 @@ class TestLocusCallsFromKmers:
 class TestBestPhenotype:
     def _load_typing(self) -> TypingDocument:
         doc: dict[str, object] = {
-            "schema": "gapit.typing/3",
+            "schema": "gspec.typing/3",
             "schemes": [
                 {
                     "name": "test",

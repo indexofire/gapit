@@ -14,7 +14,7 @@ only options the user did NOT pass are filled from this document.
 Schema (all keys optional)::
 
     {
-      "schema": "gapit.screen/1",
+      "schema": "gspec.screen/1",
       "reads": {
         "min_breadth": 90.0,
         "min_identity": 80.0,
@@ -44,6 +44,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from gspec import config
 from gspec.db import Database
 from gspec.errors import DatabaseError, InputError
+from gspec.schema_ids import Canonical
 
 SCREEN_FILENAME = "screen.json"
 
@@ -75,7 +76,9 @@ class ScreenDefaults(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.screen/1"] = Field(default="gapit.screen/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.screen/1"], Canonical] = Field(
+        default="gspec.screen/1", alias="schema"
+    )
     reads: ReadsScreenDefaults = Field(default_factory=ReadsScreenDefaults)
     contigs: ContigScreenDefaults = Field(default_factory=ContigScreenDefaults)
 

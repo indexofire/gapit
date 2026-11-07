@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from gspec.db_txn import TXN_PREFIX, database_lock
 from gspec.errors import DatabaseError, DependencyError, InputError, UsageError
 from gspec.fasta import iter_fasta, iter_fasta_headers
+from gspec.layout import manifest_path
 from gspec.proctools import run_tool
 
 IDSEP = "~~~"
@@ -289,7 +290,7 @@ def _manifest_kind(db_dir: Path) -> Literal["gene", "cluster"]:
     from gspec.records import read_manifest
 
     try:
-        return read_manifest(db_dir / "gapit-manifest.json").kind
+        return read_manifest(manifest_path(db_dir)).kind
     except InputError as exc:
         if exc.code != "INPUT_NOT_FOUND":
             raise
@@ -308,7 +309,7 @@ def _manifest_dbtype(db_dir: Path) -> Literal["nucl", "prot"] | None:
     from gspec.records import read_manifest
 
     try:
-        return read_manifest(db_dir / "gapit-manifest.json").dbtype
+        return read_manifest(manifest_path(db_dir)).dbtype
     except InputError as exc:
         if exc.code != "INPUT_NOT_FOUND":
             raise

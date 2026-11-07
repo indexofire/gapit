@@ -45,17 +45,17 @@ RECORDS: tuple[Record, ...] = (
     Record(db=DB, gene="tetA", sequence=SEQ_TAIL),
 )
 
-# Hand-computed gapit/v1 headers: values percent-escaped by the dbcodec rules
+# Hand-computed gspec/v1 headers: values percent-escaped by the dbcodec rules
 # (| -> %7C, ; -> %3B), empty fields render as empty segments, defaults apply.
 HEADER_WRAPPED = (
-    ">gapit|db=tinyamr|gene=ant(3'')-Ia%7Cv2|acc=A00001"
+    ">gspec|db=tinyamr|gene=ant(3'')-Ia%7Cv2|acc=A00001"
     "|func=streptomycin%3Bspectinomycin aminoglycoside adenylyltransferase"
 )
 HEADER_SHORT = (
-    ">gapit|db=tinyamr|gene=mcr-1|acc=MCR00002"
+    ">gspec|db=tinyamr|gene=mcr-1|acc=MCR00002"
     "|func=colistin%3Bpolymyxin phosphoethanolamine transferase"
 )
-HEADER_TAIL = ">gapit|db=tinyamr|gene=tetA|acc=|func= n/a"
+HEADER_TAIL = ">gspec|db=tinyamr|gene=tetA|acc=|func= n/a"
 
 EXPECTED_FASTA = (
     f"{HEADER_WRAPPED}\n{'A' * 60}\n{'A' * 10}\n"
@@ -240,25 +240,25 @@ def test_build_database_nucl_produces_all_artifacts(tmp_path: Path) -> None:
     assert (db_dir / "sequences").read_text(encoding="utf-8") == EXPECTED_FASTA
     assert (db_dir / "sequences.nin").is_file()
     assert not (db_dir / "sequences.mmi").exists()
-    on_disk = read_manifest(db_dir / "gapit-manifest.json")
+    on_disk = read_manifest(db_dir / "gspec-manifest.json")
     assert on_disk == manifest
-    assert on_disk.schema_name == "gapit.manifest/1"
+    assert on_disk.schema_name == "gspec.manifest/1"
     assert on_disk.name == DB
     assert on_disk.source_urls == ("https://example.org/tinyamr.fasta",)
     assert on_disk.fetched_at == "2026-09-17T10:30:00Z"
     assert on_disk.sha256 == hashlib.sha256(EXPECTED_FASTA.encode("utf-8")).hexdigest()
     assert on_disk.n_records == 3
     assert on_disk.dbtype == "nucl"
-    assert on_disk.header_format == "gapit/v1"
+    assert on_disk.header_format == "gspec/v1"
     assert on_disk.upstream_version == ""
     assert on_disk.tool.name == "gspec"
     assert on_disk.tool.version == __version__
     assert on_disk.makeblastdb_version
     assert on_disk.minimap2_version
     assert (
-        (db_dir / "gapit-manifest.json")
+        (db_dir / "gspec-manifest.json")
         .read_text(encoding="utf-8")
-        .startswith('{\n  "schema": "gapit.manifest/1",')
+        .startswith('{\n  "schema": "gspec.manifest/1",')
     )
 
 
@@ -270,12 +270,12 @@ def test_rebuild_is_byte_identical(tmp_path: Path) -> None:
         db_dir, name=DB, dbtype="nucl", source_urls=(), fetched_at="2026-09-17T10:30:00Z"
     )
     sequences = (db_dir / "sequences").read_bytes()
-    manifest_bytes = (db_dir / "gapit-manifest.json").read_bytes()
+    manifest_bytes = (db_dir / "gspec-manifest.json").read_bytes()
     second = build_database(
         db_dir, name=DB, dbtype="nucl", source_urls=(), fetched_at="2026-09-17T10:30:00Z"
     )
     assert (db_dir / "sequences").read_bytes() == sequences
-    assert (db_dir / "gapit-manifest.json").read_bytes() == manifest_bytes
+    assert (db_dir / "gspec-manifest.json").read_bytes() == manifest_bytes
     assert second == first
 
 
@@ -311,7 +311,7 @@ def test_manifest_written_last_when_blast_index_fails(
     assert excinfo.value.code == "MAKEBLASTDB_FAILED"
     assert (db_dir / "sequences").is_file()
     assert not (db_dir / "sequences.nin").exists()
-    assert not (db_dir / "gapit-manifest.json").exists()
+    assert not (db_dir / "gspec-manifest.json").exists()
 
 
 def test_optional_tool_version_line_tolerates_missing_binary() -> None:

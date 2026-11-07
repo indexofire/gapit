@@ -26,14 +26,14 @@ def test_db_path_prints_the_resolved_path_without_creating_it(tmp_path: Path) ->
 
 def test_db_path_json_reports_source_and_existence(tmp_path: Path) -> None:
     """Given a missing explicit datadir, When `db path --json` runs, Then the
-    gapit.datadir/1 document names the path, source=cli, and exists=false."""
+    gspec.datadir/1 document names the path, source=cli, and exists=false."""
     missing = tmp_path / "nested" / "db"
 
     result = runner.invoke(app, ["db", "path", "--datadir", str(missing), "--json"])
 
     assert result.exit_code == 0, result.stderr
     document = json.loads(result.stdout)
-    assert document["schema"] == "gapit.datadir/1"
+    assert document["schema"] == "gspec.datadir/1"
     assert document["datadir"] == str(missing.resolve())
     assert document["source"] == "cli"
     assert document["exists"] is False

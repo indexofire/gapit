@@ -54,7 +54,7 @@ def _db(tmp_path: Path, sequence: str, *, prot: bool = False) -> Database:
     directory = tmp_path / "db"
     directory.mkdir()
     path = directory / "sequences"
-    path.write_text(f">gapit|db=test|gene=abc|acc=1|func=test\n{sequence}\n")
+    path.write_text(f">gspec|db=test|gene=abc|acc=1|func=test\n{sequence}\n")
     make_blast_db(path, "test", dbtype="prot" if prot else "nucl")
     return Database(name="test", path=directory, sequences_path=path)
 

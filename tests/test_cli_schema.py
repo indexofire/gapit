@@ -19,7 +19,7 @@ def test_schema_report() -> None:
 
 
 def test_schema_list_removed_exits_2() -> None:
-    """Given the retired gapit.list/1 document, When introspected, Then the
+    """Given the retired gspec.list/1 document, When introspected, Then the
     name is rejected as unknown with a usage envelope on stderr."""
     result = runner.invoke(app, ["schema", "list"])
     assert result.exit_code == 2
@@ -42,12 +42,12 @@ def test_schema_version() -> None:
 
 
 def test_schema_floors() -> None:
-    """Given the floors selector, When introspected, Then the gapit.floors/1
+    """Given the floors selector, When introspected, Then the gspec.floors/1
     contract surfaces: schema const, [0, 100]-bounded per-gene values."""
     result = runner.invoke(app, ["schema", "floors"])
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
-    assert payload["properties"]["schema"]["const"] == "gapit.floors/1"
+    assert payload["properties"]["schema"]["const"] == "gspec.floors/1"
     assert payload["properties"]["genes"]["additionalProperties"]["maximum"] == 100.0
     assert payload["properties"]["genes"]["additionalProperties"]["minimum"] == 0.0
 
@@ -73,10 +73,10 @@ def test_schema_cluster_omits_internal_winner_field() -> None:
 def test_schema_registers_database_listing_documents() -> None:
     """The database listing documents are first-class agent contracts now."""
     for name, schema in (
-        ("dblist", "gapit.dblist/1"),
-        ("dbsetup", "gapit.dbsetup/1"),
-        ("dboutdated", "gapit.dboutdated/1"),
-        ("datadir", "gapit.datadir/1"),
+        ("dblist", "gspec.dblist/1"),
+        ("dbsetup", "gspec.dbsetup/1"),
+        ("dboutdated", "gspec.dboutdated/1"),
+        ("datadir", "gspec.datadir/1"),
     ):
         result = runner.invoke(app, ["schema", name])
         assert result.exit_code == 0, name
@@ -86,19 +86,19 @@ def test_schema_registers_database_listing_documents() -> None:
 
 def test_schema_locus_map_is_registered() -> None:
     """Given the rich locus-map document, When introspected, Then its schema
-    is a first-class gapit.locus_map/1 contract."""
+    is a first-class gspec.locus_map/1 contract."""
     result = runner.invoke(app, ["schema", "locus_map"])
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
-    assert payload["properties"]["schema"]["const"] == "gapit.locus_map/1"
+    assert payload["properties"]["schema"]["const"] == "gspec.locus_map/1"
     assert "LocusMap" in payload.get("$defs", {})
 
 
 def test_schema_serotype_is_registered() -> None:
     """Given the serotype profile document, When introspected, Then its
-    schema is the gapit.serotype/1 contract."""
+    schema is the gspec.serotype/1 contract."""
     result = runner.invoke(app, ["schema", "serotype"])
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
-    assert payload["properties"]["schema"]["const"] == "gapit.serotype/1"
+    assert payload["properties"]["schema"]["const"] == "gspec.serotype/1"
     assert "SerotypeRule" in payload.get("$defs", {})

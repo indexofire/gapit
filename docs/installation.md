@@ -67,9 +67,9 @@ gspec --version
 
 ```console
 $ gspec --version
-gspec 0.8.1
+gspec 0.9.0
 $ gspec --version --json
-{"schema":"gapit.version/1","name":"gspec","version":"0.8.1"}
+{"schema":"gspec.version/1","name":"gspec","version":"0.9.0"}
 ```
 
 ## Optional gseek engine
@@ -143,7 +143,7 @@ eval "$(_GSPEC_COMPLETE=bash_source gspec)"
 ```
 
 Zsh — in `~/.zshrc` (after `compinit`), or drop the emitted `#compdef` script on your
-`fpath` as `~/.zfunc/_gapit`:
+`fpath` as `~/.zfunc/_gspec`:
 
 ```zsh
 eval "$(_GSPEC_COMPLETE=zsh_source gspec)"

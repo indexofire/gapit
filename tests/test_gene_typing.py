@@ -4,7 +4,7 @@ pathology-panel style) built with ``db build --typing`` and run through
 the two-stage pipeline: ``screen -o result.tsv`` (real blastn engine),
 then ``gspec typing result.tsv``.
 
-Covers the gapit.typing_result/1 calls (JSON + MD + TSV), the
+Covers the gspec.typing_result/1 calls (JSON + MD + TSV), the
 identity-floor gating over the folded best rows, the multi-scheme
 independence (one scheme ambiguous while another calls), fallback calls
 on no-hit files, the v1-document degradation to the ``default`` scheme
@@ -297,7 +297,7 @@ class TestTypingOutput:
         carrying the pair in NOTES, the GENES cell following PHENOTYPE),
         frontmatter naming the db and the source table."""
         output = typing_stdout(typed_db, ["exact"], tmp_path, "--format", "md")
-        assert "schema: gapit.typing_result/1" in output
+        assert "schema: gspec.typing_result/1" in output
         assert f"db: {DB}" in output
         assert "source:" in output
         header = "| FILE | SCHEME | PHENOTYPE | GENES | CONFIDENCE | SCORE | RUNNER_UP | NOTES |"
@@ -348,7 +348,7 @@ class TestBuildValidation:
         bad.write_text(
             json.dumps(
                 {
-                    "schema": "gapit.typing/2",
+                    "schema": "gspec.typing/2",
                     "schemes": [
                         {
                             "name": "pathotype",
@@ -401,7 +401,7 @@ class TestBuildValidation:
         bad.write_text(
             json.dumps(
                 {
-                    "schema": "gapit.typing/2",
+                    "schema": "gspec.typing/2",
                     "schemes": [
                         {
                             "name": "pathotype",
@@ -448,15 +448,15 @@ class TestBuildValidation:
     def test_manifest_records_the_typing_schema(self, typed_db: Path) -> None:
         """Given the typed build, When its manifest is read, Then
         typing_schema records the document's literal version."""
-        manifest = json.loads((typed_db / DB / "gapit-manifest.json").read_text(encoding="utf-8"))
-        assert manifest["typing_schema"] == "gapit.typing/2"
+        manifest = json.loads((typed_db / DB / "gspec-manifest.json").read_text(encoding="utf-8"))
+        assert manifest["typing_schema"] == "gspec.typing/2"
         assert manifest["kind"] == "gene"
 
 
 class TestMcp:
     def test_mcp_screen_returns_the_pure_report(self, typed_db: Path) -> None:
         """Given the MCP screen tool and the typed gene db, When called,
-        Then the gapit.report/1 document carries no phenotypes object —
+        Then the gspec.report/1 document carries no phenotypes object —
         designation is not part of screening (a typing MCP tool is future
         work)."""
         raw = (

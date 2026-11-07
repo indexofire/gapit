@@ -39,7 +39,7 @@ precedent).
 import re
 from pathlib import Path
 from string import Formatter
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import (
     BaseModel,
@@ -52,6 +52,7 @@ from pydantic import (
 
 from gspec.errors import DatabaseError, InputError
 from gspec.gbfeatures import FeaturesDocument
+from gspec.schema_ids import Canonical, canonical_schema_id
 from gspec.typing_rules import TypingRule, check_rule_references
 
 # The scheme name a legacy gapit.typing/1 document degrades to (one
@@ -116,7 +117,9 @@ class TypingDocumentV1(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.typing/1"] = Field(default="gapit.typing/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.typing/1"], Canonical] = Field(
+        default="gspec.typing/1", alias="schema"
+    )
     rules: tuple[TypingRule, ...] = Field(min_length=1)
     cutoff: float = Field(ge=0.0, le=1.0)
     ambiguity_margin: float = Field(ge=0.0)
@@ -146,8 +149,8 @@ class TypingDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.typing/2", "gapit.typing/3"] = Field(
-        default="gapit.typing/2", alias="schema"
+    schema_name: Annotated[Literal["gspec.typing/2", "gspec.typing/3"], Canonical] = Field(
+        default="gspec.typing/2", alias="schema"
     )
     schemes: tuple[TypingScheme, ...] = Field(min_length=1)
 
@@ -301,7 +304,7 @@ def read_typing_document(path: Path) -> TypingDocument:
         )
     data = _parse_json(_read_text(path), path)
     try:
-        if data.get("schema") == "gapit.typing/1":
+        if canonical_schema_id(data.get("schema")) == "gspec.typing/1":
             return _v1_document_adapter.validate_python(data).as_document()
         return _document_adapter.validate_python(data)
     except ValidationError as exc:
@@ -313,11 +316,13 @@ def read_typing_document(path: Path) -> TypingDocument:
 
 
 def typing_schema_of(path: Path) -> str:
-    """The file's literal schema tag (``gapit.typing/1`` or ``/2``) — the
-    value a build records in its manifest's ``typing_schema``. Assumes
-    :func:`read_typing_document` accepted the file."""
-    tag = _parse_json(_read_text(path), path).get("schema")
-    known_tags = ("gapit.typing/1", "gapit.typing/2", "gapit.typing/3")
+    """The file's schema tag (``gspec.typing/1``, ``/2`` or ``/3``) — the value
+    a build records in its manifest's ``typing_schema``. Assumes
+    :func:`read_typing_document` accepted the file. A pre-0.9
+    ``gapit.typing/*`` tag is canonicalised to ``gspec.typing/*``."""
+    raw_tag = _parse_json(_read_text(path), path).get("schema")
+    tag = canonical_schema_id(raw_tag)
+    known_tags = ("gspec.typing/1", "gspec.typing/2", "gspec.typing/3")
     if not isinstance(tag, str) or tag not in known_tags:
         raise DatabaseError(
             f"malformed typing document {path}: unknown schema tag {tag!r}",

@@ -1,4 +1,4 @@
-"""Unit tests for summary output formats: TSV/CSV parity + gapit.summary/1 JSON/MD."""
+"""Unit tests for summary output formats: TSV/CSV parity + gspec.summary/1 JSON/MD."""
 
 from datetime import UTC, datetime
 from pathlib import Path
@@ -63,7 +63,7 @@ def test_json_is_gapit_summary_1(monkeypatch: pytest.MonkeyPatch) -> None:
     per-gene value lists preserving the original strings."""
     monkeypatch.chdir(FIXTURES)
     document = summary_adapter.validate_json(render_summary_json(build(MULTI), now=PINNED_NOW))
-    assert document.schema_name == "gapit.summary/1"
+    assert document.schema_name == "gspec.summary/1"
     assert document.tool.name == "gspec"
     assert document.created_at == "2026-09-17T12:00:00Z"
     assert document.params.metric == "%COVERAGE"
@@ -110,7 +110,7 @@ def test_md_frontmatter_and_matrix(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(FIXTURES)
     output = render_summary_md(build(MULTI), now=PINNED_NOW)
     assert output.startswith("---\n")
-    assert "schema: gapit.summary/1" in output
+    assert "schema: gspec.summary/1" in output
     assert "tool: gspec" in output
     assert "created_at: 2026-09-17T12:00:00Z" in output
     assert "metric: '%COVERAGE'" in output

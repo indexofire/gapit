@@ -65,7 +65,7 @@ def records_datadir(tmp_path: Path) -> Path:
             n_records=1,
             dbtype="nucl",
         ),
-        db_dir / "gapit-manifest.json",
+        db_dir / "gspec-manifest.json",
     )
     return tmp_path
 

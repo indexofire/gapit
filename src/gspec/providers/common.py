@@ -31,6 +31,7 @@ from gspec.db_info_models import DbGuidance
 from gspec.db_txn import staged_database
 from gspec.dbbuild import build_database, validate_records
 from gspec.errors import DatabaseError
+from gspec.layout import manifest_path
 from gspec.proctools import note
 from gspec.records import Manifest, Record, write_records
 
@@ -257,7 +258,7 @@ def fetch_provider(
     --force)"), ``DOWNLOAD_FAILED`` for a failed source download, and
     ``PROVIDER_EMPTY`` when the transform+dedupe leaves zero records.
     """
-    if (db_dir / "gapit-manifest.json").is_file() and not force:
+    if manifest_path(db_dir).is_file() and not force:
         raise DatabaseError(
             f"won't overwrite existing database {provider.name} (use --force)",
             code="DB_ALREADY_EXISTS",
@@ -267,7 +268,7 @@ def fetch_provider(
     if insecure:
         security_note(f"plain HTTP source(s), no transport integrity: {', '.join(insecure)}")
     with staged_database(db_dir) as build_dir:
-        if (db_dir / "gapit-manifest.json").is_file() and not force:
+        if manifest_path(db_dir).is_file() and not force:
             raise DatabaseError(
                 f"won't overwrite existing database {provider.name} (use --force)",
                 code="DB_ALREADY_EXISTS",

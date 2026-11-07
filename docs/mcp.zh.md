@@ -41,14 +41,14 @@ gspec 内置一个 Model Context Protocol（MCP）stdio 服务器，把 CLI 暴�
 
 | 工具 | 参数 | 返回 |
 |---|---|---|
-| `screen` | `files`（字符串数组，必填）、`db`（string，必填 —— 无默认值）、`minid`（number）、`mincov`（number）、`format`（string：`json` \| `tsv` \| `csv` \| `md`，默认 `json`）、`aligner`（string：`blastn` \| `minimap2`，默认 `blastn`）、`merge_fragments`（boolean，默认 `false`；仅 blastn：跨 contig 片段合并）、`min_breadth`（number 0-100，默认 `90`；仅 minimap2）、`min_identity`（number 0-100，默认 `0`；仅 minimap2）、`min_mapq`（integer ≥ 0，默认 `0`；仅 minimap2）、`all_genes`（boolean；仅 minimap2）、`min_gene_cov`（number 0-100，默认 `90`；仅 cluster 数据库）、`min_gene_id`（number 0-100，默认 `90`；仅 cluster 数据库）、`min_cluster_cov`（number 0-100，默认 `96`；仅 cluster 数据库）、`datadir`（string） | 报告文本：默认 `gapit.report/1` JSON，按 `format` 也可为 TSV、CSV 或 Markdown；`aligner minimap2` 跑 reads 引擎并输出 `gapit.reads/1`。cluster 类型的 `db` 输出 `gapit.cluster/1`：最佳位点判定、逐基因判定，数据库携带单 scheme `typing.json` 时还有带 `phenotype_detail` 分数分解的表型判定；多 scheme `typing.json` 则输出 `gapit.cluster/2`，携带每个 scheme 判定的 `phenotypes` 映射 |
-| `screen_reads` | `r1`（字符串数组，必填，每条 lane 一个路径）、`r2`（字符串数组，数量与 `r1` 相同）、`read_type`（string：`sr` \| `map-ont` \| `map-hifi`，默认 `sr`）、`min_breadth`（number 0-100，默认 `90`）、`min_identity`（number 0-100，默认 `0`）、`min_mapq`（integer ≥ 0，默认 `0`）、`all_genes`（boolean）、`format`（string：`json` \| `tsv` \| `csv` \| `md`，默认 `json`）、`db`（string，必填 —— 无默认值）、`datadir`（string） | 默认 `gapit.reads/1` JSON，按 `format` 可为 TSV、CSV 或 Markdown；`min_identity`/`min_mapq` > 0 切换为 `gapit.reads/2` |
-| `summary` | `files`（报告表路径数组，必填）、`identity`（boolean）、`nopath`（boolean） | `gapit.summary/1` JSON |
-| `typing` | `table`（string，必填——筛查结果 TSV/CSV 文本）、`datadir`（string）、`format`（string：`json` \| `tsv` \| `md`，默认 `json`） | 默认 `gapit.typing_result/1` JSON；`notes` 携带后续指引（W/Y → synG EX7E） |
+| `screen` | `files`（字符串数组，必填）、`db`（string，必填 —— 无默认值）、`minid`（number）、`mincov`（number）、`format`（string：`json` \| `tsv` \| `csv` \| `md`，默认 `json`）、`aligner`（string：`blastn` \| `minimap2`，默认 `blastn`）、`merge_fragments`（boolean，默认 `false`；仅 blastn：跨 contig 片段合并）、`min_breadth`（number 0-100，默认 `90`；仅 minimap2）、`min_identity`（number 0-100，默认 `0`；仅 minimap2）、`min_mapq`（integer ≥ 0，默认 `0`；仅 minimap2）、`all_genes`（boolean；仅 minimap2）、`min_gene_cov`（number 0-100，默认 `90`；仅 cluster 数据库）、`min_gene_id`（number 0-100，默认 `90`；仅 cluster 数据库）、`min_cluster_cov`（number 0-100，默认 `96`；仅 cluster 数据库）、`datadir`（string） | 报告文本：默认 `gspec.report/1` JSON，按 `format` 也可为 TSV、CSV 或 Markdown；`aligner minimap2` 跑 reads 引擎并输出 `gspec.reads/1`。cluster 类型的 `db` 输出 `gspec.cluster/1`：最佳位点判定、逐基因判定，数据库携带单 scheme `typing.json` 时还有带 `phenotype_detail` 分数分解的表型判定；多 scheme `typing.json` 则输出 `gspec.cluster/2`，携带每个 scheme 判定的 `phenotypes` 映射 |
+| `screen_reads` | `r1`（字符串数组，必填，每条 lane 一个路径）、`r2`（字符串数组，数量与 `r1` 相同）、`read_type`（string：`sr` \| `map-ont` \| `map-hifi`，默认 `sr`）、`min_breadth`（number 0-100，默认 `90`）、`min_identity`（number 0-100，默认 `0`）、`min_mapq`（integer ≥ 0，默认 `0`）、`all_genes`（boolean）、`format`（string：`json` \| `tsv` \| `csv` \| `md`，默认 `json`）、`db`（string，必填 —— 无默认值）、`datadir`（string） | 默认 `gspec.reads/1` JSON，按 `format` 可为 TSV、CSV 或 Markdown；`min_identity`/`min_mapq` > 0 切换为 `gspec.reads/2` |
+| `summary` | `files`（报告表路径数组，必填）、`identity`（boolean）、`nopath`（boolean） | `gspec.summary/1` JSON |
+| `typing` | `table`（string，必填——筛查结果 TSV/CSV 文本）、`datadir`（string）、`format`（string：`json` \| `tsv` \| `md`，默认 `json`） | 默认 `gspec.typing_result/1` JSON；`notes` 携带后续指引（W/Y → synG EX7E） |
 | `schema` | `name`（string，必填，取值 `report`、`reads`、`reads2`、`cluster`、`cluster2`、`summary`、`error`、`version`、`dblist`、`dbsetup`、`dboutdated`、`datadir`、`dbinfo`、`features`、`typing`、`typing_result`、`floors`、`screen` 之一） | 该输出文档的 JSON Schema |
-| `db_list` | `datadir`（string） | `gapit.dblist/1`：数据库名、安装状态、记录数、索引状态 |
-| `db_path` | `datadir`（string） | `gapit.datadir/1`：解析后的数据目录、是否存在、来源 |
-| `db_setup` | `datadir`（string）、`no_bundles`（boolean，默认 `false`）、`names`（字符串数组；默认全部） | `gapit.dbsetup/1`：下载的 provider、物化的内置库、已建索引的数据库 |
+| `db_list` | `datadir`（string） | `gspec.dblist/1`：数据库名、安装状态、记录数、索引状态 |
+| `db_path` | `datadir`（string） | `gspec.datadir/1`：解析后的数据目录、是否存在、来源 |
+| `db_setup` | `datadir`（string）、`no_bundles`（boolean，默认 `false`）、`names`（字符串数组；默认全部） | `gspec.dbsetup/1`：下载的 provider、物化的内置库、已建索引的数据库 |
 | `db_fetch` | `name`（string，必填——数据库名，或 `all` 表示 card+vfdb 默认集合）、`datadir`（string）、`force`（boolean，默认 `false`） | 每个数据库一行 JSON 回执（`db`、`records`、`dbtype`、`destination`）。每个数据库都从其上游提供商下载，安装需要网络且可能耗时数分钟 |
 | `db_build` | `name`（string，必填）、`fasta`（string，必填，本地文件系统路径）、`tsv`（string）、`dbtype`（string：`nucl` \| `prot`）、`description`（string）、`kind`（string：`gene` \| `cluster`）、`typing`（string）、`floors`（string）、`datadir`（string）、`force`（boolean，默认 `false`） | 一行 JSON 回执（`db`、`records`、`dbtype`、`destination`） |
 | `db_search` | `term`（string，必填）、`db`（string）、`field`（string：`gene` \| `accession` \| `function` \| `product` \| `any`，默认 `any`）、`exact`（boolean，默认 `false`）、`limit`（integer ≥ 0，默认 `100`；`0` = 不限）、`datadir`（string） | TSV 命中行，列为 `DB`、`GENE`、`ACCESSION`、`FUNCTION`、`PRODUCT`、`LENGTH` |
@@ -75,7 +75,7 @@ gspec 内置一个 Model Context Protocol（MCP）stdio 服务器，把 CLI 暴�
 - `db_build` 的 `fasta` 必须是服务器文件系统上的路径：agent 提供本地路径，而非文件
   内容。
 - 工具失败不使用 JSON-RPC 错误，而是返回 `isError: true`，文本内容为序列化的
-  `gapit.error/1` 信封。
+  `gspec.error/1` 信封。
 
 ## 示例会话
 
@@ -110,21 +110,21 @@ EOF
 响应第 2 行（真实输出，中段省略；每个工具携带完整的 `inputSchema`）：
 
 ```text
-{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for known genes (json = gapit.report/1; aligner minimap2 = fast assembly survey emitting gapit.reads/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string"}, ... },"required":["files","db"]}}, {"name":"screen_reads","description":"Screen FASTQ reads for genes via minimap2 (json = gapit.reads/1; min_identity/min_mapq > 0 emits gapit.reads/2). Returns the rendered document.","inputSchema":{"type":"object","properties":{"r1":{"type":"array","items":{"type":"string"}},"r2":{"type":"array","items":{"type":"string"}},"read_type":{"type":"string","enum":["sr","map-ont","map-hifi"],"default":"sr"}, ... },"required":["r1","db"]}}, {"name":"summary", ...}, {"name":"typing", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_path", ...}, {"name":"db_setup", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
+{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for known genes (json = gspec.report/1; aligner minimap2 = fast assembly survey emitting gspec.reads/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string"}, ... },"required":["files","db"]}}, {"name":"screen_reads","description":"Screen FASTQ reads for genes via minimap2 (json = gspec.reads/1; min_identity/min_mapq > 0 emits gspec.reads/2). Returns the rendered document.","inputSchema":{"type":"object","properties":{"r1":{"type":"array","items":{"type":"string"}},"r2":{"type":"array","items":{"type":"string"}},"read_type":{"type":"string","enum":["sr","map-ont","map-hifi"],"default":"sr"}, ... },"required":["r1","db"]}}, {"name":"summary", ...}, {"name":"typing", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_path", ...}, {"name":"db_setup", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
 ```
 
 响应第 3 行（真实输出，text 内容省略）。screen 结果以 JSON 字符串的形式位于
 `result.content[0].text`：
 
 ```text
-{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\n  \"schema\": \"gapit.report/1\", ... }"}],"isError":false}}
+{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\n  \"schema\": \"gspec.report/1\", ... }"}],"isError":false}}
 ```
 
-解码后，那段文本是一份完整的 `gapit.report/1` 文档（同一次运行的真实输出）：
+解码后，那段文本是一份完整的 `gspec.report/1` 文档（同一次运行的真实输出）：
 
 ```json
 {
-  "schema": "gapit.report/1",
+  "schema": "gspec.report/1",
   "tool": {"name": "gspec", "version": "0.8.1"},
   "created_at": "2026-09-19T01:15:44Z",
   "params": {"db": "tinyamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
@@ -179,14 +179,14 @@ EOF
 原样响应（text 内容省略）：
 
 ```text
-{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\n  \"schema\": \"gapit.reads/1\", ... }"}],"isError":false}}
+{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\n  \"schema\": \"gspec.reads/1\", ... }"}],"isError":false}}
 ```
 
-解码后，文本是一份完整的 `gapit.reads/1` 文档（同一次运行的真实输出）：
+解码后，文本是一份完整的 `gspec.reads/1` 文档（同一次运行的真实输出）：
 
 ```json
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   "tool": {"name": "gspec", "version": "0.8.1"},
   "created_at": "2026-09-22T00:07:35Z",
   "params": {
@@ -220,7 +220,7 @@ EOF
 ```
 
 `r2` 接受 mate 路径（数量与 `r1` 相同），`read_type` 选择 minimap2 预设，非零的
-`min_identity`/`min_mapq` 把文档切换为 `gapit.reads/2`（语义见 `./reads.md`）。
+`min_identity`/`min_mapq` 把文档切换为 `gspec.reads/2`（语义见 `./reads.md`）。
 assembly FASTA 请改用 `aligner: "minimap2"` 调 `screen`：普查会自动解析 `map-ont`
 预设。
 
@@ -229,7 +229,7 @@ assembly FASTA 请改用 `aligner: "minimap2"` 调 `screen`：普查会自动解
 缺失的输入文件返回工具错误，而非协议错误（真实行）：
 
 ```text
-{"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"text","text":"{\"schema\":\"gapit.error/1\",\"code\":\"INPUT_NOT_FOUND\",\"message\":\"input file not found or unreadable: /tmp/gspec-mcp-demo/nope.fa\",\"context\":{\"file\":\"/tmp/gspec-mcp-demo/nope.fa\"}}"}],"isError":true}}
+{"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"text","text":"{\"schema\":\"gspec.error/1\",\"code\":\"INPUT_NOT_FOUND\",\"message\":\"input file not found or unreadable: /tmp/gspec-mcp-demo/nope.fa\",\"context\":{\"file\":\"/tmp/gspec-mcp-demo/nope.fa\"}}"}],"isError":true}}
 ```
 
 把 `content[0].text` 解析为 JSON，按 `code` 分支（错误码与退出码映射：
@@ -251,15 +251,15 @@ export GSPEC_DATADIR=/tmp/gspec-mcp-demo/datadir
 {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"db_build","arguments":{"name":"myamr","fasta":"/tmp/gspec-mcp-demo/my_genes.fa"}}}
 {"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"db\":\"myamr\",\"records\":1,\"dbtype\":\"nucl\",\"destination\":\"/tmp/gspec-mcp-demo/datadir/myamr\"}"}],"isError":false}}
 {"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen","arguments":{"files":["/tmp/gspec-mcp-demo/query.fa"],"db":"myamr"}}}
-{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{ ... gapit.report/1 ... }"}],"isError":false}}
+{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{ ... gspec.report/1 ... }"}],"isError":false}}
 ```
 
-解码后，screen 的文本是一份完整的 `gapit.report/1` 文档，唯一命中正是 agent 刚构建
+解码后，screen 的文本是一份完整的 `gspec.report/1` 文档，唯一命中正是 agent 刚构建
 进数据库的那个基因（真实输出）：
 
 ```json
 {
-  "schema": "gapit.report/1",
+  "schema": "gspec.report/1",
   "tool": {"name": "gspec", "version": "0.8.1"},
   "created_at": "2026-09-20T13:38:39Z",
   "params": {"db": "myamr", "minid": 80.0, "mincov": 80.0, "threads": 1},

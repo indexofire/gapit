@@ -9,9 +9,9 @@ from gspec.hits import Hit, process_rows
 TET_A_ID = "tinyamr~~~tetA~~~NC_000913.3:100-900~~~TETRACYCLINE"
 TET_A_TITLE = TET_A_ID + " tetracycline efflux pump TetA"
 SUL1_ID = "tinyamr~~~sul1~~~U12338.4:1-940~~~SULFONAMIDE"
-# A native gapit/v1 seqid (dbcodec encoding of gene "de|mo%A=1" and function
+# A native gspec/v1 seqid (dbcodec encoding of gene "de|mo%A=1" and function
 # classes ampicillin;gentamicin) plus its makeblastdb-style stitle.
-GAPIT_ID = "gapit|db=tinyamr|gene=de%7Cmo%25A%3D1|acc=SYN-DEMO-001|func=ampicillin%3Bgentamicin"
+GAPIT_ID = "gspec|db=tinyamr|gene=de%7Cmo%25A%3D1|acc=SYN-DEMO-001|func=ampicillin%3Bgentamicin"
 GAPIT_TITLE = GAPIT_ID + " demo beta-lactamase, variant A"
 
 
@@ -223,7 +223,7 @@ def test_stable_order_on_equal_sequence_start_keys() -> None:
 
 
 def test_gapit_seqid_decodes_tagged_fields() -> None:
-    """Given a native gapit/v1 sseqid (metachar gene, joined function classes),
+    """Given a native gspec/v1 sseqid (metachar gene, joined function classes),
     When processed, Then the gene decodes verbatim and function renders in the
     abricate display form 'a;b'."""
     (hit,) = process([row(sseqid=GAPIT_ID, stitle=GAPIT_TITLE)])
@@ -250,7 +250,7 @@ def test_gapit_bare_seqid_stitle_stays() -> None:
 
 
 def test_gapit_and_legacy_rows_decode_side_by_side() -> None:
-    """Given one legacy ~~~ row and one native gapit| row in the same batch,
+    """Given one legacy ~~~ row and one native gspec| row in the same batch,
     When processed, Then each decodes through its own branch with its own
     product cleanup (distinct query spans, so dedup keeps both)."""
     rows = [
@@ -267,11 +267,11 @@ def test_gapit_and_legacy_rows_decode_side_by_side() -> None:
 
 
 def test_malformed_gapit_header_raises_database_error() -> None:
-    """Given a corrupt gapit| sseqid (bad percent escape in the gene), When
+    """Given a corrupt gspec| sseqid (bad percent escape in the gene), When
     processed, Then DatabaseError HEADER_MALFORMED with exit 4 — the
     documented no-silent-failure contract."""
     with pytest.raises(DatabaseError) as excinfo:
-        process([row(sseqid="gapit|db=tinyamr|gene=tet%ZZ")])
+        process([row(sseqid="gspec|db=tinyamr|gene=tet%ZZ")])
     error = excinfo.value
     assert error.code == "HEADER_MALFORMED"
     assert error.exit_code == 4

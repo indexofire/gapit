@@ -20,7 +20,7 @@ from gspec.errors import InputError
 from gspec.formats.typing_result import TypingFileResult
 from gspec.typing_results import SchemeCall
 
-_CLUSTER_SCHEMAS = {"gapit.cluster/2", "gapit.locus_map/1"}
+_CLUSTER_SCHEMAS = {"gspec.cluster/2", "gspec.locus_map/1"}
 
 
 class _ClusterParams(BaseModel, frozen=True):

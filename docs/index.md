@@ -14,10 +14,10 @@ TSV on stdout, plus first-class JSON and Markdown outputs with versioned schemas
 | [Screening contigs](./screen.md) | `gspec screen` on FASTA/GBK/EMBL inputs: thresholds, filters, formats |
 | [Screening reads](./reads.md) | FASTQ and assembly FASTA through minimap2: `--r1`/`--r2`, presets, breadth-based presence, two-stage survey |
 | [Summary](./summary.md) | `gspec summary`: gene presence/absence matrix across report tables |
-| [Databases](./databases.md) | The database catalog, `gspec db fetch/list/install`, datadirs, native `gapit/v1` format, cluster databases (GBK/GFF, typing.json, kaptive) |
+| [Databases](./databases.md) | The database catalog, `gspec db fetch/list/install`, datadirs, native `gspec/v1` format, cluster databases (GBK/GFF, typing.json, kaptive) |
 | [Data directory](./datadir.md) | Datadir resolution (`db path`), database anatomy, sharing across envs, conda/Docker guidance, security/reproducibility |
 | [Custom databases](./custom-db.md) | `gspec db build` walkthrough: any FASTA to a screenable database, worked examples |
-| [Typing schemes](./typing.md) | The two-stage designation pipeline (`gspec screen` then `gspec typing`) and `gapit.typing/2`: rule/scheme primitives, the six-scheme cookbook (Doumith, ShigaTyper, meningotype, VP O/K, cholerae, DEC), allele probe tricks, calibration |
+| [Typing schemes](./typing.md) | The two-stage designation pipeline (`gspec screen` then `gspec typing`) and `gspec.typing/2`: rule/scheme primitives, the six-scheme cookbook (Doumith, ShigaTyper, meningotype, VP O/K, cholerae, DEC), allele probe tricks, calibration |
 | [Meningococcal serogroup typing](./nme_sero.md) | `nme_sero` database: serogroup + ctrA + sodC depth control (`gspec screen` + `gspec typing`; no MLST/allele typing) |
 | [Outputs](./outputs.md) | TSV/JSON/Markdown formats, schemas, error envelopes, exit codes |
 | [MCP server](./mcp.md) | `gspec mcp`: analysis + database tools for agent runtimes over stdio JSON-RPC |

@@ -254,7 +254,7 @@ def test_output_midbatch_failure_persists_already_written_samples(
     assert md_run.exit_code == 5
     assert md_run.stdout == ""
     persisted = md_target.read_text(encoding="utf-8")
-    assert persisted.startswith("---\nschema: gapit.reads/1\n")
+    assert persisted.startswith("---\nschema: gspec.reads/1\n")
     assert "## `s1`" in persisted
     assert "## `s2`" not in persisted
     json_target = tmp_path / "out.json"
@@ -288,7 +288,7 @@ def test_emit_md_chunks_match_buffered_and_arrive_per_sample(
     buffered = _use_case(datadir, wildcard_dir, OutputFormat.md)
     assert streamed == buffered
     assert "".join(collected) == buffered
-    assert collected[0].startswith("---\nschema: gapit.reads/1\n")
+    assert collected[0].startswith("---\nschema: gspec.reads/1\n")
     assert "files:" not in collected[0] and "genes_found:" not in collected[0]
     assert [chunk.splitlines()[0] for chunk in collected[1:]] == ["## `s1`", "## `s2`"]
 
@@ -407,11 +407,11 @@ def test_reads_md_preamble_is_static_and_chunks_carry_the_schema_variants() -> N
     params = ReadsParams(db="tinyreads")
     report = _read_report("s1", present=True)
     preamble = reads_md_preamble(params, now=PINNED_NOW)
-    assert preamble.startswith("---\nschema: gapit.reads/1\n")
+    assert preamble.startswith("---\nschema: gspec.reads/1\n")
     assert preamble.endswith("# gspec read screening report\n\n")
     assert "files:" not in preamble and "genes_found:" not in preamble
     reads2_preamble = reads_md_preamble(params, now=PINNED_NOW, reads2=True)
-    assert "schema: gapit.reads/2" in reads2_preamble
+    assert "schema: gspec.reads/2" in reads2_preamble
     assert "min_identity: 0.0" in reads2_preamble and "min_mapq: 0" in reads2_preamble
     chunk = reads_md_chunk(report)
     assert chunk.splitlines()[0] == "## `s1`"

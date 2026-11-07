@@ -50,11 +50,11 @@ def test_validate_records_rejects_control_characters(field: str, value: object) 
 
 
 def test_build_rejects_control_char_before_creating_the_target(tmp_path: Path) -> None:
-    """Given a custom FASTA whose gapit| gene decodes to a tab, When built,
+    """Given a custom FASTA whose gspec| gene decodes to a tab, When built,
     Then the typed error fires before the target directory/manifest exists."""
     fasta = tmp_path / "db.fa"
     fasta.write_text(
-        f">gapit|db=x|gene=bad%09gene|acc=A|func=f\n{SEQ}\n",
+        f">gspec|db=x|gene=bad%09gene|acc=A|func=f\n{SEQ}\n",
         encoding="utf-8",
     )
     datadir = tmp_path / "dd"
@@ -73,4 +73,4 @@ def test_build_rejects_control_char_before_creating_the_target(tmp_path: Path) -
         )
 
     assert excinfo.value.code == "BUILD_INVALID"
-    assert not (datadir / "bad" / "gapit-manifest.json").exists()
+    assert not (datadir / "bad" / "gspec-manifest.json").exists()

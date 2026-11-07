@@ -22,7 +22,7 @@ runner = CliRunner()
 
 
 def _targets() -> dict[str, str]:
-    """The bundled target gene -> sequence map (gapit/v1 headers decoded)."""
+    """The bundled target gene -> sequence map (gspec/v1 headers decoded)."""
     bundled = find_bundled("cje_cps")
     assert bundled is not None
     return {

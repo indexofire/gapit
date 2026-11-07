@@ -75,7 +75,7 @@ def test_frontmatter_keys_and_values(reports: list[Report]) -> None:
         "mincov",
         "threads",
     ]
-    assert meta["schema"] == "gapit.report/1"
+    assert meta["schema"] == "gspec.report/1"
     assert meta["tool"].startswith("gspec ")
     assert meta["created_at"] == "2026-09-17T12:00:00Z"
     assert meta["db"] == "tinyamr"

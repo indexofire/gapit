@@ -21,7 +21,7 @@ fields repeating their key — the agent-first shape ``db list`` established.
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -31,8 +31,10 @@ from gspec.db_info_models import DbGuidance, DbReference
 from gspec.db_ops import LOCAL_VENDOR, db_list_entries
 from gspec.errors import DatabaseError
 from gspec.formats.csvutil import tsv_cell
+from gspec.layout import manifest_path
 from gspec.providers import REGISTRY
 from gspec.records import Manifest, read_manifest
+from gspec.schema_ids import Canonical
 
 INFO_FILENAME = "info.json"
 
@@ -58,7 +60,9 @@ class DbInfoDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.dbinfo/1"] = Field(default="gapit.dbinfo/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.dbinfo/1"], Canonical] = Field(
+        default="gspec.dbinfo/1", alias="schema"
+    )
     name: str
     description: str
     vendor: str
@@ -154,8 +158,8 @@ def collect_db_info(name: str, datadir: Path | None) -> DbInfoDocument:
         )
     directory = root / name
     bundled = find_bundled(name)
-    manifest_path = directory / "gapit-manifest.json"
-    manifest = read_manifest(manifest_path) if manifest_path.is_file() else None
+    manifest_file = manifest_path(directory)
+    manifest = read_manifest(manifest_file) if manifest_file.is_file() else None
     guidance = _bundled_guidance(bundled)
     if not guidance.references and not guidance.caveats:
         # Provider-declared guidance (the catalog's own literature notes).
@@ -177,7 +181,7 @@ def collect_db_info(name: str, datadir: Path | None) -> DbInfoDocument:
         else ("bundled" if entry.source == "bundled" else "available")
     )
     serotype_schema = (
-        "gapit.serotype/1"
+        "gspec.serotype/1"
         if (directory / "serotype.json").is_file()
         or (bundled is not None and bundled.serotype_path is not None)
         else None

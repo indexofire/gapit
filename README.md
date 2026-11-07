@@ -9,10 +9,10 @@ evidence. AMR, virulence, serotype, antigen-locus and custom panels all speak th
 same language. Contig screening emits abricate-compatible TSV; JSON and Markdown are
 first-class outputs. Python 3.12.
 
-> Formerly `gapit` (pre-0.8). The implementation imports as `gspec`; the `gapit`
-> compatibility package (`pip install gapit`) keeps `import gapit`, the `gapit`
-> command and every `gapit.*` schema id working. See
-> [Migrating from gapit](docs/migration.md).
+> Formerly `gapit` (≤0.8.1). `gspec` 0.9 renamed every on-disk contract too;
+> pre-0.9 databases and archived documents are still read. The `gapit`
+> compatibility package (`pip install gapit`) keeps `import gapit` and the
+> `gapit` command. See [Migrating from gapit](docs/migration.md).
 
 ## Install
 

@@ -147,12 +147,12 @@ def test_tools_list_advertises_twelve_tools_with_schemas() -> None:
 
 def test_schema_call_returns_report_schema_text() -> None:
     """Given tools/call schema(report), When served, Then non-error text
-    carrying the gapit.report/1 marker and a properties block."""
+    carrying the gspec.report/1 marker and a properties block."""
     (response,) = exchange(tool_call("schema", {"name": "report"}))
     assert response["result"]["isError"] is False
     text = response["result"]["content"][0]["text"]
     assert response["result"]["content"][0]["type"] == "text"
-    assert "gapit.report/1" in text
+    assert "gspec.report/1" in text
     assert '"properties"' in text
 
 
@@ -164,13 +164,13 @@ def test_schema_call_unknown_name_is_usage_error() -> None:
 
 def test_screen_call_returns_report_json_with_expected_hit(datadir: Path) -> None:
     """Given tools/call screen on the tinyamr fixture, When served, Then
-    non-error text parsing as gapit.report/1 with the tetA hit."""
+    non-error text parsing as gspec.report/1 with the tetA hit."""
     (response,) = exchange(
         tool_call("screen", {"files": [str(CONTIGS / "full.fa")], "db": "tinyamr"})
     )
     assert response["result"]["isError"] is False
     document = json.loads(response["result"]["content"][0]["text"])
-    assert document["schema"] == "gapit.report/1"
+    assert document["schema"] == "gspec.report/1"
     (hit,) = document["files"][0]["hits"]
     assert hit["gene"] == "tetA"
     assert document["params"]["db"] == "tinyamr"
@@ -178,13 +178,13 @@ def test_screen_call_returns_report_json_with_expected_hit(datadir: Path) -> Non
 
 def test_screen_call_missing_file_is_error_envelope(datadir: Path) -> None:
     """Given tools/call screen with a missing file, When served, Then
-    isError=true and the gapit.error/1 envelope code INPUT_NOT_FOUND."""
+    isError=true and the gspec.error/1 envelope code INPUT_NOT_FOUND."""
     (response,) = exchange(
         tool_call("screen", {"files": [str(datadir / "nope.fa")], "db": "tinyamr"})
     )
     assert response["result"]["isError"] is True
     envelope = json.loads(response["result"]["content"][0]["text"])
-    assert envelope["schema"] == "gapit.error/1"
+    assert envelope["schema"] == "gspec.error/1"
     assert envelope["code"] == "INPUT_NOT_FOUND"
 
 
@@ -197,11 +197,11 @@ def test_screen_call_rejects_missing_files_argument(datadir: Path) -> None:
 def test_screen_call_without_db_is_usage_error(datadir: Path) -> None:
     """Given tools/call screen with files but no db (required since the
     breaking change removed the ncbi default), When served, Then
-    isError=true with the gapit.error/1 USAGE_ERROR envelope."""
+    isError=true with the gspec.error/1 USAGE_ERROR envelope."""
     (response,) = exchange(tool_call("screen", {"files": [str(CONTIGS / "full.fa")]}))
     assert response["result"]["isError"] is True
     envelope = json.loads(response["result"]["content"][0]["text"])
-    assert envelope["schema"] == "gapit.error/1"
+    assert envelope["schema"] == "gspec.error/1"
     assert envelope["code"] == "USAGE_ERROR"
     assert "db" in envelope["message"]
 
@@ -223,7 +223,7 @@ def test_screen_call_honors_datadir_argument_without_env(
     )
     assert response["result"]["isError"] is False
     document = json.loads(response["result"]["content"][0]["text"])
-    assert document["schema"] == "gapit.report/1"
+    assert document["schema"] == "gspec.report/1"
     (hit,) = document["files"][0]["hits"]
     assert hit["gene"] == "tetA"
 
@@ -282,7 +282,7 @@ def test_summary_call_returns_summary_json() -> None:
     )
     assert response["result"]["isError"] is False
     document = json.loads(response["result"]["content"][0]["text"])
-    assert document["schema"] == "gapit.summary/1"
+    assert document["schema"] == "gspec.summary/1"
     assert len(document["rows"]) == 2
 
 
@@ -322,12 +322,12 @@ def _screen_table() -> str:
 
 def test_typing_call_returns_typing_result(tmp_path: Path) -> None:
     """Given a screen table naming a typed database, When the MCP typing
-    tool runs, Then it returns gapit.typing_result/1 with the expected call."""
+    tool runs, Then it returns gspec.typing_result/1 with the expected call."""
     datadir = _typed_datadir(tmp_path)
     (response,) = exchange(tool_call("typing", {"table": _screen_table(), "datadir": str(datadir)}))
     assert response["result"]["isError"] is False
     document = json.loads(response["result"]["content"][0]["text"])
-    assert document["schema"] == "gapit.typing_result/1"
+    assert document["schema"] == "gspec.typing_result/1"
     call = document["files"][0]["phenotypes"]["pathotype"]
     assert call["phenotype"] == "EHEC"
     assert call["confidence"] == "high"
@@ -335,11 +335,11 @@ def test_typing_call_returns_typing_result(tmp_path: Path) -> None:
 
 def test_db_setup_call_returns_receipt(datadir: Path) -> None:
     """Given an installed datadir, When db_setup runs with no_bundles, Then
-    it returns the gapit.dbsetup/1 receipt for the indexed databases."""
+    it returns the gspec.dbsetup/1 receipt for the indexed databases."""
     (response,) = exchange(tool_call("db_setup", {"datadir": str(datadir), "no_bundles": True}))
     assert response["result"]["isError"] is False
     document = json.loads(response["result"]["content"][0]["text"])
-    assert document["schema"] == "gapit.dbsetup/1"
+    assert document["schema"] == "gspec.dbsetup/1"
     assert document["materialized"] == []
     assert [entry["db"] for entry in document["databases"]] == ["tinyamr"]
 
@@ -348,7 +348,7 @@ def test_db_list_call_lists_providers(datadir: Path) -> None:
     (response,) = exchange(tool_call("db_list", {}))
     assert response["result"]["isError"] is False
     document = json.loads(response["result"]["content"][0]["text"])
-    assert document["schema"] == "gapit.dblist/1"
+    assert document["schema"] == "gspec.dblist/1"
     names = [provider["name"] for provider in document["providers"]]
     assert "card" in names
     assert "ncbi" in names
@@ -402,12 +402,12 @@ def test_cli_mcp_subcommand_streams_protocol_lines() -> None:
 
 
 def test_db_path_tool_returns_the_datadir_document(tmp_path: Path) -> None:
-    """Given db_path, When served, Then it returns gapit.datadir/1 with the
+    """Given db_path, When served, Then it returns gspec.datadir/1 with the
     requested datadir and source=cli."""
     datadir = tmp_path / "db"
     (response,) = exchange(tool_call("db_path", {"datadir": str(datadir)}))
     text = response["result"]["content"][0]["text"]
     document = json.loads(text)
-    assert document["schema"] == "gapit.datadir/1"
+    assert document["schema"] == "gspec.datadir/1"
     assert document["datadir"] == str(datadir.resolve())
     assert document["source"] == "cli"

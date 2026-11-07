@@ -1,4 +1,4 @@
-"""Tests for the gapit.kmerdb/1 k-mer substrate and key_kmers typing.
+"""Tests for the gspec.kmerdb/1 k-mer substrate and key_kmers typing.
 
 The canonical counter, differential set materialization, and the SNP-level
 discrimination that locus coverage/identity cannot deliver (a single SNP

@@ -71,7 +71,7 @@ def test_info_for_a_bundled_database_carries_literature_and_caveats(
     )
     assert as_json.exit_code == 0, as_json.stderr
     document = json.loads(as_json.stdout)
-    assert document["schema"] == "gapit.dbinfo/1"
+    assert document["schema"] == "gspec.dbinfo/1"
     assert document["name"] == "cje_cps"
     assert document["status"] == "bundled"
     assert len(document["references"]) == 4
@@ -91,7 +91,7 @@ def test_info_flips_to_installed_with_build_provenance(datadir: Path) -> None:
     assert document.status == "installed"
     assert document.records == 42
     assert document.kind == "gene"
-    assert document.typing_schema == "gapit.typing/2"
+    assert document.typing_schema == "gspec.typing/2"
     assert document.build is not None and document.build.tool.startswith("gspec ")
     assert document.snapshot == "2026-10-29"
     assert len(document.references) == 4
@@ -191,7 +191,7 @@ def test_info_render_is_two_columns_and_tab_safe(datadir: Path) -> None:
 
 def test_dbinfo_schema_is_registered() -> None:
     """Given `gspec schema dbinfo`, When run, Then the JSON schema of
-    gapit.dbinfo/1 is printed — the document is part of the public surface."""
+    gspec.dbinfo/1 is printed — the document is part of the public surface."""
     result = runner.invoke(app, ["schema", "dbinfo"])
 
     assert result.exit_code == 0, result.stderr

@@ -1,7 +1,7 @@
 """Bundled lmo_sero: the Listeria Doumith-2004 serogrouping panel.
 
 A bundled database — five public-domain INSDC-extracted markers
-(prs, lmo0737, lmo1118, ORF2819, ORF2110) behind the gapit.typing/2 scheme
+(prs, lmo0737, lmo1118, ORF2819, ORF2110) behind the gspec.typing/2 scheme
 ``doumith_serogroup``: Doumith's multiplex-PCR table (Doumith et al. 2004,
 J Clin Microbiol 42:3819) extended with the Huang 2011 4b variant (IVb-v,
 declared first so the shared ORF2819+ORF2110 profile resolves to it). These
@@ -80,7 +80,7 @@ def write_sample(directory: Path, name: str, genes: list[str]) -> Path:
 
 def type_json(sample: Path, datadir: Path, tmp_path: Path) -> dict[str, object]:
     """The two-stage pipeline for one sample: screen -o table, then type it
-    (gapit.typing_result/1); returns the scheme call (phenotype, notes, ...)."""
+    (gspec.typing_result/1); returns the scheme call (phenotype, notes, ...)."""
     table = tmp_path / f"{sample.stem}.tsv"
     screened = runner.invoke(
         app,
@@ -272,10 +272,10 @@ def test_bundled_lmo_sero_auto_materializes_and_lists(tmp_path: Path) -> None:
         app, ["screen", str(sample), "--db", "lmo_sero", "--datadir", str(datadir), "--quiet"]
     )
     assert result.exit_code == 0, result.stderr
-    manifest = read_manifest(datadir / "lmo_sero" / "gapit-manifest.json")
+    manifest = read_manifest(datadir / "lmo_sero" / "gspec-manifest.json")
     assert manifest.n_records == 5
     assert manifest.source == "bundled"
-    assert manifest.typing_schema == "gapit.typing/2"
+    assert manifest.typing_schema == "gspec.typing/2"
     assert (datadir / "lmo_sero" / "typing.json").is_file()
     assert (datadir / "lmo_sero" / "sequences.nin").is_file()
 

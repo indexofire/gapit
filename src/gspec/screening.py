@@ -24,6 +24,7 @@ from gspec.errors import DatabaseError, InputError, ensure_input_file, usage_fai
 from gspec.formats.json import render_json
 from gspec.formats.md import md_report_chunk, md_report_preamble
 from gspec.formats.tsv import tsv_file_chunk, tsv_preamble
+from gspec.layout import manifest_path
 from gspec.progress import screen_progress, terminal_rule
 from gspec.report import Report, ScreeningParams
 from gspec.screening_batch import screen_batch
@@ -77,7 +78,7 @@ def find_database(datadir: Path, name: str, *, quiet: bool = False) -> db.Databa
         if database.name == name:
             return database
     if find_bundled(name) is not None:
-        if not (datadir / name / "gapit-manifest.json").is_file():
+        if not manifest_path(datadir / name).is_file():
             try:
                 materialize_bundled(name, datadir, quiet=quiet)
             except DatabaseError as exc:

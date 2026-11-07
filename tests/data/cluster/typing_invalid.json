@@ -1,5 +1,5 @@
 {
-  "schema": "gapit.typing/1",
+  "schema": "gspec.typing/1",
   "rules": [
     {"model": "neural_net", "phenotype": "K9", "layers": [64, 32]}
   ],

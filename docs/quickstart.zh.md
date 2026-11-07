@@ -35,7 +35,7 @@ gspec: indexed tinyamr (3 sequences, nucl)
 ```
 
 `gspec db list` 展示数据库目录和安装状态（下面有删节；`--json` 返回
-`gapit.dblist/1` 文档）。夹具 `tinyamr` 是一个普通的自定义数据库，不在目录里，所以
+`gspec.dblist/1` 文档）。夹具 `tinyamr` 是一个普通的自定义数据库，不在目录里，所以
 不会出现在列表里，下一节的筛查会证明它可用：
 
 ```console
@@ -87,10 +87,10 @@ gspec screen tests/data/contigs/full.fa --db tinyamr --format json
 
 ```json
 {
-  "schema": "gapit.report/1",
+  "schema": "gspec.report/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "created_at": "2026-09-19T01:11:06Z",
   "params": {
@@ -125,7 +125,7 @@ gspec screen tests/data/contigs/full.fa --db tinyamr --format json
 }
 ```
 
-文档携带 `"schema": "gapit.report/1"`，消费方可以锁定契约；`gspec schema report`
+文档携带 `"schema": "gspec.report/1"`，消费方可以锁定契约；`gspec schema report`
 打印它的 JSON Schema。字段级细节见[输出](./outputs.md)。
 
 ## 4. 给样本分型
@@ -204,7 +204,7 @@ gap.tsv	1	+	-
 基因**簇**数据库是第二种数据库：记录不再是单个基因，而是整个位点（Kaptive 风格的
 抗原位点、荚膜基因簇），从 GenBank/GFF 输入构建。夹具
 `tests/data/cluster/screening.gbk` 含两个合成位点；`--typing` 会同时安装一份
-`gapit.typing/1` 表型评分规范：
+`gspec.typing/1` 表型评分规范：
 
 ```bash
 gspec db build tinykps tests/data/cluster/screening.gbk \

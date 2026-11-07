@@ -2,7 +2,7 @@
 (two weighted_genes rules / two cluster_match rules over tests/data/cluster/
 screening.gbk) screened end to end through the real engine.
 
-Covers the output wiring (phenotype + phenotype_detail in gapit.cluster/1,
+Covers the output wiring (phenotype + phenotype_detail in gspec.cluster/1,
 the PHENOTYPE TSV column variant, the Markdown phenotype line), the
 ambiguity decision on a two-locus sample, goldens for both rule kinds at a
 pinned timestamp, and the eval-time TYPING_UNKNOWN_GENE guard. The stage-2
@@ -281,7 +281,7 @@ class TestGoldens:
             # v1-as-default-scheme equivalence: the typing/2 mirror of the
             # weighted_genes fixture (same rules, one named scheme) must
             # render the SAME goldens byte-for-byte — scheme names never
-            # leak into gapit.cluster/1.
+            # leak into gspec.cluster/1.
             ("typing_screen_v2.json", "exact", "typing_exact"),
             ("typing_screen_v2.json", "both", "typing_ambiguous"),
         ],
@@ -330,7 +330,7 @@ class TestEvalValidation:
         (datadir / DB / "typing.json").write_text(
             json.dumps(
                 {
-                    "schema": "gapit.typing/1",
+                    "schema": "gspec.typing/1",
                     "rules": [
                         {
                             "model": "weighted_genes",

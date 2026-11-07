@@ -1,6 +1,6 @@
 ---
-schema: gapit.cluster/1
-tool: gspec 0.8.1
+schema: gspec.cluster/1
+tool: gspec 0.9.0
 created_at: 2026-10-01T12:00:00Z
 db: vc_subserotype
 preset: asm20

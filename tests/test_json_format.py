@@ -1,4 +1,4 @@
-"""Tests for the gapit.report/1 JSON output."""
+"""Tests for the gspec.report/1 JSON output."""
 
 import shutil
 from datetime import UTC, datetime
@@ -53,9 +53,9 @@ def test_golden_json(reports: list[Report]) -> None:
 
 def test_schema_literal_comes_first(reports: list[Report]) -> None:
     output = render_json(reports, PARAMS, now=PINNED_NOW)
-    assert output.startswith('{\n  "schema": "gapit.report/1",')
+    assert output.startswith('{\n  "schema": "gspec.report/1",')
     document = report_adapter.validate_json(output)
-    assert document.schema_name == "gapit.report/1"
+    assert document.schema_name == "gspec.report/1"
 
 
 def test_round_trip_parses_into_report_document(reports: list[Report]) -> None:
@@ -136,7 +136,7 @@ def test_cli_format_json(
     reports: list[Report], datadir: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given --format json on the CLI, When run, Then stdout parses as
-    gapit.report/1 (created_at unpinned, just structurally checked)."""
+    gspec.report/1 (created_at unpinned, just structurally checked)."""
     from click.testing import CliRunner
 
     from gspec.cli import app
@@ -148,5 +148,5 @@ def test_cli_format_json(
     )
     assert result.exit_code == 0
     document = report_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.report/1"
+    assert document.schema_name == "gspec.report/1"
     assert document.created_at.endswith("Z")

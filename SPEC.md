@@ -52,7 +52,7 @@ does not constrain new gspec features.
   the abricate mol_type heuristic: concatenate non-header sequence, delete
   `[AGTC]` case-insensitively; if the remainder is >50% of the total it is
   `prot`, else `nucl`. Current `gspec db setup` / `gspec db build` and the
-  native `gapit/v1` format are documented in `docs/databases.md`; gspec reads
+  native `gspec/v1` format are documented in `docs/databases.md`; gspec reads
   both native and legacy datadirs.
 - DBTYPE introspection uses `blastdbcmd -info`; `prot` iff the output
   contains `total residues`, else `nucl`. DBTYPE selects `blastn` vs `blastx`.
@@ -105,7 +105,7 @@ For each BLAST row, in order:
    discarded.
 4. **Identity**: `%IDENTITY = pident` as printed by BLAST (`%.2f`), never
    post-filtered.
-5. **Subject ID parse**: legacy `~~~` rules above; native `gapit/v1` headers
+5. **Subject ID parse**: legacy `~~~` rules above; native `gspec/v1` headers
    decode through `docs/databases.md` and are not part of the legacy grammar.
 6. **Product cleanup**: `stitle or "n/a"`; strip `,` and `\t`; if the product
    contains `~~~` (or the subject is a gspec-tagged seqid), drop the leading

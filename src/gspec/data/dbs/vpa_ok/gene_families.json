@@ -1,5 +1,5 @@
 {
-  "schema": "gapit.gene_families/1",
+  "schema": "gspec.gene_families/1",
   "families": [
     {
       "family_id": "GF000001",

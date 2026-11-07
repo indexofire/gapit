@@ -63,7 +63,7 @@ def test_profile_opts_into_secondary_and_thresholds(tmp_path: Path) -> None:
     opts into secondary coverage and profile defaults, while a non-default
     CLI threshold still wins."""
     (tmp_path / CLUSTER_PROFILE_FILENAME).write_text(
-        '{"schema":"gapit.cluster_profile/1","coverage_mode":"primary_secondary",'
+        '{"schema":"gspec.cluster_profile/1","coverage_mode":"primary_secondary",'
         '"min_gene_cov":50.0,"min_cluster_cov":90.0,"fallback_evidence":true,'
         '"locus_typeable_coverage":50.0,"locus_typeable_identity":90.0,'
         '"locus_quality_min_coverage":80.0,"locus_quality_min_identity":90.0,'
@@ -100,7 +100,7 @@ def test_unknown_profile_key_is_typed(tmp_path: Path) -> None:
     """Given a misspelled profile key, When loaded, Then fail instead of
     silently ignoring a policy switch."""
     (tmp_path / CLUSTER_PROFILE_FILENAME).write_text(
-        '{"schema":"gapit.cluster_profile/1","fallback_evidance":true}',
+        '{"schema":"gspec.cluster_profile/1","fallback_evidance":true}',
         encoding="utf-8",
     )
     with pytest.raises(DatabaseError) as raised:

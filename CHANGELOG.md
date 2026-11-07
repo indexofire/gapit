@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.9.0] - 2026-11-08
+
+### Changed
+
+- **Every on-disk contract now uses the `gspec` name.** The 0.8 rename stopped
+  at the project surface; this release finishes it:
+  - JSON schema ids: `gspec.report/1`, `gspec.typing/1|2|3`,
+    `gspec.typing_result/1`, `gspec.cluster/1|2`, `gspec.error/1`, … (25 ids)
+  - manifest filename: `gspec-manifest.json`
+  - native FASTA header prefix: `gspec|db=…|gene=…|acc=…|func=…`
+  - manifest `header_format`: `gspec/v1`
+  - bundled `sequences` and sidecars rewritten to the new spellings
+- **Pre-0.9 spellings are still read everywhere**: schema ids, the
+  `gapit-manifest.json` filename, the `gapit|` header prefix and the
+  `gapit/v1` header format are accepted and canonicalised on load, so
+  databases installed under 0.8 and archived JSON keep working untouched.
+  Every writer emits the new spelling.
+- Still read for compatibility: `GAPIT_DATADIR` / `GAPIT_ENGINE` (when the
+  `GSPEC_*` names are unset) and a pre-0.9 `~/.local/share/gapit/db`.
+
+### Added
+
+- `gspec/layout.py` — manifest filename constants and `manifest_path()`, the
+  single place that decides between the current and legacy name.
+- `tests/test_legacy_compat.py` — pins the read-compatibility promise for all
+  four renamed contracts.
+
+### Migration
+
+Nothing needs doing: existing databases resolve, and documents carry the new
+ids the next time they are written. `gspec db setup --all` reindexes in place;
+see `docs/migration.md` for the full before/after table.
+
 ## [0.8.1] - 2026-11-07
 
 ### Changed

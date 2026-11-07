@@ -7,8 +7,8 @@ authors:
 repository-code: "https://github.com/indexofire/gspec"
 url: "https://indexofire.github.io/gspec/"
 license: MIT
-version: "0.8.1"
-date-released: "2026-11-07"
+version: "0.9.0"
+date-released: "2026-11-08"
 keywords:
   - bacterial typing
   - serotyping

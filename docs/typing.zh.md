@@ -1,10 +1,10 @@
 # 分型方案（typing）
 
-分型文档（typing document）是数据库侧的评分规范，把筛查命中转换为表型判定——血清型、血清群、致病型。通过 `gspec db build --typing FILE` 安装后，该数据库即可对筛查过它的任何样本作出判定。本页面是 `gapit.typing/2` 的完整参考，外加一份实战手册（cookbook）：六个经调研的鉴定方案，全部编码为经过校验、自带测试的示例文档。
+分型文档（typing document）是数据库侧的评分规范，把筛查命中转换为表型判定——血清型、血清群、致病型。通过 `gspec db build --typing FILE` 安装后，该数据库即可对筛查过它的任何样本作出判定。本页面是 `gspec.typing/2` 的完整参考，外加一份实战手册（cookbook）：六个经调研的鉴定方案，全部编码为经过校验、自带测试的示例文档。
 
 - 数据库侧机制（`--typing`、校验、manifest）见
   [数据库](./databases.md) 的 typing.json 一节。
-- 判定输出文档（`gapit.typing_result/1`）见 [输出](./outputs.md)。
+- 判定输出文档（`gspec.typing_result/1`）见 [输出](./outputs.md)。
 - 分型文档的 JSON Schema 用 `gspec schema typing` 打印。
 
 ## 两阶段判定工作流 {#two-stage-workflow}
@@ -51,7 +51,7 @@ $ gspec screen 1.fna --db eco_dec --quiet | gspec typing --quiet
 渲染为 `-`，候选对写入 NOTES；`GENES` 紧跟表型之后，列出该 FILE 的 present 基因名
 （排序后、`;` 串接），且在该 FILE 的每个 scheme 行上重复——即驱动该判定的命中，
 一目了然。
-`json` 输出 `gapit.typing_result/1`（完整分数分解外加同样的逐文件 `genes` 列表；
+`json` 输出 `gspec.typing_result/1`（完整分数分解外加同样的逐文件 `genes` 列表；
 `gspec schema typing_result`）；`md` 在标明数据库与来源表的 frontmatter 下渲染同样的
 八列表。类型化错误：`DATABASE` 值混杂为 `DATABASE_MISMATCH`，无数据行的表为
 `TYPING_NO_DATA`（要评估的数据库只能从数据行得知），无 `typing.json` 的数据库为
@@ -60,10 +60,10 @@ $ gspec screen 1.fna --db eco_dec --quiet | gspec typing --quiet
 **基因簇例外。** 基因簇数据库的判定保持集成在 `gspec screen` 内：其判定单元是最佳
 *位点* call，只有 minimap2 基因簇引擎能算。紧凑的 cluster TSV 不是基因表，也没有
 重新判定所需的 scheme 元数据；请使用 cluster JSON：`gspec typing result.json` 可读取
-`gapit.cluster/2` 或 `gapit.locus_map/1`，把已经算好的 phenotypes 渲染成
-`gapit.typing_result/1`，不重新运行比对。筛查 typed 基因簇数据库会直接注释簇文档——单 scheme 数据库注释 `gapit.cluster/1`（仅限 typed 的 TSV
+`gspec.cluster/2` 或 `gspec.locus_map/1`，把已经算好的 phenotypes 渲染成
+`gspec.typing_result/1`，不重新运行比对。筛查 typed 基因簇数据库会直接注释簇文档——单 scheme 数据库注释 `gspec.cluster/1`（仅限 typed 的 TSV
 `PHENOTYPE` 列、JSON/MD 中的 `best.phenotype` + `best.phenotype_detail`），多 scheme
-数据库渲染 `gapit.cluster/2`（每个 scheme 一个 call 装进 `phenotypes` 映射，TSV 为
+数据库渲染 `gspec.cluster/2`（每个 scheme 一个 call 装进 `phenotypes` 映射，TSV 为
 每方案的胜出位点证据列）。数据库 profile 还可以保留同家族 fallback 证据，并在
 cluster/2 的 `phenotypes` 中给出 `locus_status`（`known` / `unknown_locus` / `none`）
 和 `locus_confidence`（`typeable` / `untypeable`），从而区分 Kaptive 风格的
@@ -71,12 +71,12 @@ cluster/2 的 `phenotypes` 中给出 `locus_status`（`known` / `unknown_locus` 
 
 ## 一份文档，两个引擎
 
-`gapit.typing/2` 文档是一组命名的 **scheme**；每个 scheme 是一组 **rule** 加上作用于
+`gspec.typing/2` 文档是一组命名的 **scheme**；每个 scheme 是一组 **rule** 加上作用于
 这些规则的判定阈值：
 
 ```json
 {
-  "schema": "gapit.typing/2",
+  "schema": "gspec.typing/2",
   "schemes": [
     {
       "name": "serogroup",
@@ -93,17 +93,17 @@ cluster/2 的 `phenotypes` 中给出 `locus_status`（`known` / `unknown_locus` 
 
 | 数据库类型 | 输入 | 引擎 | 判定出现的位置 |
 |---|---|---|---|
-| **gene（基因）** | 标记 FASTA | blastn 基因路径 | 对筛查结果运行 `gspec typing`：`gapit.typing_result/1`（JSON）与八列 TSV/MD 表 |
-| **cluster（基因簇，单 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gspec screen` 内：`gapit.cluster/1` 的 `best.phenotype` + `best.phenotype_detail`，以及仅限已分型数据库的 TSV `PHENOTYPE` 列 |
-| **cluster（基因簇，多 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gspec screen` 内：`gapit.cluster/2` 的 `files[].phenotypes`（每个 scheme 一个 call，compose 由兄弟 scheme 渲染），以及每方案的胜出位点证据 TSV 列 |
+| **gene（基因）** | 标记 FASTA | blastn 基因路径 | 对筛查结果运行 `gspec typing`：`gspec.typing_result/1`（JSON）与八列 TSV/MD 表 |
+| **cluster（基因簇，单 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gspec screen` 内：`gspec.cluster/1` 的 `best.phenotype` + `best.phenotype_detail`，以及仅限已分型数据库的 TSV `PHENOTYPE` 列 |
+| **cluster（基因簇，多 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gspec screen` 内：`gspec.cluster/2` 的 `files[].phenotypes`（每个 scheme 一个 call，compose 由兄弟 scheme 渲染），以及每方案的胜出位点证据 TSV 列 |
 
 按类型区分的两条硬约束：
 
 - **基因数据库**只评估 `weighted_genes` 与 `exact_set` 规则（不存在位点可供
   `cluster_match`/`learned_linear` 使用）。
 - **基因簇数据库**按 scheme 数量在两份契约中二选一：恰含**一个** scheme 的文档
-  （含 `gapit.typing/1` 文档）渲染字节冻结的 `gapit.cluster/1`——每个文件一个
-  表型槽位，`best.phenotype`；含**多个** scheme 的文档渲染 `gapit.cluster/2`：
+  （含 `gspec.typing/1` 文档）渲染字节冻结的 `gspec.cluster/1`——每个文件一个
+  表型槽位，`best.phenotype`；含**多个** scheme 的文档渲染 `gspec.cluster/2`：
   每个 scheme 都给出判定（即使没有最佳位点 call，scheme 也照常评估，fallback
   始终渲染），每个文件携带按文档顺序以 scheme 名为键的 `phenotypes` 映射，
   `best` 不再带表型字段，TSV/CSV 的列由方案文档派生：compose 方案的取值列在前
@@ -189,7 +189,7 @@ ambiguous。
 ### 李斯特菌血清群 —— 内置 lmo_sero 面板（基因库）
 
 `lmo_sero` 是一个内置数据库：取自公共领域 INSDC 记录的 Doumith 标记，加上
-`doumith_serogroup` 方案（`gapit.typing/2`）——与 LisSero 相同的五标记多重 PCR
+`doumith_serogroup` 方案（`gspec.typing/2`）——与 LisSero 相同的五标记多重 PCR
 语义，`prs` 为属级 `control_gene`，每条规则 95/95 阈值（Doumith 等 2004，J Clin
 Microbiol 42:3819）：
 
@@ -279,13 +279,13 @@ PCR panel（`sacB`/A、`synD`/B、`synE`/C、`xcbB`/X、`synF`/Y，按 meningoty
 - `k_group` —— K 位点上同构，fallback `KUT`（K 不可分型）。
 - `serotype` —— 记录 panel 输出形状的 `"{o_group}:{k_group}"` compose scheme。
 
-vpa_ok 手册文档安装为**一个合并数据库**，渲染 `gapit.cluster/2`：每个文件对每个
+vpa_ok 手册文档安装为**一个合并数据库**，渲染 `gspec.cluster/2`：每个文件对每个
 scheme 给出判定（`o_group`、`k_group`，随后由原料渲染的 `serotype` compose——
 一次扫描得到 `O3/O13:K6`），TSV 行把组合血清型放在最前，随后每个方案给出判定
 与胜出位点的证据（`FILE SEROTYPE O_GROUP O_LOCUS O_COVERAGE ... K_GROUP K_LOCUS
 K_COVERAGE ...`）。历史 `/1` 安装——用同一 GBK
 各装一个 scheme 的**两个数据库**（`vp_o`、`vp_k`），恰是 Kaptive 分别发布 O 与 K
-数据库的方式——依然完全有效：单 scheme 文档保持渲染字节冻结的 `gapit.cluster/1`，
+数据库的方式——依然完全有效：单 scheme 文档保持渲染字节冻结的 `gspec.cluster/1`，
 当 O 与 K 判定分属不同流水线时拆分仍是首选。测试套件同时断言合并后的 /2 golden
 （`cluster2_vp_o3k6`、`cluster2_vp_none`）与拆分后的 /1 判定（`O3/O13`、`K6`）。
 
@@ -330,7 +330,7 @@ K_COVERAGE ...`）。历史 `/1` 安装——用同一 GBK
   aggR 为必备——仅有 pic/astA 不充分。携带 pic+astA 而无 aggR 的分离株在
   gb4789_6 下判 `EAEC`、在 risk_monitoring 下判 `non-DEC`——两个方案之间的标志性
   分歧，由 `eco_dec_typing` golden 锁定（两条判定同处一份
-  `gapit.typing_result/1` 文档；捆绑数据库携带同一份文档）。
+  `gspec.typing_result/1` 文档；捆绑数据库携带同一份文档）。
 - `EPEC_atypical` 声明在 EHEC/STEC **之后**，stx 阳性分离株永远不会落入该规则；
   escV+/bfpB−/stx− 分离株越过典型 EPEC 规则后落到它上面。
 - 夹具镜像了权利方数据库中的重复记录（真实库 pic ×2、sth ×3；夹具各带一份重复）：
@@ -398,7 +398,7 @@ vc_inaba.fa  wbe      O1    inaba      100.00    99.44     3        0        -
 （每个 scheme 一个数据库）：
 
 ```console
-$ gspec db build vpa_ok vpa_ok.gbk --typing vpa_ok.json   # 一个合并库 → gapit.cluster/2
+$ gspec db build vpa_ok vpa_ok.gbk --typing vpa_ok.json   # 一个合并库 → gspec.cluster/2
 $ gspec screen sample.fa --db vpa_ok --quiet
 FILE      SEROTYPE   O_GROUP  O_LOCUS     O_COVERAGE  ...  K_GROUP  K_LOCUS  K_COVERAGE  ...
 sample.fa O3/O13:K6  O3/O13   OL3_or_O13  100.00      ...  K6       KL6     100.00      ...

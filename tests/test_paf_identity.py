@@ -1,4 +1,4 @@
-"""Unit tests for PAF identity math and the gapit.reads/2 row filters.
+"""Unit tests for PAF identity math and the gspec.reads/2 row filters.
 
 Identity contract (docs/reads.md, reads/2): per-alignment identity is
 ``100.0 * (alen - nm) / alen`` over PAF column 10 and the ``NM:i:`` tag.
@@ -120,7 +120,7 @@ def test_filter_combines_identity_and_mapq() -> None:
 
 def test_filter_off_keeps_every_row_unchanged() -> None:
     """Given both thresholds at their off defaults (0/0), When filtered,
-    Then every row is kept verbatim — the gapit.reads/1 path must not drop a
+    Then every row is kept verbatim — the gspec.reads/1 path must not drop a
     single row (byte-identity of the default output)."""
     rows = [paf(alen=100, nm=99, mapq=0), paf(alen=100, nm=None, mapq=0)]
     assert filter_alignments(rows) == rows

@@ -108,7 +108,7 @@ def test_db_fetch_builds_provider_database(tmp_path: Path, monkeypatch: pytest.M
         "dbtype": "nucl",
         "destination": str(db_dir),
     }
-    for name in ("sequences", "sequences.nin", "gapit-manifest.json"):
+    for name in ("sequences", "sequences.nin", "gspec-manifest.json"):
         assert (db_dir / name).is_file(), name
 
 
@@ -123,7 +123,7 @@ def test_db_fetch_accepts_multiple_names_in_one_command(
     receipts = [json.loads(line) for line in result.stdout.splitlines()]
     assert [receipt["db"] for receipt in receipts] == [SYN, OTHER]
     for name in (SYN, OTHER):
-        assert (datadir / name / "gapit-manifest.json").is_file()
+        assert (datadir / name / "gspec-manifest.json").is_file()
 
 
 def test_db_fetch_without_db_flag_is_usage_error(
@@ -209,7 +209,7 @@ def test_db_fetch_creates_missing_nested_datadir(
     result = fetch(SYN, "--datadir", str(nested))
     assert result.exit_code == 0
     assert json.loads(result.stdout)["destination"] == str(nested / SYN)
-    assert (nested / SYN / "gapit-manifest.json").is_file()
+    assert (nested / SYN / "gspec-manifest.json").is_file()
 
 
 def test_db_fetch_debug_echoes_index_argv(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -246,7 +246,7 @@ def test_db_list_bootstraps_a_missing_datadir(tmp_path: Path) -> None:
 
 def test_db_list_bootstraps_a_missing_datadir_json(tmp_path: Path) -> None:
     """Given the same fresh-install state, When `db list --json` runs, Then
-    it emits the gapit.dblist/1 document and creates the datadir."""
+    it emits the gspec.dblist/1 document and creates the datadir."""
     missing = tmp_path / "fresh" / "db"
 
     result = runner.invoke(app, ["db", "list", "--datadir", str(missing), "--json"])
@@ -254,7 +254,7 @@ def test_db_list_bootstraps_a_missing_datadir_json(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.stderr
     assert missing.is_dir()
     document = json.loads(result.stdout)
-    assert document["schema"] == "gapit.dblist/1"
+    assert document["schema"] == "gspec.dblist/1"
     assert any(entry["name"] == "cje_cps" for entry in document["providers"])
 
 
@@ -281,14 +281,14 @@ def test_db_list_json_emits_gapit_dblist_document(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given a datadir holding one fetched provider, When `db list --json`,
-    Then stdout parses as a gapit.dblist/1 document whose installed entry
+    Then stdout parses as a gspec.dblist/1 document whose installed entry
     carries records and whose available entry omits the field."""
     datadir = patch_registry(tmp_path, monkeypatch)
     assert fetch(SYN, "--datadir", str(datadir)).exit_code == 0
     result = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
     assert result.exit_code == 0
     document = json.loads(result.stdout)
-    assert document["schema"] == "gapit.dblist/1"
+    assert document["schema"] == "gspec.dblist/1"
     by_name = {entry["name"]: entry for entry in document["providers"]}
     assert by_name[SYN]["installed"] is True
     assert by_name[SYN]["records"] == 2
@@ -444,7 +444,7 @@ def test_db_fetch_all_installs_default_dbs(tmp_path: Path, monkeypatch: pytest.M
     assert [receipt["db"] for receipt in receipts] == ["card", "vfdb"]
     assert [receipt["records"] for receipt in receipts] == [2, 2]
     for name in ("card", "vfdb"):
-        assert (datadir / name / "gapit-manifest.json").is_file()
+        assert (datadir / name / "gspec-manifest.json").is_file()
 
 
 def test_db_fetch_from_source_flag_is_rejected(
@@ -463,7 +463,7 @@ def test_db_fetch_from_source_flag_is_rejected(
 
 def test_db_list_json_surfaces_provider_licenses(tmp_path: Path) -> None:
     """Given the REAL registry and an empty datadir, When `db list --json`,
-    Then the gapit.dblist/1 entries carry a license field exactly for the
+    Then the gspec.dblist/1 entries carry a license field exactly for the
     providers/bundles that pin one — card (McMaster terms), vfdb + ecoli_vf
     (CC BY-NC), the seven kaptive cluster providers (GPL), and the bundled
     vpa_ok content license — and omit it for the rest; every entry also names

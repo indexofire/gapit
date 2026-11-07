@@ -14,10 +14,10 @@ gspec 筛查 contig 文件和 FASTQ reads 中的已知基因：AMR（抗微生�
 | [contig 筛查](./screen.md) | 对 FASTA/GBK/EMBL 输入运行 `gspec screen`：阈值、过滤器、输出格式 |
 | [reads（FASTQ）筛查](./reads.md) | FASTQ 与 assembly FASTA 走 minimap2：`--r1`/`--r2`、预设参数、基于广度的存在判定、两阶段普查 |
 | [汇总报告](./summary.md) | `gspec summary`：把多份报告表折叠成基因存在/缺失矩阵 |
-| [数据库](./databases.md) | 数据库目录（NAME 与上游 PROVIDER）、`gspec db fetch/list/install`、数据目录、原生 `gapit/v1` 格式、基因簇数据库（GBK/GFF、typing.json、kaptive） |
+| [数据库](./databases.md) | 数据库目录（NAME 与上游 PROVIDER）、`gspec db fetch/list/install`、数据目录、原生 `gspec/v1` 格式、基因簇数据库（GBK/GFF、typing.json、kaptive） |
 | [数据目录](./datadir.md) | datadir 解析（`db path`）、数据库结构、跨环境共享、conda/Docker 规范、安全与可复现性 |
 | [自定义数据库](./custom-db.md) | `gspec db build` 实战演练：任意 FASTA 变成可筛查的数据库，完整示例 |
-| [分型方案](./typing.md) | 两阶段判定流水线（`gspec screen` 而后 `gspec typing`）与 `gapit.typing/2`——rule/scheme 原语、六方案实战手册（Doumith、ShigaTyper、meningotype、副溶血弧菌 O/K、霍乱弧菌、DEC）、等位基因探针技巧、校准 |
+| [分型方案](./typing.md) | 两阶段判定流水线（`gspec screen` 而后 `gspec typing`）与 `gspec.typing/2`——rule/scheme 原语、六方案实战手册（Doumith、ShigaTyper、meningotype、副溶血弧菌 O/K、霍乱弧菌、DEC）、等位基因探针技巧、校准 |
 | [脑膜炎奈瑟菌血清群分型](./nme_sero.md) | `nme_sero` 数据库：血清群 + ctrA + sodC 深度内参（`gspec screen` + `gspec typing`；不含 MLST/等位基因分型） |
 | [输出](./outputs.md) | TSV/JSON/Markdown 格式、schema、错误信封、退出码 |
 | [MCP 服务器](./mcp.md) | `gspec mcp`：通过 stdio JSON-RPC 为 agent 运行时提供分析 + 数据库工具 |

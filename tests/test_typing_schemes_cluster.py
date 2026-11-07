@@ -5,11 +5,11 @@ Two researched cluster-database schemes as validated example documents
 (van der Graaf-van Bloois et al. 2023 Kaptive databases — o_group/k_group
 cluster_match rules plus the ``{o_group}:{k_group}`` compose scheme) and
 the V. cholerae O1/O139 serogroup + ogawa/inaba subserotype panel (wbeT
-single-SNP biology). A cluster database renders gapit.cluster/2 when its
+single-SNP biology). A cluster database renders gspec.cluster/2 when its
 typing document holds more than one scheme — so the vpa_ok cookbook
 document installs as ONE merged database (every scheme called, the
 compose rendered from its ingredients) — while single-scheme documents
-(v1 or one-scheme v2) keep the byte-frozen gapit.cluster/1 surface: the
+(v1 or one-scheme v2) keep the byte-frozen gspec.cluster/1 surface: the
 cholerae fixture installs each scheme as its own database, the Kaptive
 per-scheme pattern. Samples are deterministic copies/mutations of the
 fixture loci (synthetic content only).
@@ -56,7 +56,7 @@ def split_scheme(tmp_path: Path, document: str, scheme_name: str) -> Path:
     scheme = next(entry for entry in document_data["schemes"] if entry["name"] == scheme_name)
     path = tmp_path / f"{document}_{scheme_name}.json"
     path.write_text(
-        json.dumps({"schema": "gapit.typing/2", "schemes": [scheme]}, indent=2), encoding="utf-8"
+        json.dumps({"schema": "gspec.typing/2", "schemes": [scheme]}, indent=2), encoding="utf-8"
     )
     return path
 
@@ -121,7 +121,7 @@ def vp_dbs(tmp_path_factory: pytest.TempPathFactory) -> Path:
 @pytest.fixture(scope="module")
 def vpa_ok_db(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """The whole three-scheme vpa_ok cookbook document as ONE merged
-    database — the gapit.cluster/2 install (its gene ids are already
+    database — the gspec.cluster/2 install (its gene ids are already
     unique, so build-time resolution is a no-op)."""
     datadir = tmp_path_factory.mktemp("schemes_vpa_ok")
     build_cluster_db(datadir, "vpa_ok", "vpa_ok.gbk", SCHEMES / "vpa_ok.json")
@@ -150,7 +150,7 @@ class TestMergedVpOkCluster2:
     def test_full_vpa_ok_document_builds_one_merged_db(self, tmp_path: Path) -> None:
         """Given the three-scheme vpa_ok document on a cluster build, When
         built, Then exit 0 — the multi-scheme install renders
-        gapit.cluster/2 (the /1 one-scheme guard is gone; compose now runs
+        gspec.cluster/2 (the /1 one-scheme guard is gone; compose now runs
         natively on the cluster path)."""
         datadir = tmp_path / "datadir"
         datadir.mkdir()
@@ -171,14 +171,14 @@ class TestMergedVpOkCluster2:
 
     def test_merged_db_screens_as_cluster2(self, vpa_ok_db: Path, tmp_path: Path) -> None:
         """Given the merged vpa_ok database and the vp_typed sample, When
-        screened as JSON, Then the document is gapit.cluster/2 with the
+        screened as JSON, Then the document is gspec.cluster/2 with the
         phenotypes keys in document order (o_group, k_group, serotype),
         serotype the composed {o}:{k} of its ingredients (the fallbacks
         flow through — the sample shares no locus with this panel)."""
         document = screen_json(vpa_ok_db, "vpa_ok", DATA_TYPING / "vp_typed.fa")
         phenotypes = document["files"][0]["phenotypes"]
 
-        assert document["schema"] == "gapit.cluster/2"
+        assert document["schema"] == "gspec.cluster/2"
         assert list(phenotypes) == ["o_group", "k_group", "serotype"]
         o, k = phenotypes["o_group"]["phenotype"], phenotypes["k_group"]["phenotype"]
         assert phenotypes["serotype"]["phenotype"] == f"{o}:{k}"

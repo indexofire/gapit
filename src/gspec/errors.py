@@ -7,9 +7,11 @@ stderr via ``render_error``.
 """
 
 from pathlib import Path
-from typing import Literal, NoReturn, cast
+from typing import Annotated, Literal, NoReturn, cast
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
+
+from gspec.schema_ids import Canonical
 
 # Public error-code vocabulary. Keep in sync with every raise site; the test
 # suite AST-scans the source so a new code cannot be added without registering
@@ -159,7 +161,9 @@ class ErrorEnvelope(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.error/1"] = Field(default="gapit.error/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.error/1"], Canonical] = Field(
+        default="gspec.error/1", alias="schema"
+    )
     code: str = Field(json_schema_extra={"enum": ERROR_CODE_ENUM})
     message: str
     context: dict[str, str]

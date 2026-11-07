@@ -11,7 +11,7 @@ From v0.5.0 that baseline is frozen rather than a release gate — gspec pursues
 contract (native JSON/Markdown, reads and cluster engines, typing), and the parity
 harness (`pixi run -e parity parity`) serves as a regression reference for the frozen
 surface. gspec reads abricate-format databases (legacy `~~~` headers) as-is. The
-reverse does not hold: gspec-native databases (`gapit/v1` tagged headers) cannot be
+reverse does not hold: gspec-native databases (`gspec/v1` tagged headers) cannot be
 read by abricate. Details: `./databases.md`.
 
 ## Why does a hit showing 80.00% coverage get filtered?
@@ -68,7 +68,7 @@ If the BLAST indices are missing or stale, rebuild them all with:
 $ gspec db setup
 ```
 
-Only gspec-native output goes the other way (abricate cannot read `gapit/v1`
+Only gspec-native output goes the other way (abricate cannot read `gspec/v1`
 databases).
 
 ## How do I screen gene clusters or Kaptive loci?
@@ -126,14 +126,14 @@ huge file, `--threads` does.
 TSV by default — tsv is the human default on every gspec surface, and json/md are the
 agent opt-ins. Reads results are per-gene breadth/depth rows, so the streaming table
 puts the sample key in the first `#SAMPLE` column; `--format json` (or `md`) gives the
-versioned `gapit.reads/1` document instead:
+versioned `gspec.reads/1` document instead:
 
 ```console
 $ gspec screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads
 #SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
 tests/data/reads/tetx_full.fq	tetX	100.00	2.30	12	yes	tinyreads	SYN-001	extended resistance determinant tetX
 $ gspec screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads --format json
-{"schema": "gapit.reads/1", ...}
+{"schema": "gspec.reads/1", ...}
 ```
 
 Reads mode: `./reads.md`.
@@ -148,7 +148,7 @@ and the per-sample output are documented in `./reads.md`.
 
 ## What are per-gene identity floors?
 
-A database-side `floors.json` (`gapit.floors/1`) declares a minimum alignment identity
+A database-side `floors.json` (`gspec.floors/1`) declares a minimum alignment identity
 per gene for reads-mode and contig-mode presence: alignments below the floor are dropped before
 breadth and depth are aggregated, so a close-but-not-exact homolog no longer over-calls
 the gene. The real case that motivated it: the SPATE-homolog `pic` in the bundled
@@ -162,7 +162,7 @@ byte-identically to before. Details: `./reads.md` and `./databases.md`.
 
 Different reference sets need different thresholds: a 62 bp amplicon, an 857 bp gene,
 and a panel with an `lpxA` control cannot share one global identity/MAPQ/depth rule.
-A database can ship `screen.json` (`gapit.screen/1`) with its own reads/contigs
+A database can ship `screen.json` (`gspec.screen/1`) with its own reads/contigs
 defaults (identity prefilter, MAPQ, depth, relative-depth control, contig
 identity/coverage, merge-fragments). Precedence is CLI flag > `screen.json` > global
 default. The bundled `cje_cps` panel uses MAPQ 20, depth 5, and a 10% `lpxA`
@@ -176,7 +176,7 @@ An external binary (blastn, makeblastdb, blastdbcmd, minimap2) is
 not on PATH. gspec exits 3 with the envelope naming the binary:
 
 ```text
-{"schema":"gapit.error/1","code":"MISSING_DEPENDENCY","message":"required binary not found on PATH: blastn","context":{"binary":"blastn"}}
+{"schema":"gspec.error/1","code":"MISSING_DEPENDENCY","message":"required binary not found on PATH: blastn","context":{"binary":"blastn"}}
 ```
 
 Install BLAST+ and friends (pixi does this for you) and make sure they are on

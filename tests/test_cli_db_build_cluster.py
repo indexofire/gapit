@@ -4,7 +4,7 @@ Real makeblastdb from the pixi env, synthetic fixtures from
 tests/data/cluster, everything local to tmp_path — the test_cli_db_build.py
 conventions. The gene-kind FASTA path must stay byte-compatible (its own
 suite, untouched); these tests pin the NEW cluster artifacts: locus FASTA
-``sequences``, ``features.json`` (gapit.features/1), manifest
+``sequences``, ``features.json`` (gspec.features/1), manifest
 ``kind: cluster``, BLAST index, and the optional validated ``typing.json``.
 """
 
@@ -41,7 +41,7 @@ def build(*extra: str) -> Result:
 def test_db_build_gbk_creates_cluster_artifacts(tmp_path: Path) -> None:
     """Given a Bakta-style GBK, When `db build NAME file.gbk`, Then exit 0
     with a gene-shaped receipt (records = loci), the locus FASTA carries one
-    record per locus, features.json is a valid gapit.features/1, the manifest
+    record per locus, features.json is a valid gspec.features/1, the manifest
     declares kind cluster with plain headers, the BLAST index exists, and no
     records.jsonl or typing.json is written."""
     datadir = tmp_path / "datadir"
@@ -65,10 +65,10 @@ def test_db_build_gbk_creates_cluster_artifacts(tmp_path: Path) -> None:
     document = features_adapter.validate_json(
         (db_dir / "features.json").read_text(encoding="utf-8")
     )
-    assert document.schema_name == "gapit.features/1"
+    assert document.schema_name == "gspec.features/1"
     assert [locus.id for locus in document.loci] == ["KL9001", "KL9002"]
     assert [len(locus.genes) for locus in document.loci] == [3, 3]
-    manifest = read_manifest(db_dir / "gapit-manifest.json")
+    manifest = read_manifest(db_dir / "gspec-manifest.json")
     assert manifest.kind == "cluster"
     assert manifest.header_format == "plain"
     assert manifest.n_records == 2
@@ -95,7 +95,7 @@ def test_db_build_gff3_sidecar_creates_cluster_artifacts(tmp_path: Path) -> None
     )
     assert [locus.id for locus in document.loci] == ["cl1", "cl2"]
     assert document.loci[1].genes[0].gene_id == "bigA"
-    assert read_manifest(db_dir / "gapit-manifest.json").kind == "cluster"
+    assert read_manifest(db_dir / "gspec-manifest.json").kind == "cluster"
     assert (db_dir / "sequences.nin").is_file()
 
 
@@ -108,7 +108,7 @@ def test_db_build_gzipped_gbk(tmp_path: Path) -> None:
     result = build(DB, str(DATA / "gz_input.gbk.gz"), "--datadir", str(datadir))
 
     assert result.exit_code == 0, result.stderr
-    assert read_manifest(datadir / DB / "gapit-manifest.json").n_records == 1
+    assert read_manifest(datadir / DB / "gspec-manifest.json").n_records == 1
 
 
 def test_db_build_kind_flag_must_match_detected_format(tmp_path: Path) -> None:
@@ -137,12 +137,12 @@ def test_db_build_kind_flag_must_match_detected_format(tmp_path: Path) -> None:
         "explicit", str(DATA / "bakta_style.gbk"), "--datadir", str(datadir), "--kind", "cluster"
     )
     assert matching.exit_code == 0, matching.stderr
-    assert read_manifest(datadir / "explicit" / "gapit-manifest.json").kind == "cluster"
+    assert read_manifest(datadir / "explicit" / "gspec-manifest.json").kind == "cluster"
 
 
 def test_db_build_gene_kind_stays_gene(tmp_path: Path) -> None:
     """Given a plain FASTA (unknown-to-cluster suffixes), When built, Then
-    the manifest declares kind gene with gapit/v1 headers — the gene pipeline
+    the manifest declares kind gene with gspec/v1 headers — the gene pipeline
     is the untouched default."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
@@ -152,9 +152,9 @@ def test_db_build_gene_kind_stays_gene(tmp_path: Path) -> None:
     result = build(DB, str(fasta), "--datadir", str(datadir))
 
     assert result.exit_code == 0, result.stderr
-    manifest = read_manifest(datadir / DB / "gapit-manifest.json")
+    manifest = read_manifest(datadir / DB / "gspec-manifest.json")
     assert manifest.kind == "gene"
-    assert manifest.header_format == "gapit/v1"
+    assert manifest.header_format == "gspec/v1"
     assert not (datadir / DB / "features.json").exists()
 
 
@@ -177,7 +177,7 @@ def test_db_build_typing_validated_and_copied(tmp_path: Path) -> None:
     copied = datadir / DB / "typing.json"
     assert copied.read_bytes() == (DATA / "typing_valid.json").read_bytes()
     assert read_typing_document(copied).schemes[0].fallback == "unknown"
-    assert read_manifest(datadir / DB / "gapit-manifest.json").typing_schema == "gapit.typing/1"
+    assert read_manifest(datadir / DB / "gspec-manifest.json").typing_schema == "gspec.typing/1"
 
 
 def test_db_build_typing_invalid_stops_the_build(tmp_path: Path) -> None:
@@ -198,7 +198,7 @@ def test_db_build_typing_invalid_stops_the_build(tmp_path: Path) -> None:
     assert result.exit_code == 4
     envelope = last_envelope(result.stderr)
     assert envelope.code == "TYPING_MALFORMED"
-    assert not (datadir / DB / "gapit-manifest.json").exists()
+    assert not (datadir / DB / "gspec-manifest.json").exists()
 
 
 def test_db_build_typing_with_gene_kind_validates_references(tmp_path: Path) -> None:
@@ -219,7 +219,7 @@ def test_db_build_typing_with_gene_kind_validates_references(tmp_path: Path) -> 
     envelope = last_envelope(result.stderr)
     assert envelope.code == "TYPING_UNKNOWN_GENE"
     assert envelope.context["gene"] == "wzx"
-    assert not (datadir / DB / "gapit-manifest.json").exists()
+    assert not (datadir / DB / "gspec-manifest.json").exists()
 
 
 def test_db_build_cluster_input_rejects_gene_options(tmp_path: Path) -> None:

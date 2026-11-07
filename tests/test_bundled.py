@@ -62,7 +62,7 @@ def screen(sample: Path, datadir: Path, *extra: str) -> Result:
 
 def phenotypes(sample: Path, datadir: Path, tmp_path: Path) -> dict[str, object]:
     """The DEC designation for one sample via the two-stage pipeline:
-    screen to a table, then type it (gapit.typing_result/1)."""
+    screen to a table, then type it (gspec.typing_result/1)."""
     table = tmp_path / f"{sample.stem}.tsv"
     screened = runner.invoke(
         app,
@@ -286,14 +286,14 @@ def test_screen_auto_materializes_on_fresh_empty_datadir(tmp_path: Path) -> None
         result.stderr
     )
     db_dir = datadir / "eco_dec"
-    manifest = read_manifest(db_dir / "gapit-manifest.json")
+    manifest = read_manifest(db_dir / "gspec-manifest.json")
     assert manifest.n_records == 16
     assert manifest.source == "bundled"
-    assert manifest.typing_schema == "gapit.typing/2"
+    assert manifest.typing_schema == "gspec.typing/2"
     assert (db_dir / "typing.json").is_file()
     assert (db_dir / "sequences.nin").is_file()
     floors = json.loads((db_dir / "floors.json").read_text(encoding="utf-8"))
-    assert floors == {"schema": "gapit.floors/1", "default": None, "genes": {"pic": 90.0}}
+    assert floors == {"schema": "gspec.floors/1", "default": None, "genes": {"pic": 90.0}}
     genes = {line.split("\t")[5] for line in result.stdout.splitlines()[1:]}
     assert genes == {"aggR", "pic", "uidA"}
 
@@ -306,7 +306,7 @@ def test_screen_is_idempotent_and_quiet_suppresses_the_note(tmp_path: Path) -> N
     datadir.mkdir()
     first = screen(S1, datadir)
     assert first.exit_code == 0, first.stderr
-    manifest_path = datadir / "eco_dec" / "gapit-manifest.json"
+    manifest_path = datadir / "eco_dec" / "gspec-manifest.json"
     before = manifest_path.read_bytes()
 
     second = screen(S2, datadir)
@@ -320,7 +320,7 @@ def test_screen_is_idempotent_and_quiet_suppresses_the_note(tmp_path: Path) -> N
     silent = screen(S1, other, "--quiet")
     assert silent.exit_code == 0, silent.stderr
     assert silent.stderr == ""
-    assert (other / "eco_dec" / "gapit-manifest.json").is_file()
+    assert (other / "eco_dec" / "gspec-manifest.json").is_file()
 
 
 def test_screen_bootstraps_a_missing_datadir_for_bundled(tmp_path: Path) -> None:
@@ -331,7 +331,7 @@ def test_screen_bootstraps_a_missing_datadir_for_bundled(tmp_path: Path) -> None
     missing = tmp_path / "does" / "not" / "exist"
     result = screen(S1, missing)
     assert result.exit_code == 0, result.stderr
-    assert (missing / "eco_dec" / "gapit-manifest.json").is_file()
+    assert (missing / "eco_dec" / "gspec-manifest.json").is_file()
 
     other = tmp_path / "also-missing"
     failure = runner.invoke(app, ["screen", str(S1), "--db", "card", "--datadir", str(other)])
@@ -383,7 +383,7 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
 
 
 def test_dec_designation_matrix_against_the_bundled_database(tmp_path: Path) -> None:
-    """Given the bundled eco_dec (typed gapit.typing/2), When the three
+    """Given the bundled eco_dec (typed gspec.typing/2), When the three
     DEC matrix samples run the two-stage pipeline (screen -o table, then
     typing table), Then the dual-scheme calls hold — the equivalence lock
     with the inline engine's former calls: aggR+pic → EAEC/EAEC, pic+astA
@@ -501,9 +501,9 @@ def test_screen_auto_materializes_bundled_cluster_database(tmp_path: Path) -> No
     zero network, no real GBKs), When screening --db vpa_ok as JSON, Then
     the datadir bootstraps, the cluster bundle materializes through the
     cluster pipeline (loci note, kind-cluster manifest stamped
-    source=bundled with typing_schema gapit.typing/2 and the MIT content
+    source=bundled with typing_schema gspec.typing/2 and the MIT content
     license, typing.json a byte-copy of the committed asset), and the
-    screen renders gapit.cluster/2 calling O3:K6 — the install-and-use
+    screen renders gspec.cluster/2 calling O3:K6 — the install-and-use
     headline."""
     sample = tmp_path / "carrier.fna"
     loci_fasta_from_bundle("vpa_ok", sample, "OL3", "KL6")
@@ -516,11 +516,11 @@ def test_screen_auto_materializes_bundled_cluster_database(tmp_path: Path) -> No
         result.stderr
     )
     db_dir = missing / "vpa_ok"
-    manifest = read_manifest(db_dir / "gapit-manifest.json")
+    manifest = read_manifest(db_dir / "gspec-manifest.json")
     assert manifest.kind == "cluster"
     assert manifest.source == "bundled"
     assert manifest.n_records == VPA_OK_LOCI
-    assert manifest.typing_schema == "gapit.typing/2"
+    assert manifest.typing_schema == "gspec.typing/2"
     assert manifest.license == "MIT (database content)"
     bundled = find_bundled("vpa_ok")
     assert bundled is not None and bundled.typing_path is not None
@@ -532,7 +532,7 @@ def test_screen_auto_materializes_bundled_cluster_database(tmp_path: Path) -> No
     assert (db_dir / "gene_families.json").read_bytes() == bundled.gene_families_path.read_bytes()
     assert (db_dir / "sequences.nin").is_file()
     report = json.loads(result.stdout)
-    assert report["schema"] == "gapit.cluster/2"
+    assert report["schema"] == "gspec.cluster/2"
     phenotypes = report["files"][0]["phenotypes"]
     assert phenotypes["o_group"]["phenotype"] == "O3"
     assert phenotypes["k_group"]["phenotype"] == "K6"
@@ -556,7 +556,7 @@ def test_cluster_bundle_materialization_is_idempotent_and_quiet(
     loci_fasta_from_bundle("vpa_ok", sample, "OL3", "KL6")
     first = screen_db(sample, datadir, "vpa_ok")
     assert first.exit_code == 0, first.stderr
-    manifest_path = datadir / "vpa_ok" / "gapit-manifest.json"
+    manifest_path = datadir / "vpa_ok" / "gspec-manifest.json"
     before = manifest_path.read_bytes()
 
     second = screen_db(sample, datadir, "vpa_ok")
@@ -576,7 +576,7 @@ def test_cluster_bundle_materialization_is_idempotent_and_quiet(
     silent = screen_db(sample, other, "vpa_ok", "--quiet")
     assert silent.exit_code == 0, silent.stderr
     assert silent.stderr == ""
-    assert (other / "vpa_ok" / "gapit-manifest.json").is_file()
+    assert (other / "vpa_ok" / "gspec-manifest.json").is_file()
 
 
 def test_every_bundle_declares_a_content_license() -> None:
@@ -597,7 +597,7 @@ def test_screen_detail_emits_rich_locus_maps(tmp_path: Path) -> None:
     result = screen_db(sample, datadir, "vpa_ok", "--format", "json", "--detail", "--quiet")
     assert result.exit_code == 0, result.stderr
     document = json.loads(result.stdout)
-    assert document["schema"] == "gapit.locus_map/1"
+    assert document["schema"] == "gspec.locus_map/1"
     file_entry = document["files"][0]
     assert "OL3" in file_entry["locus_maps"]
     assert file_entry["locus_maps"]["OL3"]["quality"]["status"] == "pass"

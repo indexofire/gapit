@@ -110,11 +110,11 @@ class TestEngineSamples:
     def test_exact_locus_is_called_with_all_genes_present(
         self, cluster_db: Path, tmp_path: Path
     ) -> None:
-        """Given an exact locusA contig, When screened, Then gapit.cluster/1
+        """Given an exact locusA contig, When screened, Then gspec.cluster/1
         names locusA best at 100/100 with all three genes present and the
         reserved phenotype null."""
         document = screen_json(cluster_db, _write_samples(cluster_db, tmp_path)["exact"])
-        assert document["schema"] == "gapit.cluster/1"
+        assert document["schema"] == "gspec.cluster/1"
         assert document["params"] == {
             "db": DB,
             "preset": "asm20",
@@ -326,7 +326,7 @@ class TestFormats:
         assert result.exit_code == 0, result.stderr
         text = result.stdout
         assert text.startswith("---\n")
-        assert "schema: gapit.cluster/1" in text
+        assert "schema: gspec.cluster/1" in text
         assert "preset: asm20" in text
         assert "min_cluster_cov: 96.0" in text
         assert "## `ctg_exact`" not in text  # sections key on the FILE, not the contig
@@ -371,7 +371,7 @@ class TestGoldens:
             f"{name}.tsv", format_cluster_tsv([report], csv=False, noheader=False, nopath=False)
         )
         parsed = json.loads(render_cluster_json([report], PARAMS, now=PINNED_NOW))
-        assert parsed["schema"] == "gapit.cluster/1"
+        assert parsed["schema"] == "gspec.cluster/1"
 
 
 class TestKindGuards:
@@ -548,7 +548,7 @@ class TestJobs:
 class TestSchema:
     def test_gapit_schema_cluster(self) -> None:
         """Given the schema command, When asked for cluster, Then the
-        gapit.cluster/1 JSON Schema prints with the reserved phenotype."""
+        gspec.cluster/1 JSON Schema prints with the reserved phenotype."""
         result = runner.invoke(app, ["schema", "cluster"])
         assert result.exit_code == 0
         payload = json.loads(result.stdout)
@@ -579,7 +579,7 @@ class TestMcp:
         self, cluster_db: Path, tmp_path: Path
     ) -> None:
         """Given the MCP screen tool and a cluster-kind db, When called with
-        assembly files, Then it returns the gapit.cluster/1 document with the
+        assembly files, Then it returns the gspec.cluster/1 document with the
         best-locus call; min_gene_id overrides flow through."""
         sample = _write_samples(cluster_db, tmp_path)["mutated"]
         is_error, text = self._call(
@@ -587,7 +587,7 @@ class TestMcp:
         )
         assert not is_error
         document = json.loads(text)
-        assert document["schema"] == "gapit.cluster/1"
+        assert document["schema"] == "gspec.cluster/1"
         assert document["files"][0]["best"]["locus"] == "locusA"
 
         stricter, stricter_text = self._call(
@@ -601,7 +601,7 @@ class TestMcp:
 
     def test_mcp_gene_params_rejected_on_cluster_db(self, cluster_db: Path, tmp_path: Path) -> None:
         """Given the MCP screen tool, a cluster db, and the blastn-only
-        minid, When called, Then isError carries the gapit.error/1 usage
+        minid, When called, Then isError carries the gspec.error/1 usage
         envelope naming the cluster flags."""
         sample = _write_samples(cluster_db, tmp_path)["exact"]
         is_error, text = self._call(

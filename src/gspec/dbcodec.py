@@ -18,7 +18,10 @@ from collections.abc import Sequence
 from gspec.db import DbHeader, parse_db_header
 from gspec.errors import DatabaseError
 
-PREFIX = "gapit|"
+PREFIX = "gspec|"
+
+#: Pre-0.9 header prefix; still decoded so existing databases keep working.
+LEGACY_PREFIX = "gapit|"
 
 # Values-only escape alphabet (probe-verified byte-identical through
 # makeblastdb/blastn/minimap2); every other char travels verbatim.
@@ -39,20 +42,24 @@ _ESCAPE_RE = re.compile("%([0-9a-fA-F]{2})")
 _BAD_ESCAPE_RE = re.compile(r"%(?![0-9a-fA-F]{2})")
 
 
-def is_gapit_header(seqid: str) -> bool:
-    """True iff the seqid carries the native ``gapit|`` tagged prefix."""
-    return seqid.startswith(PREFIX)
+def is_gspec_header(seqid: str) -> bool:
+    """True iff the seqid carries a native tagged prefix (current or legacy)."""
+    return seqid.startswith((PREFIX, LEGACY_PREFIX))
+
+
+#: Pre-0.9 name of :func:`is_gspec_header`, kept for callers and tests.
+is_gapit_header = is_gspec_header
 
 
 def encode_seqid(db: str, gene: str, accession: str, function: Sequence[str]) -> str:
-    """Render one record as a native gapit/v1 seqid (total: never raises).
+    """Render one record as a native gspec/v1 seqid (total: never raises).
 
     The function list is joined with ``;`` first, then encoded as one value,
     so it decodes back to the abricate display string ``a;b``.
     """
     return "|".join(
         (
-            "gapit",  # the on-disk header prefix, frozen at gapit/v1
+            "gspec",
             f"db={db.translate(_ENCODE_TABLE)}",
             f"gene={gene.translate(_ENCODE_TABLE)}",
             f"acc={accession.translate(_ENCODE_TABLE)}",
@@ -64,7 +71,7 @@ def encode_seqid(db: str, gene: str, accession: str, function: Sequence[str]) ->
 def decode_seqid(seqid: str, default_db: str) -> DbHeader:
     """Parse a seqid into a ``DbHeader``.
 
-    ``gapit|``-prefixed seqids use the strict native format: bad escapes,
+    ``gspec|``/``gapit|``-prefixed seqids use the strict native format: bad escapes,
     missing/empty gene, a missing ``db``/``acc`` KEY, and duplicate keys raise
     ``HEADER_MALFORMED``; unknown keys are skipped (forward compat); an empty
     ``db`` value falls back to ``default_db`` (symmetric with legacy) and an

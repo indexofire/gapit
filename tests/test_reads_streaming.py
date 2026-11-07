@@ -201,7 +201,7 @@ def test_screen_reads_consumes_an_iterator(tmp_path: Path, monkeypatch: pytest.M
     from gspec.reads import screen_reads
 
     sequences = tmp_path / "sequences"
-    sequences.write_text(">gapit|db=db|gene=g1|acc=A|func=f product\n" + "ACGT" * 25 + "\n")
+    sequences.write_text(">gspec|db=db|gene=g1|acc=A|func=f product\n" + "ACGT" * 25 + "\n")
     database = Database(name="db", path=tmp_path, sequences_path=sequences)
     reads = tmp_path / "reads.fq"
     reads.write_text("@r1\nACGT\n+\nIIII\n", encoding="utf-8")
@@ -213,7 +213,7 @@ def test_screen_reads_consumes_an_iterator(tmp_path: Path, monkeypatch: pytest.M
             qstart=0,
             qend=100,
             strand="+",
-            tname="gapit|db=db|gene=g1|acc=A|func=f",
+            tname="gspec|db=db|gene=g1|acc=A|func=f",
             tlen=100,
             tstart=0,
             tend=100,

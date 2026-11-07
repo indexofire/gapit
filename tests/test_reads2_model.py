@@ -1,5 +1,5 @@
-"""Unit + model tests for gapit.reads/2: aggregation weighting, document
-shape, and the byte-identity of gapit.reads/1 rendering when the new
+"""Unit + model tests for gspec.reads/2: aggregation weighting, document
+shape, and the byte-identity of gspec.reads/1 rendering when the new
 thresholds are off.
 """
 
@@ -116,13 +116,13 @@ def sample_report() -> tuple[GeneCoverage, ReadsParams]:
 
 def test_reads2_json_document_shape() -> None:
     """Given a filtered run rendered as reads/2, When parsed, Then the schema
-    literal is gapit.reads/2, params carry both thresholds, and gene entries
+    literal is gspec.reads/2, params carry both thresholds, and gene entries
     carry mean_identity_pct rounded to 2."""
     gene, params = sample_report()
     report = ReadsReport(reads=("a.fq",), genes=(gene,))
     output = render_reads2_json([report], params, now=PINNED_NOW)
     document = TypeAdapter(Reads2Document).validate_json(output)
-    assert document.schema_name == "gapit.reads/2"
+    assert document.schema_name == "gspec.reads/2"
     assert document.params.min_identity == 95.0
     assert document.params.min_mapq == 0
     assert document.params.db == "db"
@@ -140,7 +140,7 @@ def test_reads1_rendering_omits_reads2_fields() -> None:
     params = ReadsParams(db="db")
     report = ReadsReport(reads=("a.fq",), genes=(gene,))
     output = render_reads_json([report], params, now=PINNED_NOW)
-    assert '"schema": "gapit.reads/1"' in output
+    assert '"schema": "gspec.reads/1"' in output
     assert "min_identity" not in output
     assert "min_mapq" not in output
     assert "mean_identity_pct" not in output

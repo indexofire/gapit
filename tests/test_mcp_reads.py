@@ -109,12 +109,12 @@ def test_screen_reads_without_db_is_usage_error(reads_datadir: Path) -> None:
 
 def test_screen_reads_paired_fastq_returns_reads1_json(reads_datadir: Path) -> None:
     """Given tools/call screen_reads on one paired tetX lane, When served,
-    Then non-error text parsing as gapit.reads/1 with the sr preset and the
+    Then non-error text parsing as gspec.reads/1 with the sr preset and the
     tetX gene present (unmapped db genes are omitted from the document)."""
     is_error, text = call_tool("screen_reads", reads_args(reads_datadir))
     assert is_error is False
     document = json.loads(text)
-    assert document["schema"] == "gapit.reads/1"
+    assert document["schema"] == "gspec.reads/1"
     assert document["params"]["db"] == "tinyreads"
     assert document["params"]["read_type"] == "sr"
     genes = {entry["gene"]: entry["present"] for entry in document["files"][0]["genes"]}
@@ -123,21 +123,21 @@ def test_screen_reads_paired_fastq_returns_reads1_json(reads_datadir: Path) -> N
 
 def test_screen_reads_min_identity_emits_reads2(reads_datadir: Path) -> None:
     """Given screen_reads with min_identity > 0, When served, Then the
-    document is the filtered gapit.reads/2 schema."""
+    document is the filtered gspec.reads/2 schema."""
     is_error, text = call_tool("screen_reads", reads_args(reads_datadir, min_identity=90.0))
     assert is_error is False
     document = json.loads(text)
-    assert document["schema"] == "gapit.reads/2"
+    assert document["schema"] == "gspec.reads/2"
     assert document["params"]["min_identity"] == 90.0
 
 
 def test_screen_reads_md_format_renders_markdown(reads_datadir: Path) -> None:
     """Given screen_reads with format md, When served, Then non-error text
-    carrying the gapit.reads/1 YAML frontmatter."""
+    carrying the gspec.reads/1 YAML frontmatter."""
     is_error, text = call_tool("screen_reads", reads_args(reads_datadir, format="md"))
     assert is_error is False
     assert text.startswith("---\n")
-    assert "schema: gapit.reads/1" in text
+    assert "schema: gspec.reads/1" in text
 
 
 def test_screen_reads_accepts_tsv_format(reads_datadir: Path) -> None:
@@ -197,7 +197,7 @@ def test_screen_reads_empty_path_element_is_usage_error(reads_datadir: Path) -> 
 
 def test_screen_aligner_minimap2_surveys_assembly(amr_datadir: Path) -> None:
     """Given tools/call screen with aligner minimap2 on a contigs file, When
-    served, Then the reads-engine survey returns gapit.reads/1 with the
+    served, Then the reads-engine survey returns gspec.reads/1 with the
     auto-resolved map-ont preset."""
     is_error, text = call_tool(
         "screen",
@@ -210,7 +210,7 @@ def test_screen_aligner_minimap2_surveys_assembly(amr_datadir: Path) -> None:
     )
     assert is_error is False
     document = json.loads(text)
-    assert document["schema"] == "gapit.reads/1"
+    assert document["schema"] == "gspec.reads/1"
     assert document["params"]["read_type"] == "map-ont"
 
 
@@ -264,7 +264,7 @@ def test_screen_reads_comma_in_filename_survives(reads_datadir: Path, tmp_path: 
     )
     assert is_error is False
     document = json.loads(text)
-    assert document["schema"] == "gapit.reads/1"
+    assert document["schema"] == "gspec.reads/1"
     genes = {entry["gene"]: entry["present"] for entry in document["files"][0]["genes"]}
     assert genes == {"tetX": True}
 
@@ -274,7 +274,7 @@ def test_screen_reads_comma_in_filename_survives(reads_datadir: Path, tmp_path: 
 
 def test_cli_mcp_serve_streams_screen_reads_response(reads_datadir: Path) -> None:
     """Given `gspec mcp` fed initialize + a single-end screen_reads call via
-    CliRunner, When invoked, Then exit 0 and the gapit.reads/1 document
+    CliRunner, When invoked, Then exit 0 and the gspec.reads/1 document
     rides the second response line (r2 is optional)."""
     request = tool_call(
         "screen_reads",
@@ -297,6 +297,6 @@ def test_cli_mcp_serve_streams_screen_reads_response(reads_datadir: Path) -> Non
     assert [response["id"] for response in responses] == [1, 2]
     assert responses[1]["result"]["isError"] is False
     document = json.loads(responses[1]["result"]["content"][0]["text"])
-    assert document["schema"] == "gapit.reads/1"
+    assert document["schema"] == "gspec.reads/1"
     genes = {entry["gene"]: entry["present"] for entry in document["files"][0]["genes"]}
     assert genes["tetX"] is True

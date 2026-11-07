@@ -1,5 +1,5 @@
 {
-  "schema": "gapit.screen/1",
+  "schema": "gspec.screen/1",
   "contigs": {
     "minid": 80.0,
     "mincov": 50.0,

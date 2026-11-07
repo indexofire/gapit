@@ -110,10 +110,10 @@ def transform(workdir: Path) -> Iterable[Record]:
 
 def finalize(workdir: Path, build_dir: Path) -> None:
     """Write the per-gene floors and reads/contig screening defaults."""
-    floors = {"schema": "gapit.floors/1", "default": 98.0, "genes": {"tuf": 85.0}}
+    floors = {"schema": "gspec.floors/1", "default": 98.0, "genes": {"tuf": 85.0}}
     (build_dir / "floors.json").write_text(json.dumps(floors, indent=2) + "\n")
     screen = {
-        "schema": "gapit.screen/1",
+        "schema": "gspec.screen/1",
         "reads": {
             "min_breadth": 90.0,
             "min_identity": 95.0,

@@ -21,9 +21,9 @@ gspec db build NAME FASTA [OPTIONS]
 | `--tsv` | path | Metadata TSV: header row with `gene`/`accession`/`function` columns. |
 | `--dbtype` | `nucl` or `prot` | Force the molecule type (default: auto-detect from the sequences). |
 | `--kind` / `-k` | `gene` or `cluster` | Force the database kind (default: auto-detect from the input suffix; a disagreement is a usage error). |
-| `--typing` / `-T` | path | `gapit.typing/1` or `/2` scoring spec: validated, copied into the db as `typing.json`, recorded in its manifest. |
-| `--floors` / `-F` | path | `gapit.floors/1` per-gene identity floors for reads + contigs: validated, copied into the db as `floors.json` (gene builds only). |
-| `--screen` / `-S` | path | `gapit.screen/1` per-database reads/contigs defaults: validated, copied into the db as `screen.json` (gene builds only). |
+| `--typing` / `-T` | path | `gspec.typing/1` or `/2` scoring spec: validated, copied into the db as `typing.json`, recorded in its manifest. |
+| `--floors` / `-F` | path | `gspec.floors/1` per-gene identity floors for reads + contigs: validated, copied into the db as `floors.json` (gene builds only). |
+| `--screen` / `-S` | path | `gspec.screen/1` per-database reads/contigs defaults: validated, copied into the db as `screen.json` (gene builds only). |
 | `--datadir` | path | Database directory (default: `$GSPEC_DATADIR`, then `$XDG_DATA_HOME/gspec/db`, then `~/.local/share/gspec/db`). |
 | `--description` | text | Default product for records whose FASTA header has no description text. |
 | `--force` | flag | Overwrite the database if it already exists. |
@@ -134,14 +134,14 @@ query_tet.fa	contigB	1	240	+	tetA_lab	1-240/240	===============	0/0	100.00	100.0
 
 The first `~~~` field is the original database name and is discarded: `db` is always the NAME you are building. Gene, accession, and resistance all flow through to the screen output.
 
-### 4. Roundtripping through gapit| headers
+### 4. Roundtripping through gspec| headers
 
-Native records are portable. Regenerate a FASTA from the `records.jsonl` written by example 1 (one `gapit|` header per record, sequence and product verbatim), then rebuild it as a new database:
+Native records are portable. Regenerate a FASTA from the `records.jsonl` written by example 1 (one `gspec|` header per record, sequence and product verbatim), then rebuild it as a new database:
 
 ```console
 $ grep '>' ported.fa
->gapit|db=labgenes|gene=labcur1|acc=|func= synthetic tetracycline efflux pump
->gapit|db=labgenes|gene=labcur2|acc=|func= synthetic macrolide esterase
+>gspec|db=labgenes|gene=labcur1|acc=|func= synthetic tetracycline efflux pump
+>gspec|db=labgenes|gene=labcur2|acc=|func= synthetic macrolide esterase
 $ gspec db build labgenes_rt ported.fa --datadir ./db
 gspec: generated /tmp/opencode/customdb-docs/db/labgenes_rt/sequences
 gspec: self-check passed for labgenes_rt
@@ -152,7 +152,7 @@ $ gspec screen query1.fa --db labgenes_rt --datadir ./db
 query1.fa	contigA	31	230	+	labcur1	1-200/240	=============..	0/0	83.33	100.00	labgenes_rt		synthetic tetracycline efflux pump	
 ```
 
-The screen output is identical to example 1 (the `db` value in the header is retargeted to the new NAME). Empty `acc=` and `func=` segments are fine, and a `gapit|` header carrying accession and function values roundtrips them the same way.
+The screen output is identical to example 1 (the `db` value in the header is retargeted to the new NAME). Empty `acc=` and `func=` segments are fine, and a `gspec|` header carrying accession and function values roundtrips them the same way.
 
 ### 5. Protein databases (blastx)
 
@@ -205,12 +205,12 @@ $ grep '>' genes_v2.fa
 >labcur2 synthetic macrolide esterase
 >labcur3 synthetic fosfomycin thiolase
 $ gspec db build labgenes genes_v2.fa --datadir ./db
-{"schema":"gapit.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database labgenes (use --force)","context":{"db":"labgenes"}}
+{"schema":"gspec.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database labgenes (use --force)","context":{"db":"labgenes"}}
 $ echo $?
 4
 ```
 
-The envelope is the standard `gapit.error/1` shape (exit 4, database error).
+The envelope is the standard `gspec.error/1` shape (exit 4, database error).
 
 `--force` deletes and rebuilds in place. The metadata TSV from example 2 still applies:
 
@@ -335,11 +335,11 @@ $ grep -o '"product":"[^"]*"' db/bare_plain/records.jsonl
 "product":"baregene"
 ```
 
-A header that starts with `gapit|` but is not valid tagged syntax fails the build with exit 4:
+A header that starts with `gspec|` but is not valid tagged syntax fails the build with exit 4:
 
 ```console
 $ gspec db build labbroken broken_tag.fa --datadir ./db
-{"schema":"gapit.error/1","code":"HEADER_MALFORMED","message":"malformed gapit/v1 sequence header: segment_without_key","context":{"seqid":"gapit|nonsense","reason":"segment_without_key"}}
+{"schema":"gspec.error/1","code":"HEADER_MALFORMED","message":"malformed gspec/v1 sequence header: segment_without_key","context":{"seqid":"gspec|nonsense","reason":"segment_without_key"}}
 ```
 
 The mixed file from the table above builds each record by its own rules, and the generated `sequences` projection shows the retargeting (`db` is always the NAME built, the original `elsewhere` tag is dropped):
@@ -348,10 +348,10 @@ The mixed file from the table above builds each record by its own rules, and the
 $ gspec db build labmix mixed.fa --datadir ./db 2>/dev/null
 {"db":"labmix","records":4,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labmix"}
 $ grep '>' db/labmix/sequences
->gapit|db=labmix|gene=mixplain|acc=|func= plain header gene
->gapit|db=labmix|gene=fromtilde|acc=SYN-100|func=TETRACYCLINE tilde gene
->gapit|db=labmix|gene=fromtag|acc=SYN-200|func=ampicillin%3Bgentamicin tagged gene
->gapit|db=labmix|gene=secondplain|acc=|func= secondplain
+>gspec|db=labmix|gene=mixplain|acc=|func= plain header gene
+>gspec|db=labmix|gene=fromtilde|acc=SYN-100|func=TETRACYCLINE tilde gene
+>gspec|db=labmix|gene=fromtag|acc=SYN-200|func=ampicillin%3Bgentamicin tagged gene
+>gspec|db=labmix|gene=secondplain|acc=|func= secondplain
 ```
 
 Records keep input order, so `records.jsonl` line N is the Nth FASTA record. Duplicate gene names are allowed; a FASTA carrying `twingene` twice builds a two-record database:
@@ -374,7 +374,7 @@ $ grep -c '"gene":"twingene"' db/labtwin/records.jsonl
 
 ```console
 $ ls db/labmeta
-gapit-manifest.json
+gspec-manifest.json
 records.jsonl
 sequences
 sequences.ndb
@@ -387,11 +387,11 @@ sequences.ntf
 sequences.nto
 ```
 
-`records.jsonl` is the editable truth and `sequences` its `gapit/v1`-header projection; the `sequences.n*` files are the BLAST index. Field-level detail for both file contracts is in [Databases](./databases.md). Sequences are stored verbatim, no provider-style normalization: this is your curated truth, and a manifest with `source_urls: ["local"]` certifies the build.
+`records.jsonl` is the editable truth and `sequences` its `gspec/v1`-header projection; the `sequences.n*` files are the BLAST index. Field-level detail for both file contracts is in [Databases](./databases.md). Sequences are stored verbatim, no provider-style normalization: this is your curated truth, and a manifest with `source_urls: ["local"]` certifies the build.
 
 ## Provenance and license metadata (mandatory)
 
-Every custom database **must** carry its provenance in the manifest (`gapit-manifest.json`) so that
+Every custom database **must** carry its provenance in the manifest (`gspec-manifest.json`) so that
 `gspec db info -d NAME` shows where the content came from. There are no exceptions:
 
 1. **Source in `note`** — the literature citation (authors, journal, year, DOI), the source
@@ -408,23 +408,23 @@ Every custom database **must** carry its provenance in the manifest (`gapit-mani
    > upon verification.
 
 A build without these fields is considered unfinished: the curation path is to edit
-`gapit-manifest.json` directly (add `license`, `note`, `source_urls`, `upstream_version`)
+`gspec-manifest.json` directly (add `license`, `note`, `source_urls`, `upstream_version`)
 and re-verify with `gspec db info`.
 
 5. **Short list description via `info.json`** — the manifest `note` carries the full
    provenance and shows under `db info` NOTE; it must NOT be the list description.
-   Write an `info.json` sidecar (`gapit.dbinfo/1` DbGuidance) with a one-line
+   Write an `info.json` sidecar (`gspec.dbinfo/1` DbGuidance) with a one-line
    `description` (+ `vendor`, `references`, `caveats`, `usage`): `db list` shows the
    one-liner, `db info` shows everything.
 
-## K-mer substrate (gapit.kmerdb/1)
+## K-mer substrate (gspec.kmerdb/1)
 
 Cluster builds accept an optional `-K/--kmerdb PATH` installing a
-`gapit.kmerdb/1` JSON document declaring k-mer sets over the loci:
+`gspec.kmerdb/1` JSON document declaring k-mer sets over the loci:
 
 ```json
 {
-  "schema": "gapit.kmerdb/1",
+  "schema": "gspec.kmerdb/1",
   "k": 31,
   "sets": {
     "typeX.diff": {"of": "typeX", "against": ["typeY", "typeZ"]}
@@ -439,9 +439,9 @@ union of the `against` loci), storing them as sorted uint64 arrays under
 coverage/identity cannot separate — a single SNP moves the identity
 component by ~0.001 but flips the differential set from 1.0 to 0.0.
 
-### key_kmers in gapit.typing/3
+### key_kmers in gspec.typing/3
 
-`cluster_match` rules in a `gapit.typing/3` document may carry a
+`cluster_match` rules in a `gspec.typing/3` document may carry a
 `key_kmers` component (alongside the existing `coverage`, `identity`, and
 `key_genes`):
 

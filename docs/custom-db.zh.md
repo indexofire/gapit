@@ -23,9 +23,9 @@ gspec db build NAME FASTA [OPTIONS]
 | `--tsv` | path | 元数据 TSV：带 `gene`/`accession`/`function` 列的表头行。 |
 | `--dbtype` | `nucl` 或 `prot` | 强制分子类型（默认：从序列自动检测）。 |
 | `--kind` / `-k` | `gene` 或 `cluster` | 强制数据库类型（默认：从输入后缀自动检测；与后缀不一致是用法错误）。 |
-| `--typing` / `-T` | path | `gapit.typing/1` 或 `/2` 评分规范：先校验，再复制进数据库成为 `typing.json`，并记入其 manifest。 |
-| `--floors` / `-F` | path | `gapit.floors/1` 逐基因一致性下限，用于 reads/contig 模式的存在判定：先校验，再复制进数据库成为 `floors.json`（仅限基因库构建）。 |
-| `--screen` / `-S` | path | `gapit.screen/1` 每数据库 reads/contigs 默认值：先校验，再复制进数据库成为 `screen.json`（仅限基因库构建）。 |
+| `--typing` / `-T` | path | `gspec.typing/1` 或 `/2` 评分规范：先校验，再复制进数据库成为 `typing.json`，并记入其 manifest。 |
+| `--floors` / `-F` | path | `gspec.floors/1` 逐基因一致性下限，用于 reads/contig 模式的存在判定：先校验，再复制进数据库成为 `floors.json`（仅限基因库构建）。 |
+| `--screen` / `-S` | path | `gspec.screen/1` 每数据库 reads/contigs 默认值：先校验，再复制进数据库成为 `screen.json`（仅限基因库构建）。 |
 | `--datadir` | path | 数据库目录（默认：`$GSPEC_DATADIR`，然后 `$XDG_DATA_HOME/gspec/db`，最后 `~/.local/share/gspec/db`）。 |
 | `--description` | 文本 | FASTA 表头没有描述文本的记录的默认产物。 |
 | `--force` | 开关 | 数据库已存在时覆盖。 |
@@ -148,15 +148,15 @@ query_tet.fa	contigB	1	240	+	tetA_lab	1-240/240	===============	0/0	100.00	100.0
 第一个 `~~~` 字段是原始数据库名，会被丢弃：`db` 始终是你在构建的 NAME。基因、
 accession、耐药类别全部流入筛查输出。
 
-### 4. 经 gapit| 表头往返
+### 4. 经 gspec| 表头往返
 
 原生记录是可移植的。从示例 1 写出的 `records.jsonl` 再生一份 FASTA（每条记录一个
-`gapit|` 表头，序列和产物原样），然后把它重建为新的数据库：
+`gspec|` 表头，序列和产物原样），然后把它重建为新的数据库：
 
 ```console
 $ grep '>' ported.fa
->gapit|db=labgenes|gene=labcur1|acc=|func= synthetic tetracycline efflux pump
->gapit|db=labgenes|gene=labcur2|acc=|func= synthetic macrolide esterase
+>gspec|db=labgenes|gene=labcur1|acc=|func= synthetic tetracycline efflux pump
+>gspec|db=labgenes|gene=labcur2|acc=|func= synthetic macrolide esterase
 $ gspec db build labgenes_rt ported.fa --datadir ./db
 gspec: generated /tmp/opencode/customdb-docs/db/labgenes_rt/sequences
 gspec: self-check passed for labgenes_rt
@@ -168,7 +168,7 @@ query1.fa	contigA	31	230	+	labcur1	1-200/240	=============..	0/0	83.33	100.00	la
 ```
 
 筛查输出与示例 1 一致（表头中的 `db` 值被重定向到新的 NAME）。空的 `acc=` 和
-`func=` 段没问题，携带 accession 和 function 值的 `gapit|` 表头同样原样往返。
+`func=` 段没问题，携带 accession 和 function 值的 `gspec|` 表头同样原样往返。
 
 ### 5. 蛋白质数据库（blastx）
 
@@ -226,12 +226,12 @@ $ grep '>' genes_v2.fa
 >labcur2 synthetic macrolide esterase
 >labcur3 synthetic fosfomycin thiolase
 $ gspec db build labgenes genes_v2.fa --datadir ./db
-{"schema":"gapit.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database labgenes (use --force)","context":{"db":"labgenes"}}
+{"schema":"gspec.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database labgenes (use --force)","context":{"db":"labgenes"}}
 $ echo $?
 4
 ```
 
-信封就是标准的 `gapit.error/1` 形状（退出码 4，数据库错误）。
+信封就是标准的 `gspec.error/1` 形状（退出码 4，数据库错误）。
 
 `--force` 删除后原地重建。示例 2 的元数据 TSV 依然生效：
 
@@ -363,11 +363,11 @@ $ grep -o '"product":"[^"]*"' db/bare_plain/records.jsonl
 "product":"baregene"
 ```
 
-以 `gapit|` 开头但不是合法标记语法的表头使构建失败，退出码 4：
+以 `gspec|` 开头但不是合法标记语法的表头使构建失败，退出码 4：
 
 ```console
 $ gspec db build labbroken broken_tag.fa --datadir ./db
-{"schema":"gapit.error/1","code":"HEADER_MALFORMED","message":"malformed gapit/v1 sequence header: segment_without_key","context":{"seqid":"gapit|nonsense","reason":"segment_without_key"}}
+{"schema":"gspec.error/1","code":"HEADER_MALFORMED","message":"malformed gspec/v1 sequence header: segment_without_key","context":{"seqid":"gspec|nonsense","reason":"segment_without_key"}}
 ```
 
 上表那份混合文件按各自的规则逐记录构建，生成的 `sequences` 投影展示了重定向
@@ -377,10 +377,10 @@ $ gspec db build labbroken broken_tag.fa --datadir ./db
 $ gspec db build labmix mixed.fa --datadir ./db 2>/dev/null
 {"db":"labmix","records":4,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labmix"}
 $ grep '>' db/labmix/sequences
->gapit|db=labmix|gene=mixplain|acc=|func= plain header gene
->gapit|db=labmix|gene=fromtilde|acc=SYN-100|func=TETRACYCLINE tilde gene
->gapit|db=labmix|gene=fromtag|acc=SYN-200|func=ampicillin%3Bgentamicin tagged gene
->gapit|db=labmix|gene=secondplain|acc=|func= secondplain
+>gspec|db=labmix|gene=mixplain|acc=|func= plain header gene
+>gspec|db=labmix|gene=fromtilde|acc=SYN-100|func=TETRACYCLINE tilde gene
+>gspec|db=labmix|gene=fromtag|acc=SYN-200|func=ampicillin%3Bgentamicin tagged gene
+>gspec|db=labmix|gene=secondplain|acc=|func= secondplain
 ```
 
 记录保持输入顺序，所以 `records.jsonl` 的第 N 行就是第 N 条 FASTA 记录。允许重复
@@ -406,7 +406,7 @@ $ grep -c '"gene":"twingene"' db/labtwin/records.jsonl
 
 ```console
 $ ls db/labmeta
-gapit-manifest.json
+gspec-manifest.json
 records.jsonl
 sequences
 sequences.ndb
@@ -419,14 +419,14 @@ sequences.ntf
 sequences.nto
 ```
 
-`records.jsonl` 是可编辑的事实来源，`sequences` 是它的 `gapit/v1` 表头投影；
+`records.jsonl` 是可编辑的事实来源，`sequences` 是它的 `gspec/v1` 表头投影；
 `sequences.n*` 文件是 BLAST 索引。两个文件契约的字段级细节见[数据库](./databases.md)。
 序列原样存储，不做提供商风格的归一化：这是你策展的事实，manifest 以
 `source_urls: ["local"]` 为构建背书。
 
 ## 来源与许可元数据（强制）
 
-每个自定义数据库**必须**在 manifest（`gapit-manifest.json`）中写明来源信息，使
+每个自定义数据库**必须**在 manifest（`gspec-manifest.json`）中写明来源信息，使
 `gspec db info -d NAME` 能直接看到内容出处。无例外：
 
 1. **`note` 写来源** —— 文献引用（作者、期刊、年份、DOI）、来源软件/数据库及版本
@@ -441,7 +441,7 @@ sequences.nto
    > 如原始作者或版权方对本数据库内容的使用或再分发有异议，请发邮件至
    > indexofire@gmail.com，我们将在核实后及时移除或调整相应内容。
 
-缺少这些字段的构建视为未完成：策展路径是直接编辑 `gapit-manifest.json`
+缺少这些字段的构建视为未完成：策展路径是直接编辑 `gspec-manifest.json`
 （补 `license`、`note`、`source_urls`、`upstream_version`），并用 `gspec db info` 复核。
 
 5. **list 简短描述走 `info.json`** —— manifest `note` 承载完整来源、只在 `db info`
@@ -449,14 +449,14 @@ sequences.nto
    `description`（+ `vendor`/`references`/`caveats`/`usage`）——`db list` 只显示这一行，
    `db info` 显示全部细节。
 
-## k-mer 底座（gapit.kmerdb/1）
+## k-mer 底座（gspec.kmerdb/1）
 
 cluster 构建接受可选的 `-K/--kmerdb PATH`，安装一份声明位点 k-mer 集
-的 `gapit.kmerdb/1` JSON 文档：
+的 `gspec.kmerdb/1` JSON 文档：
 
 ```json
 {
-  "schema": "gapit.kmerdb/1",
+  "schema": "gspec.kmerdb/1",
   "k": 31,
   "sets": {
     "typeX.diff": {"of": "typeX", "against": ["typeY", "typeZ"]}
@@ -469,9 +469,9 @@ k-mer 减去 `against` 位点并集），以排序 uint64 数组存储于 `kmers
 差异集解决位点覆盖/同一性无法分离的 SNP 级参考对——单个 SNP 使同一性
 分量偏移 ~0.001，但使差异集从 1.0 翻转为 0.0。
 
-### gapit.typing/3 中的 key_kmers
+### gspec.typing/3 中的 key_kmers
 
-`gapit.typing/3` 文档中的 `cluster_match` 规则可携带 `key_kmers`
+`gspec.typing/3` 文档中的 `cluster_match` 规则可携带 `key_kmers`
 分量（与现有 `coverage`、`identity`、`key_genes` 并列）：
 
 ```json

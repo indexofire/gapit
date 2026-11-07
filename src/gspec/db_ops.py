@@ -10,7 +10,7 @@ callers — this module owns the behavior and imports no CLI plumbing.
 from collections.abc import Callable, Iterator, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from rich import box
@@ -23,11 +23,13 @@ from gspec.db import Database, discover_databases, mol_type
 from gspec.db_info_models import DbGuidance
 from gspec.errors import DatabaseError, UsageError
 from gspec.fasta import iter_fasta
+from gspec.layout import manifest_path
 from gspec.progress import screen_progress
 from gspec.providers import REGISTRY
 from gspec.providers.cluster_common import ClusterProvider, fetch_cluster_provider
 from gspec.providers.common import Dbtype, fetch_provider
 from gspec.records import read_manifest
+from gspec.schema_ids import Canonical
 
 # `gspec db fetch -d all` installs these, in order — the two headline
 # databases (AMR + virulence). Like every provider they download on fetch:
@@ -91,7 +93,9 @@ class DatadirDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.datadir/1"] = Field(default="gapit.datadir/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.datadir/1"], Canonical] = Field(
+        default="gspec.datadir/1", alias="schema"
+    )
     datadir: str
     exists: bool
     source: Literal["cli", "env", "xdg", "default"]
@@ -106,7 +110,9 @@ class DbListDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.dblist/1"] = Field(default="gapit.dblist/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.dblist/1"], Canonical] = Field(
+        default="gspec.dblist/1", alias="schema"
+    )
     providers: tuple[DbListEntry, ...]
 
 
@@ -244,8 +250,8 @@ def _extra_entries(root: Path, bundled: frozenset[str]) -> list[DbListEntry]:
     for database in discover_databases(root):
         if database.name in REGISTRY or database.name in bundled:
             continue
-        manifest_path = database.path / "gapit-manifest.json"
-        manifest = read_manifest(manifest_path) if manifest_path.is_file() else None
+        manifest_file = manifest_path(database.path)
+        manifest = read_manifest(manifest_file) if manifest_file.is_file() else None
         info_description, info_vendor = _local_listing_metadata(database.path)
         entries.append(
             DbListEntry(
@@ -296,9 +302,9 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
     only; provider-backed names (ncbi, resfinder, ...) never appear here."""
     entries: list[DbListEntry] = []
     for database in bundled:
-        manifest_path = root / database.name / "gapit-manifest.json"
-        installed = manifest_path.is_file() and (root / database.name / "sequences").is_file()
-        manifest = read_manifest(manifest_path) if installed else None
+        manifest_file = manifest_path(root / database.name)
+        installed = manifest_file.is_file() and (root / database.name / "sequences").is_file()
+        manifest = read_manifest(manifest_file) if installed else None
         entries.append(
             DbListEntry(
                 name=database.name,
@@ -343,9 +349,9 @@ def db_list_entries(root: Path) -> list[DbListEntry]:
         if provider_name in bundled_names:
             continue
         provider = REGISTRY[provider_name]
-        manifest_path = root / provider_name / "gapit-manifest.json"
-        installed = manifest_path.is_file() and (root / provider_name / "sequences").is_file()
-        manifest = read_manifest(manifest_path) if installed else None
+        manifest_file = manifest_path(root / provider_name)
+        installed = manifest_file.is_file() and (root / provider_name / "sequences").is_file()
+        manifest = read_manifest(manifest_file) if installed else None
         entries.append(
             DbListEntry(
                 name=provider_name,

@@ -21,7 +21,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from gspec.errors import DatabaseError
 from gspec.gbfeatures import FeaturesDocument
 
-GENE_FAMILY_SCHEMA = "gapit.gene_families/1"
+GENE_FAMILY_SCHEMA = "gspec.gene_families/1"
 GENE_FAMILY_FILENAME = "gene_families.json"
 
 

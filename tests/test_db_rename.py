@@ -67,7 +67,7 @@ def test_rename_gene_database_rewrites_records_headers_and_manifest(
         "destination": str(datadir / "lm_panel"),
     }
     assert not (datadir / "old_lm").exists()
-    manifest = read_manifest(datadir / "lm_panel" / "gapit-manifest.json")
+    manifest = read_manifest(datadir / "lm_panel" / "gspec-manifest.json")
     assert manifest.name == "lm_panel"
     assert manifest.n_records == 5
     records = [
@@ -154,7 +154,7 @@ def test_rename_cluster_database_copies_artifacts_and_restamps_manifest(
     assert (datadir / "vpa_renamed" / "features.json").is_file()
     assert (datadir / "vpa_renamed" / "cluster.json").is_file()
     assert (datadir / "vpa_renamed" / "gene_families.json").is_file()
-    manifest = read_manifest(datadir / "vpa_renamed" / "gapit-manifest.json")
+    manifest = read_manifest(datadir / "vpa_renamed" / "gspec-manifest.json")
     assert (manifest.name, manifest.kind, manifest.header_format) == (
         "vpa_renamed",
         "cluster",
@@ -187,7 +187,7 @@ def test_rename_refuses_an_existing_target_unless_forced(datadir: Path) -> None:
     )
     assert forced.exit_code == 0, forced.stderr
     assert not (datadir / "one").exists()
-    assert read_manifest(datadir / "two" / "gapit-manifest.json").name == "two"
+    assert read_manifest(datadir / "two" / "gspec-manifest.json").name == "two"
 
 
 def test_rename_rejects_bad_names_and_self_renames(datadir: Path) -> None:

@@ -10,7 +10,7 @@ emitted by ``db setup --json``.
 
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -18,7 +18,9 @@ from gspec import config, db
 from gspec.bundled import bundled_names, materialize_bundled
 from gspec.db import validate_database_name
 from gspec.errors import DatabaseError
+from gspec.layout import manifest_path
 from gspec.proctools import note
+from gspec.schema_ids import Canonical
 
 
 class DbSetupEntry(BaseModel, frozen=True):
@@ -34,7 +36,9 @@ class DbSetupDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.dbsetup/1"] = Field(default="gapit.dbsetup/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.dbsetup/1"], Canonical] = Field(
+        default="gspec.dbsetup/1", alias="schema"
+    )
     datadir: str
     materialized: tuple[str, ...]
     fetched: tuple[str, ...]
@@ -70,7 +74,7 @@ def perform_setup(
     if selected is None:
         if bundles:
             for bundled_name in bundled_names():
-                if not (root / bundled_name / "gapit-manifest.json").is_file():
+                if not manifest_path(root / bundled_name).is_file():
                     materialize_bundled(bundled_name, root, quiet=quiet)
                     materialized.append(bundled_name)
         infos = db.list_databases(root, reindex=True, debug=debug)

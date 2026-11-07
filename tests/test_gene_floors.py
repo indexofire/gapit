@@ -1,8 +1,8 @@
-"""Unit tests for gapit.floors/1 per-gene identity floors (reads-mode gate).
+"""Unit tests for gspec.floors/1 per-gene identity floors (reads-mode gate).
 
 The gate contract (gspec.gene_floors): alignments to floored genes drop
 sub-floor rows BEFORE aggregation, so breadth is recomputed from the
-survivors; unfloored genes are untouched; the gapit.reads/2
+survivors; unfloored genes are untouched; the gspec.reads/2
 ``--min-identity`` filter and floors are conjunctive (a row must clear
 both — max-of-both).
 """
@@ -28,7 +28,7 @@ from gspec.reads import aggregate_coverage
 GENE_A = "db~~~geneA~~~ACC~~~RES"
 GENE_B = "db~~~geneB~~~ACC~~~RES"
 
-ECOLI_DEC_FLOORS = '{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}'
+ECOLI_DEC_FLOORS = '{"schema": "gspec.floors/1", "default": null, "genes": {"pic": 90.0}}'
 
 
 def row(
@@ -78,7 +78,7 @@ def test_model_roundtrips_the_eco_dec_document() -> None:
     schema alias, null default, and the pic floor decode (and re-serialize
     by alias)."""
     floors = GeneFloors.model_validate_json(ECOLI_DEC_FLOORS)
-    assert floors.schema_name == "gapit.floors/1"
+    assert floors.schema_name == "gspec.floors/1"
     assert floors.default is None
     assert floors.genes == {"pic": 90.0}
     assert json.loads(floors.model_dump_json(by_alias=True)) == json.loads(ECOLI_DEC_FLOORS)
@@ -97,11 +97,11 @@ def test_read_floors_missing_file_is_input_not_found(tmp_path: Path) -> None:
     "text",
     [
         "{nope",  # broken JSON
-        '{"schema": "gapit.floors/2", "genes": {}}',  # wrong tag
-        '{"schema": "gapit.floors/1", "genes": {"pic": 100.5}}',  # above range
-        '{"schema": "gapit.floors/1", "genes": {"pic": -1}}',  # below range
-        '{"schema": "gapit.floors/1", "default": 101.0}',  # default above range
-        '{"schema": "gapit.floors/1", "genes": {"pic": "high"}}',  # wrong type
+        '{"schema": "gspec.floors/2", "genes": {}}',  # wrong tag
+        '{"schema": "gspec.floors/1", "genes": {"pic": 100.5}}',  # above range
+        '{"schema": "gspec.floors/1", "genes": {"pic": -1}}',  # below range
+        '{"schema": "gspec.floors/1", "default": 101.0}',  # default above range
+        '{"schema": "gspec.floors/1", "genes": {"pic": "high"}}',  # wrong type
     ],
 )
 def test_read_floors_bad_documents_are_floors_malformed(tmp_path: Path, text: str) -> None:
@@ -127,7 +127,7 @@ def test_gene_floors_loader_parses_the_sidecar(tmp_path: Path) -> None:
     floors = gene_floors(db_at(tmp_path, floors_json=ECOLI_DEC_FLOORS))
     assert floors is not None
     assert floors.genes == {"pic": 90.0}
-    noop = gene_floors(db_at(tmp_path, floors_json='{"schema": "gapit.floors/1"}'))
+    noop = gene_floors(db_at(tmp_path, floors_json='{"schema": "gspec.floors/1"}'))
     assert noop == GeneFloors()
 
 

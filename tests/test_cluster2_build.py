@@ -1,4 +1,4 @@
-"""gapit.cluster/2 build-side units: gene-id resolution and the per-scheme
+"""gspec.cluster/2 build-side units: gene-id resolution and the per-scheme
 winner-evidence columns.
 
 ``resolve_gene_ids`` is the /2 build-time transform that makes every gene

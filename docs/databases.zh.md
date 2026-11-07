@@ -36,7 +36,7 @@ gspec 数据库是一个参考基因目录，你用 contigs 和 reads 去筛查�
 
 ```console
 $ gspec db outdated --datadir /no/such/dir
-{"schema":"gapit.error/1","code":"DATADIR_NOT_FOUND","message":"datadir does not exist: /no/such/dir","context":{"datadir":"/no/such/dir"}}
+{"schema":"gspec.error/1","code":"DATADIR_NOT_FOUND","message":"datadir does not exist: /no/such/dir","context":{"datadir":"/no/such/dir"}}
 ```
 
 如果希望把数据库放进当前激活的 conda 环境而不是 home 目录，请显式选择（仅在确实
@@ -102,7 +102,7 @@ $ for name in $(gspec db list -n); do gspec db setup -d "$name"; done
   但不会重新判定；cluster TSV 不能重新分型。
 - `-` —— 没有分型方案，仅用于筛查。
 
-当 `<datadir>/<name>/gapit-manifest.json` 存在时 STATUS 显示 `installed (N)`，N 是
+当 `<datadir>/<name>/gspec-manifest.json` 存在时 STATUS 显示 `installed (N)`，N 是
 记录数，否则显示 `available`。七个随 wheel 发布的**内置数据库**
 —— `cje_cps`、`eco_dec`、`lmo_sero`、`shi_sero`、`vch_vf`、`vpa_ok`、`vpa_pai`
 —— 均由 gspec 策划，没有提供商、也没有 fetch 路径：物化前为 `bundled`，物化后为
@@ -114,12 +114,12 @@ PROVIDER `local` 渲染，记录数取自 manifest（无 manifest 时从 FASTA �
 DBTYPE 依次取自 manifest、BLAST 索引后缀、abricate 的字母启发式。
 在交互式终端上，同样的行会渲染为
 带样式的 rich 表格；通过管道或重定向输出时始终保持上面的纯 TSV。面向 agent，
-`--json` 输出 `gapit.dblist/1` 文档（前三个条目，输出有删节）：
+`--json` 输出 `gspec.dblist/1` 文档（前三个条目，输出有删节）：
 
 ```console
 $ gspec db list --json
 {
-  "schema": "gapit.dblist/1",
+  "schema": "gspec.dblist/1",
   "providers": [
     {
       "name": "argannot",
@@ -157,7 +157,7 @@ $ gspec db list --json
 
 | 字段 | 类型 | 含义 |
 |---|---|---|
-| `schema` | string | 恒为 `gapit.dblist/1` |
+| `schema` | string | 恒为 `gspec.dblist/1` |
 | `providers` | array | 每个已知数据库一项 |
 | `providers[].name` | string | 数据库名，即传给 `--db` / `gspec db fetch` 的名字 |
 | `providers[].vendor` | string | 上游维护机构（NCBI、DTU CGE、Kaptive (klebgenomics) 等） |
@@ -172,7 +172,7 @@ $ gspec db list --json
 | `providers[].source` | string | 目录之外装进数据目录的数据库（`db build` / `db install`）为 `local`，wheel 内置数据库为 `bundled`（见下）；注册表条目省略该字段 |
 
 `gspec db list` 是唯一的列表入口：即上面的数据库目录，`--json` 返回
-`gapit.dblist/1` 文档。（早期独立的列表命令及其 schema 已移除；这个入口刻意放弃了
+`gspec.dblist/1` 文档。（早期独立的列表命令及其 schema 已移除；这个入口刻意放弃了
 abricate `--list` 的逐字节一致性。）见 [outputs.md](./outputs.md)。
 
 ## 查看单个数据库的详情
@@ -228,11 +228,11 @@ VENDOR	gspec-curated (Poly 2015; CC0 + NCBI public domain)
 KIND	gene
 ```
 
-`--json` 输出 `gapit.dbinfo/1` 文档（`gspec schema dbinfo`），供智能体消费：
+`--json` 输出 `gspec.dbinfo/1` 文档（`gspec schema dbinfo`），供智能体消费：
 
 ```console
 $ gspec db info -d vpa_ok --json | head -1
-{"schema":"gapit.dbinfo/1","name":"vpa_ok","description":"V. parahaemolyticus O and K ...
+{"schema":"gspec.dbinfo/1","name":"vpa_ok","description":"V. parahaemolyticus O and K ...
 ```
 
 `STATUS` 与 `db list` 一致——`installed`（磁盘上有 manifest）、`bundled`（随 wheel
@@ -274,19 +274,19 @@ wheel 发布，因为它们的再分发条款和来源风险不应由 MIT 包承
 
 | 名称 | 内容 | 快照日期 | 分型 |
 |---|---|---|---|
-| `cje_cps` | 空肠弯曲菌 Penner 荚膜多重 PCR 面板（37 条记录：36 条 CPS 扩增子 + `lpxA` 对照） | 2026-10-27 | `gapit.typing/2`（方案 `penner_cps`） |
-| `eco_dec` | 致腹泻大肠杆菌标志基因面板（16 条记录，GB 4789.6 + 风险监测判定） | 2026-10-02 | `gapit.typing/2`（`gb4789_6`、`risk_monitoring` 双方案） |
-| `lmo_sero` | 单核细胞增生李斯特菌血清群分型（5 条记录，Doumith 2004 标记） | 2026-10-03 | `gapit.typing/2`（方案 `doumith_serogroup`） |
-| `shi_sero` | 志贺菌分子血清型 marker 面板（95 条 ShigaTyper 公共领域标记，`ipaH_c` 拆成两段对照片段；首批保守规则） | 2026-11-02 | `gapit.serotype/1`（ShigaTyper marker 规则） |
+| `cje_cps` | 空肠弯曲菌 Penner 荚膜多重 PCR 面板（37 条记录：36 条 CPS 扩增子 + `lpxA` 对照） | 2026-10-27 | `gspec.typing/2`（方案 `penner_cps`） |
+| `eco_dec` | 致腹泻大肠杆菌标志基因面板（16 条记录，GB 4789.6 + 风险监测判定） | 2026-10-02 | `gspec.typing/2`（`gb4789_6`、`risk_monitoring` 双方案） |
+| `lmo_sero` | 单核细胞增生李斯特菌血清群分型（5 条记录，Doumith 2004 标记） | 2026-10-03 | `gspec.typing/2`（方案 `doumith_serogroup`） |
+| `shi_sero` | 志贺菌分子血清型 marker 面板（95 条 ShigaTyper 公共领域标记，`ipaH_c` 拆成两段对照片段；首批保守规则） | 2026-11-02 | `gspec.serotype/1`（ShigaTyper marker 规则） |
 | `vch_vf` | 霍乱弧菌 CTX 核心/RS2 基因 + ctxB classical/El Tor + tcpA classical/El Tor/O139 标记（13 条记录） | 2026-11-02 | -（仅筛查） |
 | `vpa_pai` | 副溶血弧菌 VPaI-1..VPaI-10 致病岛（10 个 locus，cluster 类；RIMD 2210633 + AQ3810） | 2026-11-02 | -（仅筛查） |
-| `vch_oagc` | 霍乱弧菌 O 抗原基因簇（190 个 OL 位点 + ompW 内参；cluster 类；Murase 2022 PRJDB8600） | 2026-11-06 | `gapit.typing/2`（`o_group`、`species`） |
-| `vpa_ok` | 副溶血性弧菌 O/K 抗原位点（195 个位点，vpautils OAgc+CPSgc；cluster 类） | 2026-10-12 | `gapit.typing/2`（`o_group`、`k_group`、`serotype` 三方案） |
-| `lpn_sero` | 嗜肺军团菌血清群 1-15 LPS 位点（16 位点，Nakaue 2021；cluster 类） | 2026-11-06 | `gapit.typing/2`（`lps_serogroup`） |
+| `vch_oagc` | 霍乱弧菌 O 抗原基因簇（190 个 OL 位点 + ompW 内参；cluster 类；Murase 2022 PRJDB8600） | 2026-11-06 | `gspec.typing/2`（`o_group`、`species`） |
+| `vpa_ok` | 副溶血性弧菌 O/K 抗原位点（195 个位点，vpautils OAgc+CPSgc；cluster 类） | 2026-10-12 | `gspec.typing/2`（`o_group`、`k_group`、`serotype` 三方案） |
+| `lpn_sero` | 嗜肺军团菌血清群 1-15 LPS 位点（16 位点，Nakaue 2021；cluster 类） | 2026-11-06 | `gspec.typing/2`（`lps_serogroup`） |
 | `lpn_vf` | 嗜肺军团菌毒力因子蛋白（275，LegionProfiler；蛋白类） | 2026-11-06 | -（仅筛查） |
-| `str_lancefield` | 链球菌 Lancefield A/B/C/G 标记 + `tuf` 内参（29 条） | 2026-11-06 | `gapit.typing/2`（`lancefield`） |
-| `sag_sero` | GBS 荚膜血清型，10 型 + III 亚型（14 条，GBS-SBG） | 2026-11-06 | `gapit.typing/2`（`serotype`、`serotype_iii`） |
-| `pau_sero` | 铜绿假单胞菌 OSA 血清群 O1-O17 + wzyB（14 位点，pasty；cluster 类） | 2026-11-06 | `gapit.typing/2`（`osa_serogroup`、`wzyb`） |
+| `str_lancefield` | 链球菌 Lancefield A/B/C/G 标记 + `tuf` 内参（29 条） | 2026-11-06 | `gspec.typing/2`（`lancefield`） |
+| `sag_sero` | GBS 荚膜血清型，10 型 + III 亚型（14 条，GBS-SBG） | 2026-11-06 | `gspec.typing/2`（`serotype`、`serotype_iii`） |
+| `pau_sero` | 铜绿假单胞菌 OSA 血清群 O1-O17 + wzyB（14 位点，pasty；cluster 类） | 2026-11-06 | `gspec.typing/2`（`osa_serogroup`、`wzyb`） |
 
 **许可证来源声明。** `eco_dec` 的每条记录都取自公共领域的一级提交（NCBI
 RefSeq/GenBank/DDBJ 收录号，与权利方面板等位相同）；2026-10 审计中发现原面板里
@@ -297,7 +297,7 @@ RefSeq/GenBank/DDBJ 收录号，与权利方面板等位相同）；2026-10 审�
 比对验证 100% 一致）。`vpa_ok` 基因簇快照是 MIT 许可的
 vpautils 内容（实验室逐位点精选、Bakta 注释，经
 [indexofire/vpautils](https://github.com/indexofire/vpautils)）；以一次完整
-gapit.typing/2 构建产出的已解析 `sequences` + `features.json` 形式入轮。`cje_cps`
+gspec.typing/2 构建产出的已解析 `sequences` + `features.json` 形式入轮。`cje_cps`
 面板取自原论文列出的 GenBank 收录号（公共领域 INSDC 记录；论文本身为 CC0），因此
 同样通过审计。`shi_sero` 面板由 ShigaTyper 2.0.5 的公共领域 marker FASTA
 重新格式化而来（不含 ShigaPass GPL 内容）；其 `serotype.json` 是首批保守
@@ -327,7 +327,7 @@ present/partial/missing 基因证据。
 **物化机制。** 第一次 `gspec screen ... --db <内置库名>` 发现数据目录里没有该库
 时，会自动构建它 —— stderr 一行提示（`gspec: materializing bundled database
 eco_dec (16 records) into <datadir>`，`--quiet` 可静默），随后走标准基因库
-构建管线：`records.jsonl`、gapit/v1 头部的 `sequences`、BLAST 索引、（库自带时）
+构建管线：`records.jsonl`、gspec/v1 头部的 `sequences`、BLAST 索引、（库自带时）
 `typing.json` 副本，以及盖上 `source: "bundled"` 的 manifest。该管线与
 `gspec db build` 共享，会在构建时丢弃精确重复的（基因, 序列）记录（保留首条；
 stderr 提示与回执中的 `duplicates_dropped` 计数）。基因簇内置库（`vpa_ok`）改走
@@ -348,7 +348,7 @@ manifest 一旦存在，重跑都是无操作。`db list` 在物化前显示 `bu
 为该引物组标明的 GenBank 收录中提取（`acc` 字段带收录号与切片坐标）。47 个 Penner
 血清型折叠为 35 个荚膜型，因此面板针对的是"型/复合型"，而不是单个血清型。
 
-判定是基因数据库上的两阶段流程（`gapit.typing/2`，方案 `penner_cps`，`lpxA` 作为
+判定是基因数据库上的两阶段流程（`gspec.typing/2`，方案 `penner_cps`，`lpxA` 作为
 `control_gene`）：
 
 ```console
@@ -416,13 +416,13 @@ table.tsv`。
 性弧菌血清型参考——`OAgc.gbk`（32 个 O 抗原基因簇位点）和 `CPSgc.gbk`（163 个荚膜多
 糖位点）——合并为一个 `kind: cluster` 数据库。它是 `eco_dec`/`lmo_sero` 模式的
 纯内置数据库：没有提供商、没有 source URL、没有 `gspec db fetch -d vpa_ok`。自带的
-三 scheme typing 资产（`src/gapit/data/dbs/vpa_ok/typing.json`，由
+三 scheme typing 资产（`src/gspec/data/dbs/vpa_ok/typing.json`，由
 `scripts/generate_vp_typing.py` 可复现生成）随之一并安装，筛查随之渲染
-`gapit.cluster/2`，按文件给出 `o_group`、`k_group` 与组合出的
+`gspec.cluster/2`，按文件给出 `o_group`、`k_group` 与组合出的
 `serotype` `"{o_group}:{k_group}"`（回退 OUT/KUT）——一次扫描即得 O:K 血清型：
 
 > **cluster profile。** cluster 数据库可携带 `cluster.json`
-> （`gapit.cluster_profile/1`）选择不同的 cluster 引擎契约。当前使用
+> （`gspec.cluster_profile/1`）选择不同的 cluster 引擎契约。当前使用
 > `coverage_mode: "primary_secondary"`，用 minimap2 primary + secondary 的并集
 > 计算 locus coverage，而不是历史的 primary-only；`fallback_evidence: true` 在
 > `OUT`/`KUT` 时仍保留同家族的最佳 locus 和 coverage，不再把 locus 折叠成 `-`；
@@ -435,7 +435,7 @@ table.tsv`。
 
 ```console
 $ gspec screen RIMD.fna --db vpa_ok --format json
-{"schema": "gapit.cluster/2", ..., "phenotypes": {"o_group": {"phenotype": "O3"},
+{"schema": "gspec.cluster/2", ..., "phenotypes": {"o_group": {"phenotype": "O3"},
  "k_group": {"phenotype": "K6"}, "serotype": {"phenotype": "O3:K6"}}}
 ```
 
@@ -479,12 +479,12 @@ card	2020-01-01T00:00:00Z	2454.55	stale
 目录；无法解析的 `fetched_at` 是 `MANIFEST_MALFORMED`（退出码 5）。内置数据库的
 报告与其他库一样以 manifest 为准：已物化的内置库从物化时刻起算年龄，v1 不做
 内置-vs-上游比较（见"内置数据库（即装即用）"一节 —— 属未来工作）。面向 agent，
-`--json` 输出 `gapit.dboutdated/1` 文档（可用 `gspec schema dboutdated` 内省）：
+`--json` 输出 `gspec.dboutdated/1` 文档（可用 `gspec schema dboutdated` 内省）：
 
 ```console
 $ gspec db outdated --days 3 --json
 {
-  "schema": "gapit.dboutdated/1",
+  "schema": "gspec.dboutdated/1",
   "databases": [
     {
       "db": "argannot",
@@ -633,7 +633,7 @@ gspec: BLAST index built (nucl)
 
 ```console
 $ gspec db fetch -d nosuchdb
-{"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
+{"schema":"gspec.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
 ```
 
 ### 重新抓取
@@ -642,7 +642,7 @@ $ gspec db fetch -d nosuchdb
 
 ```console
 $ gspec db fetch -d card --datadir /tmp/opencode/gspec-dbs-demo
-{"schema":"gapit.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database card (use --force)","context":{"db":"card"}}
+{"schema":"gspec.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database card (use --force)","context":{"db":"card"}}
 ```
 
 `--force` 删除后原地重建：
@@ -673,7 +673,7 @@ $ gspec db install card.json \
 $ gspec db install card.json \
     --sha256 0000000000000000000000000000000000000000000000000000000000000000 \
     --output /tmp/opencode/card-bad.json
-{"schema":"gapit.error/1","code":"CHECKSUM_MISMATCH","message":"SHA256 mismatch for card.json","context":{"source":"card.json","expected":"0000000000000000000000000000000000000000000000000000000000000000","actual":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}}
+{"schema":"gspec.error/1","code":"CHECKSUM_MISMATCH","message":"SHA256 mismatch for card.json","context":{"source":"card.json","expected":"0000000000000000000000000000000000000000000000000000000000000000","actual":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}}
 ```
 
 ## gspec 构建的数据库里有什么
@@ -681,12 +681,12 @@ $ gspec db install card.json \
 ```
 <datadir>/<name>/
   records.jsonl         truth source: one Record JSON object per line
-  sequences             generated FASTA projection (gapit/v1 tagged headers)
+  sequences             generated FASTA projection (gspec/v1 tagged headers)
   sequences.n*|p*       BLAST index built from sequences
-  gapit-manifest.json   provenance sidecar, written last
-  typing.json           可选的 gapit.typing/1 或 /2 评分规范（带分型的数据库）
-  floors.json           可选的 gapit.floors/1 按基因一致性下限（reads + contigs）
-  screen.json           可选的 gapit.screen/1 每数据库 reads/contigs 默认值
+  gspec-manifest.json   provenance sidecar, written last
+  typing.json           可选的 gspec.typing/1 或 /2 评分规范（带分型的数据库）
+  floors.json           可选的 gspec.floors/1 按基因一致性下限（reads + contigs）
+  screen.json           可选的 gspec.screen/1 每数据库 reads/contigs 默认值
 ```
 
 ### records.jsonl
@@ -708,14 +708,14 @@ $ gspec db install card.json \
 | `product` | string | 产物描述，缺失时为 `n/a` |
 | `source_id` | string | 提供商原生的记录标识 |
 
-### gapit-manifest.json
+### gspec-manifest.json
 
 manifest 为构建背书：抓了什么、何时、从哪里、用哪些工具版本。下面是一份真实的
 manifest，来自 plasmidfinder 数据库：
 
 ```json
 {
-  "schema": "gapit.manifest/1",
+  "schema": "gspec.manifest/1",
   "name": "plasmidfinder",
   "source_urls": [
     "https://bitbucket.org/genomicepidemiology/plasmidfinder_db/get/HEAD.zip"
@@ -724,11 +724,11 @@ manifest，来自 plasmidfinder 数据库：
   "sha256": "a18dc9dab762fe1e23a90c11314ee179c37c59dad833a5f465a78dc245970c2a",
   "n_records": 488,
   "dbtype": "nucl",
-  "header_format": "gapit/v1",
+  "header_format": "gspec/v1",
   "upstream_version": "",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "makeblastdb_version": "blastn: 2.17.0+",
   "minimap2_version": "2.31-r1302"
@@ -737,14 +737,14 @@ manifest，来自 plasmidfinder 数据库：
 
 | 字段 | 类型 | 含义 |
 |---|---|---|
-| `schema` | string | 恒为 `gapit.manifest/1` |
+| `schema` | string | 恒为 `gspec.manifest/1` |
 | `name` | string | 数据库名 |
 | `source_urls` | array of string | 内容的上游来源 URL |
 | `fetched_at` | string | ISO-8601 UTC 时间戳，秒精度 |
 | `sha256` | string | 构建出的 `sequences` 文件摘要，64 个小写十六进制字符 |
 | `n_records` | integer | 记录数，与 `records.jsonl` 一致 |
 | `dbtype` | string | `nucl` 或 `prot`，构建时显式选择 |
-| `header_format` | string | gspec 构建的数据库恒为 `gapit/v1` |
+| `header_format` | string | gspec 构建的数据库恒为 `gspec/v1` |
 | `upstream_version` | string | 源有版本标签时的上游版本名 |
 | `license` | string | 数据库内容许可证，仅提供商声明时出现（kaptive：`GPL-3.0 (database content)`；card：McMaster 非商业条款；vfdb：`CC BY-NC 4.0`） |
 | `note` | string | 自由文本来源说明（kaptive：源文件 + 引用），设置时才出现 |
@@ -758,16 +758,16 @@ manifest，来自 plasmidfinder 数据库：
 ### floors.json — 按基因设置一致性下限 {#floorsjson}
 
 一个可选边车，为 reads 模式的存在判定声明逐基因的最小比对一致性（%）（schema 为
-`gapit.floors/1`，用 `gspec schema floors` 内省；筛查语义与 `pic` 实战示例见
+`gspec.floors/1`，用 `gspec schema floors` 内省；筛查语义与 `pic` 实战示例见
 [reads.zh.md](./reads.zh.md#gene-floors)）：
 
 ```json
-{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
+{"schema": "gspec.floors/1", "default": null, "genes": {"pic": 90.0}}
 ```
 
 | 字段 | 类型 | 含义 |
 |---|---|---|
-| `schema` | string | 恒为 `gapit.floors/1` |
+| `schema` | string | 恒为 `gspec.floors/1` |
 | `default` | number 或 null | 未在 `genes` 中列出的基因的下限（`null` = 无下限） |
 | `genes` | object | `{基因: 最小一致性 %}`，取值在 [0, 100] 内 |
 
@@ -785,14 +785,14 @@ gspec 读取两种表头格式，逐记录检测：
 
 - **abricate 遗留格式**：`>DB~~~GENE~~~ACCESSION~~~RESISTANCE PRODUCT`。字段可以缺
   失；缺失的尾部字段解码为空字符串。
-- **gspec 原生 `gapit/v1`**：`>gapit|db=<v>|gene=<v>|acc=<v>|func=<v> PRODUCT`，值
+- **gspec 原生 `gspec/v1`**：`>gspec|db=<v>|gene=<v>|acc=<v>|func=<v> PRODUCT`，值
   经百分号编码，基因名和产物因此可以逐字节穿越 BLAST 和 minimap2，空格和竖线也在
   内。
 
 两者解码成相同的四个身份字段，TSV/JSON 输出形状也完全一致。原生数据库的
 `RESISTANCE` 列承载 `func` 值。
 
-> **警告：** abricate 读不了 gspec 构建的数据库。`gapit/v1` 表头格式不是 `~~~` 约
+> **警告：** abricate 读不了 gspec 构建的数据库。`gspec/v1` 表头格式不是 `~~~` 约
 > 定。gspec 读 abricate 数据目录是刻意设计的单向通道；下游还有工具要跑 abricate
 > 时，请保留一份 legacy 副本。
 
@@ -813,7 +813,7 @@ gspec 读取两种表头格式，逐记录检测：
 ## 带上自己的数据库
 
 `gspec db build NAME FASTA` 把任意参考基因 FASTA 一条命令变成完整构建的 gspec 原生
-数据库：`records.jsonl`、带 `gapit/v1` 表头的 `sequences` 投影、BLAST 索引和
+数据库：`records.jsonl`、带 `gspec/v1` 表头的 `sequences` 投影、BLAST 索引和
 manifest。下面是一个两基因的合成 FASTA 加一个元数据 TSV（字段见下），在临时数据目
 录上运行：
 
@@ -852,7 +852,7 @@ contig.fa	contig1	1	240	+	syn_betalac	1-240/240	===============	0/0	100.00	100.0
 
 没有任何描述文本的普通表头回退到 `--description TEXT`，再回退到基因名。每条记录的
 `db` 字段始终是 NAME（正在构建的数据库），`source_id` 原样保留原始 id 标记。畸形的
-`gapit|` 表头使构建失败并报 `HEADER_MALFORMED`（退出码 4）；结构非法的 FASTA 报
+`gspec|` 表头使构建失败并报 `HEADER_MALFORMED`（退出码 4）；结构非法的 FASTA 报
 `INVALID_FASTA`（退出码 5）。
 
 ### 从 TSV 合并元数据
@@ -875,7 +875,7 @@ syn_betalac	SYN-0001	ampicillin;cephalosporin
 
 ### 按基因一致性下限（`--floors`）
 
-`--floors FILE` 把一份 `gapit.floors/1` 文档安装为数据库的 `floors.json` 边车——
+`--floors FILE` 把一份 `gspec.floors/1` 文档安装为数据库的 `floors.json` 边车——
 reads/contig 模式存在判定的逐基因最小比对一致性（见
 [reads.zh.md](./reads.zh.md#gene-floors)）。文档在
 任何产物落盘前先校验：`genes` 里的每个基因必须存在于 FASTA
@@ -886,16 +886,16 @@ reads/contig 模式存在判定的逐基因最小比对一致性（见
 
 ```console
 $ cat my_floors.json
-{"schema": "gapit.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
+{"schema": "gspec.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
 $ gspec db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --floors my_floors.json
 {"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gspec-build-demo/db/tinyamr"}
 $ cat ./db/tinyamr/floors.json
-{"schema": "gapit.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
+{"schema": "gspec.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
 ```
 
 ### 每数据库筛查默认值（`--screen`）
 
-`--screen FILE` 把一份 `gapit.screen/1` 文档安装为数据库的 `screen.json` 边车——
+`--screen FILE` 把一份 `gspec.screen/1` 文档安装为数据库的 `screen.json` 边车——
 reads/contigs 的默认值（breadth、identity 预过滤、MAPQ、depth、相对深度对照基因、
 contig identity/coverage、merge-fragments）。文档在任何产物落盘前解析
 （`SCREEN_DEFAULTS_MALFORMED`，exit 4）；相对深度的对照基因必须存在于 FASTA
@@ -904,7 +904,7 @@ contig identity/coverage、merge-fragments）。文档在任何产物落盘前�
 
 ```console
 $ cat my_screen.json
-{"schema": "gapit.screen/1",
+{"schema": "gspec.screen/1",
  "reads": {"min_identity": 80.0, "min_mapq": 20, "min_depth": 5.0,
            "min_relative_depth": 0.10, "relative_to": "lpxA"},
  "contigs": {"minid": 80.0, "mincov": 80.0, "merge_fragments": true}}
@@ -918,7 +918,7 @@ $ cat ./db/tinyamr/screen.json
 
 ```console
 $ gspec db build tinyamr my_genes.fa --datadir ./db
-{"schema":"gapit.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database tinyamr (use --force)","context":{"db":"tinyamr"}}
+{"schema":"gspec.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database tinyamr (use --force)","context":{"db":"tinyamr"}}
 $ gspec db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --force
 gspec: generated /tmp/opencode/gspec-build-demo/db/tinyamr/sequences
 gspec: self-check passed for tinyamr
@@ -968,7 +968,7 @@ $ ls /tmp/opencode/gspec-own-db/db/tinyamr
 sequences
 $ gspec screen --datadir /tmp/opencode/gspec-own-db/db --db tinyamr /tmp/opencode/gspec-own-db/gap.fa
 Processing: /tmp/opencode/gspec-own-db/gap.fa
-{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gspec-own-db/db/tinyamr/sequences is not indexed, please try: gspec db setup","context":{"db":"/tmp/opencode/gspec-own-db/db/tinyamr/sequences"}}
+{"schema":"gspec.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gspec-own-db/db/tinyamr/sequences is not indexed, please try: gspec db setup","context":{"db":"/tmp/opencode/gspec-own-db/db/tinyamr/sequences"}}
 $ gspec db setup --datadir /tmp/opencode/gspec-own-db/db
 Indexed tinyamr (3 sequences, nucl)
 $ gspec screen --datadir /tmp/opencode/gspec-own-db/db --db tinyamr /tmp/opencode/gspec-own-db/gap.fa
@@ -1013,7 +1013,7 @@ gspec: BLAST index built (nucl)
 分记录或使用简单 CDS 注释。
 
 产物与基因数据库不同：`sequences` 每个位点一条裸位点 id 记录（普通表头，abricate
-读不了）；`features.json` 是 `gapit.features/1` 特征表（用 `gspec schema features`
+读不了）；`features.json` 是 `gspec.features/1` 特征表（用 `gspec schema features`
 自省）；manifest 声明 `kind: cluster`；没有 `records.jsonl`。筛查分发到 minimap2
 基因簇引擎（[screen.md](./screen.md)）。
 
@@ -1026,14 +1026,14 @@ gspec: BLAST index built (nucl)
 
 ### typing.json：声明式表型评分
 
-`--typing FILE` 把一份经过校验的 `gapit.typing/1` 或 `gapit.typing/2` 文档安装进数据库成为
+`--typing FILE` 把一份经过校验的 `gspec.typing/1` 或 `gspec.typing/2` 文档安装进数据库成为
 `typing.json`；筛查随后为每个最佳判定注释表型和可解释的分数分解（TSV 的 PHENOTYPE
-列和 gapit.cluster/1 的 `phenotype_detail`，见
+列和 gspec.cluster/1 的 `phenotype_detail`，见
 [outputs.md](./outputs.md)）。一个最小的 `weighted_genes` 示例：
 
 ```json
 {
-  "schema": "gapit.typing/1",
+  "schema": "gspec.typing/1",
   "rules": [
     {
       "model": "weighted_genes",
@@ -1059,14 +1059,14 @@ gspec: BLAST index built (nucl)
 的基因或位点时，在任何产物写出之前以 `TYPING_UNKNOWN_GENE` 失败（同一检查在筛查时
 重跑，所以手改过的数据库藏不住死引用）。
 
-`gapit.typing/2` 把同样的规则包进命名 scheme（`schemes:
+`gspec.typing/2` 把同样的规则包进命名 scheme（`schemes:
 [{"name": "pathotype", "rules": [...], "cutoff": ..., "ambiguity_margin": ...,
 "fallback": ...}]`，名称限 `[a-z0-9_]` 且唯一）；`/1` 文档等价于一个匿名的
 `default` scheme，因此既有的 typed 数据库输出不变。`--typing` 也可用于基因（FASTA）
 构建 —— v1 仅支持 `weighted_genes` 规则，基因引用对照 FASTA 记录校验。typed 基因
 数据库的筛查输出与 untyped 完全相同（纯基因检测）；其判定来自两阶段流水线 ——
 `gspec screen -o result.tsv` 写出结果表，`gspec typing result.tsv` 按 scheme 渲染
-判定，输出 `gapit.typing_result/1`
+判定，输出 `gspec.typing_result/1`
 （见[分型方案](./typing.zh.md#two-stage-workflow)）。
 
 typing/2 第二阶段新增六个规则/scheme 原语（全部可选、纯附加；完整定义见
@@ -1098,11 +1098,11 @@ $ python scripts/cluster_calibration.py mycps --datadir ./db labels.tsv
 
 序列长度、等位基因多样性和是否有对照基因都会改变“好命中”的定义：62 bp 的
 amplicon 比 857 bp 的基因需要更高的一致性；有 `lpxA` 的面板可以用相对深度做门控。
-数据库可以携带 `screen.json` 边车（schema `gapit.screen/1`）声明自己的默认值：
+数据库可以携带 `screen.json` 边车（schema `gspec.screen/1`）声明自己的默认值：
 
 ```json
 {
-  "schema": "gapit.screen/1",
+  "schema": "gspec.screen/1",
   "reads": {
     "min_breadth": 90.0,
     "min_identity": 80.0,

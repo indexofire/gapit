@@ -13,13 +13,14 @@ exposes the document as ``gspec schema cluster``.
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import PurePath
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gspec.cluster import BestCall, ClusterParams, ClusterReport, GeneCall, LocusCall
 from gspec.formats.csvutil import delimited_line
 from gspec.formats.json import ToolDocument, utc_timestamp
+from gspec.schema_ids import Canonical
 from gspec.typing_results import PhenotypeDetail
 
 CLUSTER_TSV_HEADER = "FILE\tBEST_LOCUS\tTYPE\tCOVERAGE\tIDENTITY\tPRESENT\tPARTIAL\tMISSING_IDS"
@@ -95,7 +96,9 @@ class ClusterDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.cluster/1"] = Field(default="gapit.cluster/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.cluster/1"], Canonical] = Field(
+        default="gspec.cluster/1", alias="schema"
+    )
     tool: ToolDocument = ToolDocument()
     created_at: str
     params: ClusterParamsDocument

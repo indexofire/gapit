@@ -26,6 +26,7 @@ from gspec.db_info_models import DbGuidance
 from gspec.db_txn import staged_database
 from gspec.errors import DatabaseError
 from gspec.gbfeatures import FeaturesDocument, LocusSequence
+from gspec.layout import manifest_path
 from gspec.proctools import note
 from gspec.providers.common import (
     Dbtype,
@@ -101,7 +102,7 @@ def fetch_cluster_provider(
     the kaptive behavior is untouched: no typing model, phenotype calls stay
     null. Same guards as fetch_provider (DB_ALREADY_EXISTS, DOWNLOAD_FAILED)
     plus the cluster parser's typed input errors."""
-    if (db_dir / "gapit-manifest.json").is_file() and not force:
+    if manifest_path(db_dir).is_file() and not force:
         raise DatabaseError(
             f"won't overwrite existing database {provider.name} (use --force)",
             code="DB_ALREADY_EXISTS",
@@ -111,7 +112,7 @@ def fetch_cluster_provider(
     if insecure:
         security_note(f"plain HTTP source(s), no transport integrity: {', '.join(insecure)}")
     with staged_database(db_dir) as build_dir:
-        if (db_dir / "gapit-manifest.json").is_file() and not force:
+        if manifest_path(db_dir).is_file() and not force:
             raise DatabaseError(
                 f"won't overwrite existing database {provider.name} (use --force)",
                 code="DB_ALREADY_EXISTS",

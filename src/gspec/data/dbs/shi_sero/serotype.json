@@ -1,5 +1,5 @@
 {
-  "schema": "gapit.serotype/1",
+  "schema": "gspec.serotype/1",
   "name": "shi_sero",
   "control_gene": "ipaH_c",
   "control_coverage_floor": 50.0,

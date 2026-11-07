@@ -1,5 +1,5 @@
 {
-  "schema": "gapit.typing/2",
+  "schema": "gspec.typing/2",
   "schemes": [
     {
       "name": "serogroup",

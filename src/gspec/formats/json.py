@@ -9,13 +9,14 @@ serialize byte-identically.
 
 from collections.abc import Iterable
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gspec import __version__
 from gspec.hits import Hit
 from gspec.report import Report, ScreeningParams
+from gspec.schema_ids import Canonical
 
 
 class FragmentDocument(BaseModel, frozen=True):
@@ -85,7 +86,9 @@ class ReportDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.report/1"] = Field(default="gapit.report/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.report/1"], Canonical] = Field(
+        default="gspec.report/1", alias="schema"
+    )
     tool: ToolDocument = ToolDocument()
     created_at: str
     params: ParamsDocument
@@ -97,7 +100,9 @@ class VersionDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.version/1"] = Field(default="gapit.version/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.version/1"], Canonical] = Field(
+        default="gspec.version/1", alias="schema"
+    )
     name: str = "gspec"
     version: str
 

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gapit"
-version = "0.8.1"
+version = "0.9.0"
 description = "Compatibility package: gapit was renamed to gspec. Keeps the gapit import working and installs gspec."
 readme = "README.md"
 authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]
@@ -13,7 +13,7 @@ license = "MIT"
 license-files = ["LICENSE"]
 keywords = ["gapit", "gspec", "transition", "rename", "bioinformatics"]
 dependencies = [
-  "gspec>=0.8.1,<0.9",
+  "gspec>=0.8.1,<0.10",
 ]
 
 classifiers = [

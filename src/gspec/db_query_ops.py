@@ -14,15 +14,17 @@ import enum
 from collections.abc import Callable, Iterable
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gspec import config
 from gspec.errors import DatabaseError, InputError, UsageError
 from gspec.formats.csvutil import tsv_cell
+from gspec.layout import manifest_path
 from gspec.proctools import note
 from gspec.records import Record, installed_db_dirs, read_manifest, read_records
+from gspec.schema_ids import Canonical
 
 DEFAULT_LIMIT = 100
 DEFAULT_STALE_DAYS = 90
@@ -162,7 +164,9 @@ class DbOutdatedDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.dboutdated/1"] = Field(default="gapit.dboutdated/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.dboutdated/1"], Canonical] = Field(
+        default="gspec.dboutdated/1", alias="schema"
+    )
     databases: tuple[DbOutdatedEntry, ...]
 
 
@@ -204,8 +208,8 @@ def perform_outdated(
     now = datetime.now(UTC)
     entries: list[DbOutdatedEntry] = []
     for db_dir in db_dirs:
-        manifest_path = db_dir / "gapit-manifest.json"
-        manifest = read_manifest(manifest_path)
+        manifest_file = manifest_path(db_dir)
+        manifest = read_manifest(manifest_file)
         fetched = _utc_timestamp(manifest.fetched_at, str(manifest_path))
         age = (now - fetched).total_seconds() / 86400
         status: Literal["ok", "stale"] = "stale" if age > days else "ok"

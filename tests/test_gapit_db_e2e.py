@@ -1,4 +1,4 @@
-"""Offline end-to-end: gapit/v1 native databases through the real screening
+"""Offline end-to-end: gspec/v1 native databases through the real screening
 path.
 
 Builds a tiny database from synthetic records via dbbuild (records.jsonl ->
@@ -66,7 +66,7 @@ reads_adapter = TypeAdapter(ReadsDocument)
 
 @pytest.fixture()
 def datadir(tmp_path: Path) -> Path:
-    """A fully built gapit/v1 datadir: sequences, BLAST index, and manifest
+    """A fully built gspec/v1 datadir: sequences, BLAST index, and manifest
     (written last)."""
     db_dir = tmp_path / "datadir" / DB
     db_dir.mkdir(parents=True)
@@ -104,7 +104,7 @@ def test_screen_json_decodes_native_headers(datadir: Path, tmp_path: Path) -> No
     )
     assert result.exit_code == 0
     document = report_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.report/1"
+    assert document.schema_name == "gspec.report/1"
     assert document.params.db == DB
     (entry,) = document.files
     assert entry.file == str(query)
@@ -140,7 +140,7 @@ def test_reads_screen_uses_sequences_fasta(datadir: Path, tmp_path: Path) -> Non
     )
     assert result.exit_code == 0
     document = reads_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.reads/1"
+    assert document.schema_name == "gspec.reads/1"
     (entry,) = document.files[0].genes
     assert entry.gene == "de|mo%A=1"
     assert entry.database == DB

@@ -288,7 +288,7 @@ class TestBuildValidation:
         bad.write_text(
             json.dumps(
                 {
-                    "schema": "gapit.typing/2",
+                    "schema": "gspec.typing/2",
                     "schemes": [
                         {
                             "name": "doumith",

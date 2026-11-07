@@ -125,7 +125,7 @@ def test_locus_map_quality_fails_on_missing_genes() -> None:
 
 
 def test_render_locus_map_json_is_a_separate_document() -> None:
-    """Given a detailed report, When rendered, Then it is gapit.locus_map/1
+    """Given a detailed report, When rendered, Then it is gspec.locus_map/1
     with the file + map payload and no compact cluster/2 fields."""
     alignment = build_locus_alignment(LOCUS, [_row(":500")])
     mapped = build_locus_map(_call(), alignment, FEATURES, (_call(),))
@@ -135,7 +135,7 @@ def test_render_locus_map_json_is_a_separate_document() -> None:
     rendered = render_locus_map_json(
         [report], ClusterParams(db="vpa_ok"), now=datetime(2026, 11, 2, tzinfo=UTC)
     )
-    assert '"schema": "gapit.locus_map/1"' in rendered
+    assert '"schema": "gspec.locus_map/1"' in rendered
     assert '"file": "sample.fna"' in rendered
     assert '"locus": "OL1"' in rendered
     assert '"quality"' in rendered

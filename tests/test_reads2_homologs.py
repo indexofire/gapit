@@ -1,4 +1,4 @@
-"""Family-splitting regression tests (the gapit.reads/2 money tests).
+"""Family-splitting regression tests (the gspec.reads/2 money tests).
 
 Fixture (tests/data/reads2_db/homologs + tests/data/reads2; seeded recipe in
 the generator's docstring, probe-verified on minimap2 2.31): the db holds a
@@ -89,7 +89,7 @@ def test_sr_homolog_split_unfiltered_calls_both(datadir: Path) -> None:
     unfiltered at a calibrated breadth floor, Then BOTH genes are called
     present (the reproduced family-splitting over-call)."""
     document = screen1(datadir, "sr_homologs.fq", "sr", "--min-breadth", "80")
-    assert document.schema_name == "gapit.reads/1"
+    assert document.schema_name == "gspec.reads/1"
     assert present_genes(document) == {"geneA", "geneB"}
 
 
@@ -98,7 +98,7 @@ def test_sr_min_identity_95_calls_only_true_gene(datadir: Path) -> None:
     only geneA is present and geneB vanishes from the gene list (its ~90%
     alignments are all dropped; zero-read genes are omitted)."""
     document = screen2(datadir, "sr_homologs.fq", "sr", "--min-breadth", "80")
-    assert document.schema_name == "gapit.reads/2"
+    assert document.schema_name == "gspec.reads/2"
     assert gene_names(document) == {"geneA"}
     assert present_genes(document) == {"geneA"}
 

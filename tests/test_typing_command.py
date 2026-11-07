@@ -5,7 +5,7 @@ Most parsing tests run over hand-written screen tables (the input contract
 is the abricate 15-column shape); the equivalence class builds the markers
 fixture db and proves the command's calls equal the inline engine's calls
 over the screened Report — the TSV round-trip loses nothing. Goldens pin
-the gapit.typing_result/1 JSON/MD renders at a pinned timestamp. The
+the gspec.typing_result/1 JSON/MD renders at a pinned timestamp. The
 fixture-level designation suites live in test_gene_typing*.py and
 test_typing_schemes.py.
 """
@@ -255,7 +255,7 @@ class TestCommand:
         result = runner.invoke(app, ["typing"])
         assert result.exit_code == 2
         assert "Usage" in result.stdout
-        assert "gapit.error" not in result.stderr
+        assert "gspec.error" not in result.stderr
 
     def test_flags_without_input_reads_stdin(self, tmp_path: Path) -> None:
         """Given flags but no result file (an empty pipe on stdin), When
@@ -380,7 +380,7 @@ class TestCommand:
 
     def test_json_document_shape(self, tmp_path: Path, typed_db: Path) -> None:
         """Given one screened table, When typed as JSON, Then the document
-        is gapit.typing_result/1 with source paths, the db name, and one
+        is gspec.typing_result/1 with source paths, the db name, and one
         phenotypes object per FILE."""
         path = table(tmp_path, "shape.tsv", [row(), row(file="t.fa", gene="marker_b")])
         result = runner.invoke(
@@ -389,7 +389,7 @@ class TestCommand:
         )
         assert result.exit_code == 0, result.stderr
         document = json.loads(result.stdout)
-        assert document["schema"] == "gapit.typing_result/1"
+        assert document["schema"] == "gspec.typing_result/1"
         assert document["tool"]["name"] == "gspec"
         assert document["source"] == [str(path)]
         assert document["db"] == DB
@@ -400,10 +400,10 @@ class TestCommand:
 
     def test_schema_registry_names_typing_result(self) -> None:
         """Given the schema registry, When the typing_result document is
-        introspected, Then its JSON Schema names gapit.typing_result/1."""
+        introspected, Then its JSON Schema names gspec.typing_result/1."""
         result = runner.invoke(app, ["schema", "typing_result"])
         assert result.exit_code == 0
-        assert "gapit.typing_result/1" in result.stdout
+        assert "gspec.typing_result/1" in result.stdout
 
 
 class TestStdinInput:

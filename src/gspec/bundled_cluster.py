@@ -28,6 +28,7 @@ from gspec.db_txn import staged_database
 from gspec.errors import DatabaseError
 from gspec.fasta import iter_fasta
 from gspec.gbfeatures import FeaturesDocument, LocusSequence
+from gspec.layout import manifest_path
 from gspec.proctools import note
 from gspec.typing_models import (
     read_typing_document,
@@ -88,7 +89,7 @@ def materialize_cluster_bundle(
     double-build guard perform_build gives the gene path)."""
     name = bundled.name
     db_dir = datadir / name
-    if (db_dir / "gapit-manifest.json").is_file():
+    if manifest_path(db_dir).is_file():
         raise DatabaseError(
             f"won't overwrite existing database {name} (use --force)",
             code="DB_ALREADY_EXISTS",
@@ -105,7 +106,7 @@ def materialize_cluster_bundle(
         )
         typing_schema = typing_schema_of(bundled.typing_path)
     with staged_database(db_dir) as build_dir:
-        if (db_dir / "gapit-manifest.json").is_file():
+        if manifest_path(db_dir).is_file():
             raise DatabaseError(
                 f"won't overwrite existing database {name} (use --force)",
                 code="DB_ALREADY_EXISTS",

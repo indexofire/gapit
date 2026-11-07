@@ -10,7 +10,7 @@ exactly what `gspec screen` writes. See [./screen.md](./screen.md) for producing
 
 ## Options
 
-Transcribed from `gspec summary --help` (gspec 0.8.1):
+Transcribed from `gspec summary --help` (gspec 0.9.0):
 
 | Flag | Type | Default | Description |
 |---|---|---|---|
@@ -141,16 +141,16 @@ tests/data/summary/sample_a.tsv	2	+	+
 ## Output formats
 
 `--format tsv` (default) and `--format csv` print the matrix above. `--format json` and
-`--format md` emit the `gapit.summary/1` document, which keeps every cell string and adds
+`--format md` emit the `gspec.summary/1` document, which keeps every cell string and adds
 machine-readable params:
 
 ```console
 $ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv --format json --quiet
 {
-  "schema": "gapit.summary/1",
+  "schema": "gspec.summary/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "created_at": "2026-09-19T01:12:48Z",
   "params": {

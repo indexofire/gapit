@@ -118,7 +118,7 @@ frontmatter 保留 `files:`/`genes_found:` 运行总计（它的 tsv 默认渲�
 ## 选项
 
 reads 模式走同一条 `gspec screen` 命令；以下是适用的参数（转写自 `gspec screen
---help`，gspec 0.8.1）。这里未列出的 contig 模式参数（`--minid`、`--mincov`、
+--help`，gspec 0.9.0）。这里未列出的 contig 模式参数（`--minid`、`--mincov`、
 `--fofn`、`--noheader`、`--nopath`）不适用；`--jobs` 只适用于通配符路径（见上文）。
 
 | 参数 | 类型 | 默认值 | 说明 |
@@ -127,8 +127,8 @@ reads 模式走同一条 `gspec screen` 命令；以下是适用的参数（转�
 | `--r2` | str | 无 | 逗号分隔的 mate FASTQ 文件；数量必须与 `--r1` 一致。 |
 | `--read-type` | sr\|map-ont\|map-hifi | FASTQ 用 `sr`，FASTA 用 `map-ont` | minimap2 预设；省略时按检测到的输入解析。 |
 | `--min-breadth` | float | `90.0` | 判定存在的最小广度百分比。 |
-| `--min-identity` | float | `0.0`（关闭） | 单条比对的最小一致性百分比（0-100）；任意非零值开启 gapit.reads/2 过滤（见下文）。 |
-| `--min-mapq` | int | `0`（关闭） | 单条比对的最小 MAPQ；任意非零值开启 gapit.reads/2 过滤。 |
+| `--min-identity` | float | `0.0`（关闭） | 单条比对的最小一致性百分比（0-100）；任意非零值开启 gspec.reads/2 过滤（见下文）。 |
+| `--min-mapq` | int | `0`（关闭） | 单条比对的最小 MAPQ；任意非零值开启 gspec.reads/2 过滤。 |
 | `--min-depth` | float | `0.0`（关闭） | 判定存在的最小平均深度。 |
 | `--min-relative-depth` | float | `0.0`（关闭） | 基因:对照基因平均深度比的最小值（0..1）；见[相对深度门控](#relative-depth)。 |
 | `--relative-to` | str | `lpxA` | `--min-relative-depth` 的对照基因。 |
@@ -138,7 +138,7 @@ reads 模式走同一条 `gspec screen` 命令；以下是适用的参数（转�
 | `--jobs` | int | `1` | 仅通配符路径：并发筛查 N 个样本（`--r1`/`--r2` 拒绝它）。输出顺序始终是样本顺序。 |
 | `--quiet` | 开关 | 关闭 | 静默 stderr 诊断（包括 assembly-FASTA 提示）。 |
 | `--debug` | 开关 | 关闭 | 详细的 stderr 诊断；回显 minimap2 命令行。 |
-| `--format` | tsv\|csv\|json\|md | `tsv` | 输出格式。所有路径的 reads 默认输出流式 tsv 表格（csv = 逗号拼写）；`--format json` 是给 agent 的单个 `gapit.reads/1`(+`/2`) 文档，`--format md` 是 Markdown 形式。 |
+| `--format` | tsv\|csv\|json\|md | `tsv` | 输出格式。所有路径的 reads 默认输出流式 tsv 表格（csv = 逗号拼写）；`--format json` 是给 agent 的单个 `gspec.reads/1`(+`/2`) 文档，`--format md` 是 Markdown 形式。 |
 
 `--minid` 和 `--mincov` 不适用于 reads 模式。未开启深度门控时，存在与否由广度
 （以及可选的 identity/MAPQ/数据库下限）决定；`--min-depth` 与
@@ -201,7 +201,7 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 
 （`Screening reads:`/`Detected` 行走 stderr；stdout 是表格。）
 
-`--format json` 生成版本化的 agent 文档，schema `gapit.reads/1`：
+`--format json` 生成版本化的 agent 文档，schema `gspec.reads/1`：
 
 - `files[]` 与输入一一对应：每项列出它筛查的 reads 和检出的基因。
 - 基因条目按 `breadth_pct` 降序、再按基因名排序。
@@ -210,7 +210,7 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 
 `--format md` 生成带 YAML frontmatter 的 Markdown 形式。
 
-## 按一致性和 MAPQ 过滤比对（gapit.reads/2）
+## 按一致性和 MAPQ 过滤比对（gspec.reads/2）
 
 reads 模式的存在判定默认只看广度，这会对同源基因家族过量判定：新等位基因的 reads
 以低一致性主比对堆到每一条相似的数据库条目上，广度不断累积，直到错误的基因越过阈
@@ -226,8 +226,8 @@ reads 模式的存在判定默认只看广度，这会对同源基因家族过�
   重复基因拷贝上的多比对 reads。
 - 两个过滤器都在 primary-only 规则之后、聚合之前运行；广度、深度和 `reads_mapped`
   只在幸存比对上计算。丢失全部比对的基因完全不进输出。
-- 两个阈值都关闭时一切照旧：运行保持 `gapit.reads/1`，逐字节一致，minimap2 调用也
-  不变。任何非零值会把输出切换成 **`gapit.reads/2`** 文档：形状相同，外加
+- 两个阈值都关闭时一切照旧：运行保持 `gspec.reads/1`，逐字节一致，minimap2 调用也
+  不变。任何非零值会把输出切换成 **`gspec.reads/2`** 文档：形状相同，外加
   `params.min_identity` / `params.min_mapq` 和逐基因的 `mean_identity_pct`（幸存比
   对按比对长度加权的一致性均值）。用 `gspec schema reads2` 自省。`--format md` 下
   frontmatter 多出这两个阈值，每个基因行多出 `Identity%` 列。
@@ -280,7 +280,7 @@ $ export GSPEC_DATADIR=/tmp/gspec-demo/readdb
 $ cd tests/data/reads2
 $ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "files": [
     {
@@ -318,7 +318,7 @@ $ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --format j
 ```console
 $ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format json --quiet
 {
-  "schema": "gapit.reads/2",
+  "schema": "gspec.reads/2",
   ...
   "params": {
     "db": "homologs",
@@ -357,8 +357,8 @@ Markdown 形式：
 ```console
 $ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format md --quiet
 ---
-schema: gapit.reads/2
-tool: gspec 0.8.1
+schema: gspec.reads/2
+tool: gspec 0.9.0
 created_at: 2026-09-20T14:23:33Z
 db: homologs
 read_type: map-ont
@@ -379,15 +379,15 @@ genes_found: 1
 | geneA | 100.00 | 14.98 | 15 | yes | homologs | SYN-A | true allele carried by the sample | TETRACYCLINE | 98.04 |
 ```
 
-## 按基因设置一致性下限（gapit.floors/1，数据库侧） {#gene-floors}
+## 按基因设置一致性下限（gspec.floors/1，数据库侧） {#gene-floors}
 
 `--min-identity` 是每次运行时由调用方做的决定。有时这个决定应该属于数据库本身：
 一张精选面板知道自己的哪些基因身处同源家族之中、真等位基因必须达到多少一致性。
 这类知识以可选的 `floors.json` 边车文件随数据库发布（与 `sequences` 同目录），
-schema 为 `gapit.floors/1`（用 `gspec schema floors` 内省）：
+schema 为 `gspec.floors/1`（用 `gspec schema floors` 内省）：
 
 ```json
-{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
+{"schema": "gspec.floors/1", "default": null, "genes": {"pic": 90.0}}
 ```
 
 - `genes` 把基因名映射到其最小比对一致性（%）；`default` 作用于未列出的基因
@@ -397,8 +397,8 @@ schema 为 `gapit.floors/1`（用 `gspec schema floors` 内省）：
   深度与 `reads_mapped` 都从幸存行重新计算——以 86% 一致性堆上基因、广度 97% 的
   同源序列因此塌缩到存在阈值之下，不再误报。
 - 下限是**数据库驱动的可选开启**：CLI 契约没有任何变化，不带边车的数据库输出与
-  之前逐字节一致——既有数据库和已发布的输出 schema（`gapit.reads/1`、
-  `gapit.reads/2`）都不受影响。
+  之前逐字节一致——既有数据库和已发布的输出 schema（`gspec.reads/1`、
+  `gspec.reads/2`）都不受影响。
 - floors 现在也应用于 **contig 模式**：BLAST 仍用全局 `--minid` 搜索，命中后再按
   基因 floor 过滤。把 `--minid` 设为文档中最低的 floor，让 floor 执行更高的逐基因
   阈值（`cje_cps` 用 80 搜索、默认 floor 90、`lpxA`/`HS12` 80）。
@@ -418,7 +418,7 @@ reads 模式下，该同源序列的比对仍覆盖了基因长度的 97.59%，�
 的 `eco_dec` 携带了仅一条下限的 `floors.json`：
 
 ```json
-{"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
+{"schema": "gspec.floors/1", "default": null, "genes": {"pic": 90.0}}
 ```
 
 真 `pic` 等位基因一致性 ≥95%，所以 90 的下限只移除 SPATE 同源序列的低一致性比对
@@ -449,10 +449,10 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 ```console
 $ gspec screen --r1 tetx_full.fq --db tinyreads --format json
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "created_at": "2026-09-19T01:12:25Z",
   "params": {
@@ -493,7 +493,7 @@ $ gspec screen --r1 tetx_full.fq --db tinyreads --format json
 ```console
 $ gspec screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "files": [
     {
@@ -516,7 +516,7 @@ $ gspec screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --qu
 }
 $ gspec screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "files": [
     {
@@ -546,8 +546,8 @@ $ gspec screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --q
 ```console
 $ gspec screen --r1 tetx_full.fq --db tinyreads --format md
 ---
-schema: gapit.reads/1
-tool: gspec 0.8.1
+schema: gspec.reads/1
+tool: gspec 0.9.0
 created_at: 2026-09-19T01:12:25Z
 db: tinyreads
 read_type: sr
@@ -574,7 +574,7 @@ false` 报告；降低阈值即可翻转判定，指标不受影响：
 ```console
 $ gspec screen --r1 suly_partial.fq --db tinyreads --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "genes": [
     {
@@ -590,7 +590,7 @@ $ gspec screen --r1 suly_partial.fq --db tinyreads --format json --quiet
 }
 $ gspec screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "genes": [
     {
@@ -628,7 +628,7 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 的 522 nt contig 在 `sr` 下只能比对到基因的约 14%，短 read 软裁剪会毁掉长 query 的
 比对），gspec 会在 stderr 上说明。每条 contig 相当于一条长 read：`reads_mapped` 统
 计 contig 数，`mean_depth` 在被覆盖区间附近徘徊，`present` 仍表示
-`breadth_pct >= --min-breadth`。文档保持 `gapit.reads/1`；`params.read_type` 报告解
+`breadth_pct >= --min-breadth`。文档保持 `gspec.reads/1`；`params.read_type` 报告解
 析出的预设。默认输出是流式 tsv 表格（单样本一个分块）；`--format json` 给出下文展
 示的文档。
 
@@ -644,10 +644,10 @@ assembly FASTA detected; using map-ont
 Screening reads: /tmp/gspec-demo/assembly.fa
 Detected 2 present genes in /tmp/gspec-demo/assembly.fa
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "created_at": "2026-09-19T14:23:00Z",
   "params": {
@@ -705,13 +705,13 @@ minimap2 一段完全跳过 BLAST 索引，把 assembly 送进 minimap2 引擎�
    性应用一致性与覆盖度下限。
 
 真实数字，一株 K. pneumoniae RefSeq assembly（GCF_000240185.1，5.3 Mb，`--db ncbi`，
-单线程，gspec 0.8.1）：
+单线程，gspec 0.9.0）：
 
 ```console
 $ # Stage 1: survey, ~0.9 s
 $ gspec screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 50 --format json --quiet
 {
-  "schema": "gapit.reads/1",
+  "schema": "gspec.reads/1",
   ...
   "params": {
     "db": "ncbi",

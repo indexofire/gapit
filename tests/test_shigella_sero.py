@@ -38,7 +38,7 @@ def test_bundled_shi_sero_has_marker_metadata() -> None:
     bundled = find_bundled("shi_sero")
     assert bundled is not None
     markers = json.loads((bundled.path / "markers.json").read_text(encoding="utf-8"))
-    assert markers["schema"] == "gapit.shigella_markers/1"
+    assert markers["schema"] == "gspec.shigella_markers/1"
     assert len(markers["markers"]) == 96
     categories = {entry["category"] for entry in markers["markers"]}
     assert {"o_antigen", "poac", "virulence"} <= categories
@@ -77,12 +77,12 @@ def test_bundled_shi_sero_marker_screens(tmp_path: Path) -> None:
 
 def test_bundled_shi_sero_has_serotype_profile() -> None:
     """Given the bundle, When the profile is loaded, Then it is the first
-    gapit.serotype/1 rule set with ipaH as the control, and the SB6/SB10
+    gspec.serotype/1 rule set with ipaH as the control, and the SB6/SB10
     rules carry the documented wbaM 5'-junction gate."""
     bundled = find_bundled("shi_sero")
     assert bundled is not None
     document = json.loads((bundled.path / "serotype.json").read_text(encoding="utf-8"))
-    assert document["schema"] == "gapit.serotype/1"
+    assert document["schema"] == "gspec.serotype/1"
     assert document["control_gene"] == "ipaH_c"
     assert len(document["rules"]) == 63
     rules = {rule["phenotype"]: rule for rule in document["rules"]}
@@ -265,7 +265,7 @@ def test_bundled_shi_sero_without_control_is_not_shigella(tmp_path: Path) -> Non
 
 def test_db_info_exposes_the_serotype_schema(tmp_path: Path) -> None:
     """Given the bundled marker panel, When db info runs before install,
-    Then it advertises gapit.serotype/1 and the typing workflow."""
+    Then it advertises gspec.serotype/1 and the typing workflow."""
     result = runner.invoke(
         app,
         [
@@ -280,5 +280,5 @@ def test_db_info_exposes_the_serotype_schema(tmp_path: Path) -> None:
     )
     assert result.exit_code == 0, result.stderr
     document = json.loads(result.stdout)
-    assert document["typing_schema"] == "gapit.serotype/1"
+    assert document["typing_schema"] == "gspec.serotype/1"
     assert any("gspec typing" in line for line in document["usage"])

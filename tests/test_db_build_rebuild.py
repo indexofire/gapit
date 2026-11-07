@@ -70,7 +70,7 @@ def test_rebuild_republishes_an_edited_gene_name(datadir: Path) -> None:
         for record in iter_fasta(datadir / "lm" / "sequences")
     }
     assert "prs_renamed" in genes and "prs" not in genes
-    assert read_manifest(datadir / "lm" / "gapit-manifest.json").n_records == 5
+    assert read_manifest(datadir / "lm" / "gspec-manifest.json").n_records == 5
     assert (datadir / "lm" / "sequences.nin").is_file()
 
 

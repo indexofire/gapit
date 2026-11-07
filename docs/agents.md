@@ -13,7 +13,7 @@ Version, as one JSON line:
 
 ```console
 $ gspec --version --json
-{"schema":"gapit.version/1","name":"gspec","version":"0.8.1"}
+{"schema":"gspec.version/1","name":"gspec","version":"0.9.0"}
 ```
 
 Output schemas. Eighteen documents are introspectable: `report`, `typing_result`,
@@ -22,35 +22,35 @@ Output schemas. Eighteen documents are introspectable: `report`, `typing_result`
 `typing`, `floors`, and `screen`. Each prints its full JSON Schema:
 
 ```console
-$ gspec schema report          # gapit.report/1 (contig screening)
-$ gspec schema typing_result   # gapit.typing_result/1 (gspec typing designation)
-$ gspec schema reads           # gapit.reads/1  (FASTQ screening)
-$ gspec schema reads2          # gapit.reads/2  (filtered FASTQ screening)
-$ gspec schema cluster         # gapit.cluster/1 (cluster-database screening)
-$ gspec schema cluster2        # gapit.cluster/2 (multi-scheme cluster screening)
-$ gspec schema summary         # gapit.summary/1
-$ gspec schema error           # gapit.error/1
-$ gspec schema version         # gapit.version/1
-$ gspec schema dblist          # gapit.dblist/1 (database catalog)
-$ gspec schema dbsetup         # gapit.dbsetup/1 (db setup receipt)
-$ gspec schema dbinfo          # gapit.dbinfo/1 (provenance + caveats of one database)
-$ gspec schema dboutdated      # gapit.dboutdated/1 (staleness report)
-$ gspec schema datadir         # gapit.datadir/1 (resolved path/source)
-$ gspec schema features        # gapit.features/1 (cluster db feature table)
-$ gspec schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
-$ gspec schema floors          # gapit.floors/1 (per-gene identity floors, reads mode)
-$ gspec schema screen          # gapit.screen/1 (per-database screening defaults)
+$ gspec schema report          # gspec.report/1 (contig screening)
+$ gspec schema typing_result   # gspec.typing_result/1 (gspec typing designation)
+$ gspec schema reads           # gspec.reads/1  (FASTQ screening)
+$ gspec schema reads2          # gspec.reads/2  (filtered FASTQ screening)
+$ gspec schema cluster         # gspec.cluster/1 (cluster-database screening)
+$ gspec schema cluster2        # gspec.cluster/2 (multi-scheme cluster screening)
+$ gspec schema summary         # gspec.summary/1
+$ gspec schema error           # gspec.error/1
+$ gspec schema version         # gspec.version/1
+$ gspec schema dblist          # gspec.dblist/1 (database catalog)
+$ gspec schema dbsetup         # gspec.dbsetup/1 (db setup receipt)
+$ gspec schema dbinfo          # gspec.dbinfo/1 (provenance + caveats of one database)
+$ gspec schema dboutdated      # gspec.dboutdated/1 (staleness report)
+$ gspec schema datadir         # gspec.datadir/1 (resolved path/source)
+$ gspec schema features        # gspec.features/1 (cluster db feature table)
+$ gspec schema typing          # gspec.typing/2 (db scoring spec; /1 still reads)
+$ gspec schema floors          # gspec.floors/1 (per-gene identity floors, reads mode)
+$ gspec schema screen          # gspec.screen/1 (per-database screening defaults)
 ```
 
 For example, `gspec schema version` (real output):
 
 ```json
 {
-  "description": "gapit.version/1 \u2014 compact one-line self-description.",
+  "description": "gspec.version/1 \u2014 compact one-line self-description.",
   "properties": {
     "schema": {
-      "const": "gapit.version/1",
-      "default": "gapit.version/1",
+      "const": "gspec.version/1",
+      "default": "gspec.version/1",
       "title": "Schema",
       "type": "string"
     },
@@ -76,7 +76,7 @@ first two of twenty-three shown, trimmed):
 ```console
 $ gspec db list --json
 {
-  "schema": "gapit.dblist/1",
+  "schema": "gspec.dblist/1",
   "providers": [
     {
       "name": "argannot",
@@ -129,9 +129,9 @@ Envelope details and error codes: `./outputs.md`.
 
 ## JSON stability policy
 
-- Every document self-identifies with a version string: `gapit.report/1`,
-  `gapit.reads/1`, `gapit.cluster/1`, `gapit.summary/1`, `gapit.error/1`,
-  `gapit.version/1`. Check `schema` first, dispatch on it.
+- Every document self-identifies with a version string: `gspec.report/1`,
+  `gspec.reads/1`, `gspec.cluster/1`, `gspec.summary/1`, `gspec.error/1`,
+  `gspec.version/1`. Check `schema` first, dispatch on it.
 - Schemas follow semver. A minor bump never renames or retypes an existing
   field; new fields may appear, so ignore unknown keys rather than rejecting
   them.
@@ -144,26 +144,26 @@ Envelope details and error codes: `./outputs.md`.
 Any failure prints exactly one JSON line to stderr:
 
 ```json
-{"schema":"gapit.error/1","code":"...","message":"...","context":{...}}
+{"schema":"gspec.error/1","code":"...","message":"...","context":{...}}
 ```
 
 Real example, screening against a database that does not exist (exit 4):
 
 ```text
-{"schema":"gapit.error/1","code":"DATABASE_NOT_FOUND","message":"Database nosuchdb is not in /tmp/gspec-mcp-demo/datadir. Available: tinyamr","context":{"db":"nosuchdb","datadir":"/tmp/gspec-mcp-demo/datadir"}}
+{"schema":"gspec.error/1","code":"DATABASE_NOT_FOUND","message":"Database nosuchdb is not in /tmp/gspec-mcp-demo/datadir. Available: tinyamr","context":{"db":"nosuchdb","datadir":"/tmp/gspec-mcp-demo/datadir"}}
 ```
 
 And a missing external binary (exit 3):
 
 ```text
-{"schema":"gapit.error/1","code":"MISSING_DEPENDENCY","message":"required binary not found on PATH: blastn","context":{"binary":"blastn"}}
+{"schema":"gspec.error/1","code":"MISSING_DEPENDENCY","message":"required binary not found on PATH: blastn","context":{"binary":"blastn"}}
 ```
 
 Parsing guidance:
 
 - Progress diagnostics (for example `Processing: sampleA.fa`) also go to
   stderr. The envelope is the one stderr line that parses as JSON with
-  `"schema":"gapit.error/1"`.
+  `"schema":"gspec.error/1"`.
 - `code` is a stable string enum (`USAGE_ERROR`, `MISSING_DEPENDENCY`,
   `DATABASE_NOT_FOUND`, `INPUT_NOT_FOUND`, ...). Branch on `code`, not on
   `message`.
@@ -176,7 +176,7 @@ Discover, screen, parse, summarize. Session below run against the repo's test
 fixture datadir (setup recipe in `./mcp.md`).
 
 1. Resolve the effective datadir if your environment may redirect it
-   (`gspec db path --json`; `gapit.datadir/1` names the path and its source),
+   (`gspec db path --json`; `gspec.datadir/1` names the path and its source),
    then discover available databases (`gspec db list --json`, or the
    `db_list` MCP tool) and pick a `db` name.
 
@@ -192,7 +192,7 @@ fixture datadir (setup recipe in `./mcp.md`).
 
    for path in ("sampleA.json", "sampleB.json"):
        doc = json.load(open(path))
-       assert doc["schema"] == "gapit.report/1"
+       assert doc["schema"] == "gspec.report/1"
        for f in doc["files"]:
            for hit in f["hits"]:
                print(f["file"], hit["gene"], hit["identity_pct"], hit["coverage_pct"])

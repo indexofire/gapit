@@ -8,18 +8,16 @@ found the GWAS package instead.
 
 ## What this package does
 
-Nothing beyond depending on `gspec`. `pip install gapit` now installs the
-`gspec` distribution, which provides:
+It depends on `gspec` and restores the pre-0.9 surface:
 
-- the **`gspec`** command,
-- the **`gapit`** command (kept as an alias, so existing pipelines keep
-  working),
-- `gspec-mcp` and `gapit-mcp`,
-- the **`gapit`** Python import package (`import gapit`) and every frozen
-  `gapit.*` JSON schema id.
+- the **`gapit`** and **`gapit-mcp`** commands (they run `gspec`),
+- the **`gapit`** Python import package, aliased to the `gspec` tree so
+  `except gapit.errors.GapitError` still catches what `gspec` raises.
 
-This distribution ships no console scripts of its own: two distributions
-declaring the same script would race on the file in `bin/`.
+`gspec` itself provides the `gspec` / `gspec-mcp` commands and the implementation.
+The legacy scripts live here, not in `gspec`, because on an upgrade pip installs
+`gspec` first and then uninstalls the pre-0.9 `gapit` — which deletes
+`bin/gapit` — and this package is installed last, so its files survive.
 
 ## What to do
 
@@ -29,8 +27,9 @@ gspec --version                   # gspec 0.8.0
 ```
 
 Existing environment variables and data keep working: `GAPIT_DATADIR` is still
-read when `GSPEC_DATADIR` is unset, and an existing
-`~/.local/share/gapit/db` is still used as the home default. The migration
+read when `GSPEC_DATADIR` is unset, an existing `~/.local/share/gapit/db` is
+still used as the home default, and databases written by 0.8
+(`gapit-manifest.json`, `gapit|` headers) are read as-is. The migration
 guide has the full before/after table:
 <https://indexofire.github.io/gspec/migration/>
 
@@ -39,7 +38,7 @@ guide has the full before/after table:
 | `gapit` | Meaning |
 |---|---|
 | ≤ 0.7.3 | the tool, before the rename |
-| 0.8.0 | this transition release: metadata only, installs `gspec>=0.8,<0.9` |
+| 0.9.0 | this compatibility release: installs `gspec>=0.8.1,<0.10` and keeps `import gapit` + the `gapit` commands |
 
 Cite `gspec` (0.8.0 and later). The 0.7.3 Zenodo record remains citable and
 identifies the same software.

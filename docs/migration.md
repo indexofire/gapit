@@ -1,70 +1,80 @@
-# Migrating from gspec (pre-0.8)
+# Migrating from gapit
 
-`gspec` is the same software as `gapit` 0.7.x under a new name. The rename
-exists because "gspec" collides in literature and code search with
-**GAPIT**, the genome-wide association package — every search for the tool
-returned the GWAS package instead.
+`gspec` is the same software as `gapit` under a new name. The rename exists
+because "gapit" collides in literature and code search with **GAPIT**, the
+genome-wide association package — every search for this tool returned the GWAS
+package instead.
 
-Nothing about the database or output contracts changed. This page lists
-exactly what moved, what was added as an alias, and what stayed frozen.
+The rename happened in two steps:
+
+| Release | Renamed | Left alone |
+|---|---|---|
+| **0.8** | project name, PyPI distribution, CLI banner, docs, bundled vendor strings | the `gapit` command, `import gapit`, every on-disk name |
+| **0.9** | every on-disk contract (schema ids, manifest filename, FASTA header prefix) | the legacy spellings, which are still read |
 
 ## What changed
 
-| Surface | Before (≤0.7.3) | From 0.8.1 |
+| Surface | Before (≤0.8.1) | From 0.9.0 |
 |---|---|---|
-| PyPI distribution | `gapit` | `gspec` (`gapit` becomes a shim that depends on `gspec`) |
-| Command | `gapit` | `gspec` — the `gapit` command still ships and works |
-| Version banner | `gspec 0.7.3` | `gspec 0.8.1` |
-| `--version --json` `name` | `gapit` | `gspec` (the `gapit.version/1` schema id is unchanged) |
-| Datadir env var | `GAPIT_DATADIR` | `GSPEC_DATADIR`; the old name is still read |
-| Engine env var | `GAPIT_ENGINE` | `GSPEC_ENGINE`; the old name is still read |
+| PyPI distribution | `gapit` | `gspec` (the `gapit` compatibility package depends on it) |
+| Command | `gapit` | `gspec`; `gapit` still works through the compatibility package |
+| Version banner | `gapit 0.8.1` | `gspec 0.9.0` |
+| `--version --json` | `gapit.version/1`, `name: gapit` | `gspec.version/1`, `name: gspec` |
+| JSON schema ids | `gapit.<doc>/<n>` | `gspec.<doc>/<n>` |
+| Manifest filename | `gapit-manifest.json` | `gspec-manifest.json` |
+| FASTA header prefix | `gapit\|db=…` | `gspec\|db=…` |
+| Manifest `header_format` | `gapit/v1` | `gspec/v1` |
+| Datadir env var | `GAPIT_DATADIR` | `GSPEC_DATADIR` (old name still read) |
+| Engine env var | `GAPIT_ENGINE` | `GSPEC_ENGINE` (old name still read) |
 | Home datadir | `~/.local/share/gapit/db` | `~/.local/share/gspec/db`, falling back to the old path when it is the only one present |
-| Docs, README, CITATION | `gapit` | `gspec` |
+| Python import | `import gapit` | `import gspec`; `import gapit` via the compatibility package |
 
-## What deliberately did not change
+## What still works unchanged
 
-These are frozen contracts; renaming them would break existing databases,
-archived results and pipelines, so they keep the pre-0.8 spelling:
+Every pre-0.9 spelling is **accepted on read**, and every writer emits the
+current one:
 
-- **JSON schema ids** — `gapit.report/1`, `gapit.typing/1|2|3`,
-  `gapit.typing_result/1`, `gapit.cluster/1|2`, `gapit.error/1`, and every
-  other `gapit.<document>/<version>` name.
-- **Database manifest filename** — `gapit-manifest.json`.
-- **Native FASTA header prefix** — `gapit|db=…|gene=…|acc=…|func=…`, and the
-  manifest `header_format` value `gapit/v1`.
-- **Python import package** — the implementation imports as `gspec`. The
-  pre-0.8 `import gapit` keeps working through the `gapit` compatibility
-  package (`pip install gapit`), which aliases the same modules, so
-  `except gapit.errors.GapitError` still catches what `gspec` raises.
-- **Existing database directories** — unchanged on disk and still readable.
+- **Schema ids** — a document whose `"schema"` is `gapit.typing/2`,
+  `gapit.report/1`, `gapit.cluster/2`, … validates and is re-emitted with the
+  `gspec.*` id. Archived JSON stays readable; nothing needs rewriting.
+- **Manifest filename** — `gapit-manifest.json` is found when
+  `gspec-manifest.json` is absent. A database installed under 0.8 keeps
+  working as-is.
+- **FASTA header prefix** — `gapit|db=…|gene=…|acc=…|func=…` still decodes;
+  new builds write `gspec|…`.
+- **`header_format`** — `gapit/v1` reads as `gspec/v1`.
+- **Environment** — `GAPIT_DATADIR` / `GAPIT_ENGINE` are read when the
+  `GSPEC_*` names are unset, and a pre-0.9 home datadir is used when the new
+  one does not exist.
 
-## Upgrading
-
-```bash
-pip install --upgrade gspec        # or: pip install --upgrade gapit
-gspec db path                      # confirm which datadir you are on
-gspec db list                      # existing databases still resolve
-```
-
-Both commands resolve the same datadir, so a pipeline that calls `gapit` keeps
-working while you migrate scripts to `gspec` at your own pace.
-
-To adopt the new home directory explicitly:
+Nothing forces a migration. To normalise an existing datadir, rebuild the
+databases (`gspec db setup --all` reindexes in place; `gspec db build`
+rewrites the manifest and headers) or move the directory:
 
 ```bash
 mv ~/.local/share/gapit ~/.local/share/gspec
 ```
 
+## Upgrading
+
+```bash
+pip install --upgrade gspec        # new name only
+pip install --upgrade gapit        # keeps import gapit + the gapit command
+gspec db path                      # confirm which datadir you are on
+gspec db list                      # existing databases still resolve
+```
+
+Both commands read the same datadir and the same databases, so a pipeline that
+calls `gapit` keeps working while scripts migrate to `gspec` at their own pace.
+
 ## Timeline
 
-- **0.8.x** — both names ship; old env vars honoured; schemas frozen.
-- **1.0** — planned: `gspec.*` schema ids published alongside the `gapit.*`
-  ones (aliases, not replacements), and the `gapit` command/import kept as a
-  compatibility layer. Nothing is removed without a major version and a
-  deprecation cycle.
+- **0.8** — brand rename; on-disk names unchanged.
+- **0.9** — on-disk rename; legacy spellings still read.
+- **1.0** — planned: the legacy read aliases stay; nothing is removed without
+  a major version and a deprecation cycle.
 
 ## Citing
 
-Cite `gspec` (see `CITATION.cff`). For work that used 0.7.x, the old name
-still identifies the same software; the Zenodo record for 0.7.3 remains
-citable and the 0.8.1 record declares it as a previous version.
+Cite `gspec` (see `CITATION.cff`). Work done under 0.x can cite the release it
+used; the Zenodo records identify the same software.

@@ -1,4 +1,4 @@
-"""gapit.serotype/1 rule evaluation tests."""
+"""gspec.serotype/1 rule evaluation tests."""
 
 from __future__ import annotations
 

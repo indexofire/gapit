@@ -9,7 +9,7 @@
 
 ## 选项
 
-转写自 `gspec screen --help`（gspec 0.8.1）。标记为 *reads 模式* 的参数只在传入
+转写自 `gspec screen --help`（gspec 0.9.0）。标记为 *reads 模式* 的参数只在传入
 `--r1`/`--r2` 时生效，记录在 [./reads.md](./reads.md)。
 
 每个选项都接受 **短** 列给出的单横线短形式（例如 `--db` 的 `-d`）；长形式仍是规范写法，
@@ -39,8 +39,8 @@
 | `--r2` | `-2` | str | 无 | *reads 模式。* 逗号分隔的 mate FASTQ 文件；数量必须与 `--r1` 一致。 |
 | `--read-type` | `-x` | sr\|map-ont\|map-hifi | FASTQ 用 `sr`，FASTA 用 `map-ont` | *reads 模式。* minimap2 预设；省略时按检测到的输入解析。 |
 | `--min-breadth` | `-b` | float | `90.0` | *reads 模式。* 判定存在的最小广度百分比。 |
-| `--min-identity` | `-I` | float | `0.0` | *reads 模式。* 每条比对的最小一致性百分比，`0 <= x <= 100`；`0` = 关闭。任何非零值都会输出 `gapit.reads/2`（见 [./outputs.md](./outputs.md)）。 |
-| `--min-mapq` | `-M` | int | `0` | *reads 模式。* 每条比对的最小 MAPQ；`0` = 关闭。任何非零值都会输出 `gapit.reads/2`。 |
+| `--min-identity` | `-I` | float | `0.0` | *reads 模式。* 每条比对的最小一致性百分比，`0 <= x <= 100`；`0` = 关闭。任何非零值都会输出 `gspec.reads/2`（见 [./outputs.md](./outputs.md)）。 |
+| `--min-mapq` | `-M` | int | `0` | *reads 模式。* 每条比对的最小 MAPQ；`0` = 关闭。任何非零值都会输出 `gspec.reads/2`。 |
 | `--min-depth` | `-e` | float | `0.0` | *reads 模式。* 判定存在的最小平均深度；`0` = 关闭。 |
 | `--min-relative-depth` | `-R` | float | `0.0` | *reads 模式。* 基因:对照基因平均深度比的最小值（`0 <= x <= 1`）；`0` = 关闭。 |
 | `--relative-to` | `-r` | str | `lpxA` | *reads 模式。* `--min-relative-depth` 的对照基因。 |
@@ -51,7 +51,7 @@
 \* 位置参数 FILE 或 `--fofn`，或经 `--r1` 进入 reads 模式。位置文件与 `--r1`/`--r2`
 互斥。
 
-数据库可以携带 `screen.json`（`gapit.screen/1`）声明自己的 reads/contigs 默认值。
+数据库可以携带 `screen.json`（`gspec.screen/1`）声明自己的 reads/contigs 默认值。
 优先级是 **CLI 显式参数 > `screen.json` > 全局 CLI 默认值**；未显式传入的选项由数据库
 边车补齐。见 [databases.zh.md](./databases.zh.md#screenjson)。
 
@@ -60,7 +60,7 @@
 归一化是原生的（不依赖外部 `any2fasta`）：plain FASTA、gzip 和 bzip2 压缩的 FASTA、
 FASTQ、GBK、EMBL 都可以。转换出的 FASTA 缓冲在内存里（基因组规模的装配体也只有几
 MB），经 stdin 喂给 blastn。如果归一化失败（不是序列文件），gspec 在 stderr 打印
-`gapit.error/1` 信封并以退出码 5 结束。
+`gspec.error/1` 信封并以退出码 5 结束。
 
 归一化之前有一条例外：当**每个**位置参数文件都是 FASTQ（`.fastq`/`.fq` ± `.gz`，
 或扩展名含糊时按内容嗅探为 FASTQ）且未指定 `--aligner` 时，整条命令改走 reads 引
@@ -108,10 +108,10 @@ tests/data/contigs/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.0
 ```console
 $ gspec screen tests/data/contigs/full.fa --db tinyamr --format json
 {
-  "schema": "gapit.report/1",
+  "schema": "gspec.report/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {
@@ -272,7 +272,7 @@ $ gspec screen -d eco_dec *.fna --quiet | gspec summary
   式分块都刷新落盘，此时 stdout **不输出任何数据**（stderr 诊断不变）。
 - **批内出错。** 若文件 1..*k-1* 已流出后第 *k* 个文件失败，已发射的输出原样保留
   —— stdout 上已打印；`--output` 文件里保留表头/frontmatter 和文件 1..*k-1* ——
-  然后在 stderr 打印类型化的 `gapit.error/1` 信封并按文档退出码退出。在任何输出产
+  然后在 stderr 打印类型化的 `gspec.error/1` 信封并按文档退出码退出。在任何输出产
   生之前就失败的运行（用法、依赖、数据库错误）根本不会创建 `--output` 文件。
 
 ### `--output`
@@ -330,7 +330,7 @@ Found 1 genes in tests/data/contigs/full.fa
   按 RFC 4180 加引号，两种方言都能正确回读。
 - `START`/`END`/`STRAND` 取自**锚点**片段：比对长度最大的那个（平局取 `(contig, start)`
   顺序的第一个）。`COVERAGE` 是并集的包围跨度。
-- JSON（`gapit.report/1`）额外携带 `"merged": true` 和一个 `fragments` 数组，每个片
+- JSON（`gspec.report/1`）额外携带 `"merged": true` 和一个 `fragments` 数组，每个片
   段一项 `{contig, start, end, strand, identity_pct, coverage_pct}`：可选的累加字
   段，非合并行一律不出现。Markdown 会在表下为每个合并基因加一行细节。
 
@@ -383,7 +383,7 @@ cluster 构建会写出 `sequences.asm20.mmi` target 索引，`db setup` 会刷�
 
 ### 表型判定（`typing.json`）
 
-基因簇数据库可以携带一份 `gapit.typing/1` 评分规范（用 `gspec db build --typing
+基因簇数据库可以携带一份 `gspec.typing/1` 评分规范（用 `gspec db build --typing
 FILE` 安装）。有它时，每个文件的最佳判定都会注释上一个**表型**：
 
 - 各规则独立打分：`weighted_genes`（基因存在性，带一致性下限和可选负标记）、
@@ -392,7 +392,7 @@ FILE` 安装）。有它时，每个文件的最佳判定都会注释上一个**
   `cutoff` 和 `ambiguity_margin`：胜者明确时以 `high` 置信度给出判定，两条规则落在
   容差内则给出 `ambiguous` 判定（表型为 null，两个候选都列出），最佳分低于 cutoff
   时回退到文档的 fallback 字符串。
-- JSON（`gapit.cluster/1`）携带 `best.phenotype` 以及一个累加的
+- JSON（`gspec.cluster/1`）携带 `best.phenotype` 以及一个累加的
   `best.phenotype_detail` 块：`{score, confidence, components[], runner_up,
   ambiguous[]}`，即逐规则、逐分量的可解释分解。
 - TSV/CSV 表头在 TYPE 之后多出 **PHENOTYPE** 列（歧义或未判定时为 `-`）；无 typing
@@ -421,4 +421,4 @@ FILE` 安装）。有它时，每个文件的最佳判定都会注释上一个**
   成后输出（或刷新到 `--output`）；即使 `--jobs > 1`，文件仍按输入顺序输出（队头
   阻塞：第 i 个文件等文件 1..i）。
 - **退出码。** 2 用法错误，3 缺依赖，4 数据库错误，5 输入错误，1 意外错误。失败时
-  在 stderr 打印 `gapit.error/1` JSON 信封；见 [./outputs.md](./outputs.md)。
+  在 stderr 打印 `gspec.error/1` JSON 信封；见 [./outputs.md](./outputs.md)。

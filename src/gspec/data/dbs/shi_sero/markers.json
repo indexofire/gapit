@@ -1,5 +1,5 @@
 {
-  "schema": "gapit.shigella_markers/1",
+  "schema": "gspec.shigella_markers/1",
   "source": {
     "tool": "ShigaTyper",
     "version": "2.0.5",

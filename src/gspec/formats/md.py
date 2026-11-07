@@ -63,7 +63,7 @@ def md_report_preamble(params: ScreeningParams, *, now: datetime) -> str:
     completes. Run totals (files/hits) live in the JSON document, not here."""
     lines: list[str] = [
         "---",
-        "schema: gapit.report/1",
+        "schema: gspec.report/1",
         f"tool: gspec {__version__}",
         f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
         f"db: {yaml_scalar(params.db)}",
@@ -223,7 +223,7 @@ def render_reads_markdown(
         reports,
         params,
         now=now,
-        schema="gapit.reads/1",
+        schema="gspec.reads/1",
         columns=_READS_COLUMNS,
         with_identity=False,
     )
@@ -239,7 +239,7 @@ def render_reads2_markdown(
         reports,
         params,
         now=now,
-        schema="gapit.reads/2",
+        schema="gspec.reads/2",
         columns=_READS2_COLUMNS,
         with_identity=True,
     )
@@ -255,7 +255,7 @@ def reads_md_preamble(params: ReadsParams, *, now: datetime, reads2: bool = Fals
     frontmatter unchanged."""
     lines: list[str] = [
         "---",
-        "schema: gapit.reads/2" if reads2 else "schema: gapit.reads/1",
+        "schema: gspec.reads/2" if reads2 else "schema: gspec.reads/1",
         f"tool: gspec {__version__}",
         f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
         f"db: {yaml_scalar(params.db)}",

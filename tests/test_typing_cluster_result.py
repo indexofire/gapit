@@ -22,7 +22,7 @@ def _call(phenotype: str, score: float = 1.0) -> dict[str, object]:
 
 
 def _document(
-    schema: str = "gapit.cluster/2", *, db: str = "vpa_ok", file: str = "sample.fna"
+    schema: str = "gspec.cluster/2", *, db: str = "vpa_ok", file: str = "sample.fna"
 ) -> dict[str, object]:
     return {
         "schema": schema,
@@ -47,7 +47,7 @@ def _write(tmp_path: Path, document: dict[str, object], name: str = "cluster.jso
 
 
 def test_typing_reads_cluster2_json(tmp_path: Path) -> None:
-    """Given a gapit.cluster/2 JSON, When typed, Then the concise table is
+    """Given a gspec.cluster/2 JSON, When typed, Then the concise table is
     rendered from its already-evaluated phenotypes."""
     path = _write(tmp_path, _document())
     result = runner.invoke(app, ["typing", str(path), "--quiet"])
@@ -58,13 +58,13 @@ def test_typing_reads_cluster2_json(tmp_path: Path) -> None:
 
 
 def test_typing_reads_locus_map_json(tmp_path: Path) -> None:
-    """Given a gapit.locus_map/1 document, When typed, Then its phenotypes
+    """Given a gspec.locus_map/1 document, When typed, Then its phenotypes
     map is rendered without needing the database or a second screen."""
-    path = _write(tmp_path, _document("gapit.locus_map/1"), "detail.json")
+    path = _write(tmp_path, _document("gspec.locus_map/1"), "detail.json")
     result = runner.invoke(app, ["typing", str(path), "--format", "json", "--quiet"])
     assert result.exit_code == 0, result.stderr
     document = json.loads(result.stdout)
-    assert document["schema"] == "gapit.typing_result/1"
+    assert document["schema"] == "gspec.typing_result/1"
     assert document["db"] == "vpa_ok"
     assert document["files"][0]["file"] == "sample.fna"
     assert document["files"][0]["phenotypes"]["serotype"]["phenotype"] == "O3:K6"

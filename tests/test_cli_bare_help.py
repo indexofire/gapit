@@ -88,7 +88,7 @@ def test_db_fetch_flag_without_select_is_usage_error(
     monkeypatch.setattr("gspec.db_ops.REGISTRY", {})
     result = runner.invoke(app, ["db", "fetch", "--datadir", str(tmp_path)])
     assert result.exit_code == 2
-    assert "gapit.error" in result.stderr
+    assert "gspec.error" in result.stderr
     assert "USAGE_ERROR" in result.stderr
     assert "all" in result.stderr
     assert "-d/--db" in result.stderr

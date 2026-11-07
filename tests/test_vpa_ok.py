@@ -3,7 +3,7 @@
 vpa_ok is a PURE built-in bundled database (the eco_dec/lmo_sero
 pattern): no provider module, no source URLs, no `db fetch` — the wheel's
 typed cluster snapshot materializes on first use and one screen renders
-gapit.cluster/2. These tests pin the committed gapit.typing/2 asset's
+gspec.cluster/2. These tests pin the committed gspec.typing/2 asset's
 shape and, when local copies of the real vpautils GenBank files exist
 (private upstream), prove the snapshot is byte-identical to a
 `gspec db build` over the merged GBKs — the regeneration contract behind
@@ -61,11 +61,11 @@ REAL_DATA = pytest.mark.skipif(
 
 def test_committed_asset_holds_three_schemes() -> None:
     """Given the committed typing asset, When parsed, Then it is a
-    gapit.typing/2 document whose serotype scheme composes the o_group
+    gspec.typing/2 document whose serotype scheme composes the o_group
     and k_group schemes with OUT/KUT fallbacks, and every rule is a
     cluster_match over resolved (locus_tag-style) gene ids."""
     document = json.loads(TYPING_ASSET.read_text(encoding="utf-8"))
-    assert document["schema"] == "gapit.typing/2"
+    assert document["schema"] == "gspec.typing/2"
     names = [scheme["name"] for scheme in document["schemes"]]
     assert names == ["o_group", "k_group", "serotype"]
     o_group, k_group, serotype = document["schemes"]

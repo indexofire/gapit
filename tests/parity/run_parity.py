@@ -39,10 +39,10 @@ def locate() -> tuple[Path, Path, Path]:
     datadir = abricate_bin.parents[1] / "db"
     if not datadir.is_dir():
         fail(f"abricate datadir not found: {datadir}")
-    gapit_bin = DEFAULT_BIN / "gspec"
-    if not gapit_bin.is_file():
-        fail(f"gspec CLI not found: {gapit_bin} (run: pixi install)")
-    return abricate_bin, datadir, gapit_bin
+    gspec_bin = DEFAULT_BIN / "gspec"
+    if not gspec_bin.is_file():
+        fail(f"gspec CLI not found: {gspec_bin} (run: pixi install)")
+    return abricate_bin, datadir, gspec_bin
 
 
 def tool_env(abricate_bin: Path) -> dict[str, str]:
@@ -68,7 +68,7 @@ def run_tool(argv: list[str], env: dict[str, str]) -> subprocess.CompletedProces
 
 
 def main() -> int:
-    abricate_bin, datadir, gapit_bin = locate()
+    abricate_bin, datadir, gspec_bin = locate()
     ensure_indices(datadir)
     env = tool_env(abricate_bin)
     corpora = sorted(CORPUS.glob("*.fa"))
@@ -81,9 +81,9 @@ def main() -> int:
                 ["abricate", "--db", db_name, "--datadir", str(datadir), "--nopath", corpus.name],
                 env,
             )
-            gapit_result = run_tool(
+            gspec_result = run_tool(
                 [
-                    str(gapit_bin),
+                    str(gspec_bin),
                     "screen",
                     "--db",
                     db_name,
@@ -94,21 +94,21 @@ def main() -> int:
                 ],
                 env,
             )
-            if abricate_result.returncode != 0 or gapit_result.returncode != 0:
+            if abricate_result.returncode != 0 or gspec_result.returncode != 0:
                 failures += 1
                 print(
                     f"FAIL {db_name} {corpus.name}: "
-                    f"abricate rc={abricate_result.returncode}, gspec rc={gapit_result.returncode}"
+                    f"abricate rc={abricate_result.returncode}, gspec rc={gspec_result.returncode}"
                 )
                 continue
-            identical = abricate_result.stdout == gapit_result.stdout
+            identical = abricate_result.stdout == gspec_result.stdout
             print(f"{'OK  ' if identical else 'DIFF'} {db_name} {corpus.name}")
             if not identical:
                 failures += 1
                 sys.stdout.writelines(
                     difflib.unified_diff(
                         abricate_result.stdout.splitlines(True),
-                        gapit_result.stdout.splitlines(True),
+                        gspec_result.stdout.splitlines(True),
                         fromfile=f"abricate/{db_name}/{corpus.name}",
                         tofile=f"gspec/{db_name}/{corpus.name}",
                     )

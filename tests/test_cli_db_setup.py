@@ -137,7 +137,7 @@ def test_setup_on_empty_datadir_materializes_bundled(tmp_path: Path) -> None:
     assert setup.exit_code == 0
     assert "materializing bundled database eco_dec" in setup.stderr
     assert "gspec: indexed eco_dec (16 sequences, nucl)" in setup.stderr
-    assert (datadir / "eco_dec" / "gapit-manifest.json").is_file()
+    assert (datadir / "eco_dec" / "gspec-manifest.json").is_file()
     assert (datadir / "eco_dec" / "typing.json").is_file()
 
 
@@ -212,7 +212,7 @@ def test_setup_honors_manifest_dbtype_on_reindex(tmp_path: Path) -> None:
 
 def test_setup_json_receipt_on_existing_datadir(tmp_path: Path) -> None:
     """Given an installed datadir, When `db setup --json --no-bundles` runs,
-    Then stdout is one gapit.dbsetup/1 document (no progress noise) listing
+    Then stdout is one gspec.dbsetup/1 document (no progress noise) listing
     the indexed databases and an empty materialized list."""
     datadir = make_datadir(tmp_path)
     result = runner.invoke(
@@ -221,7 +221,7 @@ def test_setup_json_receipt_on_existing_datadir(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert result.stderr == ""
     document = json.loads(result.stdout)
-    assert document["schema"] == "gapit.dbsetup/1"
+    assert document["schema"] == "gspec.dbsetup/1"
     assert document["datadir"] == str(datadir)
     assert document["materialized"] == []
     assert [entry["db"] for entry in document["databases"]] == ["tinyamr"]

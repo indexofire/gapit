@@ -151,8 +151,8 @@ Binary separation — no ambiguity margin can swallow this.
 
 ```bash
 # 1. Prepare the locus FASTA (or GBK/GFF3 with CDS annotations)
-# 2. Design the typing rules (gapit.typing/3)
-# 3. Declare the k-mer sets (gapit.kmerdb/1)
+# 2. Design the typing rules (gspec.typing/3)
+# 3. Declare the k-mer sets (gspec.kmerdb/1)
 # 4. Build
 
 gspec db build my_sero loci.gff3 \
@@ -171,7 +171,7 @@ The `kmer.json` declares one k size and named sets:
 
 ```json
 {
-  "schema": "gapit.kmerdb/1",
+  "schema": "gspec.kmerdb/1",
   "k": 31,
   "sets": {
     "typeX.diff": {"of": "typeX", "against": ["typeY", "typeZ"]}
@@ -220,7 +220,7 @@ archived under `~/research/`.
 ### spn_sero: the full multi-backend showcase
 
 100 cps locus references from SeroBA, 100 single-serotype rules with
-differential k-mer sets. The same `gapit.typing/3` document evaluates
+differential k-mer sets. The same `gspec.typing/3` document evaluates
 identically on assemblies (alignment path: coverage + identity + key_genes
 + key_kmers) and reads (k-mer containment path: estimated coverage/identity
 + key_kmers). SNP-level pairs (6A/6B, 9A/9V, 15B/15C, 18B/18C…) resolve

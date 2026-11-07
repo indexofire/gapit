@@ -58,7 +58,7 @@ def envelope(stderr: str) -> dict[str, str]:
 
 
 def reads_document(result: Result) -> dict[str, object]:
-    """Parsed gapit.reads/1 document with the wall-clock field dropped."""
+    """Parsed gspec.reads/1 document with the wall-clock field dropped."""
     document = reads_adapter.validate_json(result.stdout).model_dump()
     assert isinstance(document, dict)
     document.pop("created_at", None)
@@ -79,13 +79,13 @@ def test_matrix_positional_fasta_with_minimap2_runs_reads_engine(
     reads_datadir: Path,
 ) -> None:
     """Given a positional assembly FASTA with --aligner minimap2 (row 2), When
-    screened, Then the minimap2 engine runs: gapit.reads/1 JSON (explicit
+    screened, Then the minimap2 engine runs: gspec.reads/1 JSON (explicit
     opt-in; the default is the tsv table) with the resolved map-ont preset and
     the detection note on stderr only."""
     result = screen_reads(reads_datadir, "--aligner", "minimap2", "--format", "json", str(ASSEMBLY))
     assert result.exit_code == 0
     document = reads_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.reads/1"
+    assert document.schema_name == "gspec.reads/1"
     assert document.params.read_type == "map-ont"
     assert document.files[0].reads == [str(ASSEMBLY)]
     genes = {entry.gene: entry.present for entry in document.files[0].genes}
@@ -132,13 +132,13 @@ def test_matrix_reads_default_is_minimap2(
     reads_datadir: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given --r1 FASTQ with no --aligner (row 4), When screened, Then the
-    reads path runs unchanged (gapit.reads/1 under explicit --format json,
+    reads path runs unchanged (gspec.reads/1 under explicit --format json,
     sr preset)."""
     monkeypatch.chdir(READS)
     result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--format", "json")
     assert result.exit_code == 0
     document = reads_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.reads/1"
+    assert document.schema_name == "gspec.reads/1"
     assert document.params.read_type == "sr"
 
 
@@ -357,7 +357,7 @@ def test_reads_mode_accepts_explicit_jobs_one(
     monkeypatch.chdir(READS)
     result = screen_reads(reads_datadir, "--r1", "tetx_full.fq", "--jobs", "1", "--format", "json")
     assert result.exit_code == 0
-    assert reads_adapter.validate_json(result.stdout).schema_name == "gapit.reads/1"
+    assert reads_adapter.validate_json(result.stdout).schema_name == "gspec.reads/1"
 
 
 def test_reads_mode_minid_exits_2(reads_datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:

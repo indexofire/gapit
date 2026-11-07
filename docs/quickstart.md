@@ -37,7 +37,7 @@ gspec: indexed tinyamr (3 sequences, nucl)
 ```
 
 `gspec db list` shows the database catalog and install state (trimmed below; `--json`
-returns the `gapit.dblist/1` document). The fixture `tinyamr` is a plain custom database,
+returns the `gspec.dblist/1` document). The fixture `tinyamr` is a plain custom database,
 not a catalog database, so it does not appear there — the screen in the next section confirms it
 is usable:
 
@@ -91,10 +91,10 @@ gspec screen tests/data/contigs/full.fa --db tinyamr --format json
 
 ```json
 {
-  "schema": "gapit.report/1",
+  "schema": "gspec.report/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "created_at": "2026-09-19T01:11:06Z",
   "params": {
@@ -129,7 +129,7 @@ gspec screen tests/data/contigs/full.fa --db tinyamr --format json
 }
 ```
 
-The document carries `"schema": "gapit.report/1"`, so consumers can pin the contract;
+The document carries `"schema": "gspec.report/1"`, so consumers can pin the contract;
 `gspec schema report` prints its JSON Schema. Field-level detail lives in
 [Outputs](./outputs.md).
 
@@ -213,7 +213,7 @@ presence call: `+` when the report has a hit for the gene, `.` when absent (pass
 Gene **cluster** databases are a second database kind: instead of individual genes, one
 record is a whole locus (Kaptive-style antigen loci, capsule clusters), built from
 GenBank/GFF input. The fixture `tests/data/cluster/screening.gbk` holds two synthetic
-loci; `--typing` installs a `gapit.typing/1` phenotype scoring spec alongside:
+loci; `--typing` installs a `gspec.typing/1` phenotype scoring spec alongside:
 
 ```bash
 gspec db build tinykps tests/data/cluster/screening.gbk \

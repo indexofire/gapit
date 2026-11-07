@@ -44,7 +44,7 @@ SODC_ACCESSION = "NC_013016.1:1293529-1294089"
 _SOURCE_FILES = ("seroALLELES.fa", "ctrA.fa")
 
 _TYPING = {
-    "schema": "gapit.typing/2",
+    "schema": "gspec.typing/2",
     "schemes": [
         {
             "name": "men_serogroup",
@@ -90,7 +90,7 @@ _TYPING = {
 }
 
 _SCREEN = {
-    "schema": "gapit.screen/1",
+    "schema": "gspec.screen/1",
     "reads": {
         "min_breadth": 90.0,
         "min_identity": 80.0,
@@ -103,7 +103,7 @@ _SCREEN = {
 }
 
 _FLOORS = {
-    "schema": "gapit.floors/1",
+    "schema": "gspec.floors/1",
     "default": 90.0,
     "genes": {"sodC": 80.0, "ctrA": 80.0},
 }

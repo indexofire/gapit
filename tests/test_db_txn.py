@@ -71,9 +71,9 @@ def test_force_rebuild_failure_restores_the_previous_database(
     old = datadir / "keep"
     old.mkdir(parents=True)
     (old / "sequences").write_text("OLD-SEQUENCES", encoding="utf-8")
-    (old / "gapit-manifest.json").write_text("OLD-MANIFEST", encoding="utf-8")
+    (old / "gspec-manifest.json").write_text("OLD-MANIFEST", encoding="utf-8")
     fasta = tmp_path / "new.fa"
-    fasta.write_text(f">gapit|db=x|gene=g1|acc=A|func=f\n{SEQ}\n", encoding="utf-8")
+    fasta.write_text(f">gspec|db=x|gene=g1|acc=A|func=f\n{SEQ}\n", encoding="utf-8")
 
     def fail_build(*args: object, **kwargs: object) -> object:
         raise DatabaseError("simulated build failure", code="BUILD_SELF_CHECK_FAILED")
@@ -93,7 +93,7 @@ def test_force_rebuild_failure_restores_the_previous_database(
         )
 
     assert (old / "sequences").read_text(encoding="utf-8") == "OLD-SEQUENCES"
-    assert (old / "gapit-manifest.json").read_text(encoding="utf-8") == "OLD-MANIFEST"
+    assert (old / "gspec-manifest.json").read_text(encoding="utf-8") == "OLD-MANIFEST"
     assert list(datadir.glob(".gspec-txn.backup.*")) == []
 
 

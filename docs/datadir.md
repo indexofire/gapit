@@ -26,17 +26,17 @@ A database is a **directory under the datadir**, one subdirectory per database n
 ```text
 <datadir>/<name>/
 ├── sequences                  # required: FASTA used by BLAST/minimap2
-├── gapit-manifest.json        # provenance + certification (gapit.manifest/1)
+├── gspec-manifest.json        # provenance + certification (gspec.manifest/1)
 ├── records.jsonl              # gene truth store (gspec-built gene databases)
 ├── features.json              # locus/gene table (cluster databases)
-├── typing.json                # optional gapit.typing/1 or /2 rules
+├── typing.json                # optional gspec.typing/1 or /2 rules
 ├── floors.json                # optional per-gene identity floors
 ├── sequences.asm20.mmi        # cluster DBs: prebuilt minimap2 asm20 index
 └── sequences.n* / sequences.p* / sequences.nhr ...   # BLAST index
 ```
 
 `sequences` is the screening input. Its headers carry the gene metadata: native gspec
-databases use the tagged `gapit/v1` form (`gapit|db=...|gene=...|acc=...|func=...` with
+databases use the tagged `gspec/v1` form (`gspec|db=...|gene=...|acc=...|func=...` with
 the product after a space); legacy abricate databases use `~~~`-separated headers.
 gspec can read both.
 
@@ -46,7 +46,7 @@ generated artifact, not source data. A missing or stale index is rebuilt by
 `sequences.asm20.mmi` minimap2 target index, which `db setup` also refreshes; legacy
 cluster screening uses it when fresh.
 
-`gapit-manifest.json` is written **last**. It certifies the artifacts (`sha256`,
+`gspec-manifest.json` is written **last**. It certifies the artifacts (`sha256`,
 `n_records`, `dbtype`, `kind`, `source`, `typing_schema`, licenses, tool versions).
 Discovery and listing use it, but a database directory remains readable without one for
 legacy abricate compatibility.
@@ -63,8 +63,8 @@ from a screen table.
 A cluster database (`kind: cluster`) holds one FASTA record per **locus** plus
 `features.json`, which maps loci to genes and coordinates. `gspec screen` runs the
 minimap2 cluster engine and scores genes/loci from the `cs` walk. A multi-scheme
-`typing.json` makes the cluster output `gapit.cluster/2`; otherwise the database renders
-`gapit.cluster/1`. `vpa_ok` is the bundled typed-cluster example.
+`typing.json` makes the cluster output `gspec.cluster/2`; otherwise the database renders
+`gspec.cluster/1`. `vpa_ok` is the bundled typed-cluster example.
 
 ### Where databases come from
 
@@ -89,7 +89,7 @@ Resolution order, highest first:
 4. `~/.local/share/gspec/db`
 
 `gspec db path` prints the effective path **without creating it**. Add `--json` for a
-`gapit.datadir/1` document with `datadir`, `exists`, and `source` (`cli`, `env`, `xdg`,
+`gspec.datadir/1` document with `datadir`, `exists`, and `source` (`cli`, `env`, `xdg`,
 or `default`) — useful in Docker entrypoints and agent workflows.
 
 Two rename accommodations keep pre-0.8 installs working: `$GAPIT_DATADIR` is still read
@@ -141,7 +141,7 @@ anything is written.
 | `--db`, `-d NAME` | Set up NAME (repeatable); missing providers are fetched, missing bundles materialized |
 | `--datadir`, `-D PATH` | Use PATH instead of the resolved datadir |
 | `--no-bundles`, `-B` | Skip bundled materialization (named providers may still be fetched) |
-| `--json`, `-J` | Print one `gapit.dbsetup/1` receipt on stdout and suppress progress |
+| `--json`, `-J` | Print one `gspec.dbsetup/1` receipt on stdout and suppress progress |
 | `--quiet`, `-q` | Silence progress diagnostics on stderr |
 | `--debug`, `-v` | Echo external command lines (`makeblastdb`) to stderr |
 
@@ -149,7 +149,7 @@ The JSON receipt names the bundles that were materialized, the providers that we
 fetched, and every database that was indexed:
 
 ```json
-{"schema":"gapit.dbsetup/1","datadir":"/path/to/db","materialized":["eco_dec"],"fetched":[],"databases":[{"db":"eco_dec","records":16,"dbtype":"nucl"}]}
+{"schema":"gspec.dbsetup/1","datadir":"/path/to/db","materialized":["eco_dec"],"fetched":[],"databases":[{"db":"eco_dec","records":16,"dbtype":"nucl"}]}
 ```
 
 Introspect it with `gspec schema dbsetup`.
@@ -231,7 +231,7 @@ docker run --rm -it \
   --user "$(id -u):$(id -g)" \
   -v gspec-data:/data/gspec \
   -e GSPEC_DATADIR=/data/gspec \
-  gspec:0.8.1 gspec db list
+  gspec:0.9.0 gspec db list
 ```
 
 For CI, mount or cache a workspace directory and pin versions:
@@ -240,7 +240,7 @@ For CI, mount or cache a workspace directory and pin versions:
 docker run --rm \
   -v "$PWD/.gspec-db:/data/gspec" \
   -e GSPEC_DATADIR=/data/gspec \
-  gspec:0.8.1 gspec screen sample.fna --db eco_dec
+  gspec:0.9.0 gspec screen sample.fna --db eco_dec
 ```
 
 You can bake reference databases into an image for **read-only** screening:

@@ -10,7 +10,7 @@ abricate 格式 TSV，并在一个语料上对真实 abricate 做过逐字节校
 JSON/Markdown、reads 与基因簇引擎、分型），parity 校验（`pixi run -e parity parity`）
 只作为冻结面的回归参照。它能原样读取 abricate 格
 式的数据库（遗留 `~~~` 表头）。反过来不成立：abricate 读不了 gspec 原生数据库
-（`gapit/v1` 标记表头）。细节：`./databases.md`。
+（`gspec/v1` 标记表头）。细节：`./databases.md`。
 
 ## 显示 80.00% 覆盖度的命中为什么被过滤了？
 
@@ -62,7 +62,7 @@ $ gspec db fetch -d ncbi --force
 $ gspec db setup
 ```
 
-只有 gspec 原生输出是单向的（abricate 读不了 `gapit/v1` 数据库）。
+只有 gspec 原生输出是单向的（abricate 读不了 `gspec/v1` 数据库）。
 
 ## 如何筛查基因簇或 Kaptive 位点？
 
@@ -110,14 +110,14 @@ result.tsv`，然后 `gspec typing result.tsv`——或者直接用管道把一�
 
 默认 TSV —— tsv 是 gspec 所有界面上的人类默认值，json/md 是给智能体的显式选项。
 reads 结果是逐基因的广度/深度行，流式表格把样本名放在第一列 `#SAMPLE`；
-`--format json`（或 `md`）则给出版本化的 `gapit.reads/1` 文档：
+`--format json`（或 `md`）则给出版本化的 `gspec.reads/1` 文档：
 
 ```console
 $ gspec screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads
 #SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
 tests/data/reads/tetx_full.fq	tetX	100.00	2.30	12	yes	tinyreads	SYN-001	extended resistance determinant tetX
 $ gspec screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads --format json
-{"schema": "gapit.reads/1", ...}
+{"schema": "gspec.reads/1", ...}
 ```
 
 reads 模式：`./reads.md`。
@@ -131,7 +131,7 @@ reads 模式：`./reads.md`。
 
 ## 什么是逐基因一致性下限（floors）？
 
-数据库侧的 `floors.json`（`gapit.floors/1`）为 reads 模式和 contig 模式的存在判定
+数据库侧的 `floors.json`（`gspec.floors/1`）为 reads 模式和 contig 模式的存在判定
 声明每个基因的最小比对一致性：低于下限的比对在广度/深度聚合之前被丢弃，于是"接近但不完全相同"
 的同源基因不再过量判定。催生它的真实案例：内置 `eco_dec` 面板中的 SPATE 同源基因
 `pic` 在约 86.6% 一致性、97.6% 广度时越过了 90% 存在阈值，而 blastn contig 路径
@@ -143,7 +143,7 @@ build --floors FILE` 安装，或直接把文件放进数据库目录；没有�
 
 不同参考集需要不同阈值：62 bp 的 amplicon、857 bp 的基因、带 `lpxA` 对照的面板
 不可能共用一套全局 identity/MAPQ/depth 规则。数据库可以携带 `screen.json`
-（`gapit.screen/1`）声明自己的 reads/contigs 默认值（identity 预过滤、MAPQ、
+（`gspec.screen/1`）声明自己的 reads/contigs 默认值（identity 预过滤、MAPQ、
 depth、相对深度对照、contig identity/coverage、merge-fragments）。优先级是
 CLI 显式参数 > `screen.json` > 全局默认值。内置 `cje_cps` 使用 MAPQ 20、depth 5、
 10% `lpxA` 相对深度门控，以及 `floors.json`（默认 90%，`lpxA`/`HS12` 80%）。
@@ -156,7 +156,7 @@ CLI 显式参数 > `screen.json` > 全局默认值。内置 `cje_cps` 使用 MAP
 退出码 3 结束，信封指明是哪个二进制：
 
 ```text
-{"schema":"gapit.error/1","code":"MISSING_DEPENDENCY","message":"required binary not found on PATH: blastn","context":{"binary":"blastn"}}
+{"schema":"gspec.error/1","code":"MISSING_DEPENDENCY","message":"required binary not found on PATH: blastn","context":{"binary":"blastn"}}
 ```
 
 安装 BLAST+ 及其伙伴（pixi 会替你装好），并确保它们在 PATH 上。

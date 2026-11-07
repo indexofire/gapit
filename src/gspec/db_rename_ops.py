@@ -39,6 +39,7 @@ from gspec.dbbuild import (
     tool_version_line,
 )
 from gspec.errors import DatabaseError
+from gspec.layout import MANIFEST_NAME, manifest_path
 from gspec.proctools import note
 from gspec.records import Manifest, read_manifest, write_manifest
 
@@ -100,7 +101,7 @@ def _rename_cluster(source: Path, target: Path, manifest: Manifest, quiet: bool)
                 makeblastdb_version=tool_version_line(["makeblastdb", "-version"]),
                 minimap2_version=optional_tool_version_line(["minimap2", "--version"]),
             ),
-            build_dir / "gapit-manifest.json",
+            build_dir / MANIFEST_NAME,
         )
         return manifest.n_records
 
@@ -132,8 +133,8 @@ def perform_rename(
     root = config.resolve_datadir(datadir)
     source = root / old
     target = root / new
-    manifest_path = source / "gapit-manifest.json"
-    if not manifest_path.is_file():
+    manifest_file = manifest_path(source)
+    if not manifest_file.is_file():
         raise DatabaseError(
             f"database not found: {old}",
             code="DATABASE_NOT_FOUND",
@@ -145,7 +146,7 @@ def perform_rename(
             code="DB_ALREADY_EXISTS",
             context={"db": new},
         )
-    manifest = read_manifest(manifest_path).model_copy(update={"name": new})
+    manifest = read_manifest(manifest_file).model_copy(update={"name": new})
     note(quiet, f"renaming {old} -> {new} ({manifest.kind} database)")
     rename = _rename_cluster if manifest.kind == "cluster" else _rename_gene
     n_records = rename(source, target, manifest, quiet)

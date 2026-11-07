@@ -2,7 +2,7 @@
 
 ``records.jsonl`` is the editable truth a database directory is built from
 (the ``sequences`` FASTA and its BLAST index are generated projections, built
-later in Wave A3); ``gapit-manifest.json`` is the provenance sidecar describing
+later in Wave A3); ``gspec-manifest.json`` is the provenance sidecar describing
 how that truth was obtained. Both are FILE contracts — they never appear on
 stdout and are not registered in ``gspec schema``.
 """
@@ -10,13 +10,15 @@ stdout and are not registered in ``gspec schema``.
 import re
 from collections.abc import Iterable, Iterator
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from gspec.db_txn import TXN_PREFIX
 from gspec.errors import InputError
 from gspec.formats.json import ToolDocument
+from gspec.layout import manifest_path
+from gspec.schema_ids import Canonical
 
 _SHA256_SHAPE = re.compile(r"[0-9a-fA-F]{64}")
 
@@ -96,7 +98,9 @@ class Manifest(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Literal["gapit.manifest/1"] = Field(default="gapit.manifest/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.manifest/1"], Canonical] = Field(
+        default="gspec.manifest/1", alias="schema"
+    )
     name: str
     source_urls: tuple[str, ...]
     fetched_at: str
@@ -106,10 +110,17 @@ class Manifest(BaseModel, frozen=True):
     # gene: per-gene records pipeline (default; legacy dirs are gene dbs).
     # cluster: GBK/GFF-built gene-cluster db (features.json + locus FASTA).
     kind: Literal["gene", "cluster"] = "gene"
-    # gapit/v1: tagged per-gene headers; plain: bare locus-id headers (cluster).
-    header_format: Literal["gapit/v1", "plain"] = "gapit/v1"
+    # gspec/v1: tagged per-gene headers; plain: bare locus-id headers (cluster).
+    # gapit/v1 is the pre-0.9 spelling and is still accepted on read.
+    header_format: Literal["gspec/v1", "plain"] = "gspec/v1"
+
+    @field_validator("header_format", mode="before")
+    @classmethod
+    def _legacy_header_format(cls, value: object) -> object:
+        return "gspec/v1" if value == "gapit/v1" else value
+
     upstream_version: str = ""
-    # Typing provenance: the gapit.typing schema tag of the installed
+    # Typing provenance: the gspec.typing schema tag of the installed
     # typing.json (None when the database is untyped; omitted at
     # serialization so pre-typing manifests stay byte-identical).
     typing_schema: str | None = None
@@ -118,7 +129,7 @@ class Manifest(BaseModel, frozen=True):
     license: str | None = None
     note: str | None = None
     # "bundled" marks a database materialized from the wheel's own content
-    # (gapit.bundled — public-domain panels); None is omitted at
+    # (gspec.bundled — public-domain panels); None is omitted at
     # serialization so every other manifest stays byte-identical.
     source: Literal["bundled"] | None = None
     tool: ToolDocument = ToolDocument()
@@ -173,14 +184,14 @@ def read_manifest(path: Path) -> Manifest:
 
 
 def installed_db_dirs(root: Path) -> list[Path]:
-    """Datadir subdirectories holding a gapit-manifest.json, sorted by name."""
+    """Datadir subdirectories holding a manifest, sorted by name."""
     return sorted(
         (
             child
             for child in root.iterdir()
             if not child.name.startswith(TXN_PREFIX)
             and child.is_dir()
-            and (child / "gapit-manifest.json").is_file()
+            and manifest_path(child).is_file()
         ),
         key=lambda child: child.name,
     )

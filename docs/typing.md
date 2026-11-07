@@ -3,12 +3,12 @@
 A typing document is the DATABASE-SIDE scoring spec that turns screening hits into phenotype
 calls — serotypes, serogroups, pathotypes. Install one with `gspec db build --typing FILE`
 and the database can designate any sample you screen against it. This page is the full
-`gapit.typing/2` reference plus a cookbook: six researched designation schemes encoded as
+`gspec.typing/2` reference plus a cookbook: six researched designation schemes encoded as
 validated, self-tested example documents.
 
 - For the database-side mechanics (`--typing`, validation, manifests), see
   [Databases](./databases.md#typingjson-declarative-phenotype-scoring).
-- For the designation output document (`gapit.typing_result/1`), see [Outputs](./outputs.md).
+- For the designation output document (`gspec.typing_result/1`), see [Outputs](./outputs.md).
 - The JSON Schema of a typing document prints with `gspec schema typing`.
 
 ## The two-stage designation workflow
@@ -57,7 +57,7 @@ Usage: `gspec typing RESULT.tsv [RESULT2.tsv ...] [-D datadir] [-f tsv|json|md] 
 `-` for the phenotype (and runner-up) and carry the candidate pair in NOTES; `GENES`
 follows the phenotype with the FILE's present gene names (sorted, `;`-joined), the same
 list on each of the FILE's scheme rows — the hits that drove the call, in the open. `json` emits
-`gapit.typing_result/1` (full score breakdowns plus the same per-file `genes` list;
+`gspec.typing_result/1` (full score breakdowns plus the same per-file `genes` list;
 `gspec schema typing_result`); `md` renders
 the same eight columns under a frontmatter naming the db and source tables. Typed errors:
 mixed `DATABASE` values are `DATABASE_MISMATCH`, a table with no data rows `TYPING_NO_DATA`
@@ -69,11 +69,11 @@ through the command.
 `gspec screen`: its unit of typing is the best *locus* call, which only the minimap2
 cluster engine can compute. The compact cluster TSV is not a gene table and does not
 carry the per-scheme metadata needed for re-typing; use cluster JSON instead:
-`gspec typing result.json` reads `gapit.cluster/2` or `gapit.locus_map/1` and renders
-the already-evaluated phenotypes as `gapit.typing_result/1` without re-running the
+`gspec typing result.json` reads `gspec.cluster/2` or `gspec.locus_map/1` and renders
+the already-evaluated phenotypes as `gspec.typing_result/1` without re-running the
 aligner. Screening a typed cluster database annotates the cluster document directly — a single-scheme db
-annotates `gapit.cluster/1` (the typed-only `PHENOTYPE` TSV column, `best.phenotype` +
-`best.phenotype_detail` in JSON/MD), and a multi-scheme db renders `gapit.cluster/2`
+annotates `gspec.cluster/1` (the typed-only `PHENOTYPE` TSV column, `best.phenotype` +
+`best.phenotype_detail` in JSON/MD), and a multi-scheme db renders `gspec.cluster/2`
 (one call per scheme in a `phenotypes` map, per-scheme winner-evidence TSV columns).
 A database profile may additionally preserve same-family fallback evidence and emit
 `locus_status` (`known` / `unknown_locus` / `none`) plus `locus_confidence`
@@ -82,12 +82,12 @@ A database profile may additionally preserve same-family fallback evidence and e
 
 ## One document, two engines
 
-A `gapit.typing/2` document is a list of named **schemes**; each scheme is a list of
+A `gspec.typing/2` document is a list of named **schemes**; each scheme is a list of
 **rules** plus the decision thresholds applied to them:
 
 ```json
 {
-  "schema": "gapit.typing/2",
+  "schema": "gspec.typing/2",
   "schemes": [
     {
       "name": "serogroup",
@@ -104,18 +104,18 @@ Which engine evaluates the document depends on the database kind:
 
 | Database kind | Input | Engine | Where the calls appear |
 |---|---|---|---|
-| **gene** | marker FASTA | blastn gene path | `gspec typing` over the screen results: `gapit.typing_result/1` (JSON) and the eight-column TSV/MD table |
-| **cluster** (one scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gspec screen`: `best.phenotype` + `best.phenotype_detail` of `gapit.cluster/1`, plus the typed-only `PHENOTYPE` TSV column |
-| **cluster** (multi-scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gspec screen`: `files[].phenotypes` of `gapit.cluster/2` (one call per scheme, compose rendered from its ingredients), plus per-scheme winner-evidence TSV columns |
+| **gene** | marker FASTA | blastn gene path | `gspec typing` over the screen results: `gspec.typing_result/1` (JSON) and the eight-column TSV/MD table |
+| **cluster** (one scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gspec screen`: `best.phenotype` + `best.phenotype_detail` of `gspec.cluster/1`, plus the typed-only `PHENOTYPE` TSV column |
+| **cluster** (multi-scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gspec screen`: `files[].phenotypes` of `gspec.cluster/2` (one call per scheme, compose rendered from its ingredients), plus per-scheme winner-evidence TSV columns |
 
 Two hard constraints by kind:
 
 - A **gene database** evaluates `weighted_genes` and `exact_set` rules only (no loci exist to
   feed `cluster_match`/`learned_linear`).
 - A **cluster database** renders one of two contracts, picked by scheme count: a document
-  with exactly **one** scheme (a `gapit.typing/1` document included) renders the
-  byte-frozen `gapit.cluster/1` — one phenotype slot per file, `best.phenotype` — while a
-  document with **more than one** scheme renders `gapit.cluster/2`: every scheme is called
+  with exactly **one** scheme (a `gspec.typing/1` document included) renders the
+  byte-frozen `gspec.cluster/1` — one phenotype slot per file, `best.phenotype` — while a
+  document with **more than one** scheme renders `gspec.cluster/2`: every scheme is called
   (schemes evaluate even without a best-locus call, so fallbacks always render), each file
   carries a `phenotypes` map keyed by scheme name in document order, `best` drops its
   phenotype fields, and the TSV/CSV columns derive from the document: each compose scheme's
@@ -207,7 +207,7 @@ call carries its own qualification instead of requiring the paper to interpret i
 ### Listeria serogroups — the bundled lmo_sero panel (gene db)
 
 `lmo_sero` is a bundled database: the Doumith markers extracted from public-domain
-INSDC records and the `doumith_serogroup` scheme (`gapit.typing/2`) — the same five-marker
+INSDC records and the `doumith_serogroup` scheme (`gspec.typing/2`) — the same five-marker
 multiplex-PCR semantics as LisSero, with `prs` as the genus-level `control_gene` and 95/95
 floors on every rule (Doumith et al. 2004, J Clin Microbiol 42:3819):
 
@@ -302,7 +302,7 @@ Three schemes:
 - `serotype` — the `"{o_group}:{k_group}"` compose scheme documenting the panel output.
 
 The vpa_ok cookbook document installs as **one merged database** rendering
-`gapit.cluster/2`: every scheme is called per file (`o_group`, `k_group`, then the
+`gspec.cluster/2`: every scheme is called per file (`o_group`, `k_group`, then the
 `serotype` compose rendered from its ingredients — `O3/O13:K6` in one scan), and its
 TSV row puts the composed serotype FIRST and then gives each scheme its call plus the
 winning locus's own evidence (coverage, identity, gene counts, missing ids):
@@ -310,7 +310,7 @@ winning locus's own evidence (coverage, identity, gene counts, missing ids):
 historical `/1` install —
 **two databases** (`vp_o`, `vp_k`) built from the same GBK with one scheme each,
 exactly how Kaptive ships separate O and K databases — remains fully valid: a
-single-scheme document keeps rendering byte-frozen `gapit.cluster/1`, and the split
+single-scheme document keeps rendering byte-frozen `gspec.cluster/1`, and the split
 is still what you want when the O and K calls belong to different pipelines. The
 test suite asserts the merged /2 goldens (`cluster2_vp_o3k6`, `cluster2_vp_none`)
 and the split /1 calls (`O3/O13`, `K6`) side by side.
@@ -357,7 +357,7 @@ declaration order):
   (最新食品安全风险监测方案): aggR is mandatory — pic/astA alone are insufficient. A
   pic+astA isolate without aggR is `EAEC` under gb4789_6 and `non-DEC` under
   risk_monitoring — the headline divergence between the two schemes, locked by the
-  `eco_dec_typing` golden (both calls in one `gapit.typing_result/1` document; the
+  `eco_dec_typing` golden (both calls in one `gspec.typing_result/1` document; the
   bundled database carries the same document).
 - `EPEC_atypical` is declared *after* EHEC/STEC so stx-positive isolates never land there;
   escV+/bfpB−/stx− isolates fall through the typical-EPEC rule onto it.
@@ -431,7 +431,7 @@ The cluster O/K pattern: the merged /2 install (one scan, every scheme) and the
 historical /1 split (one database per scheme):
 
 ```console
-$ gspec db build vpa_ok vpa_ok.gbk --typing vpa_ok.json   # ONE merged db → gapit.cluster/2
+$ gspec db build vpa_ok vpa_ok.gbk --typing vpa_ok.json   # ONE merged db → gspec.cluster/2
 $ gspec screen sample.fa --db vpa_ok --quiet
 FILE      SEROTYPE   O_GROUP  O_LOCUS     O_COVERAGE  ...  K_GROUP  K_LOCUS  K_COVERAGE  ...
 sample.fa O3/O13:K6  O3/O13   OL3_or_O13  100.00      ...  K6       KL6     100.00      ...

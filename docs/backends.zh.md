@@ -142,8 +142,8 @@ absent）、插入/缺失图谱。`primary_secondary` 覆盖模式包含次级�
 
 ```bash
 # 1. 准备位点 FASTA（或带 CDS 注释的 GBK/GFF3）
-# 2. 设计分型规则（gapit.typing/3）
-# 3. 声明 k-mer 集（gapit.kmerdb/1）
+# 2. 设计分型规则（gspec.typing/3）
+# 3. 声明 k-mer 集（gspec.kmerdb/1）
 # 4. 构建
 
 gspec db build my_sero loci.gff3 \
@@ -162,7 +162,7 @@ gspec screen -d my_sero --r1 reads_R1.fastq --r2 reads_R2.fastq
 
 ```json
 {
-  "schema": "gapit.kmerdb/1",
+  "schema": "gspec.kmerdb/1",
   "k": 31,
   "sets": {
     "typeX.diff": {"of": "typeX", "against": ["typeY", "typeZ"]}
@@ -207,7 +207,7 @@ uint64 数组存储于 `kmers/`。分型规则引用集合名；引擎在构建�
 ### spn_sero：多后端完整展示
 
 100 条 SeroBA cps 位点参考、100 个单型规则带差异 k-mer 集。同一份
-`gapit.typing/3` 文档在组装（比对路径：覆盖+同一性+key_genes+
+`gspec.typing/3` 文档在组装（比对路径：覆盖+同一性+key_genes+
 key_kmers）和 reads（k-mer containment 路径：估计覆盖/同一性+
 key_kmers）上评估完全一致。SNP 级对（6A/6B、9A/9V、15B/15C、
 18B/18C…）两条路径均可拆分。

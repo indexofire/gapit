@@ -101,7 +101,7 @@ def test_db_list_json_marks_extras_local_and_keeps_registry_entries_untouched(
     result = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
     assert result.exit_code == 0
     document = json.loads(result.stdout)
-    assert document["schema"] == "gapit.dblist/1"
+    assert document["schema"] == "gspec.dblist/1"
     providers = document["providers"]
     by_name = {entry["name"]: entry for entry in providers}
     assert by_name["myamr"]["source"] == "local"
@@ -205,7 +205,7 @@ def test_db_list_manifestless_dir_counts_fasta_and_detects_dbtype(tmp_path: Path
 
 def test_db_list_json_surfaces_a_bundled_content_license(tmp_path: Path) -> None:
     """Given the bundled vpa_ok row, When listed, Then its pinned MIT content
-    license is carried in the gapit.dblist/1 entry."""
+    license is carried in the gspec.dblist/1 entry."""
     from gspec.db_ops import db_list_entries
 
     entries = {entry.name: entry for entry in db_list_entries(tmp_path)}
@@ -255,7 +255,7 @@ def test_db_list_does_not_call_a_manifest_only_dir_installed(tmp_path: Path) -> 
             n_records=1,
             dbtype="nucl",
         ),
-        db_dir / "gapit-manifest.json",
+        db_dir / "gspec-manifest.json",
     )
 
     result = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])
@@ -282,7 +282,7 @@ def test_db_list_reports_installed_but_unindexed(tmp_path: Path) -> None:
             n_records=1,
             dbtype="nucl",
         ),
-        db_dir / "gapit-manifest.json",
+        db_dir / "gspec-manifest.json",
     )
 
     result = runner.invoke(app, ["db", "list", "--datadir", str(datadir), "--json"])

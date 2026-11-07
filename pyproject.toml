@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gspec"
-version = "0.8.1"
+version = "0.9.0"
 description = "Declarative typing databases for bacterial genomes: gene-panel and locus screening, serotype/AMR/virulence designation, machine-readable contracts"
 readme = "README.md"
 authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]

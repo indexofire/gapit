@@ -109,7 +109,7 @@ def _gene_rows(top: LocusCall) -> list[tuple[str, ...]]:
 
 
 def cluster_md_head(
-    params: ClusterParams, *, now: datetime, schema_tag: str = "gapit.cluster/1"
+    params: ClusterParams, *, now: datetime, schema_tag: str = "gspec.cluster/1"
 ) -> str:
     """The STATIC frontmatter + title chunk (schema, tool, timestamp,
     thresholds — everything knowable before file 1), so a streaming caller
@@ -218,7 +218,7 @@ def _summary_row_v2(report: ClusterReport, document: TypingDocument) -> tuple[st
 def cluster2_md_head(params: ClusterParams, *, now: datetime) -> str:
     """The /2 STATIC frontmatter + title chunk — same telemetry as the /1
     head with the gapit.cluster/2 schema tag."""
-    return cluster_md_head(params, now=now, schema_tag="gapit.cluster/2")
+    return cluster_md_head(params, now=now, schema_tag="gspec.cluster/2")
 
 
 def cluster2_md_file_chunk(report: ClusterReport, document: TypingDocument) -> str:

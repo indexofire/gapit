@@ -42,7 +42,7 @@ def make_db(
             dbtype="nucl",
             upstream_version=upstream_version,
         ),
-        db_dir / "gapit-manifest.json",
+        db_dir / "gspec-manifest.json",
     )
 
 
@@ -66,7 +66,7 @@ def rows(stdout: str) -> dict[str, list[str]]:
 
 
 def last_envelope(stderr: str) -> dict[str, object]:
-    """The last non-empty stderr line parsed as the gapit.error/1 envelope."""
+    """The last non-empty stderr line parsed as the gspec.error/1 envelope."""
     lines = [line for line in stderr.splitlines() if line.strip()]
     assert lines, "expected an error envelope on stderr"
     return json.loads(lines[-1])
@@ -115,7 +115,7 @@ def test_db_outdated_table_marks_ok_and_stale(tmp_path: Path) -> None:
 
 def test_db_outdated_json_document(tmp_path: Path) -> None:
     """Given two installed dbs, When `db outdated --json`, Then stdout parses
-    as ONE gapit.dboutdated/1 document whose per-db entries carry
+    as ONE gspec.dboutdated/1 document whose per-db entries carry
     db/fetched_at/age_days/status/upstream_version."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
@@ -127,7 +127,7 @@ def test_db_outdated_json_document(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     document = json.loads(result.stdout)
-    assert document["schema"] == "gapit.dboutdated/1"
+    assert document["schema"] == "gspec.dboutdated/1"
     by_db = {entry["db"]: entry for entry in document["databases"]}
     assert by_db["tinyamr"]["status"] == "ok"
     assert by_db["tinyamr"]["upstream_version"] == "v1"

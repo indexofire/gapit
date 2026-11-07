@@ -87,7 +87,7 @@ def finalize(workdir: Path, build_dir: Path) -> None:
         )
         materialize_kmer_sets(build_dir, kmer_doc, build_dir / "sequences")
     cluster_profile = {
-        "schema": "gapit.cluster_profile/1",
+        "schema": "gspec.cluster_profile/1",
         "coverage_mode": "primary_secondary",
         "fallback_evidence": True,
         "min_gene_cov": 50.0,

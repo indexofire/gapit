@@ -27,7 +27,7 @@ from gspec.report import ScreeningParams
 @dataclass
 class _Record:
     query_id: str = "contig1"
-    target_id: str = "gapit|db=test|gene=abc|acc=1|func=x"
+    target_id: str = "gspec|db=test|gene=abc|acc=1|func=x"
     query_length: int | None = 100
     target_length: int | None = 100
     query_start: int | None = 10
@@ -94,7 +94,7 @@ def test_blast_mapping_preserves_blast_coordinates(
     row = rows[0]
     assert (row.qseqid, row.qstart, row.qend, row.qlen) == ("contig1", 11, 20, 100)
     assert (row.sseqid, row.sstart, row.send, row.slen) == (
-        "gapit|db=test|gene=abc|acc=1|func=x",
+        "gspec|db=test|gene=abc|acc=1|func=x",
         31,
         40,
         100,
@@ -249,7 +249,7 @@ def _blast_line() -> str:
             "1",
             "10",
             "100",
-            "gapit|db=test|gene=abc|acc=1|func=x",
+            "gspec|db=test|gene=abc|acc=1|func=x",
             "1",
             "10",
             "100",
@@ -338,7 +338,7 @@ def test_run_blastn_shadow_returns_legacy_and_logs(
     monkeypatch.setattr(blast, "run_blast_gseek", _new)
     with caplog.at_level(logging.WARNING, logger="gspec.gseek"):
         result = blast.run_blastn(query, database, params, dbtype="nucl")
-    assert result[0].sseqid.startswith("gapit|")
+    assert result[0].sseqid.startswith("gspec|")
     assert "legacy and gseek results differ" in caplog.text
 
 
@@ -433,7 +433,7 @@ def test_run_blastn_shadow_falls_back_on_gseek_failure(
     monkeypatch.setattr(blast, "run_blast_gseek", _fail)
     with caplog.at_level(logging.WARNING, logger="gspec.gseek"):
         rows = blast.run_blastn(query, database, params, dbtype="nucl")
-    assert rows[0].sseqid.startswith("gapit|")
+    assert rows[0].sseqid.startswith("gspec|")
     assert "gseek path failed" in caplog.text
 
 

@@ -40,6 +40,7 @@ from gspec.dbcodec import decode_seqid
 from gspec.errors import DatabaseError, InputError, UsageError
 from gspec.fasta import FastaRecord, iter_fasta
 from gspec.gene_floors import FLOORS_FILENAME, read_floors, validate_floors
+from gspec.layout import manifest_path
 from gspec.proctools import note
 from gspec.records import Record, read_manifest, write_records
 from gspec.screen_defaults import (
@@ -93,14 +94,14 @@ def _reproject_installed(
         )
     root = config.resolve_datadir(datadir)
     db_dir = root / name
-    manifest_path = db_dir / "gapit-manifest.json"
-    if not manifest_path.is_file():
+    manifest_file = manifest_path(db_dir)
+    if not manifest_file.is_file():
         raise DatabaseError(
             f"database not found: {name} (give an INPUT file to build a new one)",
             code="DATABASE_NOT_FOUND",
             context={"db": name, "datadir": str(root)},
         )
-    manifest = read_manifest(manifest_path)
+    manifest = read_manifest(manifest_file)
     if manifest.kind != "gene":
         raise DatabaseError(
             f"{name} is a cluster database: rebuild it from its source GBK/GFF with"
@@ -235,7 +236,7 @@ def perform_build(
             code="USAGE_ERROR",
         )
     db_dir = config.ensure_datadir(datadir) / name
-    if (db_dir / "gapit-manifest.json").is_file() and not force:
+    if manifest_path(db_dir).is_file() and not force:
         raise DatabaseError(
             f"won't overwrite existing database {name} (use --force)",
             code="DB_ALREADY_EXISTS",
@@ -243,7 +244,7 @@ def perform_build(
         )
     if detected == "cluster":
         with staged_database(db_dir) as build_dir:
-            if (db_dir / "gapit-manifest.json").is_file() and not force:
+            if manifest_path(db_dir).is_file() and not force:
                 raise DatabaseError(
                     f"won't overwrite existing database {name} (use --force)",
                     code="DB_ALREADY_EXISTS",
@@ -279,7 +280,7 @@ def perform_build(
         )
     validate_records(records)
     with staged_database(db_dir) as build_dir:
-        if (db_dir / "gapit-manifest.json").is_file() and not force:
+        if manifest_path(db_dir).is_file() and not force:
             raise DatabaseError(
                 f"won't overwrite existing database {name} (use --force)",
                 code="DB_ALREADY_EXISTS",

@@ -4,7 +4,7 @@ A cluster database may carry an optional ``kmer.json`` sidecar declaring
 k-mer sets over its loci, materialized at build time as sorted arrays of
 canonical k-mer codes (little-endian uint64) under ``kmers/``:
 
-    {"schema": "gapit.kmerdb/1",
+    {"schema": "gspec.kmerdb/1",
      "k": 31,
      "sets": {"06A.diff": {"of": "06A", "against": ["06B", "06F", "06G"], "n": 1182}}}
 
@@ -34,10 +34,12 @@ from __future__ import annotations
 import struct
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
 from gspec.errors import DatabaseError
+from gspec.schema_ids import Canonical
 
 _BASE_INDEX = {"A": 0, "C": 1, "G": 2, "T": 3}
 
@@ -138,14 +140,16 @@ class KmerDbDocument(BaseModel, frozen=True):
     """The ``kmer.json`` sidecar: one k size for every set in the document
     (one k per database keeps counting single-pass)."""
 
-    schema_name: str = Field(default="gapit.kmerdb/1", alias="schema")
+    schema_name: Annotated[Literal["gspec.kmerdb/1"], Canonical] = Field(
+        default="gspec.kmerdb/1", alias="schema"
+    )
     k: int = Field(ge=1, le=31)
     sets: dict[str, KmerSetSpec] = Field(default_factory=dict)
 
     @field_validator("schema_name")
     @classmethod
     def _schema(cls, value: str) -> str:
-        if value != "gapit.kmerdb/1":
+        if value != "gspec.kmerdb/1":
             raise ValueError(f"unsupported kmerdb schema: {value}")
         return value
 

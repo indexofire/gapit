@@ -2,7 +2,7 @@
 
 Schema + validation only — no evaluation logic. All three rule model types
 must validate; malformed documents must surface as typed DatabaseErrors with
-context. gapit.typing/2 adds the named multi-scheme container; gapit.typing/1
+context. gspec.typing/2 adds the named multi-scheme container; gspec.typing/1
 (flat rules/cutoff/margin/fallback) must degrade to one anonymous ``default``
 scheme so existing typed cluster databases keep their behavior.
 """
@@ -40,7 +40,7 @@ WEIGHTED_GENES_RULE = {
 
 
 def v2_document(schemes: list[dict[str, object]]) -> dict[str, object]:
-    return {"schema": "gapit.typing/2", "schemes": schemes}
+    return {"schema": "gspec.typing/2", "schemes": schemes}
 
 
 def scheme_document(name: str = "serotype") -> dict[str, object]:
@@ -67,7 +67,7 @@ class TestV1Degradation:
         scheme-level cutoff/margin/fallback survive a JSON round-trip."""
         document = read_typing_document(DATA / "typing_valid.json")
 
-        assert document.schema_name == "gapit.typing/2"
+        assert document.schema_name == "gspec.typing/2"
         assert len(document.schemes) == 1
         scheme = document.schemes[0]
         assert scheme.name == V1_SCHEME_NAME
@@ -128,7 +128,7 @@ class TestV1Degradation:
         bad = write_document(
             tmp_path,
             {
-                "schema": "gapit.typing/1",
+                "schema": "gspec.typing/1",
                 "rules": [
                     {
                         "model": "weighted_genes",
@@ -154,7 +154,7 @@ class TestV1Degradation:
         bad = write_document(
             tmp_path,
             {
-                "schema": "gapit.typing/1",
+                "schema": "gspec.typing/1",
                 "rules": [
                     {
                         "model": "weighted_genes",
@@ -214,7 +214,7 @@ class TestV2Documents:
 
         document = read_typing_document(path)
 
-        assert document.schema_name == "gapit.typing/2"
+        assert document.schema_name == "gspec.typing/2"
         assert [scheme.name for scheme in document.schemes] == ["pathotype", "toxin"]
         assert document.schemes[1].cutoff == 0.95
         assert document.schemes[1].fallback == "none"
@@ -286,7 +286,7 @@ class TestSchemaTag:
         v1_path = write_document(
             tmp_path,
             {
-                "schema": "gapit.typing/1",
+                "schema": "gspec.typing/1",
                 "rules": [WEIGHTED_GENES_RULE],
                 "cutoff": 0.9,
                 "ambiguity_margin": 0.05,
@@ -296,13 +296,13 @@ class TestSchemaTag:
         )
         v2_path = write_document(tmp_path, v2_document([scheme_document()]), filename="v2.json")
 
-        assert typing_schema_of(v1_path) == "gapit.typing/1"
-        assert typing_schema_of(v2_path) == "gapit.typing/2"
+        assert typing_schema_of(v1_path) == "gspec.typing/1"
+        assert typing_schema_of(v2_path) == "gspec.typing/2"
 
     def test_unknown_tag_is_malformed(self, tmp_path: Path) -> None:
         """Given a document with an unknown schema tag, When tagged, Then
         TYPING_MALFORMED."""
-        path = write_document(tmp_path, {"schema": "gapit.typing/9"})
+        path = write_document(tmp_path, {"schema": "gspec.typing/9"})
 
         with pytest.raises(DatabaseError) as excinfo:
             typing_schema_of(path)
@@ -314,15 +314,15 @@ class TestUsesClusterV2:
     """The cluster contract discriminator: scheme count picks /1 vs /2."""
 
     def test_v1_single_scheme_document_stays_v1(self) -> None:
-        """Given a legacy gapit.typing/1 document (one default scheme),
+        """Given a legacy gspec.typing/1 document (one default scheme),
         When discriminated, Then uses_cluster_v2 is False — the db renders
-        byte-frozen gapit.cluster/1."""
+        byte-frozen gspec.cluster/1."""
         assert uses_cluster_v2(read_typing_document(DATA / "typing_valid.json")) is False
 
     def test_two_plain_schemes_go_v2(self, tmp_path: Path) -> None:
         """Given a document with two plain (non-compose) schemes, When
         discriminated, Then uses_cluster_v2 is True (no compose needed to
-        reach gapit.cluster/2)."""
+        reach gspec.cluster/2)."""
         path = write_document(
             tmp_path, v2_document([scheme_document("pathotype"), scheme_document("toxin")])
         )

@@ -25,17 +25,17 @@ gspec 刻意把**工具环境**和**数据库状态**分开。本页说明数据
 ```text
 <datadir>/<name>/
 ├── sequences                  # 必需：BLAST/minimap2 使用的 FASTA
-├── gapit-manifest.json        # 来源与认证信息（gapit.manifest/1）
+├── gspec-manifest.json        # 来源与认证信息（gspec.manifest/1）
 ├── records.jsonl              # 基因 truth store（gspec 构建的 gene 库）
 ├── features.json              # 位点/基因表（cluster 库）
-├── typing.json                # 可选：gapit.typing/1 或 /2 规则
+├── typing.json                # 可选：gspec.typing/1 或 /2 规则
 ├── floors.json                # 可选：按基因的 reads 一致性下限
 ├── sequences.asm20.mmi        # cluster 库：预建的 minimap2 asm20 索引
 └── sequences.n* / sequences.p* / sequences.nhr ...   # BLAST 索引
 ```
 
-`sequences` 是筛查输入。它的 header 携带基因元数据：gspec 原生库使用带标签的 `gapit/v1`
-形式（`gapit|db=...|gene=...|acc=...|func=...`，空格后是 product）；旧式 abricate 库使用
+`sequences` 是筛查输入。它的 header 携带基因元数据：gspec 原生库使用带标签的 `gspec/v1`
+形式（`gspec|db=...|gene=...|acc=...|func=...`，空格后是 product）；旧式 abricate 库使用
 `~~~` 分隔的 header。gspec 两种都能读。
 
 BLAST 索引（核酸 `.nin/.nsq/.nhr`，蛋白 `.pin/.psq/.phr`）是生成物，不是源数据。索引缺失或
@@ -43,7 +43,7 @@ BLAST 索引（核酸 `.nin/.nsq/.nhr`，蛋白 `.pin/.psq/.phr`）是生成物�
 `sequences.asm20.mmi` minimap2 target 索引，`db setup` 同样会刷新它；legacy cluster
 筛查在索引新鲜时使用它。
 
-`gapit-manifest.json` 最后写入，用于认证产物（`sha256`、`n_records`、`dbtype`、`kind`、
+`gspec-manifest.json` 最后写入，用于认证产物（`sha256`、`n_records`、`dbtype`、`kind`、
 `source`、`typing_schema`、许可证、工具版本）。发现和列表会使用它，但为了兼容 abricate，
 没有 manifest 的旧式目录仍然可以读取。
 
@@ -57,7 +57,7 @@ gene 数据库每个已知基因/标记一条 FASTA 记录。contig 筛查使用
 
 cluster 数据库（`kind: cluster`）每个**位点**一条 FASTA 记录，另有 `features.json` 描述
 位点到基因及坐标的映射。`gspec screen` 使用 minimap2 cluster 引擎，根据 `cs` walk 计算基因/
-位点评分。多 scheme 的 `typing.json` 输出 `gapit.cluster/2`；否则输出 `gapit.cluster/1`。
+位点评分。多 scheme 的 `typing.json` 输出 `gspec.cluster/2`；否则输出 `gspec.cluster/1`。
 内置的 `vpa_ok` 是带 typing 的 cluster 示例。
 
 ### 数据库来源
@@ -81,7 +81,7 @@ cluster 数据库（`kind: cluster`）每个**位点**一条 FASTA 记录，另�
 3. `$XDG_DATA_HOME/gspec/db`（仅当 `XDG_DATA_HOME` 是绝对路径）
 4. `~/.local/share/gspec/db`
 
-`gspec db path` 打印生效路径，且**不会创建**它。加 `--json` 输出 `gapit.datadir/1` 文档，
+`gspec db path` 打印生效路径，且**不会创建**它。加 `--json` 输出 `gspec.datadir/1` 文档，
 包含 `datadir`、`exists` 和 `source`（`cli`、`env`、`xdg`、`default`）——适合 Docker
 entrypoint 和 agent 工作流。
 
@@ -128,14 +128,14 @@ provider 先走正常 `db fetch` 流程下载，再建索引。既未安装也�
 | `--db`、`-d NAME` | 设置 NAME（可重复）；缺失 provider 会下载，缺失内置库会物化 |
 | `--datadir`、`-D PATH` | 使用指定数据目录，而不是解析出的默认目录 |
 | `--no-bundles`、`-B` | 跳过内置库物化（显式指定的 provider 仍可下载） |
-| `--json`、`-J` | 在 stdout 输出一份 `gapit.dbsetup/1` 回执，并抑制进度信息 |
+| `--json`、`-J` | 在 stdout 输出一份 `gspec.dbsetup/1` 回执，并抑制进度信息 |
 | `--quiet`、`-q` | 抑制 stderr 进度信息 |
 | `--debug`、`-v` | 将外部命令（`makeblastdb`）回显到 stderr |
 
 JSON 回执列出本次物化的内置库、下载的 provider 以及所有已建索引的数据库：
 
 ```json
-{"schema":"gapit.dbsetup/1","datadir":"/path/to/db","materialized":["eco_dec"],"fetched":[],"databases":[{"db":"eco_dec","records":16,"dbtype":"nucl"}]}
+{"schema":"gspec.dbsetup/1","datadir":"/path/to/db","materialized":["eco_dec"],"fetched":[],"databases":[{"db":"eco_dec","records":16,"dbtype":"nucl"}]}
 ```
 
 可用 `gspec schema dbsetup` 内省。

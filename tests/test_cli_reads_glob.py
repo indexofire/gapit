@@ -82,7 +82,7 @@ def test_wildcard_glob_screens_two_samples(
 ) -> None:
     """Given the user's exact shape (a shell glob of gz FASTQ handing four
     files to screen), When run with --format json (the single-document
-    opt-in), Then one gapit.reads/1 document with one files[] entry per
+    opt-in), Then one gspec.reads/1 document with one files[] entry per
     sample: s1 (the _1/_2 pair, tetX present, 12 reads) and s2 (the R1/R2
     pair, sub-threshold on its own, 6 reads) — no coverage leaks between
     samples."""
@@ -90,7 +90,7 @@ def test_wildcard_glob_screens_two_samples(
     result = screen(datadir, "--format", "json", *sorted(glob.glob("*.gz")))
     assert result.exit_code == 0
     document = reads_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.reads/1"
+    assert document.schema_name == "gspec.reads/1"
     assert document.params.read_type == "sr"
     assert [entry.reads for entry in document.files] == [["s1"], ["s2"]]
     (s1_gene,) = document.files[0].genes
@@ -143,7 +143,7 @@ def test_wildcard_md_keys_sections_by_sample(
     monkeypatch.chdir(wildcard_dir)
     result = screen(datadir, "--format", "md", *sorted(glob.glob("*.gz")))
     assert result.exit_code == 0
-    assert result.stdout.startswith("---\nschema: gapit.reads/1\n")
+    assert result.stdout.startswith("---\nschema: gspec.reads/1\n")
     assert "## `s1`" in result.stdout
     assert "## `s2`" in result.stdout
     assert "files:" not in result.stdout and "genes_found:" not in result.stdout
@@ -226,12 +226,12 @@ def test_wildcard_accepts_reads2_filters(
 ) -> None:
     """Given the wildcard run with --min-identity, When run, Then the
     reads-mode-only guard no longer fires (positional FASTQ IS reads mode)
-    and the document is gapit.reads/2."""
+    and the document is gspec.reads/2."""
     monkeypatch.chdir(wildcard_dir)
     result = screen(datadir, "--format", "json", "--min-identity", "95", *sorted(glob.glob("*.gz")))
     assert result.exit_code == 0
     document = reads2_adapter.validate_json(result.stdout)
-    assert document.schema_name == "gapit.reads/2"
+    assert document.schema_name == "gspec.reads/2"
     assert document.params.min_identity == 95.0
 
 

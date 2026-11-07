@@ -33,13 +33,13 @@ def test_cli_version_flag() -> None:
 
 def test_cli_version_json() -> None:
     """Given --version --json, When run, Then one compact line with the
-    gapit.version/1 contract."""
+    gspec.version/1 contract."""
     result = runner.invoke(app, ["--version", "--json"])
     assert result.exit_code == 0
     assert "\n" not in result.stdout.rstrip("\n")
     payload = json.loads(result.stdout)
     assert payload == {
-        "schema": "gapit.version/1",
+        "schema": "gspec.version/1",
         "name": "gspec",
         "version": __version__,
     }

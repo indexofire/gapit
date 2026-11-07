@@ -44,14 +44,14 @@ EX7E check with `menwy`.
 
 | Tool | Arguments | Returns |
 |---|---|---|
-| `screen` | `files` (array of strings, required), `db` (string, required — no default), `minid` (number), `mincov` (number), `format` (string: `json` \| `tsv` \| `csv` \| `md`, default `json`), `aligner` (string: `blastn` \| `minimap2`, default `blastn`), `merge_fragments` (boolean, default `false`; blastn only — cross-contig fragment merging), `min_breadth` (number 0–100, default `90`; minimap2 only), `min_identity` (number 0–100, default `0`; minimap2 only), `min_mapq` (integer ≥ 0, default `0`; minimap2 only), `all_genes` (boolean; minimap2 only), `min_gene_cov` (number 0–100, default `90`; cluster dbs only), `min_gene_id` (number 0–100, default `90`; cluster dbs only), `min_cluster_cov` (number 0–100, default `96`; cluster dbs only), `datadir` (string) | Report text: `gapit.report/1` JSON by default, TSV/CSV/Markdown per `format`; `aligner minimap2` runs the reads engine and emits `gapit.reads/1`. A cluster-kind `db` emits `gapit.cluster/1`: best-locus call, per-gene verdicts, and — when the database carries a single-scheme `typing.json` — the phenotype call with its `phenotype_detail` score breakdown; a multi-scheme `typing.json` emits `gapit.cluster/2` with a `phenotypes` map of every scheme's call |
-| `screen_reads` | `r1` (array of strings, required — one path per lane), `r2` (array of strings, same count as `r1`), `read_type` (string: `sr` \| `map-ont` \| `map-hifi`, default `sr`), `min_breadth` (number 0–100, default `90`), `min_identity` (number 0–100, default `0`), `min_mapq` (integer ≥ 0, default `0`), `all_genes` (boolean), `format` (string: `json` \| `tsv` \| `csv` \| `md`, default `json`), `db` (string, required — no default), `datadir` (string) | `gapit.reads/1` JSON by default or TSV/CSV/Markdown per `format`; `min_identity`/`min_mapq` > 0 switches to `gapit.reads/2` |
-| `summary` | `files` (array of report table paths, required), `identity` (boolean), `nopath` (boolean) | `gapit.summary/1` JSON |
-| `typing` | `table` (string, required — screen result TSV/CSV text), `datadir` (string), `format` (string: `json` \| `tsv` \| `md`, default `json`) | `gapit.typing_result/1` JSON by default; `notes` carry follow-up guidance (W/Y → synG EX7E) |
+| `screen` | `files` (array of strings, required), `db` (string, required — no default), `minid` (number), `mincov` (number), `format` (string: `json` \| `tsv` \| `csv` \| `md`, default `json`), `aligner` (string: `blastn` \| `minimap2`, default `blastn`), `merge_fragments` (boolean, default `false`; blastn only — cross-contig fragment merging), `min_breadth` (number 0–100, default `90`; minimap2 only), `min_identity` (number 0–100, default `0`; minimap2 only), `min_mapq` (integer ≥ 0, default `0`; minimap2 only), `all_genes` (boolean; minimap2 only), `min_gene_cov` (number 0–100, default `90`; cluster dbs only), `min_gene_id` (number 0–100, default `90`; cluster dbs only), `min_cluster_cov` (number 0–100, default `96`; cluster dbs only), `datadir` (string) | Report text: `gspec.report/1` JSON by default, TSV/CSV/Markdown per `format`; `aligner minimap2` runs the reads engine and emits `gspec.reads/1`. A cluster-kind `db` emits `gspec.cluster/1`: best-locus call, per-gene verdicts, and — when the database carries a single-scheme `typing.json` — the phenotype call with its `phenotype_detail` score breakdown; a multi-scheme `typing.json` emits `gspec.cluster/2` with a `phenotypes` map of every scheme's call |
+| `screen_reads` | `r1` (array of strings, required — one path per lane), `r2` (array of strings, same count as `r1`), `read_type` (string: `sr` \| `map-ont` \| `map-hifi`, default `sr`), `min_breadth` (number 0–100, default `90`), `min_identity` (number 0–100, default `0`), `min_mapq` (integer ≥ 0, default `0`), `all_genes` (boolean), `format` (string: `json` \| `tsv` \| `csv` \| `md`, default `json`), `db` (string, required — no default), `datadir` (string) | `gspec.reads/1` JSON by default or TSV/CSV/Markdown per `format`; `min_identity`/`min_mapq` > 0 switches to `gspec.reads/2` |
+| `summary` | `files` (array of report table paths, required), `identity` (boolean), `nopath` (boolean) | `gspec.summary/1` JSON |
+| `typing` | `table` (string, required — screen result TSV/CSV text), `datadir` (string), `format` (string: `json` \| `tsv` \| `md`, default `json`) | `gspec.typing_result/1` JSON by default; `notes` carry follow-up guidance (W/Y → synG EX7E) |
 | `schema` | `name` (string, required, one of `report`, `reads`, `reads2`, `cluster`, `cluster2`, `summary`, `error`, `version`, `dblist`, `dbsetup`, `dboutdated`, `datadir`, `dbinfo`, `features`, `typing`, `typing_result`, `floors`, `screen`) | The JSON Schema of that output document |
-| `db_list` | `datadir` (string) | `gapit.dblist/1`: database names, install state, record counts, indexed flag |
-| `db_path` | `datadir` (string) | `gapit.datadir/1`: resolved datadir, existence, and source |
-| `db_setup` | `datadir` (string), `no_bundles` (boolean, default `false`), `names` (array of strings; default all) | `gapit.dbsetup/1`: fetched providers, materialized bundles, indexed databases |
+| `db_list` | `datadir` (string) | `gspec.dblist/1`: database names, install state, record counts, indexed flag |
+| `db_path` | `datadir` (string) | `gspec.datadir/1`: resolved datadir, existence, and source |
+| `db_setup` | `datadir` (string), `no_bundles` (boolean, default `false`), `names` (array of strings; default all) | `gspec.dbsetup/1`: fetched providers, materialized bundles, indexed databases |
 | `db_fetch` | `name` (string, required — a database NAME, or `all` for the card+vfdb default set), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line per database (`db`, `records`, `dbtype`, `destination`). Every database downloads from its upstream provider, so installs need network and can take minutes |
 | `db_build` | `name` (string, required), `fasta` (string, required — a LOCAL filesystem path), `tsv` (string), `dbtype` (string: `nucl` \| `prot`), `description` (string), `kind` (string: `gene` \| `cluster`), `typing` (string), `floors` (string), `datadir` (string), `force` (boolean, default `false`) | One JSON receipt line (`db`, `records`, `dbtype`, `destination`) |
 | `db_search` | `term` (string, required), `db` (string), `field` (string: `gene` \| `accession` \| `function` \| `product` \| `any`, default `any`), `exact` (boolean, default `false`), `limit` (integer ≥ 0, default `100`; `0` = unlimited), `datadir` (string) | TSV hit rows with columns `DB`, `GENE`, `ACCESSION`, `FUNCTION`, `PRODUCT`, `LENGTH` |
@@ -80,7 +80,7 @@ Notes:
 - `db_build`'s `fasta` must be a path on the server's filesystem — the agent
   provides a local path, not file contents.
 - Tool failures do not use JSON-RPC errors. They return `isError: true` with
-  the `gapit.error/1` envelope serialized as the text content.
+  the `gspec.error/1` envelope serialized as the text content.
 
 ## Example session
 
@@ -109,30 +109,30 @@ EOF
 Response line 1, verbatim:
 
 ```text
-{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gspec","version":"0.8.1"}}}
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gspec","version":"0.9.0"}}}
 ```
 
 Response line 2 (real output, elided in the middle; each tool carries its full
 `inputSchema`):
 
 ```text
-{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for known genes (json = gapit.report/1; aligner minimap2 = fast assembly survey emitting gapit.reads/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string"}, ... },"required":["files","db"]}}, {"name":"screen_reads","description":"Screen FASTQ reads for genes via minimap2 (json = gapit.reads/1; min_identity/min_mapq > 0 emits gapit.reads/2). Returns the rendered document.","inputSchema":{"type":"object","properties":{"r1":{"type":"array","items":{"type":"string"}},"r2":{"type":"array","items":{"type":"string"}},"read_type":{"type":"string","enum":["sr","map-ont","map-hifi"],"default":"sr"}, ... },"required":["r1","db"]}}, {"name":"summary", ...}, {"name":"typing", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_path", ...}, {"name":"db_setup", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
+{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"screen","description":"Screen contig files for known genes (json = gspec.report/1; aligner minimap2 = fast assembly survey emitting gspec.reads/1).","inputSchema":{"type":"object","properties":{"files":{"type":"array","items":{"type":"string"}},"db":{"type":"string"}, ... },"required":["files","db"]}}, {"name":"screen_reads","description":"Screen FASTQ reads for genes via minimap2 (json = gspec.reads/1; min_identity/min_mapq > 0 emits gspec.reads/2). Returns the rendered document.","inputSchema":{"type":"object","properties":{"r1":{"type":"array","items":{"type":"string"}},"r2":{"type":"array","items":{"type":"string"}},"read_type":{"type":"string","enum":["sr","map-ont","map-hifi"],"default":"sr"}, ... },"required":["r1","db"]}}, {"name":"summary", ...}, {"name":"typing", ...}, {"name":"schema", ...}, {"name":"db_list", ...}, {"name":"db_path", ...}, {"name":"db_setup", ...}, {"name":"db_fetch", ...}, {"name":"db_build", ...}, {"name":"db_search", ...}, {"name":"db_outdated", ...}]}}
 ```
 
 Response line 3 (real output, text content elided). The screen result rides in
 `result.content[0].text` as a JSON string:
 
 ```text
-{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\n  \"schema\": \"gapit.report/1\", ... }"}],"isError":false}}
+{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\n  \"schema\": \"gspec.report/1\", ... }"}],"isError":false}}
 ```
 
-Decoded, that text is a complete `gapit.report/1` document (real output from
+Decoded, that text is a complete `gspec.report/1` document (real output from
 the same run):
 
 ```json
 {
-  "schema": "gapit.report/1",
-  "tool": {"name": "gspec", "version": "0.8.1"},
+  "schema": "gspec.report/1",
+  "tool": {"name": "gspec", "version": "0.9.0"},
   "created_at": "2026-09-19T01:15:44Z",
   "params": {"db": "tinyamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [
@@ -187,16 +187,16 @@ EOF
 Verbatim response (text content elided):
 
 ```text
-{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\n  \"schema\": \"gapit.reads/1\", ... }"}],"isError":false}}
+{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\n  \"schema\": \"gspec.reads/1\", ... }"}],"isError":false}}
 ```
 
-Decoded, the text is a complete `gapit.reads/1` document (real output from
+Decoded, the text is a complete `gspec.reads/1` document (real output from
 the same run):
 
 ```json
 {
-  "schema": "gapit.reads/1",
-  "tool": {"name": "gspec", "version": "0.8.1"},
+  "schema": "gspec.reads/1",
+  "tool": {"name": "gspec", "version": "0.9.0"},
   "created_at": "2026-09-22T00:07:35Z",
   "params": {
     "db": "tinyreads",
@@ -230,7 +230,7 @@ the same run):
 
 `r2` takes the mate paths (same count as `r1`), `read_type` picks the
 minimap2 preset, and a nonzero `min_identity`/`min_mapq` switches the
-document to `gapit.reads/2` (semantics: `./reads.md`). For assembly FASTA,
+document to `gspec.reads/2` (semantics: `./reads.md`). For assembly FASTA,
 call `screen` with `aligner: "minimap2"` instead — the survey auto-resolves
 the `map-ont` preset.
 
@@ -239,7 +239,7 @@ the `map-ont` preset.
 A missing input file returns a tool error, not a protocol error (real lines):
 
 ```text
-{"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"text","text":"{\"schema\":\"gapit.error/1\",\"code\":\"INPUT_NOT_FOUND\",\"message\":\"input file not found or unreadable: /tmp/gspec-mcp-demo/nope.fa\",\"context\":{\"file\":\"/tmp/gspec-mcp-demo/nope.fa\"}}"}],"isError":true}}
+{"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"text","text":"{\"schema\":\"gspec.error/1\",\"code\":\"INPUT_NOT_FOUND\",\"message\":\"input file not found or unreadable: /tmp/gspec-mcp-demo/nope.fa\",\"context\":{\"file\":\"/tmp/gspec-mcp-demo/nope.fa\"}}"}],"isError":true}}
 ```
 
 Parse `content[0].text` as JSON and branch on `code` (codes and exit-code
@@ -262,16 +262,16 @@ Two request lines and their verbatim responses:
 {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"db_build","arguments":{"name":"myamr","fasta":"/tmp/gspec-mcp-demo/my_genes.fa"}}}
 {"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"db\":\"myamr\",\"records\":1,\"dbtype\":\"nucl\",\"destination\":\"/tmp/gspec-mcp-demo/datadir/myamr\"}"}],"isError":false}}
 {"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen","arguments":{"files":["/tmp/gspec-mcp-demo/query.fa"],"db":"myamr"}}}
-{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{ ... gapit.report/1 ... }"}],"isError":false}}
+{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{ ... gspec.report/1 ... }"}],"isError":false}}
 ```
 
-Decoded, the screen text is a complete `gapit.report/1` document whose only
+Decoded, the screen text is a complete `gspec.report/1` document whose only
 hit is the gene the agent just built the database from (real output):
 
 ```json
 {
-  "schema": "gapit.report/1",
-  "tool": {"name": "gspec", "version": "0.8.1"},
+  "schema": "gspec.report/1",
+  "tool": {"name": "gspec", "version": "0.9.0"},
   "created_at": "2026-09-20T13:38:39Z",
   "params": {"db": "myamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [

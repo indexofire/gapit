@@ -132,16 +132,16 @@ Every document starts with a `schema` field naming its contract. Field names are
 with explicit units (`identity_pct`, `coverage_pct`, `breadth_pct`). Numeric hit values are
 rounded to two decimals, matching what the TSV displays.
 
-### gapit.report/1 (contig screening)
+### gspec.report/1 (contig screening)
 
 Real document, same run as the TSV above:
 
 ```json
 {
-  "schema": "gapit.report/1",
+  "schema": "gspec.report/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -178,7 +178,7 @@ Real document, same run as the TSV above:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `schema` | string | Always `gapit.report/1` |
+| `schema` | string | Always `gspec.report/1` |
 | `tool` | object | `{name, version}` of gspec |
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
 | `params` | object | Screening parameters in effect |
@@ -220,10 +220,10 @@ and are absent from every other row:
 
 The merged hit itself carries the union `%COVERAGE`, the aligned-length-weighted mean
 `%IDENTITY`, summed `GAPS`, and the anchor fragment's query coordinates; `sequence` is the
-comma-joined contig list. These fields are additive to `gapit.report/1` (no rename, no
+comma-joined contig list. These fields are additive to `gspec.report/1` (no rename, no
 retype, no schema version bump).
 
-### gapit.typing_result/1 (designation from screen results)
+### gspec.typing_result/1 (designation from screen results)
 
 `gspec typing RESULT.tsv [RESULT2.tsv ...]` reads one or more gspec/abricate screen result
 tables (TSV or CSV), resolves the database from the rows' shared `DATABASE` column, and
@@ -232,8 +232,8 @@ row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
 
 ```json
 {
-  "schema": "gapit.typing_result/1",
-  "tool": {"name": "gspec", "version": "0.8.1"},
+  "schema": "gspec.typing_result/1",
+  "tool": {"name": "gspec", "version": "0.9.0"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
   "db": "eco_dec",
@@ -279,7 +279,7 @@ row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
 
 | Field | Type | Meaning |
 |---|---|---|
-| `schema` | string | Always `gapit.typing_result/1` |
+| `schema` | string | Always `gspec.typing_result/1` |
 | `tool` | object | `{name, version}` of gspec |
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
 | `source` | array | The result table path(s) as given |
@@ -302,7 +302,7 @@ a database without a `typing.json` `TYPING_NO_SCHEME`, and a cluster database
 `TYPING_CLUSTER_DB` (its typing is integrated into `gspec screen`). Its JSON Schema prints
 with `gspec schema typing_result`.
 
-### gapit.reads/1 (reads and assembly screening)
+### gspec.reads/1 (reads and assembly screening)
 
 Reads mode reports per-gene coverage across the read set (or assembly; `--r1` accepts FASTQ and
 FASTA) instead of per-hit rows. Gene entries sort by `breadth_pct` descending; genes with zero
@@ -310,7 +310,7 @@ mapped reads are omitted. Fields from `gspec schema reads`:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `schema` | string | Always `gapit.reads/1` |
+| `schema` | string | Always `gspec.reads/1` |
 | `tool` | object | `{name, version}` of gspec |
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
 | `params` | object | Read-screening parameters in effect |
@@ -337,17 +337,17 @@ Each gene entry:
 | `reads_mapped` | integer | Distinct reads with a primary alignment on the gene |
 | `present` | boolean | `breadth_pct >= min_breadth` |
 
-### gapit.reads/2 (reads screening with identity/MAPQ filtering)
+### gspec.reads/2 (reads screening with identity/MAPQ filtering)
 
 Opt-in variant of reads/1, emitted only when `--min-identity` or `--min-mapq` is nonzero: PAF
 alignments below the thresholds are dropped before aggregation, which removes the
 family-splitting over-calls breadth-only presence suffers on homologous genes. With both
-thresholds off the output stays `gapit.reads/1`, byte-identical. Fields from
+thresholds off the output stays `gspec.reads/1`, byte-identical. Fields from
 `gspec schema reads2` — identical to reads/1 except:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `schema` | string | Always `gapit.reads/2` |
+| `schema` | string | Always `gspec.reads/2` |
 | `params.min_identity` | number | Per-alignment identity floor in effect, 0 = off |
 | `params.min_mapq` | integer | Per-alignment MAPQ floor in effect, 0 = off |
 | `params.min_depth` | number | Absolute mean-depth floor when relative gating is active; omitted when off |
@@ -361,10 +361,10 @@ without NM counts as 100). `present` is `breadth_pct >= min_breadth` AND
 `mean_depth >= min_depth` AND (`relative_depth_pct / 100 >= min_relative_depth` when the
 relative gate is active); a missing control with the relative gate on makes every call
 absent. The tsv table appends a `DEPTH_RATIO` column (percentage) when the gate is active.
-See [reads.md](./reads.md#filtering-alignments-by-identity-and-mapq-gapitreads2) for the
+See [reads.md](./reads.md#filtering-alignments-by-identity-and-mapq-gspecreads2) for the
 homolog worked example and threshold guidance.
 
-### gapit.cluster/1 (cluster-database screening)
+### gspec.cluster/1 (cluster-database screening)
 
 Screening a `kind: cluster` database (minimap2 `asm20` engine; [screen.md](./screen.md#cluster-databases-kind-cluster))
 emits one document per run: the best-locus call per file, every covered locus with its
@@ -373,7 +373,7 @@ explainable score breakdown. Fields from `gspec schema cluster`:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `schema` | string | Always `gapit.cluster/1` |
+| `schema` | string | Always `gspec.cluster/1` |
 | `tool` | object | `{name, version}` of gspec |
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
 | `params` | object | `db`, `preset` (always `asm20`), `min_gene_cov`, `min_gene_id`, `min_cluster_cov`, `threads` |
@@ -409,7 +409,7 @@ IDENTITY PRESENT PARTIAL MISSING_IDS` on typed databases (`PHENOTYPE` is `-` whe
 ambiguous or uncalled) and the same header without `PHENOTYPE` on untyped ones. A file with
 no locus call renders `- - - 0.00 0.00 0 0 -`-shaped dashes.
 
-### gapit.features/1 and gapit.typing/1 (database-side documents)
+### gspec.features/1 and gspec.typing/1 (database-side documents)
 
 Two cluster-database artifacts are versioned documents you can introspect with `gspec
 schema` but that never appear on stdout: `features` (the `features.json` locus/gene feature
@@ -418,14 +418,14 @@ table written by `db build`) and `typing` (the declarative scoring spec installe
 `learned_linear`, plus `cutoff`, `ambiguity_margin`, and `fallback`). The typing document is
 the contract the phenotype evaluator implements; see [databases.md](./databases.md#cluster-databases-gbkgff).
 
-### gapit.dbsetup/1 (db setup receipt)
+### gspec.dbsetup/1 (db setup receipt)
 
 `gspec db setup --json` emits one document describing the bootstrap/index run. Progress
 is suppressed so stdout carries only the receipt:
 
 ```json
 {
-  "schema": "gapit.dbsetup/1",
+  "schema": "gspec.dbsetup/1",
   "datadir": "/home/me/.local/share/gspec/db",
   "materialized": ["eco_dec"],
   "fetched": [],
@@ -438,7 +438,7 @@ is suppressed so stdout carries only the receipt:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `schema` | string | Always `gapit.dbsetup/1` |
+| `schema` | string | Always `gspec.dbsetup/1` |
 | `datadir` | string | Absolute datadir that was set up |
 | `materialized` | array of string | Bundled databases materialized in this run (empty with `--no-bundles` or when all were already installed) |
 | `fetched` | array of string | Provider databases fetched in this run (only with explicit `--db NAME`; `--all` never fetches) |
@@ -447,17 +447,17 @@ is suppressed so stdout carries only the receipt:
 | `databases[].records` | integer | Sequence/locus count from the BLAST index |
 | `databases[].dbtype` | string | `nucl` or `prot` |
 
-### gapit.summary/1 (summary matrix)
+### gspec.summary/1 (summary matrix)
 
 `gspec summary --format json` turns report tables into a gene matrix. Real output
 summarizing two report files, one with a `tetA` hit and one with none:
 
 ```json
 {
-  "schema": "gapit.summary/1",
+  "schema": "gspec.summary/1",
   "tool": {
     "name": "gspec",
-    "version": "0.8.1"
+    "version": "0.9.0"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -491,7 +491,7 @@ summarizing two report files, one with a `tetA` hit and one with none:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `schema` | string | Always `gapit.summary/1` |
+| `schema` | string | Always `gspec.summary/1` |
 | `tool` | object | `{name, version}` of gspec |
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
 | `params.metric` | string | Primary metric: `%COVERAGE` or `%IDENTITY` |
@@ -508,7 +508,7 @@ and `%IDENTITY` summaries round-trip without reformatting.
 
 ### Stability policy
 
-Schema names are semver'd (`gapit.report/1`). Within a major version, existing fields are
+Schema names are semver'd (`gspec.report/1`). Within a major version, existing fields are
 never renamed or retyped; additive changes come with a schema-version bump and a note in
 `PLAN.md`. Validate anything you build against the schemas printed by `gspec schema`.
 
@@ -527,12 +527,12 @@ naturally in a terminal or editor.
 Any failure prints one line of JSON to stderr:
 
 ```text
-{"schema": "gapit.error/1", "code": "<CODE>", "message": "...", "context": {...}}
+{"schema": "gspec.error/1", "code": "<CODE>", "message": "...", "context": {...}}
 ```
 
 | Field | Type | Meaning |
 |---|---|---|
-| `schema` | string | Always `gapit.error/1` |
+| `schema` | string | Always `gspec.error/1` |
 | `code` | string | Machine-stable error code, SCREAMING_SNAKE_CASE; the enum is exposed by `gspec schema error` |
 | `message` | string | Human-readable description |
 | `context` | object | String-valued details (file paths, digests, db names) |
@@ -552,7 +552,7 @@ Screening a file that doesn't exist exits 5 with this real stderr line:
 
 ```console
 $ gspec screen /nonexistent/contigs.fa --db ncbi
-{"schema":"gapit.error/1","code":"INPUT_NOT_FOUND","message":"input file not found or unreadable: /nonexistent/contigs.fa","context":{"file":"/nonexistent/contigs.fa"}}
+{"schema":"gspec.error/1","code":"INPUT_NOT_FOUND","message":"input file not found or unreadable: /nonexistent/contigs.fa","context":{"file":"/nonexistent/contigs.fa"}}
 $ echo $?
 5
 ```
@@ -561,16 +561,16 @@ Two more, each produced by the command shown:
 
 ```console
 $ gspec db fetch -d nosuchdb            # exit 2, usage
-{"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
+{"schema":"gspec.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
 
 $ gspec screen --datadir /tmp/opencode/gspec-own-db/db --db tinyamr contigs.fa   # exit 4, db error, before indexing
-{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gspec-own-db/db/tinyamr/sequences is not indexed, please try: gspec db setup","context":{"db":"/tmp/opencode/gspec-own-db/db/tinyamr/sequences"}}
+{"schema":"gspec.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gspec-own-db/db/tinyamr/sequences is not indexed, please try: gspec db setup","context":{"db":"/tmp/opencode/gspec-own-db/db/tinyamr/sequences"}}
 ```
 
 A missing external binary (exit 3) reports which one:
 
 ```console
-{"schema":"gapit.error/1","code":"MISSING_DEPENDENCY","message":"required binary not found on PATH: blastdbcmd","context":{"binary":"blastdbcmd"}}
+{"schema":"gspec.error/1","code":"MISSING_DEPENDENCY","message":"required binary not found on PATH: blastdbcmd","context":{"binary":"blastdbcmd"}}
 ```
 
 stdout stays empty on failure: no partial tables, no partial JSON.
@@ -581,25 +581,25 @@ An agent can discover the whole contract from the binary alone.
 
 ```console
 $ gspec --version --json
-{"schema":"gapit.version/1","name":"gspec","version":"0.8.1"}
+{"schema":"gspec.version/1","name":"gspec","version":"0.9.0"}
 ```
 
 `gspec schema <name>` prints the JSON Schema for each document. The eighteen names:
 `report`, `typing_result`, `reads`, `reads2`, `cluster`, `cluster2`, `summary`, `error`,
 `version`, `dblist`, `dbsetup`, `dboutdated`, `datadir`, `dbinfo`, plus the database-side
-documents `features` (gapit.features/1, a cluster db's feature table), `typing`
-(gapit.typing/2, a cluster db's declarative scoring spec; /1 still reads), `floors`
-(gapit.floors/1, per-gene identity floors for reads + contigs), and `screen`
-(gapit.screen/1, per-database screening defaults). A trimmed fragment of
+documents `features` (gspec.features/1, a cluster db's feature table), `typing`
+(gspec.typing/2, a cluster db's declarative scoring spec; /1 still reads), `floors`
+(gspec.floors/1, per-gene identity floors for reads + contigs), and `screen`
+(gspec.screen/1, per-database screening defaults). A trimmed fragment of
 `gspec schema report`:
 
 ```json
 {
-  "description": "gapit.report/1 \u2014 the canonical machine-readable screening output.",
+  "description": "gspec.report/1 \u2014 the canonical machine-readable screening output.",
   "properties": {
     "schema": {
-      "const": "gapit.report/1",
-      "default": "gapit.report/1",
+      "const": "gspec.report/1",
+      "default": "gspec.report/1",
       "title": "Schema",
       "type": "string"
     },

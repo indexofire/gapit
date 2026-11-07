@@ -149,7 +149,7 @@ def test_fetch_manifest_carries_provenance(kaptive_registry: Path) -> None:
     license, and the citation note."""
     result = runner.invoke(app, ["db", "fetch", "-d", "kpsc_o", "--datadir", str(kaptive_registry)])
     assert result.exit_code == 0, result.stderr
-    manifest = read_manifest(kaptive_registry / "kpsc_o" / "gapit-manifest.json")
+    manifest = read_manifest(kaptive_registry / "kpsc_o" / "gspec-manifest.json")
     assert manifest.kind == "cluster"
     assert manifest.header_format == "plain"
     assert manifest.n_records == 2

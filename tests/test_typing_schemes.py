@@ -140,11 +140,11 @@ class TestDocumentsValidate:
     @pytest.mark.parametrize("name", COOKBOOK_DOCS)
     def test_round_trip_load(self, name: str) -> None:
         """Given any cookbook typing document, When read through the typing
-        loader, Then it validates against the current gapit.typing/2 schema
+        loader, Then it validates against the current gspec.typing/2 schema
         (the committed fixtures can never drift from the model)."""
         path = SCHEMES / f"{name}.json"
         document = read_typing_document(path)
-        assert document.schema_name == "gapit.typing/2"
+        assert document.schema_name == "gspec.typing/2"
         assert document.schemes
 
     def test_vp_compose_placeholders_name_the_sibling_schemes(self) -> None:
@@ -606,7 +606,7 @@ class TestGoldens:
         """Given the dec fixture db and the pic+astA headline sample, When
         rendered at the pinned now, Then the screen output is the pure
         report, byte-identical to the committed goldens — and the typing
-        calls land in the gapit.typing_result/1 document (the GB 4789.6
+        calls land in the gspec.typing_result/1 document (the GB 4789.6
         EAEC call beside the risk-monitoring non-DEC fallback, asserted in
         the DEC suite above)."""
         sample = TestDec.samples(tmp_path)["dec_pic_astA"]

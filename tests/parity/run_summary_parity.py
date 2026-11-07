@@ -29,10 +29,10 @@ def locate() -> tuple[Path, Path]:
     abricate = shutil.which("abricate")
     if abricate is None:
         fail("abricate not on PATH (run via: pixi run -e parity summary-parity)")
-    gapit_bin = DEFAULT_BIN / "gspec"
-    if not gapit_bin.is_file():
-        fail(f"gspec CLI not found: {gapit_bin} (run: pixi install)")
-    return Path(abricate), gapit_bin
+    gspec_bin = DEFAULT_BIN / "gspec"
+    if not gspec_bin.is_file():
+        fail(f"gspec CLI not found: {gspec_bin} (run: pixi install)")
+    return Path(abricate), gspec_bin
 
 
 def tool_env(abricate_bin: Path) -> dict[str, str]:
@@ -44,34 +44,34 @@ def tool_env(abricate_bin: Path) -> dict[str, str]:
 def diff_case(
     label: str,
     abricate_argv: list[str],
-    gapit_argv: list[str],
+    gspec_argv: list[str],
     env: dict[str, str],
     cwd: Path,
 ) -> bool:
     abricate_result = subprocess.run(
         ["abricate", *abricate_argv], cwd=cwd, env=env, capture_output=True, text=True, check=False
     )
-    gapit_result = subprocess.run(
-        [str(DEFAULT_BIN / "gspec"), *gapit_argv],
+    gspec_result = subprocess.run(
+        [str(DEFAULT_BIN / "gspec"), *gspec_argv],
         cwd=cwd,
         env=env,
         capture_output=True,
         text=True,
         check=False,
     )
-    if abricate_result.returncode != 0 or gapit_result.returncode != 0:
+    if abricate_result.returncode != 0 or gspec_result.returncode != 0:
         print(
             f"FAIL {label}: abricate rc={abricate_result.returncode}, "
-            f"gspec rc={gapit_result.returncode}"
+            f"gspec rc={gspec_result.returncode}"
         )
         return False
-    identical = abricate_result.stdout == gapit_result.stdout
+    identical = abricate_result.stdout == gspec_result.stdout
     print(f"{'OK  ' if identical else 'DIFF'} {label}")
     if not identical:
         sys.stdout.writelines(
             difflib.unified_diff(
                 abricate_result.stdout.splitlines(True),
-                gapit_result.stdout.splitlines(True),
+                gspec_result.stdout.splitlines(True),
                 fromfile=f"abricate/{label}",
                 tofile=f"gspec/{label}",
             )
@@ -130,8 +130,8 @@ def main() -> int:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(header, encoding="utf-8")
         failures = sum(
-            0 if diff_case(label, abricate_argv, gapit_argv, env, cwd) else 1
-            for label, abricate_argv, gapit_argv, cwd in cases
+            0 if diff_case(label, abricate_argv, gspec_argv, env, cwd) else 1
+            for label, abricate_argv, gspec_argv, cwd in cases
         )
     print(f"summary parity: {len(cases) - failures}/{len(cases)} cases byte-identical")
     return 1 if failures else 0
