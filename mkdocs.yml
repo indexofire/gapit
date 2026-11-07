@@ -46,7 +46,6 @@ plugins:
             Getting started: 快速上手
             Installing gspec: 安装 gspec
             Quickstart: 快速开始
-            Migrating from gapit: 从 gspec 迁移
             User guide: 使用指南
             Screening: 筛查
             Contigs: contig 筛查
@@ -87,7 +86,6 @@ nav:
       - start/index.md
       - Installing gspec: installation.md
       - Quickstart: quickstart.md
-      - Migrating from gapit: migration.md
   - User guide:
       - guide/index.md
       - Screening:

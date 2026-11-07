@@ -63,9 +63,9 @@ gspec --version
 
 ```console
 $ gspec --version
-gspec 0.9.0
+gspec 0.10.0
 $ gspec --version --json
-{"schema":"gspec.version/1","name":"gspec","version":"0.9.0"}
+{"schema":"gspec.version/1","name":"gspec","version":"0.10.0"}
 ```
 
 ## 可选 gseek 引擎

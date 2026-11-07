@@ -27,13 +27,12 @@ document, and its writer.
 
 import re
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gspec.errors import InputError
 from gspec.fasta import open_text
-from gspec.schema_ids import Canonical
 
 
 class GeneFeature(BaseModel, frozen=True):
@@ -75,9 +74,7 @@ class FeaturesDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.features/1"], Canonical] = Field(
-        default="gspec.features/1", alias="schema"
-    )
+    schema_name: Literal["gspec.features/1"] = Field(default="gspec.features/1", alias="schema")
     loci: tuple[LocusFeatures, ...]
 
 

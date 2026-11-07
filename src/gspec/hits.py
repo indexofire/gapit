@@ -3,7 +3,7 @@
 No interval merging of any kind — upstream reports overlapping genes at
 different query spans, and so do we. Subject ids decode through
 :mod:`gspec.dbcodec`: legacy ``~~~`` ids parse by the frozen db.py rules,
-``gapit|``-tagged ids by the strict native codec — a malformed native header
+``gspec|``-tagged ids by the strict native codec — a malformed native header
 raises DatabaseError ``HEADER_MALFORMED`` (exit 4), never a silent fallback.
 """
 
@@ -14,12 +14,12 @@ from typing import TYPE_CHECKING, Literal
 from pydantic import BaseModel
 
 from gspec.db import IDSEP
-from gspec.dbcodec import decode_seqid, is_gapit_header
+from gspec.dbcodec import decode_seqid, is_gspec_header
 from gspec.minimap import minimap
 
 # Perl: $product =~ s/^\S+\s+// if $product =~ m/~~~/  — strips the leading
 # makeblastdb id token only when followed by whitespace; a bare ~~~id stays.
-# Native gapit| ids get the same substitution: makeblastdb prefixes stitle
+# Native gspec| ids get the same substitution: makeblastdb prefixes stitle
 # with the id, and there the prefix is the whitespace-free tagged seqid.
 _LEADING_TOKEN_RE = re.compile(r"^\S+\s+")
 
@@ -86,12 +86,12 @@ def _swap_dedup(rows: Iterable["BlastRow"]) -> Iterator[tuple["BlastRow", int, i
 
 
 def _hit(row: "BlastRow", s_start: int, s_end: int, coverage_pct: float, default_db: str) -> Hit:
-    """SPEC.md §4 steps 4-5: subject-id decode (native ``gapit|`` codec or
+    """SPEC.md §4 steps 4-5: subject-id decode (native ``gspec|`` codec or
     legacy ``~~~`` rules) and product cleanup, assembled into a Hit."""
     header = decode_seqid(row.sseqid, default_db)
     product = row.stitle or "n/a"
     product = product.replace(",", "").replace("\t", "")
-    if IDSEP in product or is_gapit_header(row.sseqid):
+    if IDSEP in product or is_gspec_header(row.sseqid):
         product = _LEADING_TOKEN_RE.sub("", product, count=1)
     return Hit(
         sequence=row.qseqid,
@@ -121,7 +121,7 @@ def process_rows(rows: Iterable["BlastRow"], *, mincov: float, default_db: str) 
     1. minus-strand swap (subject coords only), 2. dedup on
     (qseqid, qstart, qend) — first row wins, key ignores strand, and the key
     is claimed even if the row is later coverage-filtered, 3. coverage filter
-    on the unrounded float, 4. header decode (native ``gapit|`` codec or
+    on the unrounded float, 4. header decode (native ``gspec|`` codec or
     legacy ``~~~`` rules), 5. product cleanup.
     """
     hits: list[Hit] = []

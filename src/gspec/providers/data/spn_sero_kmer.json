@@ -1,5 +1,5 @@
 {
- "schema": "gapit.kmerdb/1",
+ "schema": "gspec.kmerdb/1",
  "k": 31,
  "sets": {
   "01.diff": {

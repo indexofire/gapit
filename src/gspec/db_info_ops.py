@@ -21,7 +21,7 @@ fields repeating their key — the agent-first shape ``db list`` established.
 """
 
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -34,7 +34,6 @@ from gspec.formats.csvutil import tsv_cell
 from gspec.layout import manifest_path
 from gspec.providers import REGISTRY
 from gspec.records import Manifest, read_manifest
-from gspec.schema_ids import Canonical
 
 INFO_FILENAME = "info.json"
 
@@ -60,9 +59,7 @@ class DbInfoDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.dbinfo/1"], Canonical] = Field(
-        default="gspec.dbinfo/1", alias="schema"
-    )
+    schema_name: Literal["gspec.dbinfo/1"] = Field(default="gspec.dbinfo/1", alias="schema")
     name: str
     description: str
     vendor: str

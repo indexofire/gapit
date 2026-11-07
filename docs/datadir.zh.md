@@ -85,10 +85,6 @@ cluster 数据库（`kind: cluster`）每个**位点**一条 FASTA 记录，另�
 包含 `datadir`、`exists` 和 `source`（`cli`、`env`、`xdg`、`default`）——适合 Docker
 entrypoint 和 agent 工作流。
 
-为兼容改名，程序仍会读取旧环境变量：`$GSPEC_DATADIR` 未设置时回退到 `$GAPIT_DATADIR`；
-若机器上只存在 0.8 之前的 `~/.local/share/gapit/db`，默认路径会继续指向它。想彻底迁移可执行
-`mv ~/.local/share/gapit ~/.local/share/gspec`。
-
 不同命令对缺失目录的行为：
 
 | 命令 | 缺失 datadir 时 |

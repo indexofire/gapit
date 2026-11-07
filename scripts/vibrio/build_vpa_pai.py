@@ -18,7 +18,7 @@ Usage::
 
     python scripts/vibrio/build_vpa_pai.py \
         --rimd RIMD2210633.gbff --aq3810 AQ3810.gbff \
-        --dest src/gapit/data/dbs/vpa_pai
+        --dest src/gspec/data/dbs/vpa_pai
 """
 
 from __future__ import annotations

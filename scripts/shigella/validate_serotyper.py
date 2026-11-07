@@ -16,7 +16,7 @@ CONFIDENCE, ...).
 Usage::
 
     python scripts/shigella/validate_serotyper.py \
-        gapit_typing.tsv shigapass_summary.csv
+        gspec_typing.tsv shigapass_summary.csv
 """
 
 from __future__ import annotations
@@ -177,13 +177,13 @@ def _load_reference(path: Path) -> tuple[str, dict[str, str]]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("gapit_typing", type=Path)
+    parser.add_argument("gspec_typing", type=Path)
     parser.add_argument("reference", type=Path)
     args = parser.parse_args(argv)
 
     reference_format, reference = _load_reference(args.reference)
     ours: dict[str, tuple[str, str]] = {}
-    with args.gapit_typing.open(newline="", encoding="utf-8") as handle:
+    with args.gspec_typing.open(newline="", encoding="utf-8") as handle:
         for row in csv.DictReader(handle, delimiter="\t"):
             ours[_key(row["FILE"])] = (row["PHENOTYPE"], row["CONFIDENCE"])
 

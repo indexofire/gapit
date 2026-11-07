@@ -13,7 +13,7 @@ import pytest
 from click.testing import CliRunner, Result
 from pydantic import TypeAdapter
 
-from gspec import screening as gapit_screening
+from gspec import screening as gspec_screening
 from gspec.cli import app
 from gspec.db import Database, make_blast_db
 from gspec.errors import ErrorEnvelope, InputError
@@ -287,7 +287,7 @@ def test_output_md_persists_streamed_prefix_on_midbatch_failure(
     already-streamed section while stdout stays empty — md writes are
     incremental per chunk, exactly like the tsv path."""
     out_path = tmp_path / "out.md"
-    real = gapit_screening.screen_file
+    real = gspec_screening.screen_file
 
     def fail_on_second(
         query: Path,
@@ -304,7 +304,7 @@ def test_output_md_persists_streamed_prefix_on_midbatch_failure(
             query, database, params, dbtype=dbtype, debug=debug, merge_fragments=merge_fragments
         )
 
-    monkeypatch.setattr(gapit_screening, "screen_file", fail_on_second)
+    monkeypatch.setattr(gspec_screening, "screen_file", fail_on_second)
     result = runner.invoke(
         app,
         [
@@ -362,7 +362,7 @@ def test_output_persists_streamed_prefix_on_midbatch_failure(
     the output file (header + file 1) while the typed envelope exits 5 —
     the documented error interaction for streamed emission."""
     out_path = tmp_path / "out.tsv"
-    real = gapit_screening.screen_file
+    real = gspec_screening.screen_file
 
     def fail_on_second(
         query: Path,
@@ -379,7 +379,7 @@ def test_output_persists_streamed_prefix_on_midbatch_failure(
             query, database, params, dbtype=dbtype, debug=debug, merge_fragments=merge_fragments
         )
 
-    monkeypatch.setattr(gapit_screening, "screen_file", fail_on_second)
+    monkeypatch.setattr(gspec_screening, "screen_file", fail_on_second)
     result = runner.invoke(
         app,
         [

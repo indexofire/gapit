@@ -45,7 +45,7 @@ def test_xdg_data_home_used_when_unset(tmp_path: Path, monkeypatch: pytest.Monke
     assert source == "xdg"
 
 
-def test_gapit_datadir_wins_over_xdg(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_gspec_datadir_wins_over_xdg(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GSPEC_DATADIR", str(tmp_path / "env"))
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "xdg"))
     path, source = datadir_source(None)
@@ -72,7 +72,7 @@ def test_relative_xdg_data_home_is_ignored(tmp_path: Path, monkeypatch: pytest.M
     assert source == "default"
 
 
-def test_empty_gapit_datadir_falls_back_to_xdg(
+def test_empty_gspec_datadir_falls_back_to_xdg(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv("GSPEC_DATADIR", "")
@@ -107,52 +107,3 @@ def test_missing_datadir_raises_database_error(tmp_path: Path) -> None:
         resolve_datadir(tmp_path / "nope")
     assert excinfo.value.exit_code == 4
     assert excinfo.value.code == "DATADIR_NOT_FOUND"
-
-
-def test_legacy_datadir_env_is_still_honoured(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Given only the pre-0.8 GAPIT_DATADIR, When resolved, Then it is used.
-
-    The rename must not break an environment that still exports the old name.
-    """
-    legacy_dir = make_datadir(tmp_path / "legacy")
-    monkeypatch.delenv("GSPEC_DATADIR", raising=False)
-    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    monkeypatch.setenv("GAPIT_DATADIR", str(legacy_dir))
-    assert resolve_datadir(None) == legacy_dir.resolve()
-
-
-def test_new_datadir_env_wins_over_legacy(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Given both names, When resolved, Then GSPEC_DATADIR wins."""
-    new_dir = make_datadir(tmp_path / "new")
-    legacy_dir = make_datadir(tmp_path / "legacy")
-    monkeypatch.setenv("GSPEC_DATADIR", str(new_dir))
-    monkeypatch.setenv("GAPIT_DATADIR", str(legacy_dir))
-    assert resolve_datadir(None) == new_dir.resolve()
-
-
-def test_legacy_home_datadir_is_kept_when_new_one_absent(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Given only a pre-0.8 ~/.local/share/gapit/db, When resolved, Then it is
-    used instead of an empty new default — an upgrade never orphans databases."""
-    monkeypatch.delenv("GSPEC_DATADIR", raising=False)
-    monkeypatch.delenv("GAPIT_DATADIR", raising=False)
-    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    monkeypatch.setenv("HOME", str(tmp_path))
-    legacy = make_datadir(tmp_path / ".local" / "share" / "gapit" / "db")
-    assert resolve_datadir(None) == legacy.resolve()
-
-
-def test_new_home_datadir_wins_once_it_exists(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Given both home directories, When resolved, Then the new one wins."""
-    monkeypatch.delenv("GSPEC_DATADIR", raising=False)
-    monkeypatch.delenv("GAPIT_DATADIR", raising=False)
-    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    monkeypatch.setenv("HOME", str(tmp_path))
-    make_datadir(tmp_path / ".local" / "share" / "gapit" / "db")
-    new = make_datadir(tmp_path / ".local" / "share" / "gspec" / "db")
-    assert resolve_datadir(None) == new.resolve()

@@ -118,7 +118,7 @@ frontmatter 保留 `files:`/`genes_found:` 运行总计（它的 tsv 默认渲�
 ## 选项
 
 reads 模式走同一条 `gspec screen` 命令；以下是适用的参数（转写自 `gspec screen
---help`，gspec 0.9.0）。这里未列出的 contig 模式参数（`--minid`、`--mincov`、
+--help`，gspec 0.10.0）。这里未列出的 contig 模式参数（`--minid`、`--mincov`、
 `--fofn`、`--noheader`、`--nopath`）不适用；`--jobs` 只适用于通配符路径（见上文）。
 
 | 参数 | 类型 | 默认值 | 说明 |
@@ -358,7 +358,7 @@ Markdown 形式：
 $ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format md --quiet
 ---
 schema: gspec.reads/2
-tool: gspec 0.9.0
+tool: gspec 0.10.0
 created_at: 2026-09-20T14:23:33Z
 db: homologs
 read_type: map-ont
@@ -452,7 +452,7 @@ $ gspec screen --r1 tetx_full.fq --db tinyreads --format json
   "schema": "gspec.reads/1",
   "tool": {
     "name": "gspec",
-    "version": "0.9.0"
+    "version": "0.10.0"
   },
   "created_at": "2026-09-19T01:12:25Z",
   "params": {
@@ -547,7 +547,7 @@ $ gspec screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --q
 $ gspec screen --r1 tetx_full.fq --db tinyreads --format md
 ---
 schema: gspec.reads/1
-tool: gspec 0.9.0
+tool: gspec 0.10.0
 created_at: 2026-09-19T01:12:25Z
 db: tinyreads
 read_type: sr
@@ -647,7 +647,7 @@ Detected 2 present genes in /tmp/gspec-demo/assembly.fa
   "schema": "gspec.reads/1",
   "tool": {
     "name": "gspec",
-    "version": "0.9.0"
+    "version": "0.10.0"
   },
   "created_at": "2026-09-19T14:23:00Z",
   "params": {
@@ -705,7 +705,7 @@ minimap2 一段完全跳过 BLAST 索引，把 assembly 送进 minimap2 引擎�
    性应用一致性与覆盖度下限。
 
 真实数字，一株 K. pneumoniae RefSeq assembly（GCF_000240185.1，5.3 Mb，`--db ncbi`，
-单线程，gspec 0.9.0）：
+单线程，gspec 0.10.0）：
 
 ```console
 $ # Stage 1: survey, ~0.9 s

@@ -7,7 +7,7 @@ authors:
 repository-code: "https://github.com/indexofire/gspec"
 url: "https://indexofire.github.io/gspec/"
 license: MIT
-version: "0.9.0"
+version: "0.10.0"
 date-released: "2026-11-08"
 keywords:
   - bacterial typing

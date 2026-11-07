@@ -1,6 +1,6 @@
 """Optional gseek bridge for BLAST and minimap2 execution.
 
-``GAPIT_ENGINE`` selects the implementation:
+``GSPEC_ENGINE`` selects the implementation:
 
 - ``legacy`` (default): the existing subprocess paths, no gseek import;
 - ``gseek``: gseek plans and parses the same BLAST/minimap2 work;
@@ -39,9 +39,6 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger("gspec.gseek")
 _ENGINE_ENV = "GSPEC_ENGINE"
-#: Pre-0.8 engine switch, still honoured (a gseek install that predates the
-#: rename exports this name).
-_LEGACY_ENGINE_ENV = "GAPIT_ENGINE"
 _VALID_MODES = frozenset({"legacy", "gseek", "shadow"})
 T = TypeVar("T")
 
@@ -247,10 +244,6 @@ class _GseekModule(Protocol):
 
 def engine() -> _LegacyEngine | Engine:
     """Return the engine switch, importing gseek only for gseek/shadow modes."""
-    if os.environ.get(_LEGACY_ENGINE_ENV) and not os.environ.get(_ENGINE_ENV):
-        # gseek reads the canonical name itself, so project the legacy value
-        # into it for the rest of the process.
-        os.environ[_ENGINE_ENV] = os.environ[_LEGACY_ENGINE_ENV]
     raw = os.environ.get(_ENGINE_ENV, "legacy").strip().lower() or "legacy"
     if raw not in _VALID_MODES:
         raise GapitError(

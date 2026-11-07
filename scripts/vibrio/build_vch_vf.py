@@ -15,7 +15,7 @@ Usage::
     python scripts/vibrio/build_vch_vf.py \
         --ctxphi NC_015209.1_cds.fna --n16961 NC_002505.1_cds.fna \
         --o395 NC_012582.1_cds.fna --o139 NZ_NGQY01000008.1_cds.fna \
-        --dest src/gapit/data/dbs/vch_vf
+        --dest src/gspec/data/dbs/vch_vf
 """
 
 from __future__ import annotations
@@ -229,7 +229,7 @@ def main(argv: list[str] | None = None) -> int:
     (dest / "screen.json").write_text(
         json.dumps(
             {
-                "schema": "gapit.screen/1",
+                "schema": "gspec.screen/1",
                 "contigs": {"minid": 80.0, "mincov": 50.0},
                 "reads": {"min_breadth": 50.0, "min_identity": 80.0},
             },

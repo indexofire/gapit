@@ -92,11 +92,6 @@ Resolution order, highest first:
 `gspec.datadir/1` document with `datadir`, `exists`, and `source` (`cli`, `env`, `xdg`,
 or `default`) — useful in Docker entrypoints and agent workflows.
 
-Two rename accommodations keep pre-0.8 installs working: `$GAPIT_DATADIR` is still read
-when `$GSPEC_DATADIR` is unset, and when only the pre-0.8 `~/.local/share/gapit/db`
-exists it keeps being used as the home default. Run
-`mv ~/.local/share/gapit ~/.local/share/gspec` to adopt the new path.
-
 Commands differ on whether they create the directory:
 
 | Command | Missing datadir |
@@ -231,7 +226,7 @@ docker run --rm -it \
   --user "$(id -u):$(id -g)" \
   -v gspec-data:/data/gspec \
   -e GSPEC_DATADIR=/data/gspec \
-  gspec:0.9.0 gspec db list
+  gspec:0.10.0 gspec db list
 ```
 
 For CI, mount or cache a workspace directory and pin versions:
@@ -240,7 +235,7 @@ For CI, mount or cache a workspace directory and pin versions:
 docker run --rm \
   -v "$PWD/.gspec-db:/data/gspec" \
   -e GSPEC_DATADIR=/data/gspec \
-  gspec:0.9.0 gspec screen sample.fna --db eco_dec
+  gspec:0.10.0 gspec screen sample.fna --db eco_dec
 ```
 
 You can bake reference databases into an image for **read-only** screening:

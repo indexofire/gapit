@@ -1,9 +1,9 @@
-"""gapit/v1 database header codec: tagged, percent-encoded sequence ids.
+"""gspec/v1 database header codec: tagged, percent-encoded sequence ids.
 
-Native header format (Phase 7): ``gapit|db=<v>|gene=<v>|acc=<v>|func=<v>`` with
+Native header format (Phase 7): ``gspec|db=<v>|gene=<v>|acc=<v>|func=<v>`` with
 fixed key order and lowercase-hex percent escapes inside values. Encode is
 total for any input; decode is strict (``DatabaseError HEADER_MALFORMED``).
-Seqids without the ``gapit|`` prefix delegate to the legacy ``~~~`` rules in
+Seqids without the ``gspec|`` prefix delegate to the legacy ``~~~`` rules in
 ``gspec.db`` (SPEC.md §4 step 5).
 
 The fourth slot is named ``func`` because gspec answers presence/absence — the
@@ -19,9 +19,6 @@ from gspec.db import DbHeader, parse_db_header
 from gspec.errors import DatabaseError
 
 PREFIX = "gspec|"
-
-#: Pre-0.9 header prefix; still decoded so existing databases keep working.
-LEGACY_PREFIX = "gapit|"
 
 # Values-only escape alphabet (probe-verified byte-identical through
 # makeblastdb/blastn/minimap2); every other char travels verbatim.
@@ -43,12 +40,8 @@ _BAD_ESCAPE_RE = re.compile(r"%(?![0-9a-fA-F]{2})")
 
 
 def is_gspec_header(seqid: str) -> bool:
-    """True iff the seqid carries a native tagged prefix (current or legacy)."""
-    return seqid.startswith((PREFIX, LEGACY_PREFIX))
-
-
-#: Pre-0.9 name of :func:`is_gspec_header`, kept for callers and tests.
-is_gapit_header = is_gspec_header
+    """True iff the seqid carries the native ``gspec|`` tagged prefix."""
+    return seqid.startswith(PREFIX)
 
 
 def encode_seqid(db: str, gene: str, accession: str, function: Sequence[str]) -> str:
@@ -71,7 +64,7 @@ def encode_seqid(db: str, gene: str, accession: str, function: Sequence[str]) ->
 def decode_seqid(seqid: str, default_db: str) -> DbHeader:
     """Parse a seqid into a ``DbHeader``.
 
-    ``gspec|``/``gapit|``-prefixed seqids use the strict native format: bad escapes,
+    ``gspec|``-prefixed seqids use the strict native format: bad escapes,
     missing/empty gene, a missing ``db``/``acc`` KEY, and duplicate keys raise
     ``HEADER_MALFORMED``; unknown keys are skipped (forward compat); an empty
     ``db`` value falls back to ``default_db`` (symmetric with legacy) and an
@@ -79,7 +72,7 @@ def decode_seqid(seqid: str, default_db: str) -> DbHeader:
     intentionally optional and defaults to ``""``. Anything else delegates to
     ``gspec.db.parse_db_header``.
     """
-    if not is_gapit_header(seqid):
+    if not is_gspec_header(seqid):
         return parse_db_header(seqid, default_db)
     fields: dict[str, str] = {}
     for segment in seqid.split("|")[1:]:
@@ -118,7 +111,7 @@ def _decode_value(raw: str, *, key: str, seqid: str) -> str:
 def _malformed(seqid: str, reason: str) -> DatabaseError:
     """Build the strict-decode failure (exit 4) with seqid + reason context."""
     return DatabaseError(
-        f"malformed gapit/v1 sequence header: {reason}",
+        f"malformed gspec/v1 sequence header: {reason}",
         code="HEADER_MALFORMED",
         context={"seqid": seqid, "reason": reason},
     )

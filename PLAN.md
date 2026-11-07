@@ -63,10 +63,10 @@ case, partial `~~~` headers, minus-strand dedup-collapse).
 
 **Goal**: the reason gspec exists.
 
-- `--format json|md` on the screening path; top-level `"schema": "gapit.report/1"`,
+- `--format json|md` on the screening path; top-level `"schema": "gspec.report/1"`,
   snake_case keys, explicit units (`identity_pct`, `coverage_pct`).
 - Markdown: YAML frontmatter (version, db, params, ISO-8601 UTC) + stable tables.
-- Typed errors → JSON envelope `gapit.error/1` on stderr + documented exit codes (SPEC §1).
+- Typed errors → JSON envelope `gspec.error/1` on stderr + documented exit codes (SPEC §1).
 - Self-description: `gspec schema report|summary|error` (prints JSON Schema from the pydantic
   models), `gspec list --json`, `gspec --version --json`.
 
@@ -86,7 +86,7 @@ error paths produce the envelope (tests force each exit code).
   configurable). v1 uses primary alignments only; homologous multi-mapping is documented.
 - CLI: `gspec screen --reads R1.fq.gz [R2.fq.gz] --read-type sr|map-ont|map-hifi`.
 - Output: Report model gains a reads evidence block; TSV stays abricate-compatible (contigs
-  only); reads mode is JSON/MD-first (`gapit.report/1` extension, documented).
+  only); reads mode is JSON/MD-first (`gspec.report/1` extension, documented).
 
 ## Phase 6 — Summary mode (`summary.py`) — ✅ DONE (2026-09-17)
 
@@ -94,7 +94,7 @@ error paths produce the envelope (tests force each exit code).
 
 - Dutch mode (single multi-FILE report), union-of-genes columns, `;`-joined cells, `.` absent,
   `NUM_FOUND` distinct-gene count, `--identity`, zero-hit files included.
-- Matrix also emitted as JSON (`gapit.summary/1`) and Markdown; registered in `gspec schema`.
+- Matrix also emitted as JSON (`gspec.summary/1`) and Markdown; registered in `gspec schema`.
 - Core in `summary.py` (parse + aggregate), renderers in `formats/summary.py`, CLI in
   `cmd_summary.py` (registered from `cli.py` to keep it small). No screening-path changes.
 - Verified behaviors pinned against real abricate 1.4.0: rows sort by as-given key (labels can
@@ -108,10 +108,10 @@ fixtures; golden TSV/CSV/JSON/MD committed; full gates green.
 
 ## Phase 7 — DB acquisition (`gspec db`) — ✅ DONE (2026-09-17)
 
-**Goal**: gspec builds its own databases (native `gapit/v1` format, SPEC §11), not just
+**Goal**: gspec builds its own databases (native `gspec/v1` format, SPEC §11), not just
 consumes abricate-built datadirs.
 
-- Delivered: header codec (`dbcodec.py`); `records.jsonl` truth store + `gapit.manifest/1`
+- Delivered: header codec (`dbcodec.py`); `records.jsonl` truth store + `gspec.manifest/1`
   (`records.py`); deterministic build pipeline with self-check (`dbbuild.py`); all 12
   providers — ncbi, card, resfinder, argannot, plasmidfinder, megares, ecoh, vfdb,
   ecoli_vf, bacmet2 (prot), victors, upec_expec_vf (`providers/`); CLI
@@ -121,7 +121,7 @@ consumes abricate-built datadirs.
 - Gates: full suite green (349 passed; ruff + basedpyright strict clean). Legacy screening
   path unchanged (decode delegates to the frozen `~~~` parser); parity harness unaffected.
 - Wave G (2026-09-18): bundled DB snapshots — card+vfdb ship in-wheel
-  (`src/gapit/data/snapshots/<name>.tar.gz`, deterministic archives of post-normalize
+  (`src/gspec/data/snapshots/<name>.tar.gz`, deterministic archives of post-normalize
   records); bare `db fetch` installs the default set (card, vfdb) with one JSON receipt
   per db; `--from-source` forces upstream (SPEC §11 "Bundled snapshots").
 - Remaining known items: real-network fetch is the runtime path (the offline suite pins
@@ -134,15 +134,15 @@ consumes abricate-built datadirs.
   inputs with input-order stdout; CI gates matrix (3.11 / 3.13 / 3.14) + parity
   workflow (`.github/workflows/ci.yml`); conda recipe (`recipe/meta.yaml`); MCP server
   (Wave H6: `gspec mcp` subcommand and `gspec-mcp` console script, hand-rolled stdio
-  JSON-RPC 2.0 in `src/gapit/mcp.py`, zero new dependencies, tools
+  JSON-RPC 2.0 in `src/gspec/mcp.py`, zero new dependencies, tools
   `screen`/`summary`/`schema` + read-only `db_list`); README, LICENSE, CHANGELOG docs.
 - Custom database construction (`gspec db build`) with metadata merge — added 2026-09-19,
   post-phase; see docs/custom-db.md.
-- Reads-mode opt-in alignment filtering (`gapit.reads/2` via `--min-identity`/`--min-mapq`;
+- Reads-mode opt-in alignment filtering (`gspec.reads/2` via `--min-identity`/`--min-mapq`;
   per-alignment identity `100*(alen-nm)/alen`, NM via minimap2 `--cs`) — added 2026-09-20,
-  post-phase; `gapit.reads/1` stays the frozen default. See docs/reads.md.
+  post-phase; `gspec.reads/1` stays the frozen default. See docs/reads.md.
 - MCP reads tools — added 2026-09-22, post-phase: the `screen_reads` tool (FASTQ via
-  minimap2, `gapit.reads/1`/`reads/2`) and `screen`'s `aligner`/`min_breadth`/`min_identity`/
+  minimap2, `gspec.reads/1`/`reads/2`) and `screen`'s `aligner`/`min_breadth`/`min_identity`/
   `min_mapq` parameters (minimap2 assembly survey), both delegating to the shared
   `run_screen_reads`/`run_screen_assemblies` use-cases. Additive `gspec.mcp` contract
   (9 tools; the other 8 entries byte-identical), no output-schema version bump. See
@@ -157,12 +157,12 @@ consumes abricate-built datadirs.
   boundaries, blastx protein-db leg via bacmet2) — quality gate for the abricate-replacement
   claim before submitting to bioconda/bioconda-recipes.
 - **Contract change (2026-09-27, rightsholder decision):** `gspec list` and its
-  `gapit.list/1` document removed; `gspec db list` (`gapit.dblist/1`) is the single
+  `gspec.list/1` document removed; `gspec db list` (`gspec.dblist/1`) is the single
   listing surface and abricate `--list` byte-parity is intentionally dropped for it.
   Schema registry is now six documents (report, reads, reads2, summary, error, version).
   Breaking; recorded under \[Unreleased\] in CHANGELOG.md for the next minor bump.
 - **Gene-cluster feature, stage 2 (2026-09-30, additive):** `gspec screen` dispatches
-  cluster-kind databases to the minimap2 `asm20` cluster engine (`gapit.cluster/1`
+  cluster-kind databases to the minimap2 `asm20` cluster engine (`gspec.cluster/1`
   document: best-locus call above `--min-cluster-cov` 96, per-gene
   present/partial/absent verdicts at `--min-gene-cov`/`--min-gene-id` 90/90, cs-based
   union coverage/identity, cross-contig fragmentation resilience; `phenotype` reserved
@@ -170,10 +170,10 @@ consumes abricate-built datadirs.
   unchanged); kind-mismatched flags are usage errors; reads mode rejects cluster dbs.
   Schema registry gains `cluster` (stage 1 added `features`/`typing`). No version bump.
 - **Gene-cluster feature, stage 3 (2026-09-30, additive; feature complete):** the
-  `gapit.typing/1` evaluation engine (`typing_engine.py`: weighted_genes / cluster_match /
+  `gspec.typing/1` evaluation engine (`typing_engine.py`: weighted_genes / cluster_match /
   learned_linear scoring, cutoff + ambiguity-margin decision with an explainable
   components breakdown) fills `best.phenotype` + additive `best.phenotype_detail` in
-  gapit.cluster/1 on typed databases; TSV gains a PHENOTYPE column as a typed-only
+  gspec.cluster/1 on typed databases; TSV gains a PHENOTYPE column as a typed-only
   renderer variant (untyped output byte-identical; goldens for both rule kinds + the
   ambiguous two-locus case). Unknown gene/locus references fail TYPING_UNKNOWN_GENE at
   build and screen time. Four kaptive providers (`kaptive_k`/`_o`/`_ak`/`_oc`,
@@ -182,18 +182,18 @@ consumes abricate-built datadirs.
   `scripts/cluster_calibration.py` developer harness (score distribution, agreement
   matrix, divergences) seeds the future learned_linear training loop (training itself
   out of scope). Parity 15/15 + summary 6/6 unchanged; no version bump.
-- **Typing framework stage 1 (2026-10-01, additive):** `gapit.typing/2` — named
+- **Typing framework stage 1 (2026-10-01, additive):** `gspec.typing/2` — named
   multi-scheme documents (`schemes: [{name, rules, cutoff, ambiguity_margin,
   fallback}]`, names `[a-z0-9_]+` unique; rule models unchanged). A `/1` document
   degrades to one anonymous `default` scheme, so every existing typed cluster db and
   stage-3 golden stays byte-identical (cluster path additionally requires exactly one
-  scheme: `gapit.cluster/1` has one phenotype slot). Gene-kind builds gain
+  scheme: `gspec.cluster/1` has one phenotype slot). Gene-kind builds gain
   `--typing` (DEC marker-panel pathway, `typing_gene.py`): weighted_genes rules only,
   gene references validated against the FASTA records (TYPING_UNKNOWN_GENE at build
   time), gene presence = best surviving blastn hit clearing the rule's identity_floor.
-  `gapit.report/1` gains the additive `files[].phenotypes` object keyed by scheme name
+  `gspec.report/1` gains the additive `files[].phenotypes` object keyed by scheme name
   (JSON + Markdown only — the report TSV is abricate-parity frozen, deliberately no
-  phenotype column); untyped output byte-identical. `gapit.manifest/1` records the
+  phenotype column); untyped output byte-identical. `gspec.manifest/1` records the
   installed spec's `typing_schema` tag. Typed gene dbs reject reads mode
   (`--r1/--r2`, `--aligner minimap2`) as usage errors (contig-mode only, v1).
   `gspec schema typing` now prints the /2 model. Stage 2 (planned) adds rule
@@ -227,18 +227,18 @@ consumes abricate-built datadirs.
   `typing_input.py` parses/folds per-FILE best rows (DATABASE_MISMATCH / TYPING_NO_DATA /
   SCREEN_TABLE_MALFORMED at the boundary), `typing_ops.py` resolves the db and runs the
   unchanged engine, `formats/typing_result.py` renders the new versioned
-  `gapit.typing_result/1` document (registered in the schema registry) plus the
+  `gspec.typing_result/1` document (registered in the schema registry) plus the
   seven-column TSV/MD table. Cluster typing stays integrated in `gspec screen`
   (`TYPING_CLUSTER_DB` on the command). No typing MCP tool yet (future work). Parity
   15/15 + summary 6/6 unchanged; no version bump.
-> **`gapit.cluster/2` — multi-scheme cluster output (2026-10-12):** a cluster db whose
-> typing doc holds more than one scheme (compose allowed) renders `gapit.cluster/2`:
+> **`gspec.cluster/2` — multi-scheme cluster output (2026-10-12):** a cluster db whose
+> typing doc holds more than one scheme (compose allowed) renders `gspec.cluster/2`:
 > same body as /1, `best` drops its phenotype fields, each file gains
 > `phenotypes: {scheme: SchemeCall}` in doc order (compose schemes render from sibling
 > calls via the shared decision layer; schemes evaluate even without a best call).
 > TSV/CSV swap PHENOTYPE for a packed `PHENOTYPES` column (`o_group=O3;k_group=K6`);
 > MD mirrors it plus per-scheme lines. Untyped and single-scheme dbs keep byte-identical
-> `gapit.cluster/1`. /2 builds guarantee globally-unique gene ids (collision-aware
+> `gspec.cluster/1`. /2 builds guarantee globally-unique gene ids (collision-aware
 > /gene→locus_tag→`locus:id@start` resolution at build time). Registered as
 > `gspec schema cluster2`. The vpa_ok cookbook now installs as one merged db.
 > **Amended (2026-10-20, pre-adoption):** the packed `PHENOTYPES` cell and the
@@ -249,7 +249,7 @@ consumes abricate-built datadirs.
 > stay byte-frozen.
 >
 > **vpa_ok per-database cluster profile (2026-11-02):** a cluster db may carry
-> `cluster.json` (`gapit.cluster_profile/1`) to opt into primary+secondary coverage
+> `cluster.json` (`gspec.cluster_profile/1`) to opt into primary+secondary coverage
 > (Kaptive-style union), same-family fallback evidence, and a gene-coverage floor.
 > `vpa_ok` enables them and gains locus-only `KUT` rules for `KLU61`–`KLU100`;
 > profile-enabled cluster/2 calls add
@@ -259,7 +259,7 @@ consumes abricate-built datadirs.
 >
 > **Rich locus-map prototype (2026-11-02):** the cluster engine now has an opt-in
 > `LocusAlignment` walk (query/target cs steps, insertions/deletions, per-gene
-> query spans) and a `gapit.locus_map/1` JSON document. Panel gene families and
+> query spans) and a `gspec.locus_map/1` JSON document. Panel gene families and
 > locus containment are a build-time sidecar (`gene_families.json`); vpa_ok
 > ships the prototype sidecar. Detail is available through
 > `gspec screen --detail --format json` (compact outputs untouched); rendering
@@ -270,7 +270,7 @@ consumes abricate-built datadirs.
 >
 > **Shigella serotype database (2026-11-02):** `shi_sero` ships as the fifth
 > bundled gene db: ShigaTyper 2.0.5 public-domain markers plus the new
-> `gapit.serotype/1` marker-set resolver (`ipaH_c` split into two control
+> `gspec.serotype/1` marker-set resolver (`ipaH_c` split into two control
 > fragments for divergent alleles). `gspec typing` reads the screen table's
 > `COVERAGE` range for alignment-start evidence and resolves S. boydii 6 vs 10
 > from the `wbaM` 5' junction (IS629 interruption vs intact type 10);
@@ -309,7 +309,7 @@ consumes abricate-built datadirs.
    yes, with stderr note) — decide before Phase 2 closes.
 2. ~~**JSON field naming for COVERAGE_MAP / GAPS**~~ — RESOLVED (2026-09-15): v1 keeps the
    abricate strings (`coverage_map`, `gaps = "openings/gaps"`) for 1:1 mapping; structured
-   views deferred to `gapit.report/2`.
+   views deferred to `gspec.report/2`.
 3. ~~**CSV + summary format mixing**: gspec auto-detects separator per report file
    `[gspec-extension]`; confirm no parity test relies on the broken upstream behavior.~~ —
    RESOLVED (2026-09-17, Phase 6): per-file auto-detection implemented and covered by the

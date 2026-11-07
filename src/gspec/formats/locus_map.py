@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -18,7 +18,6 @@ from gspec.cluster import BestCall, ClusterParams, ClusterReport
 from gspec.formats.cluster import ClusterParamsDocument
 from gspec.formats.json import ToolDocument, utc_timestamp
 from gspec.locus_map_models import LocusMap
-from gspec.schema_ids import Canonical
 from gspec.typing_results import SchemeCall
 
 
@@ -36,9 +35,7 @@ class LocusMapDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.locus_map/1"], Canonical] = Field(
-        default="gspec.locus_map/1", alias="schema"
-    )
+    schema_name: Literal["gspec.locus_map/1"] = Field(default="gspec.locus_map/1", alias="schema")
     tool: ToolDocument = ToolDocument()
     created_at: str
     params: ClusterParamsDocument

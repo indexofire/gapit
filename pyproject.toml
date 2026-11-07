@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gspec"
-version = "0.9.0"
+version = "0.10.0"
 description = "Declarative typing databases for bacterial genomes: gene-panel and locus screening, serotype/AMR/virulence designation, machine-readable contracts"
 readme = "README.md"
 authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]
@@ -39,9 +39,6 @@ Issues = "https://github.com/indexofire/gspec/issues"
 [project.scripts]
 gspec = "gspec.cli:app"
 gspec-mcp = "gspec.mcp:main"
-# The pre-0.8 `gapit` / `gapit-mcp` scripts are owned by the `gapit`
-# compatibility distribution (packaging/gapit-shim): pip installs it last, so
-# the files survive the uninstall of a pre-0.8 `gapit` that shares their paths.
 
 [project.optional-dependencies]
 gseek = ["gseek>=0.10.4"]

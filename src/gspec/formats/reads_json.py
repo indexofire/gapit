@@ -7,13 +7,12 @@ adds the opt-in identity/MAPQ alignment filtering).
 
 from collections.abc import Iterable
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gspec.formats.json import ToolDocument, utc_timestamp
 from gspec.reads import GeneCoverage, ReadsParams, ReadsReport
-from gspec.schema_ids import Canonical
 
 
 class GeneCoverageDocument(BaseModel, frozen=True):
@@ -54,9 +53,7 @@ class ReadsDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.reads/1"], Canonical] = Field(
-        default="gspec.reads/1", alias="schema"
-    )
+    schema_name: Literal["gspec.reads/1"] = Field(default="gspec.reads/1", alias="schema")
     tool: ToolDocument = ToolDocument()
     created_at: str
     params: ReadsParamsDocument
@@ -109,9 +106,7 @@ class Reads2Document(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.reads/2"], Canonical] = Field(
-        default="gspec.reads/2", alias="schema"
-    )
+    schema_name: Literal["gspec.reads/2"] = Field(default="gspec.reads/2", alias="schema")
     tool: ToolDocument = ToolDocument()
     created_at: str
     params: Reads2ParamsDocument

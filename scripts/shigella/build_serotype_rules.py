@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the first gapit.serotype/1 rule set for the ShigaTyper marker panel.
+"""Generate the first gspec.serotype/1 rule set for the ShigaTyper marker panel.
 
 This is a conservative marker-set port: it covers the unambiguous wzx/wzy
 markers, the S. sonnei forms, the S. flexneri gtr/Oac/Xv combinations, the
@@ -9,7 +9,7 @@ evidence the assembly table does not carry stay explicitly ambiguous.
 Usage::
 
     python scripts/shigella/build_serotype_rules.py \
-        src/gapit/data/dbs/shi_sero
+        src/gspec/data/dbs/shi_sero
 """
 
 from __future__ import annotations

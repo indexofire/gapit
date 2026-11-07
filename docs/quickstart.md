@@ -94,7 +94,7 @@ gspec screen tests/data/contigs/full.fa --db tinyamr --format json
   "schema": "gspec.report/1",
   "tool": {
     "name": "gspec",
-    "version": "0.9.0"
+    "version": "0.10.0"
   },
   "created_at": "2026-09-19T01:11:06Z",
   "params": {

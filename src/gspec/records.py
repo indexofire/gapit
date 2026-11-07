@@ -10,7 +10,7 @@ stdout and are not registered in ``gspec schema``.
 import re
 from collections.abc import Iterable, Iterator
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
@@ -18,7 +18,6 @@ from gspec.db_txn import TXN_PREFIX
 from gspec.errors import InputError
 from gspec.formats.json import ToolDocument
 from gspec.layout import manifest_path
-from gspec.schema_ids import Canonical
 
 _SHA256_SHAPE = re.compile(r"[0-9a-fA-F]{64}")
 
@@ -98,9 +97,7 @@ class Manifest(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.manifest/1"], Canonical] = Field(
-        default="gspec.manifest/1", alias="schema"
-    )
+    schema_name: Literal["gspec.manifest/1"] = Field(default="gspec.manifest/1", alias="schema")
     name: str
     source_urls: tuple[str, ...]
     fetched_at: str
@@ -111,13 +108,7 @@ class Manifest(BaseModel, frozen=True):
     # cluster: GBK/GFF-built gene-cluster db (features.json + locus FASTA).
     kind: Literal["gene", "cluster"] = "gene"
     # gspec/v1: tagged per-gene headers; plain: bare locus-id headers (cluster).
-    # gapit/v1 is the pre-0.9 spelling and is still accepted on read.
     header_format: Literal["gspec/v1", "plain"] = "gspec/v1"
-
-    @field_validator("header_format", mode="before")
-    @classmethod
-    def _legacy_header_format(cls, value: object) -> object:
-        return "gspec/v1" if value == "gapit/v1" else value
 
     upstream_version: str = ""
     # Typing provenance: the gspec.typing schema tag of the installed

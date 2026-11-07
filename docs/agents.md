@@ -13,7 +13,7 @@ Version, as one JSON line:
 
 ```console
 $ gspec --version --json
-{"schema":"gspec.version/1","name":"gspec","version":"0.9.0"}
+{"schema":"gspec.version/1","name":"gspec","version":"0.10.0"}
 ```
 
 Output schemas. Eighteen documents are introspectable: `report`, `typing_result`,

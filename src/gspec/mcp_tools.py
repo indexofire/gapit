@@ -107,7 +107,7 @@ def _flag(arguments: dict[str, Any], key: str) -> bool:
     return value
 
 
-_LEGACY_SCREEN_KEYS = {
+_ALIASED_SCREEN_KEYS = {
     "mergeFragments": "merge_fragments",
     "minGeneCov": "min_gene_cov",
     "minGeneId": "min_gene_id",
@@ -118,9 +118,9 @@ _LEGACY_SCREEN_KEYS = {
 def _canonical_screen_arguments(arguments: dict[str, Any]) -> dict[str, Any]:
     """Accept the pre-0.6.3 camelCase names while exposing snake_case."""
     normalized = dict(arguments)
-    for legacy, canonical in _LEGACY_SCREEN_KEYS.items():
-        if canonical not in normalized and legacy in normalized:
-            normalized[canonical] = normalized[legacy]
+    for alias, canonical in _ALIASED_SCREEN_KEYS.items():
+        if canonical not in normalized and alias in normalized:
+            normalized[canonical] = normalized[alias]
     return normalized
 
 

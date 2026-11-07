@@ -34,12 +34,11 @@ from __future__ import annotations
 import struct
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
 from gspec.errors import DatabaseError
-from gspec.schema_ids import Canonical
 
 _BASE_INDEX = {"A": 0, "C": 1, "G": 2, "T": 3}
 
@@ -140,9 +139,7 @@ class KmerDbDocument(BaseModel, frozen=True):
     """The ``kmer.json`` sidecar: one k size for every set in the document
     (one k per database keeps counting single-pass)."""
 
-    schema_name: Annotated[Literal["gspec.kmerdb/1"], Canonical] = Field(
-        default="gspec.kmerdb/1", alias="schema"
-    )
+    schema_name: Literal["gspec.kmerdb/1"] = Field(default="gspec.kmerdb/1", alias="schema")
     k: int = Field(ge=1, le=31)
     sets: dict[str, KmerSetSpec] = Field(default_factory=dict)
 

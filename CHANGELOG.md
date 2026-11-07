@@ -1,102 +1,17 @@
 # Changelog
 
-## [0.9.0] - 2026-11-08
+## [0.10.0] - 2026-11-08
 
 ### Changed
 
-- **Every on-disk contract now uses the `gspec` name.** The 0.8 rename stopped
-  at the project surface; this release finishes it:
-  - JSON schema ids: `gspec.report/1`, `gspec.typing/1|2|3`,
-    `gspec.typing_result/1`, `gspec.cluster/1|2`, `gspec.error/1`, … (25 ids)
-  - manifest filename: `gspec-manifest.json`
-  - native FASTA header prefix: `gspec|db=…|gene=…|acc=…|func=…`
-  - manifest `header_format`: `gspec/v1`
-  - bundled `sequences` and sidecars rewritten to the new spellings
-- **Pre-0.9 spellings are still read everywhere**: schema ids, the
-  `gapit-manifest.json` filename, the `gapit|` header prefix and the
-  `gapit/v1` header format are accepted and canonicalised on load, so
-  databases installed under 0.8 and archived JSON keep working untouched.
-  Every writer emits the new spelling.
-- Still read for compatibility: `GAPIT_DATADIR` / `GAPIT_ENGINE` (when the
-  `GSPEC_*` names are unset) and a pre-0.9 `~/.local/share/gapit/db`.
-
-### Added
-
-- `gspec/layout.py` — manifest filename constants and `manifest_path()`, the
-  single place that decides between the current and legacy name.
-- `tests/test_legacy_compat.py` — pins the read-compatibility promise for all
-  four renamed contracts.
-
-### Migration
-
-Nothing needs doing: existing databases resolve, and documents carry the new
-ids the next time they are written. `gspec db setup --all` reindexes in place;
-see `docs/migration.md` for the full before/after table.
-
-## [0.8.1] - 2026-11-07
-
-### Changed
-
-- **The import package moved to `gspec`.** 0.8.0 shipped the code under
-  `gapit/`, which made a metadata-only transition package impossible: pip
-  installs `gspec` first, then uninstalls the old `gapit`, and that uninstall
-  deletes every path the old RECORD lists — including gspec's freshly
-  installed `gapit/*` files. `pip install -U gapit` therefore left a broken
-  install. The code now lives in `gspec/`, so an upgrade only replaces files
-  the old release actually owned.
-- The `gapit` / `gapit-mcp` command aliases moved to the `gapit`
-  compatibility distribution (`packaging/gapit-shim/`) for the same reason:
-  pip installs it last, after the old package's scripts are removed.
-
-### Added
-
-- `packaging/gapit-shim/` — the `gapit` compatibility package. It depends on
-  `gspec>=0.8.1,<0.9`, ships the `gapit` and `gapit-mcp` commands, and
-  provides `import gapit` by aliasing the `gspec` package tree. Modules whose
-  identity matters (errors, config, records, typing models) are aliased
-  eagerly, so `except gapit.errors.GapitError` still catches what `gspec`
-  raises.
-
-### Migration
-
-| From | Command | Result |
-|---|---|---|
-| 0.7.3 or 0.8.0 | `pip install -U gapit` | both names, both imports, both commands |
-| 0.7.3 or 0.8.0 | `pip install -U gspec` | `gspec` only (add `gapit` for the legacy import/commands) |
-| fresh | `pip install gspec` | `gspec` only |
-
-## [0.8.0] - 2026-11-07
-
-### Changed
-
-- **Renamed to gspec.** The distribution, version banner and documentation now
-  say `gspec`; the PyPI project is `gspec`. The rename removes the collision
-  with GAPIT (Genome Association and Prediction Integrated Tool), which made
-  the tool unfindable in literature and code search.
-- The migration is source-compatible by design:
-  - the import package is still `gapit`;
-  - both `gspec` and the pre-0.8 `gapit` console scripts ship (same entry
-    point); `gspec-mcp` joins `gapit-mcp`;
-  - `GSPEC_DATADIR` / `GSPEC_ENGINE` are preferred, and `GAPIT_DATADIR` /
-    `GAPIT_ENGINE` are still read;
-  - the home default is `~/.local/share/gspec/db` (XDG:
-    `$XDG_DATA_HOME/gspec/db`), falling back to an existing pre-0.8
-    `~/.local/share/gapit/db` so an upgrade never orphans databases.
-- `--version` prints `gspec <version>` and `--version --json` reports
-  `"name": "gspec"`.
-
-### Unchanged on purpose
-
-Frozen contracts keep their pre-0.8 spelling: every `gapit.<document>/<version>`
-JSON schema id, `gapit-manifest.json`, the native `gapit|` FASTA header prefix,
-the `gapit/v1` header-format value, and the `import gapit` package name.
-
-### Added
-
-- `docs/migration.md` / `docs/migration.zh.md` — the full what-changed /
-  what-did-not table, upgrade commands and the 1.0 timeline.
-- Tests pinning the compatibility surface: both command names, the legacy env
-  vars, and the legacy home datadir fallback.
+- **gspec-only.** The pre-0.9 compatibility surface is gone: schema ids,
+  the manifest filename, the FASTA header prefix, the `GAPIT_*` environment
+  variables and the pre-0.9 home-directory fallback are no longer read. A
+  datadir written by an older release must be migrated once
+  (`gspec-manifest.json`, `gspec|` headers, `gspec.*` sidecar ids); the
+  bundled databases install clean and need nothing.
+- The pre-0.9 PyPI project is retired: no further releases, and its
+  compatibility package is no longer built or shipped.
 
 ## [0.7.3] - 2026-11-06
 
@@ -106,10 +21,10 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
   loci + `ompW` species control; Murase 2022, INSDC PRJDB8600). The
   snapshot includes the Inaba/Ogawa O1 rule merge and reports a
   locus-level O group, not a serologically confirmed serogroup.
-  `gapit db setup` now materializes thirteen bundled databases
+  `gspec db setup` now materializes thirteen bundled databases
   (17.8 MiB), still fetch-free install-time ready. GPL-3.0 content
   (`spn_sero`, `spy_emm`) remains fetch-on-demand.
-- **`staphscope` provider for `sau_spa`** — `gapit db fetch -d sau_spa`
+- **`staphscope` provider for `sau_spa`** — `gspec db fetch -d sau_spa`
   rebuilds all 22,842 Ridom spa types from StaphScope's MIT-licensed
   repeat table (`sparepeats.fasta` + `spatypes.txt`) plus the `tuf`
   control. Nothing is bundled: the 19 MB Ridom reference set stays
@@ -130,8 +45,8 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
   just under the 0.9 cutoff, and reported `OUT`).
 - `vch_oagc` caveats updated for the bundled snapshot (INSDC
   provenance; the panel is not a serologically validated scheme).
-- `gapit --version` (and every result header) now reports the release
-  version: `gapit.__version__` was stuck at 0.6.8. A new test ties it to
+- `gspec --version` (and every result header) now reports the release
+  version: `gspec.__version__` was stuck at 0.6.8. A new test ties it to
   `pyproject.toml` so the next release bump cannot drift again.
 
 ## [0.7.2] - 2026-11-06
@@ -172,10 +87,10 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
 
 ### Added
 
-- **`gapit.typing/3` `key_kmers` component + `gapit.kmerdb/1` k-mer substrate.**
+- **`gspec.typing/3` `key_kmers` component + `gspec.kmerdb/1` k-mer substrate.**
   Cluster databases may now carry a `kmer.json` sidecar declaring
   differential k-mer sets (a locus's canonical k-mers minus its family
-  siblings'), materialized at build time via `gapit db build -K`. The
+  siblings'), materialized at build time via `gspec db build -K`. The
   `key_kmers` rule component scores the fraction of the declared set
   present in the query — SNP-level reference pairs that locus
   coverage/identity cannot separate (a single SNP moves identity by
@@ -185,8 +100,8 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
   `test_kmer_typing.py`.
 
 - **FASTQ reads-mode for cluster databases (k-mer containment path).**
-  `gapit screen --r1 reads.fastq -d <cluster_db>` now works when the
-  database carries a `gapit.kmerdb/1` sidecar: query canonical k-mers
+  `gspec screen --r1 reads.fastq -d <cluster_db>` now works when the
+  database carries a `gspec.kmerdb/1` sidecar: query canonical k-mers
   are counted directly from reads (no assembly, no minimap2), per-locus
   containment provides the coverage/identity evidence (mash-style ANI
   estimate), and `key_kmers` differential sets deliver SNP-level calls.
@@ -196,11 +111,11 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
   `locus_containment`, `containment_to_identity`.
 
 - **Provider modules for GPL-3.0 databases (`spy_emm` + `spn_sero`).**
-  `gapit db fetch -d spy_emm` downloads the CDC emm database via emmtyper
+  `gspec db fetch -d spy_emm` downloads the CDC emm database via emmtyper
   (MDU-PHL, GPLv3) and builds a gene database with dual typing schemes;
-  `gapit db fetch -d spn_sero` downloads the SeroBA reference (Sanger,
+  `gspec db fetch -d spn_sero` downloads the SeroBA reference (Sanger,
   GPLv3), pyrodigal-annotates it into a GFF3 via the new `ClusterProvider
-  preprocess` hook, and builds a cluster database with `gapit.typing/3`
+  preprocess` hook, and builds a cluster database with `gspec.typing/3`
   key_kmers (k=31) — both FASTA and FASTQ paths validated. New
   `preprocess` and `finalize` hooks on `ClusterProvider`; `_merged_loci`
   scans the entire workdir for cluster-input files. pyrodigal added to
@@ -214,7 +129,7 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
 
 - **Custom-database provenance rules (docs).** `docs/custom-db.md`/`.zh.md`
   mandate a provenance and license metadata section for every
-  `gapit db build`: source citation + software version + accessions +
+  `gspec db build`: source citation + software version + accessions +
   build date in the manifest `note`, the upstream `license` as declared,
   origin `source_urls`, an author-objection contact clause, and a one-line
   `info.json` sidecar description. `AGENTS.md` enforces the same for agents.
@@ -223,11 +138,11 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
 
 ### Added
 
-- **Experimental bundled `shi_sero` marker panel + `gapit.serotype/1`.**
+- **Experimental bundled `shi_sero` marker panel + `gspec.serotype/1`.**
   The first Shigella slice ships 95 ShigaTyper 2.0.5 public-domain markers
   (`ipaH_c` split into two control fragments for divergent alleles),
   marker metadata, and a conservative 63-rule marker-set resolver consumed by
-  `gapit typing`. It resolves S. boydii 6 vs 10 from the wbaM 5' alignment
+  `gspec typing`. It resolves S. boydii 6 vs 10 from the wbaM 5' alignment
   start (IS629 interruption vs intact type 10); reads tables carry no
   alignment geometry and stay unresolved for that pair. ShigaPass GPL
   content is not bundled.
@@ -241,25 +156,25 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
 - **Bundled `vpa_pai` V. parahaemolyticus pathogenicity-island cluster database.**
   Ten screen-only loci, one per VPaI-1..VPaI-10; VPaI-1..7 plus the T6SS
   VPaI-10 come from RIMD 2210633, VPaI-8/9 from AQ3810. The bundle ships the
-  locus FASTA and `gapit.features/1` table; TSV reports the best locus and
+  locus FASTA and `gspec.features/1` table; TSV reports the best locus and
   JSON carries every locus with per-gene evidence.
 
-- **Experimental rich cluster evidence (`gapit screen --detail --format json`).**
-  Opt-in `gapit.locus_map/1` output adds per-locus alignment pieces,
+- **Experimental rich cluster evidence (`gspec screen --detail --format json`).**
+  Opt-in `gspec.locus_map/1` output adds per-locus alignment pieces,
   insertions/deletions with flanking genes, per-gene query spans, panel gene
   families, containment diagnostics, and an annotate-only locus quality
   verdict. `gene_families.json` is a build-time homology/containment sidecar
   (the bundled vpa_ok snapshot ships one). Compact TSV/CSV/MD and the default
   JSON remain unchanged. Rendering is intentionally out of scope: the JSON
-  carries the geometry/evidence for agents or external tools to draw. `gapit typing` now also
-  reads cluster `gapit.cluster/2` / `gapit.locus_map/1` JSON and renders the
-  already-evaluated phenotypes as the concise `gapit.typing_result/1` document
+  carries the geometry/evidence for agents or external tools to draw. `gspec typing` now also
+  reads cluster `gspec.cluster/2` / `gspec.locus_map/1` JSON and renders the
+  already-evaluated phenotypes as the concise `gspec.typing_result/1` document
   (cluster TSV still requires `screen --format json`, since it lacks scheme
   metadata).
 
 ### Changed
 
-- **gseek requirement raised to `gseek>=0.10.4`.** The `gapit[gseek]` extra and
+- **gseek requirement raised to `gseek>=0.10.4`.** The `gspec[gseek]` extra and
   the pixi dev environment now share the same floor.
 
 - **READMEs trimmed to install, quick start, and documentation links.** The
@@ -273,24 +188,24 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
   grouped module map, and compresses the database/domain sections into pointers
   to `docs/`. Verification now lists `fmt-check` and the strict docs build.
 
-- **`gapit schema --help` lists documents from the registry.** The argument help
+- **`gspec schema --help` lists documents from the registry.** The argument help
   is generated from `SCHEMA_MODELS`, so it can no longer omit `locus_map`,
   `serotype`, or `dbinfo`.
 
 - **`SPEC.md` refocused as a legacy-table interop contract.**
   The abricate CLI/provider catalog and historical quirks were removed from the
   normative surface; §2–§6 now freeze only the `~~~` headers, legacy BLAST
-  values, 15-column table, and the `gapit typing`/`gapit summary` input shapes.
-  Current gapit features link to their own docs/schemas, and the parity harness
+  values, 15-column table, and the `gspec typing`/`gspec summary` input shapes.
+  Current gspec features link to their own docs/schemas, and the parity harness
   is documented as a regression reference rather than a design goal.
 
 - **Bundled `ecoli_dec` renamed to `eco_dec`.** The bundle directory, `bundled.json`
   name, `sequences` headers, and `records.jsonl` db fields all use `eco_dec` now.
   Installed legacy copies can be migrated with
-  `gapit db rename ecoli_dec eco_dec`.
+  `gspec db rename ecoli_dec eco_dec`.
 
-- **`gapit db list` gains a KIND column.** The TSV/rich table now distinguishes
-  `gene` from `cluster` databases explicitly; the `gapit.dblist/1` JSON already
+- **`gspec db list` gains a KIND column.** The TSV/rich table now distinguishes
+  `gene` from `cluster` databases explicitly; the `gspec.dblist/1` JSON already
   carried `kind`. TYPING remains the designation-mode column
   (`command` / `integrated` / `-`).
 
@@ -317,24 +232,24 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
 
 - **The optional gseek engine now requires `gseek>=0.10.3`.** It gains
   streaming `iter_align`, multi-query `align_many`, precomputed refs, and the
-  batch options. In batch mode gapit skips query-input hashing and gseek's
+  batch options. In batch mode gspec skips query-input hashing and gseek's
   canonical sort because it folds and orders hits itself.
 
-- **`gapit db fetch` now requires `-d/--db` and accepts multiple names.**
-  The old positional form (`gapit db fetch NAME`) is a usage error; use
-  `gapit db fetch -d NAME [NAME ...]` to fetch one or more databases in one
-  command (for example `gapit db fetch -d card vfdb`). `all` still expands to
+- **`gspec db fetch` now requires `-d/--db` and accepts multiple names.**
+  The old positional form (`gspec db fetch NAME`) is a usage error; use
+  `gspec db fetch -d NAME [NAME ...]` to fetch one or more databases in one
+  command (for example `gspec db fetch -d card vfdb`). `all` still expands to
   the default set, and duplicate names collapse.
 
 ### Removed
 
 - **Bundled provider snapshots are gone.** `ecoh`, `ncbi`, and `resfinder` no
   longer ship inside the wheel. Their upstream licenses permit redistribution,
-  but provider snapshots carry provenance risk that a gapit release should not
+  but provider snapshots carry provenance risk that a gspec release should not
   own — so every provider is fetch-on-demand only. The bundled set is now the
-  four gapit-curated databases `cje_cps`, `eco_dec`, `lmo_sero`, and
+  four gspec-curated databases `cje_cps`, `eco_dec`, `lmo_sero`, and
   `vpa_ok`; `db setup` materializes those four, and `db list` shows the removed
-  names as `available` until `gapit db fetch -d NAME` installs them.
+  names as `available` until `gspec db fetch -d NAME` installs them.
 
 ## [0.6.6] - 2026-10-30
 
@@ -343,11 +258,11 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
 - **`nme_sero` provider.** Non-MLST *Neisseria meningitidis* gene-presence
   panel fetched from MDU-PHL/meningotype (GPL-3.0 + PubMLST terms,
   fetch-on-demand): serogroup A/B/C/W/X/Y amplicons, `ctrA` capsule marker
-  and a single-copy `sodC` depth control. `gapit screen -d nme_sero` +
-  `gapit typing` call the serogroup; `screen.json` gates FASTQ presence on
+  and a single-copy `sodC` depth control. `gspec screen -d nme_sero` +
+  `gspec typing` call the serogroup; `screen.json` gates FASTQ presence on
   the gene:sodC depth ratio; a W/Y call carries a `NEXT STEP` note telling an
   agent to resolve W vs Y with the synG EX7E motif. MLST/cc and allele-level
-  PorA/FetA/PorB/BAST typing stay outside gapit (gMLST database / external
+  PorA/FetA/PorB/BAST typing stay outside gspec (gMLST database / external
   finetyping pipeline).
 - **MCP `typing` and `db_setup` tools.** The stdio server can now consume the
   screen table text directly (`typing`) and bootstrap/index a datadir
@@ -366,7 +281,7 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
   declare `description` and `vendor`; `db list` and `db info` use them for
   local/curated databases instead of an empty description and the `local`
   vendor. Malformed sidecars stay typed `DBINFO_MALFORMED` errors.
-- **`gapit.screen/1` per-database screening defaults (`screen.json`).** A
+- **`gspec.screen/1` per-database screening defaults (`screen.json`).** A
   database can declare its own reads/contigs thresholds; CLI flags still win,
   and a database without the sidecar behaves exactly as before. Install with
   `db build --screen`, or drop the file into an installed database directory.
@@ -383,25 +298,25 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
 
 ### Changed
 
-- **`gapit setupdb` is replaced by `gapit db setup`.** Database bootstrap and
+- **`gspec setupdb` is replaced by `gspec db setup`.** Database bootstrap and
   index rebuilding sit with the other datadir operations, and the old
   top-level spelling is removed (an unknown command now). The redesigned
   command takes `--all/-a` (every installed/bundled database, never fetches
   providers), `--db/-d NAME` (repeatable; a missing provider is fetched, a
   missing bundle materialized), `--quiet/-q`, `--debug/-v`,
   `--no-bundles/-B` (skip bundle materialization), and `--json/-J` (emit the
-  new `gapit.dbsetup/1` receipt on stdout with progress suppressed).
+  new `gspec.dbsetup/1` receipt on stdout with progress suppressed).
   `DATABASE_NOT_INDEXED` hints, completion, and all docs point at
-  `gapit db setup`.
+  `gspec db setup`.
 - **Bundled database renames: `lm_doumith` → `lmo_sero`, `vp_ok` → `vpa_ok`.**
   The old names are gone from the catalog, docs, and tests; `lmo_sero` keeps
   the Doumith serogrouping panel and `vpa_ok` keeps the V. parahaemolyticus
   O:K cluster/typing asset.
-- **`gapit db list` is NAME-sorted; `-n/--name` prints names only.** The TSV,
+- **`gspec db list` is NAME-sorted; `-n/--name` prints names only.** The TSV,
   rich table, JSON, and MCP listing now share one global NAME order (registry,
-  bundled, and local rows interleave). `gapit db list -n` emits one
+  bundled, and local rows interleave). `gspec db list -n` emits one
   space-separated line for shell loops such as
-  `for name in $(gapit db list -n); do gapit db setup -d "$name"; done`.
+  `for name in $(gspec db list -n); do gspec db setup -d "$name"; done`.
 
 ### Removed
 
@@ -409,7 +324,7 @@ the `gapit/v1` header-format value, and the `import gapit` package name.
   panel is removed from the wheel and catalog; use `vch_oagc` for O-antigen
   locus typing and a future `vch_vf` for ctxA/ctxB.
 
-All notable changes to gapit are documented in this file.
+All notable changes to gspec are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -421,11 +336,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`cje_cps` bundled database.** The *C. jejuni* Penner capsule panel: the 36
   amplicons of the updated multiplex PCR (Poly et al. 2015, PLoS ONE
   e0144349, CC0) plus an `lpxA` species control, screenable as a gene database
-  and designated by the `penner_cps` scheme (`gapit.typing/2`) covering the 35
+  and designated by the `penner_cps` scheme (`gspec.typing/2`) covering the 35
   capsule types the paper resolves — complexes called as complexes, shared
   amplicon profiles declared as rules, every caveat carried as a note. Real
   public-domain content, so it ships in the wheel like `lmo_sero`.
-- **`gapit db build NAME` with no input re-projects the installed database.**
+- **`gspec db build NAME` with no input re-projects the installed database.**
   The curation path the databases guide promised but had no command for: edit
   `records.jsonl` (rename a gene, merge two alleles under one name, drop a
   mislabelled record), run `db build NAME`, and `sequences`/self-check/index/
@@ -433,13 +348,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   staged so a broken edit leaves the database untouched. The input-shaping flags
   are rejected in this mode (they describe a NEW database) and cluster databases
   refuse with `DB_REBUILD_CLUSTER`.
-- **`gapit db info -d NAME`.** One database's provenance in one place: identity,
+- **`gspec db info -d NAME`.** One database's provenance in one place: identity,
   install status, licence, snapshot date, build provenance, the literature its
   content came from, the intended usage recipe, and the caveats its
   interpretation depends on. It merges the provider catalog, the wheel's
   `bundled.json`, the installed manifest, and an optional `info.json` sidecar
   (so a `db build` product can carry its own references), and emits
-  `gapit.dbinfo/1` under `--json`. Every catalog provider declares its own
+  `gspec.dbinfo/1` under `--json`. Every catalog provider declares its own
   references and caveats in its module and every bundled panel carries them in
   `bundled.json` (24 databases in total), with the usage recipe synthesized
   from the database kind, so no database reports an empty page. On a terminal it
@@ -450,7 +365,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   record: four
   references (Poly 2015, Klena 2004, Penner 1980, Pike 2013) and seven
   interpretation caveats.
-- **`gapit db rename OLD NEW`.** Re-home an installed database under a new
+- **`gspec db rename OLD NEW`.** Re-home an installed database under a new
   name: gene databases are rebuilt from their records with `db` re-pointed
   (headers, sequences, index, manifest), cluster databases keep their locus
   artifacts byte-identical and only re-stamp the manifest. Staged like every
@@ -494,9 +409,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Complete agent JSON surface.** `gapit.report/1` params now record
-  `merge_fragments`; `gapit.dblist/1`, `gapit.dboutdated/1`, and
-  `gapit.datadir/1` are registered in `gapit schema`; `gapit.error/1` exposes the
+- **Complete agent JSON surface.** `gspec.report/1` params now record
+  `merge_fragments`; `gspec.dblist/1`, `gspec.dboutdated/1`, and
+  `gspec.datadir/1` are registered in `gspec schema`; `gspec.error/1` exposes the
   full machine-readable error-code enum.
 - **MCP `db_path`.** The stdio server exposes the resolved datadir document, and
   `screen` now uses canonical snake_case parameters (`merge_fragments`,
@@ -522,11 +437,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- **Fresh-install datadir bootstrap.** `gapit db list` (CLI, `--json`, and the MCP
+- **Fresh-install datadir bootstrap.** `gspec db list` (CLI, `--json`, and the MCP
   `db_list` tool) no longer fails with `DATADIR_NOT_FOUND` when the datadir has never
   been created: it bootstraps the resolved root and lists the catalog/bundled rows, so
-  a fresh `pip install gapit` can be inspected before any database is installed.
-  `gapit setupdb` likewise creates a missing datadir before materializing bundles.
+  a fresh `pip install gspec` can be inspected before any database is installed.
+  `gspec setupdb` likewise creates a missing datadir before materializing bundles.
   Commands that consume installed databases keep the strict `DATADIR_NOT_FOUND`
   semantics (bundled-name `screen`/`typing` still bootstrap on first use).
 - **Shared-datadir writes are serialized and published atomically.** Database builds now
@@ -558,7 +473,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Reads suffix consistency.** `.fastq.gzip`/`.fq.gzip` now pair correctly.
 - **cluster/2 column collisions.** Schemes such as `o_group` and `o` fall back
   to full evidence prefixes, keeping every column unique.
-- **Summary params completeness.** `gapit.summary/1` records `metrics`, so `-ic`
+- **Summary params completeness.** `gspec.summary/1` records `metrics`, so `-ic`
   can be reproduced from the JSON document.
 - **Schema accuracy.** The never-serialized `PhenotypeDetail.winner` is omitted
   from the public cluster schema.
@@ -581,7 +496,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stale keys for a replaced target.
 - **GFF coordinate validation.** `end < 1` and `start > end` now raise typed
   `GENE_OUT_OF_BOUNDS` instead of a pydantic `ValidationError`.
-- **`db list` index visibility.** `gapit.dblist/1` entries carry `indexed`, so an
+- **`db list` index visibility.** `gspec.dblist/1` entries carry `indexed`, so an
   installed-but-unindexed database is distinguishable from a ready one.
 - **MCP `all_genes`.** The screen/screen_reads tools expose the reads-table flag.
 - **Typing Markdown safety.** Source paths in YAML frontmatter are quoted.
@@ -590,17 +505,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **`gapit db path [--json]`.** Prints the effective datadir without creating it;
-  `--json` emits `gapit.datadir/1` (`datadir`, `exists`, `source` = `cli|env|xdg|default`).
+- **`gspec db path [--json]`.** Prints the effective datadir without creating it;
+  `--json` emits `gspec.datadir/1` (`datadir`, `exists`, `source` = `cli|env|xdg|default`).
 - **XDG Base Directory support.** Datadir precedence is now `--datadir`,
-  `$GAPIT_DATADIR`, `$XDG_DATA_HOME/gapit/db` (absolute XDG only), then
+  `$GSPEC_DATADIR`, `$XDG_DATA_HOME/gspec/db` (absolute XDG only), then
   `~/.local/share/gspec/db`.
 
 ### Changed
 
-- **gapit now uses `gseek.compat` for `GAPIT_ENGINE`.** The shared switch
-  replaces gapit's duplicate mode parser and shadow fallback; legacy remains
-  the default and gapit still owns its result mapping.
+- **gspec now uses `gseek.compat` for `GAPIT_ENGINE`.** The shared switch
+  replaces gspec's duplicate mode parser and shadow fallback; legacy remains
+  the default and gspec still owns its result mapping.
 
 - **Python 3.12 is now the supported version.** Drop the 3.11/3.13/3.14
   environments from pixi/CI and align the package metadata, recipe, and docs
@@ -614,7 +529,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   routes contig/protein screening, reads, and cluster minimap2 through
   [gseek](https://github.com/indexofire/gseek). `legacy` remains the default and is
   retained on every path; `shadow` logs coarse differences and returns the legacy
-  result. gseek requires Python >= 3.12 and is available through `gapit[gseek]` or
+  result. gseek requires Python >= 3.12 and is available through `gspec[gseek]` or
   the pixi `default` environment.
 - **FASTQ reads parity:** vfdb/card reads/1 and reads/2 are byte-identical to
   legacy on a 3.07M-pair sample. gseek 0.8.1 allows duplicate minimap2 targets
@@ -630,11 +545,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   cluster) as an exact-set `serogroup` scheme, plus the ctxA toxigenicity marker; O1 and
   O139 exclude each other by construction, so a double call flags a mixed sample. Ships
   from the wheel with zero network (the seventh bundled database), with floors and a
-  `gapit.typing/2` document.
+  `gspec.typing/2` document.
 
 ### Changed
 
-- **`gapit.cluster/2` TSV/CSV reshaped: per-scheme winner evidence replaces the packed
+- **`gspec.cluster/2` TSV/CSV reshaped: per-scheme winner evidence replaces the packed
   PHENOTYPES cell and the global-best columns.** The header now derives from the typing
   document: each compose scheme's value column renders first (`SEROTYPE` — the headline
   answer leads), then every non-compose scheme carries its call plus the winning locus's
@@ -644,29 +559,29 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   whichever locus of either family ranked first), and the JSON `phenotypes` map gains
   additive `winner_*` fields (`winner_locus`, `winner_coverage_pct`, `winner_identity_pct`,
   `winner_present`, `winner_partial`, `winner_missing`). Amendment of a contract shipped
-  in 0.5.5 days earlier with no downstream adoption; `/1` and `gapit.typing_result/1`
+  in 0.5.5 days earlier with no downstream adoption; `/1` and `gspec.typing_result/1`
   outputs are byte-frozen.
 
 ## [0.5.5] - 2026-10-13
 
 ### Added
 
-- **`gapit.cluster/2` — multi-scheme cluster output.** A cluster database whose typing
-  document holds more than one scheme now renders `gapit.cluster/2`: same body as /1,
+- **`gspec.cluster/2` — multi-scheme cluster output.** A cluster database whose typing
+  document holds more than one scheme now renders `gspec.cluster/2`: same body as /1,
   `best` drops its phenotype fields, and each file gains `phenotypes: {scheme: SchemeCall}`
   in document order — compose schemes (e.g. `"{o_group}:{k_group}"`) render from sibling
   calls, and schemes evaluate even without a best call. TSV/CSV swap PHENOTYPE for a packed
   PHENOTYPES column (`o_group=O3;k_group=K6;serotype=O3:K6`); MD mirrors it plus per-scheme
-  lines. Untyped and single-scheme databases keep byte-identical `gapit.cluster/1`.
+  lines. Untyped and single-scheme databases keep byte-identical `gspec.cluster/1`.
   /2 builds guarantee globally-unique gene ids (collision-aware
   /gene→locus_tag→`locus:id@start` resolution at build time). Registered as
-  `gapit schema cluster2`.
+  `gspec schema cluster2`.
 
 - **Bundled `vpa_ok`: V. parahaemolyticus O:K serotyping, one scan.** The wheel now ships a
   typed cluster bundle (six bundles total; ~7.9 MiB committed artifacts) built from the
-  vpasero OAgc/CPSgc reference loci (195 loci, MIT): `pip install gapit` →
-  `gapit screen genome.fna --db vpa_ok` auto-materializes with zero network and renders
-  `gapit.cluster/2` with `o_group`, `k_group`, and the composed `O:K` serotype
+  vpasero OAgc/CPSgc reference loci (195 loci, MIT): `pip install gspec` →
+  `gspec screen genome.fna --db vpa_ok` auto-materializes with zero network and renders
+  `gspec.cluster/2` with `o_group`, `k_group`, and the composed `O:K` serotype
   (RIMD 2210633 → O3:K6). Kind-aware cluster-bundle materialization replays the same
   cluster build entry `db build` uses — bundle ≡ build, byte-identical `sequences` +
   `features.json` (regression-locked). Coverage floors calibrated over a 14,801-genome
@@ -677,17 +592,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **Bundled-database policy (AGENTS.md §6) with a mechanical 30 MiB budget guard** —
   license gate (PD/Apache/BSD/MIT only) + size gate enforced by `tests/test_bundled.py`;
-  growth tiers documented (split a `gapit-data` wheel past the budget rather than inflate).
+  growth tiers documented (split a `gspec-data` wheel past the budget rather than inflate).
 
 ### Changed
 
 - **CLI migrated from typer to click 8.5.** Same flags, exit codes, envelopes, and stdout
-  bytes on every gapit-owned surface; a net dependency diet (typer/shellingham/annotated-doc
+  bytes on every gspec-owned surface; a net dependency diet (typer/shellingham/annotated-doc
   out, click in). Framework-rendered help is now plain click, and shell completion moved
   from typer's `--install-completion`/`--show-completion` flags to the
   `_GAPIT_COMPLETE=bash_source` env-var activation model (bash/zsh/fish; docs updated).
 
-- **`gapit db list`: DESCRIPTION now precedes PROVIDER** (TSV and the rich table), and the
+- **`gspec db list`: DESCRIPTION now precedes PROVIDER** (TSV and the rich table), and the
   rich table renders with uniformly thin rule lines (was a heavy header separator).
 
 - **`upec_expec_vf` no longer rides the wheel** — it returns to pure fetch-on-demand in
@@ -700,7 +615,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **Rich progress bar on long batch runs** (stderr only; modeled on the gmlst UX).
   Multi-file contig screening, the positional-FASTQ wildcard batch, and
-  `gapit db fetch all` now show a spinner + bar + M/N + percent + elapsed bar on an
+  `gspec db fetch all` now show a spinner + bar + M/N + percent + elapsed bar on an
   interactive stderr, with the description tracking the current file/sample/database and
   replacing the per-file stderr notes while it runs. Under `--quiet` or a non-TTY stderr
   (pipes, CI) the bar is disabled and today's plain notes print byte-identically; stdout
@@ -711,7 +626,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Build-time exact-duplicate dedup for gene databases.** `gapit db build` (CLI and MCP)
+- **Build-time exact-duplicate dedup for gene databases.** `gspec db build` (CLI and MCP)
   and bundled materialization now drop records whose `(gene, sequence)` pair repeats an
   earlier one — the FIRST copy is kept, a stderr note counts the drops when not
   `--quiet`, and the build receipt gains an additive `duplicates_dropped` field (omitted
@@ -734,15 +649,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stance — the abricate-compatible contig surface is a frozen baseline and the parity
   harness is a regression reference, not a release gate; the false "nothing is bundled"
   claims in FAQ/installation are replaced with the six in-wheel audited bundles
-  (materialized on first use). The `gapit typing` TSV column order in every example is
+  (materialized on first use). The `gspec typing` TSV column order in every example is
   corrected to `FILE SCHEME PHENOTYPE GENES CONFIDENCE SCORE RUNNER_UP NOTES`; summary
   examples now paste the real default `+`/`-` cells; schema rosters add `floors`
-  (eleven documents) and the `gapit.dblist/1` field table gains `kind`; the database
+  (eleven documents) and the `gspec.dblist/1` field table gains `kind`; the database
   catalog is described as its real 21-row self (12 gene + 7 kaptive cluster + the
   `eco_dec`/`lmo_sero` bundles); the quickstart gains a "Type your samples"
   tutorial (two-stage designation, the screen|typing pipe, wildcard-FASTQ auto-pairing)
-  and uses `gapit setupdb` as the bootstrap path; `gapit screen` docs list
-  `--min-identity`/`-I` and `--min-mapq`/`-M`; the `gapit db build` reference lists
+  and uses `gspec setupdb` as the bootstrap path; `gspec screen` docs list
+  `--min-identity`/`-I` and `--min-mapq`/`-M`; the `gspec db build` reference lists
   `--kind`/`-k`, `--typing`/`-T`, and `--floors`/`-F`. New FAQ entries: two-stage
   typing designation, per-gene identity floors (the `pic` case), wildcard-FASTQ
   auto-pairing. All fixes applied to the English pages and their `.zh.md` mirrors; all
@@ -752,7 +667,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Per-gene identity floors for reads-mode presence (`gapit.floors/1`) — the db-driven
+- **Per-gene identity floors for reads-mode presence (`gspec.floors/1`) — the db-driven
   fix for the 26ECO0084 `pic` SPATE false positive.** A gene database may carry an
   optional `floors.json` sidecar declaring a minimum alignment identity (%) per gene:
   in reads mode, alignments to a floored gene below its floor are dropped BEFORE
@@ -762,9 +677,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   DATABASE metadata, not a CLI change**: a database without the sidecar screens
   byte-identically to before, existing databases need nothing, and the blastn contig
   path never reads floors (`--minid` already gates it). Floors compose conjunctively
-  with `gapit.reads/2` `--min-identity` (a row must clear both); `gapit.reads/1`
+  with `gspec.reads/2` `--min-identity` (a row must clear both); `gspec.reads/1`
   output shape is untouched (presence/breadth changes only for floored genes). New
-  module `gapit.gene_floors` (model registered as `gapit schema floors`), `gapit db
+  module `gspec.gene_floors` (model registered as `gspec schema floors`), `gspec db
   build NAME.fa --floors FILE` (gene builds only; cluster inputs reject it) installs a
   validated copy — every listed gene must exist in the FASTA (`FLOORS_UNKNOWN_GENE`),
   values in [0, 100] and structure per the schema (`FLOORS_MALFORMED`); dropping the
@@ -776,7 +691,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Bundled `lmo_sero`: Listeria monocytogenes serogrouping (Doumith 2004) — the sixth
   bundled database.** Five markers extracted from public-domain INSDC records (`prs`,
   `lmo0737`, `lmo1118`, `ORF2819`, `ORF2110`; strand-corrected, `lmo0737` verified against
-  EGD-e) behind the `gapit.typing/2` scheme `doumith_serogroup` (95/95 floors, `prs`
+  EGD-e) behind the `gspec.typing/2` scheme `doumith_serogroup` (95/95 floors, `prs`
   control gene, cutoff 1.0 / margin 0.0). Rules follow Doumith's multiplex-PCR table
   (IIa = 1/2a·3a, IIc = 1/2c·3c, IIb = 1/2b·3b·7, IVb = 4b·4d·4e) extended with Huang
   2011's 4b variant (`IVb-v`, declared before `IVb` so an lmo0737-carrying 4b profile
@@ -792,12 +707,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Illumina FASTQ wildcard support: `gapit screen -d eco_dec *.gz` screens a shell glob
+- **Illumina FASTQ wildcard support: `gspec screen -d eco_dec *.gz` screens a shell glob
   of reads without `--r1`/`--r2`** (rightsholder batch workflow). When every positional file
   is FASTQ — a `.fastq`/`.fq` (± `.gz`) extension, or content sniffed as FASTQ when the
   extension is ambiguous (via the existing `detect_read_kind`; known contig extensions and
   garbage content keep today's contig pipeline untouched) — the command enters reads mode
-  and auto-pairs samples from filenames (`gapit.readpairs`, new): mate markers `_R1_001`/
+  and auto-pairs samples from filenames (`gspec.readpairs`, new): mate markers `_R1_001`/
   `_R2_001` (bcl2fastq; an `_L00x` lane tag stays in the sample key), `_R1`/`_R2`, `_1`/`_2`,
   `.1`/`.2`, all case-insensitive, longest suffix first, extensions `.fastq`/`.fq` ×
   `.gz`/`.bz2` stripped before matching. The document carries one `files[]` entry per sample
@@ -808,7 +723,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   extra lanes of one sample. Mixing FASTA and FASTQ positionals is a usage error naming the
   reads files; the reads-mode guards fire as on `--r1`/`--r2` (`--minid`/`--mincov`,
   `--merge-fragments`, ... rejected), while `--min-identity`/`--min-mapq` now work on this
-  path (gapit.reads/2). `--read-type` keeps
+  path (gspec.reads/2). `--read-type` keeps
   the content-based preset resolution (`sr` for FASTQ). **`--jobs` is legal on this path
   only** (the `--r1`/`--r2` single-sample invocation keeps the frozen rejection): samples
   screen concurrently through a ThreadPoolExecutor whose positional yields keep output in
@@ -827,24 +742,24 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   mid-batch failure persists samples 1..k-1 (tsv/md) and nothing at all (json). The
   single-sample `--r1`/`--r2` path, the blastn contig path, and
   the explicit `--aligner` routings are unchanged.
-- **`gapit typing` closes every TSV/MD row with a `GENES` column and `gapit.typing_result/1`
+- **`gspec typing` closes every TSV/MD row with a `GENES` column and `gspec.typing_result/1`
   gains the additive per-file `genes` list** (schema stays `/1`; additive field, the
   0.5.0 shape unchanged otherwise): the FILE's present gene names — the folded best hits the
   designation ran on — sorted alphabetically and `;`-joined, repeated on each of the FILE's
   scheme rows so each call is auditable against the hits that drove it. JSON carries the same
   list as `files[].genes`.
-- **`gapit summary` reads its report table from stdin** — the pipe twin of `gapit typing`:
-  `gapit screen -d eco_dec *.fna --quiet | gapit summary` summarizes the batched screen
+- **`gspec summary` reads its report table from stdin** — the pipe twin of `gspec typing`:
+  `gspec screen -d eco_dec *.fna --quiet | gspec summary` summarizes the batched screen
   output straight off the pipe (a piped table is one input, so dutch mode applies — one row
   per FILE value, byte-identical to summarizing the `-o`-written table). Stdin is read
   whenever stdin is not a terminal; a bare invocation at a terminal keeps printing help;
-  `gapit summary -` is the explicit stdin marker (reads until EOF even under a terminal);
+  `gspec summary -` is the explicit stdin marker (reads until EOF even under a terminal);
   mixing `-` with file arguments is a usage error; non-UTF-8 stdin is the `SUMMARY_MALFORMED`
   envelope naming `-`. The flag-but-no-file invocation (`summary --quiet` with a pipe) now
   reads stdin instead of the former USAGE_ERROR.
 
-- **`--db` now also answers to the word-style alias `-db`** (on `gapit screen` and
-  `gapit db search`): `-db eco_dec` parses exactly like `--db eco_dec`, matching the
+- **`--db` now also answers to the word-style alias `-db`** (on `gspec screen` and
+  `gspec db search`): `-db eco_dec` parses exactly like `--db eco_dec`, matching the
   tar-style single-dash habit that previously misparsed as `-d b` + a positional. The
   space-separated form is the supported one — click binds an attached `-dbeco_dec` to
   `-d` with value `beco_dec` (the original failure), which the new guard below catches.
@@ -853,7 +768,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **A positional argument that names a known database but is missing on disk now fails with
   a targeted usage error (exit 2)** instead of the generic INPUT_NOT_FOUND (exit 5) plus a
-  starved downstream pipe: `gapit screen -d b eco_dec X.fna` (the stripped `-db` misparse
+  starved downstream pipe: `gspec screen -d b eco_dec X.fna` (the stripped `-db` misparse
   shape) reports `input file not found: 'eco_dec' — it is a database NAME; screen takes
   databases via --db/-d/-db (e.g. --db eco_dec), positional arguments are genome files`.
   Database names are matched against the provider catalog, bundled wheel content, and
@@ -861,10 +776,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- **Breaking: `gapit screen` reads mode now defaults to streaming tsv on EVERY path** —
+- **Breaking: `gspec screen` reads mode now defaults to streaming tsv on EVERY path** —
   `--r1`/`--r2` and `--aligner minimap2` join the positional wildcard (and the blastn contig
   path) with tsv as the human default; json/md are the explicit agent opt-ins. tsv is the
-  human default on every surface; json (`gapit.reads/1`/`2`) and md are the opt-ins for
+  human default on every surface; json (`gspec.reads/1`/`2`) and md are the opt-ins for
   agents. The default output is the same streaming `#SAMPLE` table the wildcard emits (one
   chunk for the single sample; preamble + chunk compose exactly the buffered render);
   `--format csv` is the comma spelling, `--format json`/`--format md` unchanged. The former
@@ -875,19 +790,19 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- `gapit summary --coverage` / `-c`: cells show %COVERAGE values (`;`-joined), reproducing the
+- `gspec summary --coverage` / `-c`: cells show %COVERAGE values (`;`-joined), reproducing the
   classic abricate `--summary` cell shape byte-for-byte (the parity harness now runs in this
-  mode). `-ic` combines both metrics: each hit renders `identity/coverage`. `gapit typing` TSV/MD: the `GENES` column moved to follow `PHENOTYPE`
+  mode). `-ic` combines both metrics: each hit renders `identity/coverage`. `gspec typing` TSV/MD: the `GENES` column moved to follow `PHENOTYPE`
   (was last; additive JSON `files[].genes` unchanged).
 
 ### Changed
 
-- **Breaking**: `gapit summary` default cells are now the presence call (`+` / `-`) instead of
+- **Breaking**: `gspec summary` default cells are now the presence call (`+` / `-`) instead of
   %COVERAGE values — pass `--coverage` to restore the previous cell shape.
 
 ### Changed
 
-- **Project stance**: from v0.5.0 onward gapit pursues its own contract — abricate parity is no
+- **Project stance**: from v0.5.0 onward gspec pursues its own contract — abricate parity is no
   longer a design goal. The contig TSV stays a frozen historical baseline (kept for existing
   pipelines); the parity harness is a regression reference, not a release gate. New surfaces may
   diverge from abricate by design. (AGENTS.md updated accordingly.)
@@ -919,39 +834,39 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   cluster databases the file's own summary row plus its gene table, replacing the global summary
   table) prints the moment that file completes — head-of-line in input order under `--jobs`,
   exactly like the tsv rows, with `--output` flushing per chunk. Run totals now live only in the
-  JSON document (`gapit.report/1` `files[]`/`hits`, `gapit.cluster/1`), which stays a single
+  JSON document (`gspec.report/1` `files[]`/`hits`, `gspec.cluster/1`), which stays a single
   buffered document by design. Update any parser that read `files:`/`hits:` from Markdown
   frontmatter or expected the cluster summary table above the sections; per-file content is
   unchanged byte-for-byte. Reads-mode Markdown (one document per run by construction) and
-  `gapit typing`'s Markdown are unchanged.
+  `gspec typing`'s Markdown are unchanged.
 
-- **`gapit screen --db` is now required (no default).** The silent `ncbi` default could
+- **`gspec screen --db` is now required (no default).** The silent `ncbi` default could
   auto-materialize a bundled 8.4k-record database as a hidden side effect of a bare
-  `gapit screen contigs.fa`; a screen now refuses to run (typer usage error, exit 2) until
+  `gspec screen contigs.fa`; a screen now refuses to run (typer usage error, exit 2) until
   `--db NAME` is given explicitly. The MCP `screen`/`screen_reads` tools mirror the change:
   `db` moved into each inputSchema's `required` array (default removed), and an absent
-  `db` returns the `gapit.error/1` USAGE_ERROR envelope. Update any invocation that relied
+  `db` returns the `gspec.error/1` USAGE_ERROR envelope. Update any invocation that relied
   on the default.
-- **`gapit screen` no longer embeds phenotypes — designation moved to the new `gapit typing`
+- **`gspec screen` no longer embeds phenotypes — designation moved to the new `gspec typing`
   command (one-cycle revert; the embedded surfaces never released).** Screening a typed gene
   database is now pure gene detection, byte-identical to screening an untyped one in every
   format: the earlier-this-cycle `PHENOTYPE` column on the report TSV/CSV, the
-  `files[].phenotypes` object of `gapit.report/1`, and the Markdown phenotype lines are all
+  `files[].phenotypes` object of `gspec.report/1`, and the Markdown phenotype lines are all
   gone (the typing engine itself — rules, schemes, gates, compose — is unchanged, and
   `typing.json` still ships with databases). The reads-mode guard that rejected typed gene
   dbs (`gene-path typing is contig-mode only`) is gone with it: `--r1/--r2` and
   `--aligner minimap2` screen typed gene databases like any other. The cluster path is
   untouched — typed cluster databases keep their integrated designation (the
-  `gapit.cluster/1` phenotype block and the typed-only TSV `PHENOTYPE` column). The MCP
+  `gspec.cluster/1` phenotype block and the typed-only TSV `PHENOTYPE` column). The MCP
   `screen` tool returns the pure report on typed gene dbs (a typing MCP tool is future
   work). If you consumed `files[].phenotypes` from pre-release builds, switch to
-  `gapit typing` (below).
+  `gspec typing` (below).
 
 ### Added
 
-- **`gapit typing RESULT.tsv [RESULT2.tsv ...]` — designation from screen results (the
-  rightsholder's two-stage CLI design).** Stage 1: `gapit screen -o result.tsv --db NAME`
-  detects genes; stage 2: `gapit typing result.tsv` reads the gapit/abricate screen table
+- **`gspec typing RESULT.tsv [RESULT2.tsv ...]` — designation from screen results (the
+  rightsholder's two-stage CLI design).** Stage 1: `gspec screen -o result.tsv --db NAME`
+  detects genes; stage 2: `gspec typing result.tsv` reads the gspec/abricate screen table
   (TSV or auto-detected CSV, several tables merge by their FILE column), resolves NAME from
   the rows' shared `DATABASE` column under `--datadir` (bundled databases still materialize
   on first use), folds every `(FILE, GENE)` to its best row by `(%IDENTITY, %COVERAGE)`
@@ -959,27 +874,27 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   existing typing engine over each FILE's genes. Output: default TSV with columns `FILE`,
   `SCHEME`, `PHENOTYPE`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES` (ambiguous calls
   render `-` and carry the candidate pair in NOTES; streamed per input file), `--format
-  json` as the new versioned **`gapit.typing_result/1`** document (`{schema, tool,
+  json` as the new versioned **`gspec.typing_result/1`** document (`{schema, tool,
   created_at, source, db, files[].phenotypes}` — full score breakdowns, introspectable via
-  `gapit schema typing_result`, also registered in the MCP `schema` tool), and
+  `gspec schema typing_result`, also registered in the MCP `schema` tool), and
   `--format md` (frontmatter + the same seven-column table); `-o FILE`/`-q` behave as
   everywhere. Typed errors: mixed `DATABASE` values `DATABASE_MISMATCH`, a table with no
   data rows `TYPING_NO_DATA` (a screened-no-hits file has no rows — the database is only
   knowable from them), a database without a `typing.json` `TYPING_NO_SCHEME`, and a cluster
-  database `TYPING_CLUSTER_DB` (its typing is integrated in `gapit screen`). Equivalence is
+  database `TYPING_CLUSTER_DB` (its typing is integrated in `gspec screen`). Equivalence is
   locked end to end: the DEC matrix, serotyping fixtures, and the bundled `eco_dec`
   assert the command's calls equal the calls the inline engine produced before the move,
   with new goldens (`typing_markers.*`, `typing_serotyping.tsv`, `eco_dec_typing.tsv`).
-  The table also arrives on stdin: `gapit screen 1.fna --db NAME | gapit typing` types the
+  The table also arrives on stdin: `gspec screen 1.fna --db NAME | gspec typing` types the
   piped output with no file arguments (stdin must not be a terminal — a bare invocation at
-  a terminal still prints help), the explicit `gapit typing -` marker reads stdin even
+  a terminal still prints help), the explicit `gspec typing -` marker reads stdin even
   under a terminal (until EOF), mixing `-` with file arguments is a usage error (v1:
   either stdin or files), a piped table's JSON `source` renders as `["-"]`, and an empty
   pipe is the usual `TYPING_NO_DATA` naming `-`. The three delivery forms (file, `-`,
   pipe) are locked byte-identical.
 - **Short single-dash aliases for every CLI option (rightsholder UX directive).** Each option
   on every command now pairs a short form with its long form — `--help`/`-h` style, e.g.
-  `gapit screen contigs.fa -d ncbi -f json` for `--db ncbi --format json`. Letters follow the
+  `gspec screen contigs.fa -d ncbi -f json` for `--db ncbi --format json`. Letters follow the
   first-letter convention with uppercase on collision (`--db`/`-d` vs `--datadir`/`-D`;
   `--minid`/`-i` vs `--min-identity`/`-I`), mnemonics where the first letter is taken
   (`--min-gene-cov`/`-g`, `--read-type`/`-x`, `--r1`/`-1`), and `-v` for `--debug` (verbose).
@@ -987,14 +902,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the typer-managed completion flags are untouched. Long forms are unchanged and remain the
   documented canonical spelling; a regression test walks the built command tree proving every
   option has a unique per-command short and byte-compares short vs long invocations.
-- **`gapit screen --output PATH` writes the report to a file (all engines, including
+- **`gspec screen --output PATH` writes the report to a file (all engines, including
   reads mode).** The file opens on the first output byte — truncating any existing file
   (v1 overwrite semantics, never append) — every streamed chunk is flushed, and stdout
   then carries no data (stderr diagnostics unchanged). An in-batch failure on file *k*
   leaves files 1..*k-1*'s already-streamed output persisted in the file (or printed, on
   stdout) before the typed error envelope and documented exit code; a run failing before
   any output (usage/dependency/db errors) creates no file.
-- **Per-file streaming emission for tsv/csv.** `gapit screen` (blastn gene path and
+- **Per-file streaming emission for tsv/csv.** `gspec screen` (blastn gene path and
   cluster path) now emits results in input order as each file completes instead of
   buffering everything until the end: the TSV/CSV header prints once screening starts and
   each file's rows print the moment its file finishes — head-of-line under `--jobs N > 1`
@@ -1008,8 +923,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Bundled databases — four audited provider snapshots join `eco_dec` in the wheel
   (five bundles total).** `ncbi` (8373 records, public domain), `resfinder` (3206,
   Apache-2.0), `ecoh` (597, BSD-3-Clause), and `upec_expec_vf` (77, MIT) now ship under
-  `src/gapit/data/dbs/<name>/` as point-in-time snapshots produced by the `db fetch`
-  provider pipeline itself (gapit/v1 headers; snapshot date recorded in `bundled.json`
+  `src/gspec/data/dbs/<name>/` as point-in-time snapshots produced by the `db fetch`
+  provider pipeline itself (gspec/v1 headers; snapshot date recorded in `bundled.json`
   as `snapshotted`, the metadata model's new field). `db fetch <name>` remains the
   fresh-upstream update path for all four: it re-downloads the latest upstream content
   and (with `--force`) overwrites the materialized datadir copy, whose manifest then
@@ -1022,17 +937,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the four snapshots; their `sequences` are ~13 MiB uncompressed). `db outdated` stays
   manifest-based (bundled-vs-upstream staleness comparison is future work).
 - **Bundled databases — `eco_dec` ships install-time ready (zero-network first use).**
-  A new mechanism (`gapit.bundled`) lets license-clean, public-domain databases ride the
-  wheel under `src/gapit/data/dbs/<name>/` (`sequences` + optional `typing.json` +
+  A new mechanism (`gspec.bundled`) lets license-clean, public-domain databases ride the
+  wheel under `src/gspec/data/dbs/<name>/` (`sequences` + optional `typing.json` +
   `bundled.json` metadata: name, description, vendor, dbtype). The first database to use
   it is `eco_dec`: the 17-record diarrheagenic E. coli marker panel with the dual-scheme
-  `gapit.typing/2` designation (gb4789_6 + risk_monitoring) — after the 2026-10 provenance
+  `gspec.typing/2` designation (gb4789_6 + risk_monitoring) — after the 2026-10 provenance
   audit re-sourced all records to NCBI/DDBJ primary submissions. When `--db` names a
   bundled database that is absent from the datadir, the screen path materializes it first
   (one quiet-respecting stderr note, then the standard gene-build pipeline: records.jsonl,
-  gapit/v1 sequences, BLAST index, typing copy, manifest stamped with the additive
+  gspec/v1 sequences, BLAST index, typing copy, manifest stamped with the additive
   `source: "bundled"` field); a completely missing datadir is bootstrapped on this path
-  only. `gapit setupdb` materializes every bundled database alongside indexing; both paths
+  only. `gspec setupdb` materializes every bundled database alongside indexing; both paths
   are idempotent (no-op once the manifest exists). `db list` gains a bundled section
   between the registry rows and local extras on all four surfaces (TSV, rich table,
   `--json`, MCP `db_list`): STATUS `bundled` before materialization, `installed (N)`
@@ -1059,10 +974,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `gene_dec_pic_astA`) — and hybrid severity ties (stx2a+escV+aggR → EHEC with EAEC at
   1.0 as runner_up). No output-schema, TSV, or parity changes.
 -   **typing/2 cycle complete — the scheme cookbook (stage 3)**, consolidating the typing/2
-  story: stage 1 promoted the typing document to `gapit.typing/2` named multi-scheme
+  story: stage 1 promoted the typing document to `gspec.typing/2` named multi-scheme
   documents (a `/1` document degrades to one anonymous `default` scheme; gene-kind builds
-  gained `--typing`, one call per scheme — first keyed into gapit.report/1's phenotypes
-  object, later moved to the `gapit typing` command), stage 2 added the six rule/scheme
+  gained `--typing`, one call per scheme — first keyed into gspec.report/1's phenotypes
+  object, later moved to the `gspec typing` command), stage 2 added the six rule/scheme
   primitives (entry below), and stage 3 proves the framework encodes real designation
   schemes: six researched schemes as validated example documents with synthetic marker
   fixtures in `tests/data/typing/schemes/`, each self-checked end to end by the new
@@ -1097,31 +1012,31 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   composition carrying that ingredient's variants), and rule-level `notes` surfaced
   verbatim on winning phenotype calls. All new fields validate (`TYPING_MALFORMED`,
   unknown gene references `TYPING_UNKNOWN_GENE`); rule models split into
-  `gapit.typing_rules` and the decision layer into `gapit.typing_decide` at the 250-LOC
+  `gspec.typing_rules` and the decision layer into `gspec.typing_decide` at the 250-LOC
   ceiling.
-- `gapit db list` renders a styled rich table (title "Databases"; cyan Provider, status-tinted
+- `gspec db list` renders a styled rich table (title "Databases"; cyan Provider, status-tinted
   Status, yellow DBTYPE columns) when stdout is an interactive terminal. Piped or redirected
   output keeps the byte-identical TSV, and `--json` is unchanged.
-- Provider license metadata surfaced in `gapit db list --json` (`license` per provider when
+- Provider license metadata surfaced in `gspec db list --json` (`license` per provider when
   pinned) and stamped into the build manifest (card, vfdb, ecoli_vf, kaptive).
-- `vendor` field in `gapit.dblist/1` entries: the upstream maintainer organisation behind
+- `vendor` field in `gspec.dblist/1` entries: the upstream maintainer organisation behind
   every provider (NCBI, DTU CGE, Kaptive (klebgenomics), ...). Additive; `name` still
   carries the database name passed to `--db`.
 
 ### Changed
 
 - Uniform help-on-bare: commands that require input now print their full help when
-  invoked with no arguments at all — `gapit screen`, `summary`, `schema`, `db`,
+  invoked with no arguments at all — `gspec screen`, `summary`, `schema`, `db`,
   `db fetch`, `db install`, `db build`, `db search` (typer `no_args_is_help`). The
   help exits 2, the same code the bare root app has always used under click's
   no-args-is-help semantics (recorded reality; the pre-change bare `screen`/`summary`
-  also exited 2, but with a `gapit.error/1` envelope instead of help, and bare
+  also exited 2, but with a `gspec.error/1` envelope instead of help, and bare
   `schema`/`db install`/`db build`/`db search` raised click missing-argument errors).
   Invocations with flags present but input missing keep their typed usage-error
   envelopes (exit 2). Commands valid with no arguments (`mcp`, `setupdb`, `db list`,
   `db outdated`) are unchanged. Breaking for `db fetch`: an omitted NAME no longer
   installs the default set — the default-set download is now explicit
-  (`gapit db fetch all`, same DEFAULT_DBS order and receipts; bare fetch prints help,
+  (`gspec db fetch all`, same DEFAULT_DBS order and receipts; bare fetch prints help,
   and `db fetch --flags` without a NAME is a typed usage error), because a bare
   invocation silently starting a multi-database download was a footgun. The MCP
   `db_fetch` tool aligns: `name` is required and accepts the literal `all`. Docs
@@ -1129,22 +1044,22 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Terminology sweep after the NAME/PROVIDER column split: user-facing text now reserves
   PROVIDER for the upstream maintainer organisation and consistently calls the `--db`
-  value the database NAME. `gapit db fetch` help reads "Fetch and build database(s)"
-  with a "Database name" `[NAME]` argument help, `gapit db list` help reads "List known
+  value the database NAME. `gspec db fetch` help reads "Fetch and build database(s)"
+  with a "Database name" `[NAME]` argument help, `gspec db list` help reads "List known
   databases (NAME, upstream PROVIDER) and their installed state", the `db` group help
   says "database fetch" (was "provider fetch"), `db install` help says "no database
   names" (was "no provider IDs"), and the MCP `db_fetch`/`db_list` tool descriptions use
-  database-name phrasing. The unknown-name error from `gapit db fetch` / the `db_fetch`
+  database-name phrasing. The unknown-name error from `gspec db fetch` / the `db_fetch`
   tool now reads `unknown database: NAME (available: ...)` with context key `db` (was
   `unknown provider: ...` with context key `provider`); the error CODE stays `USAGE_ERROR`.
   Docs updated in step (EN + zh). No flags, output schemas, exit codes, or internal
-  identifiers changed; the `gapit.dblist/1` `providers` array key is untouched.
+  identifiers changed; the `gspec.dblist/1` `providers` array key is untouched.
 
-- `gapit db list` TSV header is now `NAME PROVIDER STATUS DBTYPE DESCRIPTION`: the old
+- `gspec db list` TSV header is now `NAME PROVIDER STATUS DBTYPE DESCRIPTION`: the old
   PROVIDER column actually held the database name users pass to `--db`, so it is renamed
   NAME, and a new PROVIDER column names the upstream maintainer organisation (the `vendor`
   above). Breaking for TSV consumers (header change, 4 → 5 columns); the rich table gained
-  the same NAME/PROVIDER split and `gapit.dblist/1` `name` is unchanged.
+  the same NAME/PROVIDER split and `gspec.dblist/1` `name` is unchanged.
 
 - card and vfdb unbundled to download-on-fetch providers (license compliance: their
   non-commercial upstream terms — McMaster's for CARD, CC BY-NC for VFDB — are incompatible
@@ -1167,7 +1082,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Removed
 
-- `gapit db fetch --from-source` flag (meaningless now that no bundled snapshots exist:
+- `gspec db fetch --from-source` flag (meaningless now that no bundled snapshots exist:
   every fetch downloads from upstream).
 
 ### Fixed
@@ -1184,21 +1099,21 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **Gene-cluster databases and cluster screening** (stages 1–3; the blastn gene path and
   all existing outputs are untouched — parity stays byte-identical):
-  - `gapit db build NAME input.gbk|input.gff3` detects the input kind by suffix and builds
-    a `kind: cluster` database — locus FASTA `sequences`, `gapit.features/1` feature table
+  - `gspec db build NAME input.gbk|input.gff3` detects the input kind by suffix and builds
+    a `kind: cluster` database — locus FASTA `sequences`, `gspec.features/1` feature table
     (`features.json`), makeblastdb index, manifest `kind: cluster` — with `--kind
     gene|cluster` to override (usage error on contradiction). New parsers (no Biopython):
     GenBank FEATURES/ORIGIN (Bakta/modern and kaptive-style source-note labels) and GFF3
     (embedded `##FASTA` or sidecar); compound `join()` CDS locations are rejected with a
     typed error.
-  - `gapit screen --db <cluster db>` dispatches to the minimap2 `asm20` cluster engine:
+  - `gspec screen --db <cluster db>` dispatches to the minimap2 `asm20` cluster engine:
     per-gene present/partial/absent verdicts (`--min-gene-cov`/`--min-gene-id`, default
     90/90), cs-based union coverage/identity, cross-contig fragmentation resilience, and a
     best-locus call above `--min-cluster-cov` (default 96). Output is the new
-    `gapit.cluster/1` document (json), the cluster TSV/CSV (one row per file), or
+    `gspec.cluster/1` document (json), the cluster TSV/CSV (one row per file), or
     Markdown; kind-mismatched flags are usage errors; reads mode rejects cluster
     databases. The MCP `screen` tool gains `minGeneCov`/`minGeneId`/`minClusterCov`.
-  - `--typing FILE` installs a validated `gapit.typing/1` declarative scoring spec into a
+  - `--typing FILE` installs a validated `gspec.typing/1` declarative scoring spec into a
     cluster db (`typing.json`). Screening a typed database annotates every best call with
     a `phenotype` and an additive `phenotype_detail` breakdown (score, confidence,
     per-rule components, runner-up, ambiguity pair); the TSV gains a PHENOTYPE column
@@ -1216,10 +1131,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     against a labels TSV and prints the per-expected-phenotype score distribution, the
     called×expected agreement matrix, and the divergence list (the v1 loop for future
     learned_linear training).
-- `gapit screen --merge-fragments` (blastn contig mode only; off by default): merge gene
+- `gspec screen --merge-fragments` (blastn contig mode only; off by default): merge gene
   fragments split across contig boundaries into one reported hit when their union subject
   coverage reaches `--mincov`. Merged rows carry additive optional `merged` and `fragments`
-  fields in `gapit.report/1` JSON plus a Markdown detail line; the default path (and all
+  fields in `gspec.report/1` JSON plus a Markdown detail line; the default path (and all
   existing output) is untouched. The MCP `screen` tool gains the matching `mergeFragments`
   boolean parameter.
 
@@ -1234,9 +1149,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Removed
 
-- `gapit list` command and the `gapit.list/1` schema (breaking; rightsholder decision to
-  drop abricate `--list` strict parity for this surface). `gapit db list` / `gapit.dblist/1`
-  is the single listing surface; `gapit schema` now introspects six documents.
+- `gspec list` command and the `gspec.list/1` schema (breaking; rightsholder decision to
+  drop abricate `--list` strict parity for this surface). `gspec db list` / `gspec.dblist/1`
+  is the single listing surface; `gspec schema` now introspects six documents.
 
 ## [0.2.2] - 2026-09-24
 
@@ -1255,11 +1170,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- `gapit db list` now also lists databases installed into the datadir outside the provider
+- `gspec db list` now also lists databases installed into the datadir outside the provider
   catalog: `db build` products (gene and cluster kinds) and manifest-less directories
   (abricate-style or `db install` bytes) render after the registry entries, sorted by name,
   with PROVIDER `local`, the record count from the manifest (FASTA count when absent), and
-  DBTYPE from the manifest / BLAST index suffix / letter heuristic. The gapit.dblist/1 JSON
+  DBTYPE from the manifest / BLAST index suffix / letter heuristic. The gspec.dblist/1 JSON
   gains them inside `providers` behind the additive `source: "local"` field — registry
   entries simply lack the field, so pre-existing output is byte-identical; TSV, rich table,
   and the MCP `db_list` tool share the same rows.
@@ -1285,43 +1200,43 @@ hardening).
 - Screening core: `any2fasta` to `blastn` pipeline with SPEC-exact hit processing, and
   byte-compatible TSV against abricate 1.4.0 (PLAN Phases 1-3, 2026-09-15). Parity is
   checked on a genome corpus with `pixi run -e parity parity` (6/6 byte-identical).
-- Agent-facing outputs: `--format json|md` with versioned schemas (`gapit.report/1`,
-  `gapit.reads/1`, `gapit.summary/1`, `gapit.list/1`, `gapit.version/1`), the
-  `gapit.error/1` stderr envelope with documented exit codes, and introspection via
-  `gapit schema report|reads|summary|list|error|version` (2026-09-16).
-- FASTQ reads mode via minimap2: `gapit screen --r1/--r2 --read-type sr|map-ont|map-hifi`;
+- Agent-facing outputs: `--format json|md` with versioned schemas (`gspec.report/1`,
+  `gspec.reads/1`, `gspec.summary/1`, `gspec.list/1`, `gspec.version/1`), the
+  `gspec.error/1` stderr envelope with documented exit codes, and introspection via
+  `gspec schema report|reads|summary|list|error|version` (2026-09-16).
+- FASTQ reads mode via minimap2: `gspec screen --r1/--r2 --read-type sr|map-ont|map-hifi`;
   presence is called on alignment breadth (2026-09-16).
-- Summary matrix mode: `gapit summary` emits TSV/CSV/JSON/MD; byte parity with
+- Summary matrix mode: `gspec summary` emits TSV/CSV/JSON/MD; byte parity with
   `abricate --summary` via `pixi run -e parity summary-parity` (2026-09-17).
-- `gapit db install`: checksum-verified (SHA256), atomic local-file installation
+- `gspec db install`: checksum-verified (SHA256), atomic local-file installation
   (2026-09-17).
-- Native `gapit/v1` database format: tagged-header codec, `records.jsonl` truth store
-  with `gapit.manifest/1` provenance, deterministic build pipeline with self-check, and
+- Native `gspec/v1` database format: tagged-header codec, `records.jsonl` truth store
+  with `gspec.manifest/1` provenance, deterministic build pipeline with self-check, and
   `.mmi` BLAST index build with version-gated reuse (2026-09-18).
 - 12 database providers (ncbi, card, resfinder, argannot, plasmidfinder, megares, ecoh,
   vfdb, ecoli_vf, bacmet2, victors, upec_expec_vf) with offline-tested transforms
   (2026-09-18).
-- Bundled card and vfdb snapshots: a bare `gapit db fetch` installs the default set with
+- Bundled card and vfdb snapshots: a bare `gspec db fetch` installs the default set with
   zero network; `--from-source` forces upstream download (2026-09-18).
 - CLI hardening: shell completions, `--debug` argv echo on stderr, and `--jobs` parallel
   screening across inputs with input-order stdout (2026-09-18).
 - CI: gates matrix (lint, fmt, typecheck, test on Python 3.11 / 3.13 / 3.14) plus a
   parity job that byte-diffs against real abricate (2026-09-18).
-- MCP stdio server: `gapit mcp` subcommand and `gapit-mcp` console script, hand-rolled
+- MCP stdio server: `gspec mcp` subcommand and `gspec-mcp` console script, hand-rolled
   JSON-RPC 2.0 with zero new dependencies; read-only tools `screen`, `summary`,
   `schema`, `db_list` (2026-09-18).
 - Conda recipe (`recipe/meta.yaml`) for PyPI/bioconda packaging (2026-09-18).
-- Custom database construction: `gapit db build NAME FASTA` builds a screening-ready native
-  database from plain, abricate `~~~`, or `gapit|` FASTA (auto-detected), with optional
+- Custom database construction: `gspec db build NAME FASTA` builds a screening-ready native
+  database from plain, abricate `~~~`, or `gspec|` FASTA (auto-detected), with optional
   `--tsv` metadata (accession, function classes) and `--dbtype` override; guide with worked
   examples in `docs/custom-db.md` (2026-09-19).
-- `--aligner blastn|minimap2` engine selector on `gapit screen`: defaults follow the input
+- `--aligner blastn|minimap2` engine selector on `gspec screen`: defaults follow the input
   (blastn for contig files, minimap2 for `--r1`/`--r2` reads); `--aligner minimap2` screens
   positional assembly FASTA through the minimap2 engine, `--aligner blastn` with `--r1`/`--r2`
   is a usage error (2026-09-19).
-- `gapit db outdated`: staleness report over installed databases (age vs `--days`, newer
-  bundled snapshot) as a TSV table or `gapit.dboutdated/1` JSON document (2026-09-20).
-- `gapit db search TERM`: case-insensitive gene/accession/function/product lookup across
+- `gspec db outdated`: staleness report over installed databases (age vs `--days`, newer
+  bundled snapshot) as a TSV table or `gspec.dboutdated/1` JSON document (2026-09-20).
+- `gspec db search TERM`: case-insensitive gene/accession/function/product lookup across
   installed databases' `records.jsonl`, with `--field`, `--exact`, `--db`, `--limit` and
   JSONL output (2026-09-20).
 - MCP database tools `db_fetch`, `db_build`, `db_search`, `db_outdated`: the MCP server now
@@ -1331,18 +1246,18 @@ hardening).
 - CI snapshot refresh: monthly scheduled workflow (`.github/workflows/snapshot-refresh.yml`)
   re-fetching card and vfdb from upstream, regenerating the bundled tars only when the
   records changed, and opening a review PR (2026-09-20).
-- Reads-mode opt-in alignment filtering: `gapit screen --min-identity/--min-mapq` (reads
+- Reads-mode opt-in alignment filtering: `gspec screen --min-identity/--min-mapq` (reads
   engine only) drops PAF alignments below the thresholds before aggregation and emits the new
-  `gapit.reads/2` document (params gain both thresholds; gene entries gain
+  `gspec.reads/2` document (params gain both thresholds; gene entries gain
   `mean_identity_pct`, the alignment-length-weighted mean identity; introspectable via
-  `gapit schema reads2`). Both flags off keeps `gapit.reads/1` byte-identical, and the
+  `gspec schema reads2`). Both flags off keeps `gspec.reads/1` byte-identical, and the
   identity floor fixes the documented family-splitting over-calls on homologous genes
   (2026-09-20).
-- MCP reads tools: new `screen_reads` tool (FASTQ lanes via minimap2 → `gapit.reads/1`,
-  `min_identity`/`min_mapq` > 0 → `gapit.reads/2`) and new `screen` arguments
+- MCP reads tools: new `screen_reads` tool (FASTQ lanes via minimap2 → `gspec.reads/1`,
+  `min_identity`/`min_mapq` > 0 → `gspec.reads/2`) and new `screen` arguments
   `aligner`/`min_breadth`/`min_identity`/`min_mapq` (`aligner minimap2` = fast assembly
   survey). Both delegate to the shared reads use-cases with `quiet` stderr; additive
-  `gapit.mcp` contract — nine tools, the other eight wire-identical, no output-schema
+  `gspec.mcp` contract — nine tools, the other eight wire-identical, no output-schema
   version bump (2026-09-22).
 
 ### Changed
@@ -1352,20 +1267,20 @@ hardening).
   converted FASTA on stdin. Parsed-record equivalence with the binary is differentially tested
   with the parity env on PATH (abricate provides any2fasta transitively), and `.fa` parity
   remains byte-identical (2026-09-21).
-- Screening and reads paths route `gapit/v1` tagged headers to the native codec; legacy
+- Screening and reads paths route `gspec/v1` tagged headers to the native codec; legacy
   abricate `~~~` headers keep the frozen parser, so abricate-built datadirs screen
-  identically. The reverse does not hold: gapit-built databases are unreadable by
+  identically. The reverse does not hold: gspec-built databases are unreadable by
   abricate (accepted trade-off).
-- A bare `gapit db fetch` installs the bundled default set (card, vfdb) instead of
+- A bare `gspec db fetch` installs the bundled default set (card, vfdb) instead of
   downloading; `--from-source` restores the upstream fetch path.
-- `gapit setupdb` honors the `gapit.manifest/1` dbtype on reindex (manifest-less abricate
+- `gspec setupdb` honors the `gspec.manifest/1` dbtype on reindex (manifest-less abricate
   dirs keep the mol_type heuristic), and reads/minimap2-assembly screening now rejects the
   blastn-only flags `--fofn`, `--noheader`, `--nopath`, `--jobs N>1` with usage errors
   (exit 2) instead of silently ignoring them (2026-09-22).
 
 ### Removed
 
-- `--csv` flag on `gapit screen`; use `--format csv` instead (breaking: the flag is now
+- `--csv` flag on `gspec screen`; use `--format csv` instead (breaking: the flag is now
   rejected as an unknown option, exit 2) (2026-09-19).
 
 ### Fixed

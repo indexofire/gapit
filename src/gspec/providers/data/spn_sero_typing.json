@@ -1,5 +1,5 @@
 {
- "schema": "gapit.typing/3",
+ "schema": "gspec.typing/3",
  "schemes": [
   {
    "name": "cps_serotype",

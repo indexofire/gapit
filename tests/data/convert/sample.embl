@@ -1,6 +1,6 @@
 ID   FAKECTG01; SV 1; linear; DNA; STD; ; 79 BP.
 XX
-DE   Synthetic gapit fixture contig (fake gene FAKEGENE01).
+DE   Synthetic gspec fixture contig (fake gene FAKEGENE01).
 XX
 AC   FAKE00001;
 XX
@@ -12,7 +12,7 @@ SQ   Sequence 79 BP; 15 A; 20 C; 24 G; 20 T; 0 other;
 //
 ID   FAKECTG02; SV 1; linear; DNA; STD; ; 60 BP.
 XX
-DE   Synthetic gapit fixture contig (fake gene FAKEGENE02).
+DE   Synthetic gspec fixture contig (fake gene FAKEGENE02).
 XX
 SQ   Sequence 60 BP; 0 A; 0 C; 60 G; 0 T; 0 other;
      cccccccccc cccccccccc cccccccccc cccccccccc cccccccccc     50

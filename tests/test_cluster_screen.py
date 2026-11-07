@@ -546,7 +546,7 @@ class TestJobs:
 
 
 class TestSchema:
-    def test_gapit_schema_cluster(self) -> None:
+    def test_gspec_schema_cluster(self) -> None:
         """Given the schema command, When asked for cluster, Then the
         gspec.cluster/1 JSON Schema prints with the reserved phenotype."""
         result = runner.invoke(app, ["schema", "cluster"])

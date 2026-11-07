@@ -13,7 +13,7 @@ designation moved to the command.
 
 from collections.abc import Iterable, Sequence
 from datetime import datetime
-from typing import Annotated, Literal, NamedTuple
+from typing import Literal, NamedTuple
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -21,7 +21,6 @@ from gspec import __version__
 from gspec.formats.csvutil import delimited_line
 from gspec.formats.json import ToolDocument, utc_timestamp
 from gspec.formats.md import md_cell, yaml_scalar
-from gspec.schema_ids import Canonical
 from gspec.typing_results import PhenotypeScore, SchemeCall
 
 COLUMNS = ("FILE", "SCHEME", "PHENOTYPE", "GENES", "CONFIDENCE", "SCORE", "RUNNER_UP", "NOTES")
@@ -51,7 +50,7 @@ class TypingResultDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.typing_result/1"], Canonical] = Field(
+    schema_name: Literal["gspec.typing_result/1"] = Field(
         default="gspec.typing_result/1", alias="schema"
     )
     tool: ToolDocument = ToolDocument()

@@ -46,8 +46,8 @@ def test_cli_version_json() -> None:
 
 
 def test_both_command_names_ship() -> None:
-    """Given the built metadata, When read, Then gspec and the pre-0.8 gapit
-    command are both declared — a rename must not break existing pipelines."""
+    """Given the built metadata, When read, Then the gspec command and the
+    MCP entry point are declared — a rename must not break existing pipelines."""
     pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
     document = tomllib.loads(pyproject.read_text(encoding="utf-8"))
     scripts = document["project"]["scripts"]

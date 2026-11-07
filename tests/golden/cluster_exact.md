@@ -1,6 +1,6 @@
 ---
 schema: gspec.cluster/1
-tool: gspec 0.9.0
+tool: gspec 0.10.0
 created_at: 2026-09-30T12:00:00Z
 db: cps
 preset: asm20

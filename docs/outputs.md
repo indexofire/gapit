@@ -141,7 +141,7 @@ Real document, same run as the TSV above:
   "schema": "gspec.report/1",
   "tool": {
     "name": "gspec",
-    "version": "0.9.0"
+    "version": "0.10.0"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -233,7 +233,7 @@ row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
 ```json
 {
   "schema": "gspec.typing_result/1",
-  "tool": {"name": "gspec", "version": "0.9.0"},
+  "tool": {"name": "gspec", "version": "0.10.0"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
   "db": "eco_dec",
@@ -457,7 +457,7 @@ summarizing two report files, one with a `tetA` hit and one with none:
   "schema": "gspec.summary/1",
   "tool": {
     "name": "gspec",
-    "version": "0.9.0"
+    "version": "0.10.0"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -581,7 +581,7 @@ An agent can discover the whole contract from the binary alone.
 
 ```console
 $ gspec --version --json
-{"schema":"gspec.version/1","name":"gspec","version":"0.9.0"}
+{"schema":"gspec.version/1","name":"gspec","version":"0.10.0"}
 ```
 
 `gspec schema <name>` prints the JSON Schema for each document. The eighteen names:

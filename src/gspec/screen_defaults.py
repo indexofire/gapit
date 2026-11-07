@@ -44,7 +44,6 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from gspec import config
 from gspec.db import Database
 from gspec.errors import DatabaseError, InputError
-from gspec.schema_ids import Canonical
 
 SCREEN_FILENAME = "screen.json"
 
@@ -76,9 +75,7 @@ class ScreenDefaults(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.screen/1"], Canonical] = Field(
-        default="gspec.screen/1", alias="schema"
-    )
+    schema_name: Literal["gspec.screen/1"] = Field(default="gspec.screen/1", alias="schema")
     reads: ReadsScreenDefaults = Field(default_factory=ReadsScreenDefaults)
     contigs: ContigScreenDefaults = Field(default_factory=ContigScreenDefaults)
 

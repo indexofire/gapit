@@ -33,7 +33,6 @@ from gspec.dbcodec import decode_seqid
 from gspec.errors import DatabaseError, InputError
 from gspec.hits import Hit
 from gspec.paf import PafRecord, alignment_identity
-from gspec.schema_ids import Canonical
 
 FLOORS_FILENAME = "floors.json"
 
@@ -47,9 +46,7 @@ class GeneFloors(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.floors/1"], Canonical] = Field(
-        default="gspec.floors/1", alias="schema"
-    )
+    schema_name: Literal["gspec.floors/1"] = Field(default="gspec.floors/1", alias="schema")
     default: _Pct | None = None
     genes: dict[str, _Pct] = Field(default_factory=dict)
 

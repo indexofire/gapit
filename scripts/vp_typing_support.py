@@ -14,7 +14,7 @@ and the development matrix's HARD-flag reader.
   /locus_tag), so names are paired onto CDS by locus_tag;
 - the calibration harness (scripts/cluster_calibration.py) refuses
   multi-scheme databases, so per-scheme tuning runs over SPLIT databases:
-  one single-scheme gapit.typing/2 document per family, re-keyed on
+  one single-scheme gspec.typing/2 document per family, re-keyed on
   PRIMARY gene ids (an unsplit build never resolves ids).
 """
 

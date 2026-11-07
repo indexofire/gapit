@@ -15,7 +15,7 @@ Two document versions parse:
   ``ambiguity_margin``/``fallback``); the gene path evaluates EVERY scheme
   and keys the report's phenotype calls by name. Scheme names are
   ``[a-z0-9_]+`` and unique within the document.
-- ``gapit.typing/1`` (legacy, cluster dbs) — the flat rules/cutoff/margin/
+- ``gspec.typing/1`` (legacy, cluster dbs) — the flat rules/cutoff/margin/
   fallback shape. It loads as ONE anonymous scheme named ``default``, so
   existing typed cluster databases keep their byte-identical behavior.
 
@@ -39,7 +39,7 @@ precedent).
 import re
 from pathlib import Path
 from string import Formatter
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import (
     BaseModel,
@@ -52,10 +52,9 @@ from pydantic import (
 
 from gspec.errors import DatabaseError, InputError
 from gspec.gbfeatures import FeaturesDocument
-from gspec.schema_ids import Canonical, canonical_schema_id
 from gspec.typing_rules import TypingRule, check_rule_references
 
-# The scheme name a legacy gapit.typing/1 document degrades to (one
+# The scheme name a legacy gspec.typing/1 document degrades to (one
 # anonymous scheme; report/1 phenotype keys on it for v1-typed gene dbs).
 V1_SCHEME_NAME = "default"
 
@@ -112,14 +111,12 @@ class TypingScheme(BaseModel, frozen=True):
 
 
 class TypingDocumentV1(BaseModel, frozen=True):
-    """gapit.typing/1 — the legacy flat document (one anonymous scheme);
+    """gspec.typing/1 — the legacy flat document (one anonymous scheme);
     parsed then degraded via :meth:`as_document`."""
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.typing/1"], Canonical] = Field(
-        default="gspec.typing/1", alias="schema"
-    )
+    schema_name: Literal["gspec.typing/1"] = Field(default="gspec.typing/1", alias="schema")
     rules: tuple[TypingRule, ...] = Field(min_length=1)
     cutoff: float = Field(ge=0.0, le=1.0)
     ambiguity_margin: float = Field(ge=0.0)
@@ -149,7 +146,7 @@ class TypingDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.typing/2", "gspec.typing/3"], Canonical] = Field(
+    schema_name: Literal["gspec.typing/2", "gspec.typing/3"] = Field(
         default="gspec.typing/2", alias="schema"
     )
     schemes: tuple[TypingScheme, ...] = Field(min_length=1)
@@ -304,7 +301,7 @@ def read_typing_document(path: Path) -> TypingDocument:
         )
     data = _parse_json(_read_text(path), path)
     try:
-        if canonical_schema_id(data.get("schema")) == "gspec.typing/1":
+        if data.get("schema") == "gspec.typing/1":
             return _v1_document_adapter.validate_python(data).as_document()
         return _document_adapter.validate_python(data)
     except ValidationError as exc:
@@ -320,8 +317,7 @@ def typing_schema_of(path: Path) -> str:
     a build records in its manifest's ``typing_schema``. Assumes
     :func:`read_typing_document` accepted the file. A pre-0.9
     ``gspec.typing/*`` tag is canonicalised to ``gspec.typing/*``."""
-    raw_tag = _parse_json(_read_text(path), path).get("schema")
-    tag = canonical_schema_id(raw_tag)
+    tag = _parse_json(_read_text(path), path).get("schema")
     known_tags = ("gspec.typing/1", "gspec.typing/2", "gspec.typing/3")
     if not isinstance(tag, str) or tag not in known_tags:
         raise DatabaseError(

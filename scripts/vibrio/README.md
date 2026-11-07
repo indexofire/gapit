@@ -20,7 +20,7 @@ VPaI-10 is the RIMD T6SS region VP1387-VP1420; see the `bundled.json` caveat.
 python scripts/vibrio/build_vpa_pai.py \
   --rimd GCF_000196095.1_genomic.gbff \
   --aq3810 GCA_000154045.1_genomic.gbff \
-  --dest src/gapit/data/dbs/vpa_pai
+  --dest src/gspec/data/dbs/vpa_pai
 ```
 
 ## `vch_vf` (gene)
@@ -37,7 +37,7 @@ python scripts/vibrio/build_vpa_pai.py \
 python scripts/vibrio/build_vch_vf.py \
   --ctxphi NC_015209.1_cds.fna --n16961 NC_002505.1_cds.fna \
   --o395 NC_012582.1_cds.fna --o139 NZ_NGQY01000008.1_cds.fna \
-  --dest src/gapit/data/dbs/vch_vf
+  --dest src/gspec/data/dbs/vch_vf
 ```
 
 Both builders emit only public-domain INSDC content; no GPL or non-commercial

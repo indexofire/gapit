@@ -3,7 +3,7 @@
 import pytest
 
 from gspec.db import parse_db_header
-from gspec.dbcodec import decode_seqid, encode_seqid, is_gapit_header
+from gspec.dbcodec import decode_seqid, encode_seqid, is_gspec_header
 from gspec.errors import DatabaseError
 
 
@@ -71,7 +71,7 @@ def test_encode_is_total_for_weird_input() -> None:
     encoded, Then it never raises and weird values round-trip exactly."""
     weird = "β-lacta\tmase\n100%|raw=|=;\r\n🌊"
     seqid = encode_seqid("", weird, weird, [weird, weird])
-    assert is_gapit_header(seqid)
+    assert is_gspec_header(seqid)
     assert decode_seqid(seqid, default_db="vfdb").gene == weird
     assert decode_seqid(seqid, default_db="vfdb").function == f"{weird};{weird}"
     assert encode_seqid("", "", "", []) == "gspec|db=|gene=|acc=|func="
@@ -195,11 +195,11 @@ def test_decode_legacy_no_separator_delegates() -> None:
     assert header.function == ""
 
 
-def test_is_gapit_header_sniff() -> None:
+def test_is_gspec_header_sniff() -> None:
     """Given various seqids, When sniffed, Then only a literal 'gspec|' prefix
     counts as the new format."""
-    assert is_gapit_header("gspec|db=ncbi|gene=tetA")
-    assert is_gapit_header("gspec|")
-    assert not is_gapit_header("ncbi~~~tetA")
-    assert not is_gapit_header("gspec")
-    assert not is_gapit_header("xgspec|db=ncbi")
+    assert is_gspec_header("gspec|db=ncbi|gene=tetA")
+    assert is_gspec_header("gspec|")
+    assert not is_gspec_header("ncbi~~~tetA")
+    assert not is_gspec_header("gspec")
+    assert not is_gspec_header("xgspec|db=ncbi")

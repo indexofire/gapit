@@ -274,7 +274,7 @@ class _FakeResponse:
         return None
 
 
-def test_fetch_provider_sends_gapit_user_agent(
+def test_fetch_provider_sends_gspec_user_agent(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given a monkeypatched urlopen standing in for the network, When a

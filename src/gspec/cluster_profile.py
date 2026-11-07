@@ -14,12 +14,11 @@ primary-only behavior.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from gspec.errors import DatabaseError
-from gspec.schema_ids import Canonical
 
 CLUSTER_PROFILE_SCHEMA = "gspec.cluster_profile/1"
 CLUSTER_PROFILE_FILENAME = "cluster.json"
@@ -43,7 +42,7 @@ class ClusterProfile(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    schema_name: Annotated[Literal["gspec.cluster_profile/1"], Canonical] = Field(
+    schema_name: Literal["gspec.cluster_profile/1"] = Field(
         default="gspec.cluster_profile/1", alias="schema"
     )
     coverage_mode: CoverageMode = "primary"

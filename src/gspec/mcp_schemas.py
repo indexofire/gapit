@@ -131,7 +131,7 @@ TOOLS: list[dict[str, object]] = [
     _tool_entry(
         "db_build",
         "Build a custom database from a LOCAL FASTA filesystem path (plain, abricate ~~~, or"
-        " gapit| headers; .gz/.bz2 accepted). Returns a JSON receipt (db, records, dbtype,"
+        " gspec| headers; .gz/.bz2 accepted). Returns a JSON receipt (db, records, dbtype,"
         " destination).",
         dict(
             name=_STR,

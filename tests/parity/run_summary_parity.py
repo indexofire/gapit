@@ -80,7 +80,7 @@ def diff_case(
 
 
 def main() -> int:
-    abricate_bin, _gapit_bin = locate()
+    abricate_bin, _gspec_bin = locate()
     env = tool_env(abricate_bin)
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp)

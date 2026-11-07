@@ -2,14 +2,14 @@
 """Build the bundled Shigella marker panel from ShigaTyper's public-domain FASTA.
 
 This is the data-curation step, not a serotype resolver.  It rewrites the
-ShigaTyper marker names into gapit/v1 headers, emits marker metadata for the
+ShigaTyper marker names into gspec/v1 headers, emits marker metadata for the
 future profile engine, and writes the bundle manifest/screen defaults.
 
 Usage::
 
     python scripts/shigella/build_shigella_sero.py \
         /path/to/ShigellaRef5.fasta \
-        --dest src/gapit/data/dbs/shi_sero
+        --dest src/gspec/data/dbs/shi_sero
 
 The source file is ShigaTyper 2.0.5's ``ShigellaRef5.fasta`` (Public Domain).
 ShigaPass GPL content is deliberately not copied; only the ShigaTyper
@@ -119,7 +119,7 @@ def main(argv: list[str] | None = None) -> int:
     (dest / "markers.json").write_text(
         json.dumps(
             {
-                "schema": "gapit.shigella_markers/1",
+                "schema": "gspec.shigella_markers/1",
                 "source": {
                     "tool": "ShigaTyper",
                     "version": "2.0.5",
@@ -146,7 +146,7 @@ def main(argv: list[str] | None = None) -> int:
                 "snapshotted": datetime.now(UTC).strftime("%Y-%m-%d"),
                 "license": "Public Domain (ShigaTyper marker sequences)",
                 "note": (
-                    "ShigaTyper 2.0.5 ShigellaRef5 marker panel, reformatted as gapit/v1;"
+                    "ShigaTyper 2.0.5 ShigellaRef5 marker panel, reformatted as gspec/v1;"
                     " markers.json carries the O-antigen/POAC/virulence roles and"
                     " serotype.json carries the first conservative marker-set resolver."
                     " The ipaH_c control is split into two non-overlapping presence"
@@ -206,7 +206,7 @@ def main(argv: list[str] | None = None) -> int:
     (dest / "screen.json").write_text(
         json.dumps(
             {
-                "schema": "gapit.screen/1",
+                "schema": "gspec.screen/1",
                 "contigs": {"minid": 80.0, "mincov": 50.0, "merge_fragments": True},
                 "reads": {"min_breadth": 50.0, "min_identity": 80.0},
             },

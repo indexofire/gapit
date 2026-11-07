@@ -9,7 +9,7 @@ records/dbbuild/db_build_meta/fasta/dbcodec/db (docs/databases.md). The
 CLI command (:mod:`gspec.cmd_db_build`) and the MCP tool
 (:mod:`gspec.mcp_tools`) are thin callers.
 
-Header kind is detected PER RECORD (mixed files allowed): a ``gapit|``
+Header kind is detected PER RECORD (mixed files allowed): a ``gspec|``
 prefix decodes through the strict tagged codec, anything else through the
 abricate ``~~~`` rules (a plain id carries no ``~~~`` and decodes to itself).
 ``db`` is always the TARGET name and ``source_id`` keeps the original id
@@ -125,7 +125,7 @@ def _to_record(fasta: FastaRecord, name: str, default_product: str) -> Record:
 
     decode_seqid routes by header kind; the product prefers the FASTA
     description, then --description, then the gene (the provider-side
-    ``description or gene`` pattern). Malformed ``gapit|`` headers raise
+    ``description or gene`` pattern). Malformed ``gspec|`` headers raise
     their native HEADER_MALFORMED DatabaseError.
     """
     header = decode_seqid(fasta.id, default_db=name)

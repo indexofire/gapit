@@ -9,12 +9,11 @@ and ambiguity policy. The first consumer is the Shigella marker panel
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from gspec.errors import DatabaseError
-from gspec.schema_ids import Canonical
 
 SEROTYPE_FILENAME = "serotype.json"
 
@@ -87,9 +86,7 @@ class SerotypeDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.serotype/1"], Canonical] = Field(
-        default="gspec.serotype/1", alias="schema"
-    )
+    schema_name: Literal["gspec.serotype/1"] = Field(default="gspec.serotype/1", alias="schema")
     name: str
     control_gene: str | None = None
     control_coverage_floor: float = Field(default=50.0, ge=0.0, le=100.0)

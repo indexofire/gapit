@@ -10,7 +10,7 @@ callers — this module owns the behavior and imports no CLI plumbing.
 from collections.abc import Callable, Iterator, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from rich import box
@@ -29,7 +29,6 @@ from gspec.providers import REGISTRY
 from gspec.providers.cluster_common import ClusterProvider, fetch_cluster_provider
 from gspec.providers.common import Dbtype, fetch_provider
 from gspec.records import read_manifest
-from gspec.schema_ids import Canonical
 
 # `gspec db fetch -d all` installs these, in order — the two headline
 # databases (AMR + virulence). Like every provider they download on fetch:
@@ -93,9 +92,7 @@ class DatadirDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.datadir/1"], Canonical] = Field(
-        default="gspec.datadir/1", alias="schema"
-    )
+    schema_name: Literal["gspec.datadir/1"] = Field(default="gspec.datadir/1", alias="schema")
     datadir: str
     exists: bool
     source: Literal["cli", "env", "xdg", "default"]
@@ -110,9 +107,7 @@ class DbListDocument(BaseModel, frozen=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    schema_name: Annotated[Literal["gspec.dblist/1"], Canonical] = Field(
-        default="gspec.dblist/1", alias="schema"
-    )
+    schema_name: Literal["gspec.dblist/1"] = Field(default="gspec.dblist/1", alias="schema")
     providers: tuple[DbListEntry, ...]
 
 

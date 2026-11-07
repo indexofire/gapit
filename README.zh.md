@@ -8,10 +8,6 @@ containment 提供证据。AMR、毒力、血清型、抗原 locus 与自定义�
 contig 筛查输出 abricate 兼容 TSV，同时把 JSON 和 Markdown 作为一等输出。支持
 Python 3.12。
 
-> 前身为 `gapit`（≤0.8.1）。0.9 起磁盘上的契约名也统一为 `gspec.*`，但旧的
-> 数据库与归档文档仍可读取；`gapit` 兼容包（`pip install gapit`）继续提供
-> `import gapit` 与 `gapit` 命令。迁移说明见 [从 gapit 迁移](docs/migration.zh.md)。
-
 ## 安装
 
 ```bash

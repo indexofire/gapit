@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the committed vp_ok typing asset (gapit.typing/2) from the GBKs.
+"""Generate the committed vp_ok typing asset (gspec.typing/2) from the GBKs.
 
 A DEVELOPER tool, not a CLI surface: recomputes the discriminating-gene
 analysis over the vpautils OAgc + CPSgc GenBank files (nothing is hardcoded
@@ -14,7 +14,7 @@ OUT/KUT fallbacks own them. After generating, run
 the updated snapshot's unknown K loci keep their detected-locus evidence):
 
 - genes are keyed by their build-time RESOLVED ids (resolve_gene_ids,
-  exactly what a gapit.cluster/2 build runs), so key-gene references
+  exactly what a gspec.cluster/2 build runs), so key-gene references
   validate against the built features;
 - tier-1 key genes = the locus's sequence-unique genes (>=95% identity
   homology nowhere else; support module), antigen-processing genes first
@@ -31,7 +31,7 @@ vpautils reference defines 12 O groups (no OL13), so O3 stays plain O3.
 
 Usage:
     python scripts/generate_vp_typing.py OAgc.gbk CPSgc.gbk \
-        --output src/gapit/data/dbs/vp_ok/typing.json \
+        --output src/gspec/data/dbs/vp_ok/typing.json \
         --matrix scripts/vp_rules_matrix.tsv \
         [--calibration-dir DIR]
     python scripts/add_vpa_klu_rules.py
@@ -216,7 +216,7 @@ def cluster_rule(
 def build_document(
     genes: list[Gene], shared: set[str], matrix_hard: set[str]
 ) -> tuple[TypingDocument, dict[str, list[ClusterMatchRule]]]:
-    """The three-scheme gapit.typing/2 document, rules sorted by family,
+    """The three-scheme gspec.typing/2 document, rules sorted by family,
     antigen number, then variant ordinal; also the per-scheme rule lists for
     the calibration splits."""
     by_locus: dict[str, list[Gene]] = {}

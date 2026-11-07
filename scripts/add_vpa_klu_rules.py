@@ -12,8 +12,8 @@ fallback evidence and ``unknown_locus`` status are available.
 Usage::
 
     python scripts/add_vpa_klu_rules.py \
-        [src/gapit/data/dbs/vpa_ok/typing.json] \
-        [src/gapit/data/dbs/vpa_ok/features.json]
+        [src/gspec/data/dbs/vpa_ok/typing.json] \
+        [src/gspec/data/dbs/vpa_ok/features.json]
 
 The operation is idempotent: a KLU locus already covered by any K-scheme rule
 is left untouched.
@@ -36,13 +36,13 @@ def _parser() -> argparse.ArgumentParser:
         "typing",
         nargs="?",
         type=Path,
-        default=root / "src/gapit/data/dbs/vpa_ok/typing.json",
+        default=root / "src/gspec/data/dbs/vpa_ok/typing.json",
     )
     parser.add_argument(
         "features",
         nargs="?",
         type=Path,
-        default=root / "src/gapit/data/dbs/vpa_ok/features.json",
+        default=root / "src/gspec/data/dbs/vpa_ok/features.json",
     )
     return parser
 

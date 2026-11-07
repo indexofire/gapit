@@ -2,7 +2,7 @@
 """Cluster-typing calibration harness — a DEVELOPER tool, not a CLI surface.
 
 Runs the cluster screen for every labeled sample, scores the database's
-gapit.typing/1 rules, and prints three reports for tuning cutoff /
+gspec.typing/1 rules, and prints three reports for tuning cutoff /
 ambiguity_margin / rule weights (the v1 loop the future learned_linear
 training flow will consume):
 
@@ -64,7 +64,7 @@ def calibrate(
     if uses_cluster_v2(typing_document):
         raise SystemExit(
             f"error: database {db_name} holds a multi-scheme typing document"
-            " (calibration needs a single-scheme db; gapit.cluster/2 dbs are out of scope)"
+            " (calibration needs a single-scheme db; gspec.cluster/2 dbs are out of scope)"
         )
     scheme = typing_document.schemes[0]
     params = ClusterParams(db=db_name, **thresholds)
