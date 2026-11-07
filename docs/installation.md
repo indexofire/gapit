@@ -49,7 +49,7 @@ must be conda dependencies.
 ### Install
 
 ```bash
-git clone https://github.com/indexofire/gapit.git
+git clone https://github.com/indexofire/gspec.git
 cd gspec
 pixi install
 ```

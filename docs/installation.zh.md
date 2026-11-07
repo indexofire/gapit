@@ -45,7 +45,7 @@ BLAST+ 和 minimap2 没有 PyPI 发行版，所以必须作为 conda 依赖。
 ### 安装
 
 ```bash
-git clone https://github.com/indexofire/gapit.git
+git clone https://github.com/indexofire/gspec.git
 cd gspec
 pixi install
 ```

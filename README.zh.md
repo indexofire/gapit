@@ -23,7 +23,7 @@ pip install gspec
 
 ```bash
 # 从 git clone 安装（自动管理外部二进制）
-git clone https://github.com/indexofire/gapit.git
+git clone https://github.com/indexofire/gspec.git
 cd gspec
 pixi install
 pixi run gspec --version

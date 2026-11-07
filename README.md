@@ -24,7 +24,7 @@ BLAST+ (`blastn`, `blastx`, `makeblastdb`, `blastdbcmd`) and `minimap2` must be 
 
 ```bash
 # from a clone, with the external binaries managed for you
-git clone https://github.com/indexofire/gapit.git
+git clone https://github.com/indexofire/gspec.git
 cd gspec
 pixi install
 pixi run gspec --version
