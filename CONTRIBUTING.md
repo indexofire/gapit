@@ -49,4 +49,19 @@ Use Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`,
 gates before publishing; keep `CHANGELOG.md` and `pyproject.toml` versions in
 lockstep.
 
+Build and upload from the project environment, not from whatever `twine` happens
+to be first on `PATH`:
+
+```bash
+pixi run python -m build
+pixi run python -m twine check dist/*
+pixi run python -m twine upload dist/gspec-*
+```
+
+The wheel declares `Metadata-Version: 2.5` (PEP 639 `License-Expression`), which
+only `packaging>=25` parses. An older global twine fails with
+`InvalidDistribution: Invalid distribution metadata: '2.5' is not a valid
+metadata version`; upgrade it (`pip install -U "twine>=7" "packaging>=25"`) or use
+the pinned environment above.
+
 Report security issues through `SECURITY.md`, not public issues.
