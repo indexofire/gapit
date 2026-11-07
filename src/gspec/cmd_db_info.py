@@ -10,7 +10,7 @@ Three renderings, picked like the rest of the CLI (``db list`` precedent):
   DESCRIPTION, STATUS, PROVENANCE, REFERENCES, CAVEATS, USAGE, SEE ALSO;
 - **tsv** (default when stdout is piped, or forced with ``--tsv``) — the stable
   two-column ``FIELD<TAB>VALUE`` stream agents already parse;
-- **json** (``--json``) — the ``gapit.dbinfo/1`` document.
+- **json** (``--json``) — the ``gspec.dbinfo/1`` document.
 """
 
 import sys
@@ -37,7 +37,7 @@ def _stdout_is_tty() -> bool:
 )
 @datadir_option()
 @click.option(
-    "--json", "-J", "as_json", is_flag=True, help="Print the gapit.dbinfo/1 JSON document."
+    "--json", "-J", "as_json", is_flag=True, help="Print the gspec.dbinfo/1 JSON document."
 )
 @click.option(
     "--tsv", "-t", "as_tsv", is_flag=True, help="Force the FIELD<TAB>VALUE table (pipe default)."
@@ -47,7 +47,7 @@ def db_info_command(db_name: str, datadir: Path | None, as_json: bool, as_tsv: b
 
     On a terminal this prints a man-style page; piped output stays the stable
     FIELD<TAB>VALUE table (forceable with --tsv), and --json emits
-    gapit.dbinfo/1.
+    gspec.dbinfo/1.
     """
 
     def run() -> None:

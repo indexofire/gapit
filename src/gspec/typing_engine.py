@@ -1,7 +1,7 @@
-"""The gapit.typing evaluation engine — the cluster path (stage 3).
+"""The gspec.typing evaluation engine — the cluster path (stage 3).
 
 Pure functions: one typing SCHEME (:class:`gspec.typing_models.TypingScheme`
-— a gapit.typing/2 scheme, or the single scheme a gapit.typing/1 document
+— a gspec.typing/2 scheme, or the single scheme a gspec.typing/1 document
 degrades to) plus one file's cluster results (stage 2's ClusterReport)
 become a phenotype call with an explainable score breakdown. The three rule
 models score independently —
@@ -15,7 +15,7 @@ ambiguity_margin calls the phenotype with ``high`` confidence; top >= cutoff
 with a thinner separation is ``ambiguous`` (phenotype null, the top two
 listed); otherwise the scheme's fallback with ``low`` confidence.
 
-The gene-kind pathway (gapit.typing_result/1 calls over weighted_genes
+The gene-kind pathway (gspec.typing_result/1 calls over weighted_genes
 rules) lives in gspec.typing_gene and reuses this module's scorers verbatim.
 Reference validation (TYPING_UNKNOWN_GENE) lives in typing_models beside the
 schema; loading (typing.json beside sequences) in gspec.cluster beside
@@ -165,7 +165,7 @@ def score_cluster_match(
     list scores 0), or the best alternative set when groups are declared.
     Ties keep the earlier rank. The third element is the winning locus's
     evidence (None when no locus cleared the floors) — what the
-    gapit.cluster/2 per-scheme columns surface."""
+    gspec.cluster/2 per-scheme columns surface."""
     winner: tuple[float, tuple[ScoreComponent, ...], LocusEvidence] | None = None
     for locus in report.loci:
         if locus.coverage_pct < rule.coverage.floor or locus.identity_pct < rule.identity.floor:

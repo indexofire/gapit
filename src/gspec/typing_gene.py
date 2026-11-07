@@ -1,4 +1,4 @@
-"""gapit.typing evaluation on the gene path — the DEC marker-panel pathway.
+"""gspec.typing evaluation on the gene path — the DEC marker-panel pathway.
 
 A typed GENE database (a FASTA input built with ``db build --typing``)
 designates samples through the two-stage pipeline: ``gspec screen -o
@@ -7,8 +7,8 @@ use-case in gspec.typing_ops) folds each FILE's rows into one present
 GeneCall per gene name and scores them here — for every scheme, each
 weighted_genes/exact_set rule scores over that gene presence, and the
 decision layer produces one :class:`SchemeCall` per scheme name, rendered
-as gapit.typing_result/1. The cluster path keeps its integrated typing
-(gapit.cluster/1's best.phenotype): a locus db has no screen TSV to
+as gspec.typing_result/1. The cluster path keeps its integrated typing
+(gspec.cluster/1's best.phenotype): a locus db has no screen TSV to
 re-read, so its designation rides the screen itself.
 
 Stage-2 primitives on this path: ``exact_set`` rules (Doumith/Shigella

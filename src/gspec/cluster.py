@@ -44,7 +44,7 @@ from gspec.typing_results import PhenotypeDetail, SchemeCall
 class ClusterParams(BaseModel, frozen=True):
     """Parameters for one cluster-screening run; ``preset`` is always asm20
     (the vpautils engine's choice) and is recorded verbatim in the params
-    block of gapit.cluster/1."""
+    block of gspec.cluster/1."""
 
     db: str
     preset: str = "asm20"
@@ -114,7 +114,7 @@ class BestCall(BaseModel, frozen=True):
 
 class ClusterReport(BaseModel, frozen=True):
     """Result of cluster-screening one sample file. ``phenotypes`` carries
-    the gapit.cluster/2 per-scheme calls (set only by the multi-scheme
+    the gspec.cluster/2 per-scheme calls (set only by the multi-scheme
     path; the /1 path annotates ``best`` instead and never sets it)."""
 
     file: str
@@ -125,7 +125,7 @@ class ClusterReport(BaseModel, frozen=True):
 
 
 def load_features(database: Database) -> FeaturesDocument:
-    """Read the cluster db's gapit.features/1 table; a cluster-kind dir
+    """Read the cluster db's gspec.features/1 table; a cluster-kind dir
     without a readable one is a database error (rebuild it)."""
     path = database.path / "features.json"
     if not path.is_file():
@@ -189,7 +189,7 @@ class _LocusStats:
 def _kmer_hit_fractions(
     query: Path, database: Database, covered_loci: set[str]
 ) -> dict[str, tuple[str, float]]:
-    """Per-set hit fractions for a database carrying a ``gapit.kmerdb/1``
+    """Per-set hit fractions for a database carrying a ``gspec.kmerdb/1``
     sidecar: count the query's canonical k-mers once, intersect every
     declared set, and return ``{set_name: (of_locus, fraction)}`` filtered
     to sets anchored on covered loci (absent loci keep an empty map).
@@ -272,7 +272,7 @@ def screen_cluster_file(
     the database profile opts into ``primary_secondary`` coverage. With
     ``detail``, attach the rich best-locus map (alignment pieces, indels,
     quality) without changing compact renderers. When the database carries a
-    ``gapit.kmerdb/1`` sidecar the query's canonical k-mers are counted once
+    ``gspec.kmerdb/1`` sidecar the query's canonical k-mers are counted once
     and every declared set's hit fraction is attached to its ``of`` locus —
     the ``key_kmers`` typing component consumes these (SNP-level calls)."""
     row_stream = iter_minimap2(

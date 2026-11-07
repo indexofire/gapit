@@ -1,7 +1,7 @@
 """`gspec typing` input for cluster screen results (JSON only).
 
-Cluster designation already rides the screen: ``gapit.cluster/2`` and the
-rich ``gapit.locus_map/1`` carry the evaluated ``phenotypes`` map.  This
+Cluster designation already rides the screen: ``gspec.cluster/2`` and the
+rich ``gspec.locus_map/1`` carry the evaluated ``phenotypes`` map.  This
 reader turns those documents into the same :class:`TypingFileResult` shape
 the gene path renders, so ``gspec typing`` can produce the concise
 designation table without re-running minimap2 or loading the database.

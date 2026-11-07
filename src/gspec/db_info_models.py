@@ -2,7 +2,7 @@
 
 Two consumers need these shapes: :mod:`gspec.bundled` (the wheel's
 ``bundled.json`` declares the literature and caveats that ship with a
-database) and :mod:`gspec.db_info_ops` (the ``gapit.dbinfo/1`` document).
+database) and :mod:`gspec.db_info_ops` (the ``gspec.dbinfo/1`` document).
 Keeping them here means neither has to import the other.
 """
 

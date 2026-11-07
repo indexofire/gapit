@@ -8,10 +8,10 @@ bundled databases still materialize on first use), loads the database's
 typing.json, and runs the shared gene-path engine
 (:func:`gspec.typing_gene.evaluate_gene_calls`) over each FILE's folded
 gene calls. Cluster databases refuse with a typed error: their typing is
-integrated into ``gspec screen``.  Cluster JSON results (``gapit.cluster/2``
-or ``gapit.locus_map/1``) are accepted as a concise-formatting path: their
+integrated into ``gspec screen``.  Cluster JSON results (``gspec.cluster/2``
+or ``gspec.locus_map/1``) are accepted as a concise-formatting path: their
 already-evaluated ``phenotypes`` map is rendered as the same
-``gapit.typing_result/1`` document, without re-running the aligner.
+``gspec.typing_result/1`` document, without re-running the aligner.
 """
 
 from datetime import UTC, datetime

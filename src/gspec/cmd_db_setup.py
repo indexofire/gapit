@@ -5,7 +5,7 @@ that are not installed, then rebuilds the BLAST index for every database under
 the datadir. ``--db/-d NAME`` restricts the work to named databases (a missing
 provider is fetched, a missing bundle materialized); ``--all/-a`` explicitly
 selects every installed/bundled database. ``--json`` emits the
-``gapit.dbsetup/1`` receipt; ``--no-bundles`` skips bundle materialization.
+``gspec.dbsetup/1`` receipt; ``--no-bundles`` skips bundle materialization.
 """
 
 from pathlib import Path
@@ -50,7 +50,7 @@ from gspec.errors import usage_fail
     "-J",
     "as_json",
     is_flag=True,
-    help="Print the gapit.dbsetup/1 JSON document (progress is suppressed).",
+    help="Print the gspec.dbsetup/1 JSON document (progress is suppressed).",
 )
 def db_setup_command(
     names: tuple[str, ...],

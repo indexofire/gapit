@@ -2,9 +2,9 @@
 (:mod:`gspec.db_build_ops`), which turns a user-supplied input into a
 fully built gspec-native database. FASTA inputs build gene databases
 (records.jsonl -> sequences + BLAST index + manifest, written last);
-GBK/GFF inputs build cluster databases (locus FASTA + gapit.features/1
+GBK/GFF inputs build cluster databases (locus FASTA + gspec.features/1
 feature table + manifest ``kind: cluster``). Both branches accept a
-``--typing`` scoring spec (gapit.typing/1 or /2): validated against the
+``--typing`` scoring spec (gspec.typing/1 or /2): validated against the
 input's records, copied into the database as ``typing.json``, and recorded
 in the manifest's ``typing_schema``.
 """
@@ -51,7 +51,7 @@ from gspec.dispatch import datadir_option, dispatch, quiet_option
     "-T",
     type=click.Path(path_type=Path),
     help=(
-        "gapit.typing/1 or /2 scoring spec: validated, copied into the db,"
+        "gspec.typing/1 or /2 scoring spec: validated, copied into the db,"
         " recorded in its manifest."
     ),
 )
@@ -60,7 +60,7 @@ from gspec.dispatch import datadir_option, dispatch, quiet_option
     "-F",  # uppercase: -f is taken by --force.
     type=click.Path(path_type=Path),
     help=(
-        "gapit.floors/1 per-gene identity floors for reads-mode presence:"
+        "gspec.floors/1 per-gene identity floors for reads-mode presence:"
         " validated, copied into the db as floors.json (gene builds only)."
     ),
 )
@@ -69,7 +69,7 @@ from gspec.dispatch import datadir_option, dispatch, quiet_option
     "-S",
     type=click.Path(path_type=Path),
     help=(
-        "gapit.screen/1 per-database screening defaults: validated, copied"
+        "gspec.screen/1 per-database screening defaults: validated, copied"
         " into the db as screen.json (gene builds only)."
     ),
 )
@@ -87,7 +87,7 @@ from gspec.dispatch import datadir_option, dispatch, quiet_option
     type=click.Path(exists=True, path_type=Path),
     default=None,
     help=(
-        "Cluster builds: gapit.kmerdb/1 JSON declaring k-mer sets over the"
+        "Cluster builds: gspec.kmerdb/1 JSON declaring k-mer sets over the"
         " loci (differential sets resolve SNP-level pairs); materialized"
         " into the database at build time."
     ),

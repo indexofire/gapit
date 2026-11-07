@@ -1,8 +1,8 @@
 """Kind-aware materialization for CLUSTER bundles (the bundled.py sibling).
 
 A cluster bundle ships its build INPUTS committed: the locus FASTA plus the
-``gapit.features/1`` table already carrying RESOLVED gene ids (the snapshot
-was produced by a completed gapit.typing/2 build, so its rules reference
+``gspec.features/1`` table already carrying RESOLVED gene ids (the snapshot
+was produced by a completed gspec.typing/2 build, so its rules reference
 the resolved locus_tag-style ids). Materialization reconstructs
 :class:`LocusSequence` objects from those artifacts and replays
 :func:`gspec.clusterbuild.build_cluster_database` — the entry taking

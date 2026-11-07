@@ -1,4 +1,4 @@
-"""Panel gene-family and locus-containment sidecar (gapit.gene_families/1).
+"""Panel gene-family and locus-containment sidecar (gspec.gene_families/1).
 
 For panel accounting we do not claim phylogenetic orthology: the unit is a
 homology family built from a one-time all-vs-all gene search.  A locus's
@@ -49,7 +49,7 @@ class ContainmentEdge(BaseModel, frozen=True):
 
 
 class GeneFamilyDocument(BaseModel, frozen=True):
-    """gapit.gene_families/1 — families, locus sets, containment DAG."""
+    """gspec.gene_families/1 — families, locus sets, containment DAG."""
 
     model_config = ConfigDict(populate_by_name=True)
 

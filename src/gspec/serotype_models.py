@@ -1,6 +1,6 @@
-"""gapit.serotype/1 — marker-set serotype profile documents.
+"""gspec.serotype/1 — marker-set serotype profile documents.
 
-This is deliberately separate from gapit.typing: a serotype call combines
+This is deliberately separate from gspec.typing: a serotype call combines
 several antigen/POAC/virulence markers and often needs an ordered fallback
 and ambiguity policy. The first consumer is the Shigella marker panel
 (``shi_sero/serotype.json``).
@@ -83,7 +83,7 @@ class SerotypeRule(BaseModel, frozen=True):
 
 
 class SerotypeDocument(BaseModel, frozen=True):
-    """gapit.serotype/1 — one database's ordered serotype rules."""
+    """gspec.serotype/1 — one database's ordered serotype rules."""
 
     model_config = ConfigDict(populate_by_name=True)
 

@@ -1,8 +1,8 @@
-"""gapit.typing evaluation RESULT models (the output side of typing).
+"""gspec.typing evaluation RESULT models (the output side of typing).
 
-Shared by both evaluation paths: PhenotypeDetail annotates gapit.cluster/1's
+Shared by both evaluation paths: PhenotypeDetail annotates gspec.cluster/1's
 ``best`` block (typed cluster dbs), SchemeCall populates the
-``files[].phenotypes`` object of gapit.typing_result/1 (the ``gspec
+``files[].phenotypes`` object of gspec.typing_result/1 (the ``gspec
 typing`` command over typed gene dbs), and
 ScoreComponent/PhenotypeScore/ScoredRule are the explainable-breakdown
 building blocks the decision layer in typing_engine/typing_gene consumes.
@@ -32,7 +32,7 @@ class PhenotypeScore(BaseModel, frozen=True):
 class LocusEvidence(BaseModel, frozen=True):
     """The winning locus behind a cluster_match call: which locus achieved
     the rule's best component sum, with that locus's own coverage/identity
-    and gene-verdict counts. Surfaced per scheme by the gapit.cluster/2
+    and gene-verdict counts. Surfaced per scheme by the gspec.cluster/2
     evaluation; None on every other call path (gate/fallback decisions,
     non-locus rules, the gene path)."""
 
@@ -46,7 +46,7 @@ class LocusEvidence(BaseModel, frozen=True):
 
 class PhenotypeDetail(BaseModel, frozen=True):
     """The explainable breakdown behind a phenotype call (the
-    ``phenotype_detail`` field of gapit.cluster/1's best block; additive,
+    ``phenotype_detail`` field of gspec.cluster/1's best block; additive,
     present only when the database carries a typing.json).
 
     ``notes`` (typing/2 stage 2) carries the winning rule's informational
@@ -55,7 +55,7 @@ class PhenotypeDetail(BaseModel, frozen=True):
     keep their byte-identical output. ``winner`` carries the winning
     cluster_match rule's locus evidence (set only on rule-based calls) —
     deliberately NEVER serialized: it is in-memory input for the
-    gapit.cluster/2 SchemeCall flattening, so the /1 output stays
+    gspec.cluster/2 SchemeCall flattening, so the /1 output stays
     byte-frozen."""
 
     score: float
@@ -84,9 +84,9 @@ class PhenotypeDetail(BaseModel, frozen=True):
 
 class SchemeCall(BaseModel, frozen=True):
     """One scheme's call for a screened file — one entry of the
-    ``files[].phenotypes`` object of gapit.typing_result/1, keyed by
+    ``files[].phenotypes`` object of gspec.typing_result/1, keyed by
     scheme name (the ``gspec typing`` command over a typed gene database),
-    and of the gapit.cluster/2 phenotypes map (multi-scheme cluster dbs).
+    and of the gspec.cluster/2 phenotypes map (multi-scheme cluster dbs).
 
     ``phenotype`` is null on an ambiguous call; the plain serializer keeps
     that null explicit even under a renderer's ``exclude_none``

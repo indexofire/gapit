@@ -67,7 +67,7 @@ def find_database(datadir: Path, name: str, *, quiet: bool = False) -> db.Databa
     """Look up a database by name under the datadir; unknown names list what
     exists.
 
-    A BUNDLED database (gapit.bundled) that is absent from the datadir is
+    A BUNDLED database (gspec.bundled) that is absent from the datadir is
     auto-materialized into it first — deterministic, zero network — so the
     first screen works with no ``db fetch``. Already-materialized bundles
     short-circuit above; a bundle directory left without its certifying

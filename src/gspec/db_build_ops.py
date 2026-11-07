@@ -181,10 +181,10 @@ def perform_build(
 
     The input kind is detected by suffix (GBK/GFF -> cluster, else gene);
     an explicit ``kind`` must agree with the detection or the call fails as
-    a usage error. Both branches take ``typing`` (a gapit.typing/1 or /2
+    a usage error. Both branches take ``typing`` (a gspec.typing/1 or /2
     spec, validated — gene references against the FASTA records on the gene
     branch — then copied into the database); the gene branch also takes
-    ``floors`` (a gapit.floors/1 per-gene identity-floor document, validated
+    ``floors`` (a gspec.floors/1 per-gene identity-floor document, validated
     the same way and copied in as ``floors.json`` — the file's presence is
     the flag, no manifest field); the FASTA-only ``tsv``/``dbtype``/
     ``description``/``floors`` options are rejected on the cluster branch.

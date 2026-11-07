@@ -1,4 +1,4 @@
-"""gapit.typing rule models — the per-phenotype scoring units.
+"""gspec.typing rule models — the per-phenotype scoring units.
 
 Split from typing_models.py at the 250-LOC ceiling (typing/2 stage 2): this
 module owns the RULE layer only — the four ``model`` kinds, their optional
@@ -118,7 +118,7 @@ class KeyGenesComponent(BaseModel, frozen=True):
 
 class KeyKmersComponent(BaseModel, frozen=True):
     """``key_kmers`` — the k-mer granularity analogue of ``key_genes``:
-    the fraction of a declared k-mer set (``gapit.kmerdb/1``) present in
+    the fraction of a declared k-mer set (``gspec.kmerdb/1``) present in
     the query. Differential sets (locus k-mers minus sibling-locus union)
     resolve reference pairs whose locus identity differs by less than the
     scheme's ambiguity margin (single-SNP serotypes)."""

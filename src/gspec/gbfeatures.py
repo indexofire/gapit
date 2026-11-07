@@ -21,7 +21,7 @@ without ORIGIN sequence and loci without CDS are rejected. CDS naming
 follows the kaptive convention: ``/gene`` -> ``/locus_tag`` -> ``/note``
 (the real databases name some orf CDS only in a note) -> a positional
 ``<locus>_NN`` id (kaptive's own numbering for unnamed CDS). Also owns the
-locus/gene models shared with the GFF parser, the ``gapit.features/1``
+locus/gene models shared with the GFF parser, the ``gspec.features/1``
 document, and its writer.
 """
 
@@ -42,7 +42,7 @@ class GeneFeature(BaseModel, frozen=True):
     ``locus_tag`` carries the raw ``/locus_tag`` qualifier even when the
     gene id came from ``/gene`` (the cluster/2 build's collision resolver
     wants it); it is parse-time state only — ``exclude`` keeps it out of
-    gapit.features/1 serialization, so feature-table bytes stay frozen and
+    gspec.features/1 serialization, so feature-table bytes stay frozen and
     an absent key parses back as None (tolerant reader)."""
 
     gene_id: str
@@ -70,7 +70,7 @@ class LocusSequence(BaseModel, frozen=True):
 
 
 class FeaturesDocument(BaseModel, frozen=True):
-    """gapit.features/1 — the feature table of a cluster database
+    """gspec.features/1 — the feature table of a cluster database
     (``features.json``, written next to ``sequences``; no sequence data)."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -82,7 +82,7 @@ class FeaturesDocument(BaseModel, frozen=True):
 
 
 def write_features_document(loci: tuple[LocusFeatures, ...], path: Path) -> None:
-    """Write gapit.features/1 as indented JSON (by alias) + trailing newline."""
+    """Write gspec.features/1 as indented JSON (by alias) + trailing newline."""
     with path.open("w", encoding="utf-8", newline="\n") as handle:
         handle.write(FeaturesDocument(loci=loci).model_dump_json(indent=2, by_alias=True))
         handle.write("\n")

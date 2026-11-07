@@ -1,5 +1,5 @@
 """Typed errors, shared raise-helpers, and the JSON error envelope
-(gapit.error/1).
+(gspec.error/1).
 
 Exit-code contract (AGENTS.md §5): 2 usage, 3 missing dependency, 4 db error,
 5 input error, 1 unexpected. Failures render as a one-line JSON envelope on
@@ -141,7 +141,7 @@ class InputError(GapitError):
 
 
 def usage_fail(message: str) -> NoReturn:
-    """Raise a usage error (gapit.error/1 envelope, exit 2)."""
+    """Raise a usage error (gspec.error/1 envelope, exit 2)."""
     raise UsageError(message, code="USAGE_ERROR")
 
 
@@ -157,7 +157,7 @@ def ensure_input_file(path: Path, what: str = "input file") -> None:
 
 
 class ErrorEnvelope(BaseModel, frozen=True):
-    """The gapit.error/1 stderr envelope."""
+    """The gspec.error/1 stderr envelope."""
 
     model_config = ConfigDict(populate_by_name=True)
 

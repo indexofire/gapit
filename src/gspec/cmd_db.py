@@ -113,7 +113,7 @@ def db_fetch_command(
 
 @datadir_option()
 @click.option(
-    "--json", "-J", "as_json", is_flag=True, help="Print the gapit.datadir/1 JSON document."
+    "--json", "-J", "as_json", is_flag=True, help="Print the gspec.datadir/1 JSON document."
 )
 def db_path_command(datadir: Path | None, as_json: bool) -> None:
     """Print the resolved datadir (the directory `db list`/`db fetch` use)."""

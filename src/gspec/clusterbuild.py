@@ -1,10 +1,10 @@
 """The cluster-db build pipeline with self-check (the gspec.dbbuild sibling).
 
 Turns parsed loci into a cluster database directory: locus FASTA
-``sequences`` (one bare-id record per locus), the ``gapit.features/1``
-feature table (``features.json``), an optional validated ``gapit.typing``
-spec (v1 or v2; single-scheme docs render gapit.cluster/1, multi-scheme
-docs render gapit.cluster/2 after build-time gene-id resolution) copied in
+``sequences`` (one bare-id record per locus), the ``gspec.features/1``
+feature table (``features.json``), an optional validated ``gspec.typing``
+spec (v1 or v2; single-scheme docs render gspec.cluster/1, multi-scheme
+docs render gspec.cluster/2 after build-time gene-id resolution) copied in
 as ``typing.json``, the makeblastdb nucl index (the gene-view
 screening surface for stage 2), and the manifest — written LAST, certifying
 every artifact, with ``kind: cluster`` and plain locus-id headers.
@@ -257,11 +257,11 @@ def build_cluster_database(
     """Build every cluster-db artifact in ``db_dir`` (manifest written LAST):
     locus FASTA -> features.json -> self-check -> optional typing copy ->
     makeblastdb (nucl; cluster loci are always nucleotide) -> manifest.
-    ``typing_schema`` records the installed spec's gapit.typing version in
+    ``typing_schema`` records the installed spec's gspec.typing version in
     the manifest. ``content_license``/``content_note`` carry database-content
     provenance (kaptive-style providers); both default to empty and
     serialize only when set. ``source: "bundled"`` stamps a wheel-materialized
-    build (gapit.bundled); None serializes away (every other caller)."""
+    build (gspec.bundled); None serializes away (every other caller)."""
     if any(control in name for control in "\t\r\n"):
         raise DatabaseError(
             f"database name must not contain tabs or line breaks: {name!r}",
@@ -303,7 +303,7 @@ def build_cluster_database(
 
 
 def resolve_gene_ids(loci: Sequence[LocusSequence]) -> list[LocusSequence]:
-    """Make every gene id globally unique for a gapit.cluster/2 build
+    """Make every gene id globally unique for a gspec.cluster/2 build
     (typing rules key on gene ids, so a shared ``/gene`` name across loci
     would make sibling-locus rules collide). Deterministic two passes:
 
@@ -355,9 +355,9 @@ def perform_cluster_build(
     """The cluster branch of the build use-case: parse the GBK/GFF input,
     validate the typing spec (schema and referenced ids) — a multi-scheme
     document additionally runs build-time gene-id resolution first, so its
-    rules reference the resolved ids (gapit.cluster/2) — so a bad spec
+    rules reference the resolved ids (gspec.cluster/2) — so a bad spec
     fails before any artifact is written, then build (callers shape the
-    receipt). ``kmer_db`` optionally installs a ``gapit.kmerdb/1`` sidecar
+    receipt). ``kmer_db`` optionally installs a ``gspec.kmerdb/1`` sidecar
     and materializes its sets from the built locus FASTA."""
     loci = parse_cluster_input(fasta)
     typing_schema = ""

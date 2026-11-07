@@ -22,7 +22,7 @@ from gspec.records import Record
 
 NAME = "upec_expec_vf"
 
-_FUNCTION = ("virulence",)  # locked gapit/v1 func vocabulary (Wave F2c)
+_FUNCTION = ("virulence",)  # locked gspec/v1 func vocabulary (Wave F2c)
 
 _FILENAME = "UPEC_ExPEC_VF.tsv"
 _REQUIRED_COLUMNS = (

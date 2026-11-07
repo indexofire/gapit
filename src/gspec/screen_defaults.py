@@ -1,4 +1,4 @@
-"""Per-database screening defaults (gapit.screen/1).
+"""Per-database screening defaults (gspec.screen/1).
 
 A database may ship a ``screen.json`` sidecar declaring the thresholds that
 make sense for ITS reference set. Sequence length, allele diversity, and the
@@ -72,7 +72,7 @@ class ContigScreenDefaults(BaseModel, frozen=True):
 
 
 class ScreenDefaults(BaseModel, frozen=True):
-    """gapit.screen/1 — one database's mode-wide screening defaults."""
+    """gspec.screen/1 — one database's mode-wide screening defaults."""
 
     model_config = ConfigDict(populate_by_name=True)
 

@@ -1,4 +1,4 @@
-"""Agent-facing reads JSON documents: gapit.reads/1, gapit.reads/2.
+"""Agent-facing reads JSON documents: gspec.reads/1, gspec.reads/2.
 
 Split from formats/json.py at the 250-LOC ceiling: the reads-mode document
 models and renderers (unfiltered reads/1 is the default and frozen; reads/2
@@ -23,7 +23,7 @@ class GeneCoverageDocument(BaseModel, frozen=True):
     database: str
     accession: str
     product: str
-    # "resistance" is frozen by gapit.reads/1; the value flows from
+    # "resistance" is frozen by gspec.reads/1; the value flows from
     # GeneCoverage.function (functional categories for native DBs).
     resistance: str
     tlen: int
@@ -50,7 +50,7 @@ class ReadsParamsDocument(BaseModel, frozen=True):
 
 
 class ReadsDocument(BaseModel, frozen=True):
-    """gapit.reads/1 — machine-readable read-screening output."""
+    """gspec.reads/1 — machine-readable read-screening output."""
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -104,7 +104,7 @@ class Reads2ParamsDocument(BaseModel, frozen=True):
 
 
 class Reads2Document(BaseModel, frozen=True):
-    """gapit.reads/2 — read-screening output under opt-in identity/MAPQ
+    """gspec.reads/2 — read-screening output under opt-in identity/MAPQ
     alignment filtering (reads/1 stays the default and is frozen)."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -134,7 +134,7 @@ def _gene_coverage_document(gene: GeneCoverage) -> GeneCoverageDocument:
 
 
 def render_reads_json(reports: Iterable[ReadsReport], params: ReadsParams, *, now: datetime) -> str:
-    """Serialize read-screening results as gapit.reads/1 (indented, schema first)."""
+    """Serialize read-screening results as gspec.reads/1 (indented, schema first)."""
     document = ReadsDocument(
         created_at=utc_timestamp(now),
         params=ReadsParamsDocument(
@@ -176,7 +176,7 @@ def _gene_coverage2_document(gene: GeneCoverage) -> GeneCoverage2Document:
 def render_reads2_json(
     reports: Iterable[ReadsReport], params: ReadsParams, *, now: datetime
 ) -> str:
-    """Serialize filtered read-screening results as gapit.reads/2 (indented,
+    """Serialize filtered read-screening results as gspec.reads/2 (indented,
     schema first; same shape as /1 plus the filter params and per-gene
     mean_identity_pct)."""
     document = Reads2Document(

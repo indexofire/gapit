@@ -1,4 +1,4 @@
-"""gapit.typing — the declarative scoring schema of a typed database.
+"""gspec.typing — the declarative scoring schema of a typed database.
 
 A typing document is a DATABASE-SIDE artifact (``typing.json`` inside a db
 directory, installed via ``gspec db build --typing``): it declares how hits
@@ -10,7 +10,7 @@ gspec.typing_engine (cluster path) and gspec.typing_gene (gene path).
 
 Two document versions parse:
 
-- ``gapit.typing/2`` (current) — named multi-scheme: ``schemes`` is a list
+- ``gspec.typing/2`` (current) — named multi-scheme: ``schemes`` is a list
   of :class:`TypingScheme` (``name``/``rules``/``cutoff``/
   ``ambiguity_margin``/``fallback``); the gene path evaluates EVERY scheme
   and keys the report's phenotype calls by name. Scheme names are
@@ -126,7 +126,7 @@ class TypingDocumentV1(BaseModel, frozen=True):
     fallback: str
 
     def as_document(self) -> "TypingDocument":
-        """The same spec as one gapit.typing/2 default scheme."""
+        """The same spec as one gspec.typing/2 default scheme."""
         return TypingDocument.model_validate(
             {
                 "schemes": [
@@ -143,7 +143,7 @@ class TypingDocumentV1(BaseModel, frozen=True):
 
 
 class TypingDocument(BaseModel, frozen=True):
-    """gapit.typing/2 — the typing spec document of a typed database: named
+    """gspec.typing/2 — the typing spec document of a typed database: named
     schemes, each independently evaluated. A v1 document is equivalent to a
     single ``default`` scheme."""
 
@@ -253,8 +253,8 @@ def validate_references(document: TypingDocument, features: FeaturesDocument) ->
 
 def uses_cluster_v2(document: TypingDocument) -> bool:
     """Whether a cluster database carrying this document renders
-    gapit.cluster/2 (every scheme called, one phenotypes map per file)
-    instead of gapit.cluster/1 (one phenotype slot). Scheme count is the
+    gspec.cluster/2 (every scheme called, one phenotypes map per file)
+    instead of gspec.cluster/1 (one phenotype slot). Scheme count is the
     exact discriminator: a single compose-only scheme is already
     unparseable — ``_compose_references_siblings`` demands a non-composing
     sibling — so any document that parses with more than one scheme is
@@ -291,7 +291,7 @@ def _parse_json(text: str, path: Path) -> dict[str, object]:
 
 
 def read_typing_document(path: Path) -> TypingDocument:
-    """Read and validate a gapit.typing/1 or /2 file. A /1 document loads
+    """Read and validate a gspec.typing/1 or /2 file. A /1 document loads
     as one anonymous ``default`` scheme (byte-equivalent evaluation); a
     missing file is the typed INPUT_NOT_FOUND input error, malformed
     content the TYPING_MALFORMED DatabaseError — both carrying the file in
@@ -319,7 +319,7 @@ def typing_schema_of(path: Path) -> str:
     """The file's schema tag (``gspec.typing/1``, ``/2`` or ``/3``) — the value
     a build records in its manifest's ``typing_schema``. Assumes
     :func:`read_typing_document` accepted the file. A pre-0.9
-    ``gapit.typing/*`` tag is canonicalised to ``gspec.typing/*``."""
+    ``gspec.typing/*`` tag is canonicalised to ``gspec.typing/*``."""
     raw_tag = _parse_json(_read_text(path), path).get("schema")
     tag = canonical_schema_id(raw_tag)
     known_tags = ("gspec.typing/1", "gspec.typing/2", "gspec.typing/3")

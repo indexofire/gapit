@@ -1,4 +1,4 @@
-"""gapit.kmerdb/1 — the k-mer substrate for cluster databases.
+"""gspec.kmerdb/1 — the k-mer substrate for cluster databases.
 
 A cluster database may carry an optional ``kmer.json`` sidecar declaring
 k-mer sets over its loci, materialized at build time as sorted arrays of

@@ -11,7 +11,7 @@ dispatch, and the serve loop; the tool implementations live in
 :mod:`gspec.mcp_tools` and the tools/list declarations (inputSchemas) in
 :mod:`gspec.mcp_schemas` (screen, screen_reads, summary, schema, db_list,
 db_path, db_fetch, db_build, db_search, db_outdated). Tool failures return
-isError=true with the gapit.error/1 envelope as text; stdout is
+isError=true with the gspec.error/1 envelope as text; stdout is
 protocol-only.
 """
 

@@ -8,7 +8,7 @@ use-case rebuilds the directory under the new name from its own truth source
 and then removes the old one:
 
 - **gene** databases carry the name inside every ``records.jsonl`` record and
-  every ``gapit/v1`` header, so the directory is rebuilt through
+  every ``gspec/v1`` header, so the directory is rebuilt through
   :func:`gspec.dbbuild.build_database` with ``db`` re-pointed (sequences,
   self-check, BLAST index, manifest — the standard pipeline, not a file copy);
 - **cluster** databases carry the name *only* in the manifest (locus FASTA

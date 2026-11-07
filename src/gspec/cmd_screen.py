@@ -104,7 +104,7 @@ def _reject_reads_only_flags(
     default=0.0,
     help=(
         "Reads mode: minimum %identity per alignment, 0 <= x <= 100 (0 = off;"
-        " any nonzero value emits gapit.reads/2)."
+        " any nonzero value emits gspec.reads/2)."
     ),
 )
 @click.option(
@@ -112,7 +112,7 @@ def _reject_reads_only_flags(
     "-M",
     default=0,
     help=(
-        "Reads mode: minimum MAPQ per alignment (0 = off; any nonzero value emits gapit.reads/2)."
+        "Reads mode: minimum MAPQ per alignment (0 = off; any nonzero value emits gspec.reads/2)."
     ),
 )
 @click.option(

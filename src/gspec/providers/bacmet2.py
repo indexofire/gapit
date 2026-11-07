@@ -24,7 +24,7 @@ from gspec.providers.common import Provider
 from gspec.records import Record
 
 _NAME = "bacmet2"
-_FUNCTION = ("biocide",)  # locked gapit/v1 func vocabulary (Wave F2c)
+_FUNCTION = ("biocide",)  # locked gspec/v1 func vocabulary (Wave F2c)
 
 
 def transform(workdir: Path) -> Iterable[Record]:

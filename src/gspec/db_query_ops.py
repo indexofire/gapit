@@ -146,7 +146,7 @@ def perform_search(
 
 
 class DbOutdatedEntry(BaseModel, frozen=True):
-    """One installed-database row in the gapit.dboutdated/1 report."""
+    """One installed-database row in the gspec.dboutdated/1 report."""
 
     db: str
     fetched_at: str
@@ -156,9 +156,9 @@ class DbOutdatedEntry(BaseModel, frozen=True):
 
 
 class DbOutdatedDocument(BaseModel, frozen=True):
-    """gapit.dboutdated/1 — `gspec db outdated --json` output.
+    """gspec.dboutdated/1 — `gspec db outdated --json` output.
 
-    Registered as ``gspec schema dboutdated`` (mirrors the gapit.dblist/1
+    Registered as ``gspec schema dboutdated`` (mirrors the gspec.dblist/1
     registration).
     """
 

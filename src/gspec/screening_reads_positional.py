@@ -71,7 +71,7 @@ def run_screen_reads_positional(
     carries the sample key; the lane files parade on stderr). tsv is the
     default format (streaming: header, then one chunk per sample); json
     stays the opt-in single document (docs/reads.md); a nonzero
-    --min-identity/--min-mapq turns on gapit.reads/2 alignment filtering.
+    --min-identity/--min-mapq turns on gspec.reads/2 alignment filtering.
     Returns the full output for the caller to echo (MCP contract), and when
     ``emit`` is given also hands each rendered chunk to it as soon as the
     chunk exists (module docstring)."""

@@ -33,7 +33,7 @@ ARCHIVE = "HEAD.zip"
 # literal NC_, digits, optional .version); group 1 is everything before the
 # last viable underscore — greedy, so the copy number stays in group 1.
 _ID = re.compile(r"^(.*)_(([A-Z]+|NC_)\d+(\.\d+)?)$")
-_FUNCTION = ("replicon",)  # locked gapit/v1 func vocabulary (Wave F2c)
+_FUNCTION = ("replicon",)  # locked gspec/v1 func vocabulary (Wave F2c)
 
 
 def transform(workdir: Path) -> Iterator[Record]:

@@ -9,7 +9,7 @@ seam (``download_file``/``url_basename``) stay there.
 Providers may declare MULTIPLE source URLs (every downloaded file is
 parsed and the loci concatenated in ``source_urls`` order — the merge a
 multi-reference provider needs) and may carry a committed
-gapit.typing asset (``typing``), validated exactly like
+gspec.typing asset (``typing``), validated exactly like
 ``gspec db build --typing`` — a multi-scheme document resolves gene ids
 first, then ``validate_references`` gates drift against the downloaded
 content BEFORE any artifact is written.
@@ -53,7 +53,7 @@ class ClusterProvider:
     Kaptive's GPL-3.0) must never ship inside the wheel — every cluster
     provider downloads on fetch. Cluster loci are always nucleotide, so
     dbtype is fixed. ``typing`` optionally points at a committed
-    gapit.typing asset riding the wheel (gspec-authored, MIT) that
+    gspec.typing asset riding the wheel (gspec-authored, MIT) that
     installs with the database; None keeps the untyped kaptive behavior."""
 
     name: str

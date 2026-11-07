@@ -112,8 +112,8 @@ def _screen_lanes(
     """Minimap2 engine core shared by both entry points: preset resolution,
     screening, rendering; tsv is the default format (the streaming table —
     tsv is the human default on every surface, json/md the agent opt-ins,
-    docs/reads.md). Either reads/2 threshold on selects the gapit.reads/2
-    document; both off keep gapit.reads/1 byte-identical. Returns the
+    docs/reads.md). Either reads/2 threshold on selects the gspec.reads/2
+    document; both off keep gspec.reads/1 byte-identical. Returns the
     rendered output for the caller to echo."""
     resolved = resolve_read_preset(lanes, read_type, quiet)
     database = find_database(resolve_screen_datadir(datadir, db_name), db_name, quiet=quiet)
@@ -224,7 +224,7 @@ def run_screen_reads(
     natively, so commas in filenames survive). Per-lane minimap2, sample-level
     union; tsv is the default format (the streaming table; json/md the
     explicit opt-ins, docs/reads.md). A nonzero
-    --min-identity/--min-mapq turns on gapit.reads/2 alignment filtering.
+    --min-identity/--min-mapq turns on gspec.reads/2 alignment filtering.
     Returns the rendered output."""
     if aligner is AlignerEnum.blastn:
         usage_fail("--aligner blastn is not available for --r1/--r2 reads input")
@@ -285,7 +285,7 @@ def run_screen_assemblies(
     error. Preset resolution and output follow the reads contract (SPEC §10);
     the blastn-engine-only flags --fofn/--jobs/--noheader/--nopath and the
     blastn thresholds --minid/--mincov are rejected here instead of silently
-    ignored. A nonzero --min-identity/--min-mapq turns on gapit.reads/2
+    ignored. A nonzero --min-identity/--min-mapq turns on gspec.reads/2
     filtering.     Returns the rendered output."""
     validate_reads_usage(
         min_breadth, min_identity, min_mapq, threads, min_depth, min_relative_depth

@@ -1,4 +1,4 @@
-"""gapit.cluster/2 renderers: multi-scheme cluster-screening output.
+"""gspec.cluster/2 renderers: multi-scheme cluster-screening output.
 
 A cluster database whose typing document holds more than one scheme
 (:func:`gspec.typing_models.uses_cluster_v2`) renders this VARIANT of the
@@ -21,7 +21,7 @@ fallback string with ``-`` evidence unless the database profile enables
 ``fallback_evidence`` (then the best same-family locus fills it);
 ambiguous calls render ``-`` in the call column. For vpa_ok the header is
 ``FILE  SEROTYPE  O_GROUP  O_LOCUS … K_MISSING`` — the composed serotype leads.
-Single-scheme and untyped databases keep byte-identical gapit.cluster/1
+Single-scheme and untyped databases keep byte-identical gspec.cluster/1
 (formats/cluster.py). Registered in the schema registry as ``cluster2``.
 """
 
@@ -75,7 +75,7 @@ class Cluster2FileDocument(BaseModel, frozen=True):
 
 
 class Cluster2Document(BaseModel, frozen=True):
-    """gapit.cluster/2 — machine-readable multi-scheme cluster output."""
+    """gspec.cluster/2 — machine-readable multi-scheme cluster output."""
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -104,7 +104,7 @@ def _best_document(best: BestCall) -> Cluster2BestDocument:
 def render_cluster2_json(
     reports: Iterable[ClusterReport], params: ClusterParams, *, now: datetime
 ) -> str:
-    """Serialize cluster screening as gapit.cluster/2 (indented, schema
+    """Serialize cluster screening as gspec.cluster/2 (indented, schema
     first; ``best`` is null when no locus cleared min_cluster_cov — the
     phenotypes map still carries every scheme's call)."""
     document = Cluster2Document(

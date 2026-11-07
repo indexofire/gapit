@@ -1,4 +1,4 @@
-"""gapit.typing_result/1 — the `gspec typing` output document and renderers.
+"""gspec.typing_result/1 — the `gspec typing` output document and renderers.
 
 One result per (FILE, scheme): the designated phenotype with its
 explainable breakdown. TSV/MD flatten each call to the eight reporting
@@ -47,7 +47,7 @@ class TypingFileDocument(BaseModel, frozen=True):
 
 
 class TypingResultDocument(BaseModel, frozen=True):
-    """gapit.typing_result/1 — machine-readable designation output."""
+    """gspec.typing_result/1 — machine-readable designation output."""
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -115,7 +115,7 @@ def render_typing_tsv(results: Iterable[TypingFileResult]) -> str:
 def render_typing_result_json(
     source: Sequence[str], db: str, results: Iterable[TypingFileResult], *, now: datetime
 ) -> str:
-    """Serialize designation results as gapit.typing_result/1 (indented,
+    """Serialize designation results as gspec.typing_result/1 (indented,
     schema first)."""
     document = TypingResultDocument(
         created_at=utc_timestamp(now),

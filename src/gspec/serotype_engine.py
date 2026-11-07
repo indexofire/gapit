@@ -1,4 +1,4 @@
-"""Evaluate gapit.serotype/1 rules over one file's gene calls."""
+"""Evaluate gspec.serotype/1 rules over one file's gene calls."""
 
 from __future__ import annotations
 

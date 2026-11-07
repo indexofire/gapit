@@ -99,7 +99,7 @@ def output_target(path: Path | None) -> Generator[Callable[[str], None]]:
 
 
 def dispatch(action: Callable[[], None]) -> None:
-    """Run a command body; any failure renders the gapit.error/1 envelope on
+    """Run a command body; any failure renders the gspec.error/1 envelope on
     stderr and exits with the documented code (UNEXPECTED/1 for non-GapitError)."""
     try:
         action()

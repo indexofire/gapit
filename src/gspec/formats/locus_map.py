@@ -1,6 +1,6 @@
-"""Rich cluster locus-map JSON (prototype ``gapit.locus_map/1``).
+"""Rich cluster locus-map JSON (prototype ``gspec.locus_map/1``).
 
-This document is intentionally separate from gapit.cluster/1-2: compact
+This document is intentionally separate from gspec.cluster/1-2: compact
 screen output stays byte-frozen, while callers that opt into detail get the
 full LocusMap evidence.  A later cluster/3 can fold this into the screen
 contract once the shape stabilizes.
@@ -32,7 +32,7 @@ class LocusMapFileDocument(BaseModel, frozen=True):
 
 
 class LocusMapDocument(BaseModel, frozen=True):
-    """gapit.locus_map/1 — rich evidence for the best locus per file."""
+    """gspec.locus_map/1 — rich evidence for the best locus per file."""
 
     model_config = ConfigDict(populate_by_name=True)
 

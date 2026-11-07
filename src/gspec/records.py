@@ -1,4 +1,4 @@
-"""The per-database truth source: Record JSONL store and gapit.manifest/1.
+"""The per-database truth source: Record JSONL store and gspec.manifest/1.
 
 ``records.jsonl`` is the editable truth a database directory is built from
 (the ``sequences`` FASTA and its BLAST index are generated projections, built
@@ -94,7 +94,7 @@ def count_records(path: Path) -> int:
 
 
 class Manifest(BaseModel, frozen=True):
-    """gapit.manifest/1 — provenance sidecar for one database directory."""
+    """gspec.manifest/1 — provenance sidecar for one database directory."""
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -160,7 +160,7 @@ def write_manifest(manifest: Manifest, path: Path) -> None:
 
 
 def read_manifest(path: Path) -> Manifest:
-    """Parse and validate a gapit.manifest/1 file."""
+    """Parse and validate a gspec.manifest/1 file."""
     if not path.is_file():
         raise InputError(
             f"manifest file not found or unreadable: {path}",

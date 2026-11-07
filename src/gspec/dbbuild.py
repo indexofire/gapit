@@ -295,7 +295,7 @@ def build_database(
         source=source,
         makeblastdb_version=tool_version_line(["makeblastdb", "-version"]),
         # Kept although no .mmi is built: environment provenance for the
-        # machine that produced the artifacts (spec'd in gapit.manifest/1).
+        # machine that produced the artifacts (spec'd in gspec.manifest/1).
         minimap2_version=optional_tool_version_line(["minimap2", "--version"]),
     )
     write_manifest(manifest, db_dir / MANIFEST_NAME)

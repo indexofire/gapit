@@ -2,7 +2,7 @@
 
 Typed parsing of minimap2's PAF rows (12 required fields + tags), the
 half-open interval math used to aggregate alignment spans into coverage, and
-the per-alignment identity rule behind gapit.reads/2 filtering.
+the per-alignment identity rule behind gspec.reads/2 filtering.
 """
 
 from collections.abc import Iterable, Iterator
@@ -16,7 +16,7 @@ ReadType = Literal["sr", "map-ont", "map-hifi"]
 
 # The cluster engine's assembly-to-reference preset (the vpautils engine's
 # choice): outside the reads vocabulary, accepted by the minimap2 invocation
-# layer but never a legal gapit.reads/1 params.read_type value.
+# layer but never a legal gspec.reads/1 params.read_type value.
 ClusterPreset = Literal["asm20"]
 Preset = ReadType | ClusterPreset
 
@@ -98,7 +98,7 @@ def parse_paf_row(line: str) -> PafRecord:
 
 
 def alignment_identity(record: PafRecord) -> float:
-    """Per-alignment identity for gapit.reads/2: ``100 * (alen - nm) / alen``
+    """Per-alignment identity for gspec.reads/2: ``100 * (alen - nm) / alen``
     over the block length (column 10) and the NM tag (mismatches + gaps per
     the PAF spec). A row without NM cannot be assessed and counts as 100.0;
     a degenerate zero-length block also counts as 100.0 (no division)."""
@@ -122,10 +122,10 @@ def iter_filter_alignments(
 def filter_alignments(
     rows: Iterable[PafRecord], *, min_identity: float = 0.0, min_mapq: int = 0
 ) -> list[PafRecord]:
-    """gapit.reads/2 row filter: keep alignments with identity >= min_identity
+    """gspec.reads/2 row filter: keep alignments with identity >= min_identity
     and mapq >= min_mapq (applied after the primary-only rule upstream; both
     thresholds default off, in which case every row is kept verbatim — the
-    gapit.reads/1 path must stay byte-identical, even for pathological rows
+    gspec.reads/1 path must stay byte-identical, even for pathological rows
     whose arithmetic identity is negative)."""
     return list(iter_filter_alignments(rows, min_identity=min_identity, min_mapq=min_mapq))
 

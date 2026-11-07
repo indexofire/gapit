@@ -193,7 +193,7 @@ def _bullets(items: tuple[str, ...], width: int) -> list[str]:
 
 
 def render_db_manual(document: DbInfoDocument, width: int | None = None) -> str:
-    """Render one ``gapit.dbinfo/1`` document as a plain man-style page."""
+    """Render one ``gspec.dbinfo/1`` document as a plain man-style page."""
     columns = _width(width)
     lines: list[str] = [_header(document.name, columns)]
 

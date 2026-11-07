@@ -23,7 +23,7 @@ class GapitGroup(click.Group):
 
     Click validates options/arguments before the command body runs, so
     ``dispatch`` never sees unknown options or missing required options. The
-    agent-facing contract says every failure is ``gapit.error/1``; this
+    agent-facing contract says every failure is ``gspec.error/1``; this
     override is the one place that translates click's exceptions.
     """
 
@@ -87,7 +87,7 @@ class GapitGroup(click.Group):
     "-J",
     "as_json",
     is_flag=True,
-    help="With --version: emit gapit.version/1 JSON.",
+    help="With --version: emit gspec.version/1 JSON.",
 )
 @click.pass_context
 def main(ctx: click.Context, show_version: bool | None, as_json: bool) -> None:

@@ -1,4 +1,4 @@
-"""Summary output formats: abricate-parity TSV/CSV, gapit.summary/1 JSON, Markdown."""
+"""Summary output formats: abricate-parity TSV/CSV, gspec.summary/1 JSON, Markdown."""
 
 import json
 from datetime import datetime
@@ -31,7 +31,7 @@ class SummaryRowDocument(BaseModel, frozen=True):
 
 
 class SummaryDocument(BaseModel, frozen=True):
-    """gapit.summary/1 — machine-readable summary matrix."""
+    """gspec.summary/1 — machine-readable summary matrix."""
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -68,7 +68,7 @@ def format_summary_tsv(matrix: SummaryMatrix, *, csv: bool) -> str:
 
 
 def render_summary_json(matrix: SummaryMatrix, *, now: datetime) -> str:
-    """Serialize the matrix as gapit.summary/1 (indented, schema first)."""
+    """Serialize the matrix as gspec.summary/1 (indented, schema first)."""
     document = SummaryDocument(
         created_at=utc_timestamp(now),
         params=SummaryParamsDocument(

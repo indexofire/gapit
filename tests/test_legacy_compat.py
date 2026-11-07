@@ -27,7 +27,7 @@ NOW = datetime(2026, 11, 7, 12, 0, 0, tzinfo=UTC)
 
 def _minimal_manifest(**overrides: object) -> dict[str, object]:
     document: dict[str, object] = {
-        "schema": "gapit.manifest/1",
+        "schema": "gspec.manifest/1",
         "name": "panel",
         "source_urls": ["local"],
         "fetched_at": "2026-11-07T12:00:00Z",
@@ -44,7 +44,7 @@ def test_legacy_schema_id_is_accepted_and_canonicalised(tmp_path: Path) -> None:
     path.write_text(
         json.dumps(
             {
-                "schema": "gapit.report/1",
+                "schema": "gspec.report/1",
                 "tool": {"name": "gspec", "version": "0.8.1"},
                 "created_at": "2026-11-07T12:00:00Z",
                 "params": {"db": "panel", "minid": 80.0, "mincov": 80.0, "threads": 1},
@@ -107,7 +107,7 @@ def test_legacy_typing_document_loads_and_is_reported_canonically(tmp_path: Path
     path.write_text(
         json.dumps(
             {
-                "schema": "gapit.typing/2",
+                "schema": "gspec.typing/2",
                 "schemes": [
                     {
                         "name": "serogroup",

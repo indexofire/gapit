@@ -1,4 +1,4 @@
-"""gapit.cluster/1 + /2 Markdown renderers.
+"""gspec.cluster/1 + /2 Markdown renderers.
 
 Split from formats/cluster.py at the 250-LOC ceiling (stage 3): the per-file
 summary row (with a ``Phenotype`` column on typed databases, the /2
@@ -114,7 +114,7 @@ def cluster_md_head(
     """The STATIC frontmatter + title chunk (schema, tool, timestamp,
     thresholds — everything knowable before file 1), so a streaming caller
     emits it first; the per-file sections follow one chunk per file. The
-    /2 renderers pass the gapit.cluster/2 tag."""
+    /2 renderers pass the gspec.cluster/2 tag."""
     lines: list[str] = [
         "---",
         f"schema: {schema_tag}",
@@ -217,7 +217,7 @@ def _summary_row_v2(report: ClusterReport, document: TypingDocument) -> tuple[st
 
 def cluster2_md_head(params: ClusterParams, *, now: datetime) -> str:
     """The /2 STATIC frontmatter + title chunk — same telemetry as the /1
-    head with the gapit.cluster/2 schema tag."""
+    head with the gspec.cluster/2 schema tag."""
     return cluster_md_head(params, now=now, schema_tag="gspec.cluster/2")
 
 

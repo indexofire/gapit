@@ -61,7 +61,7 @@ def _stdin_text(files: list[Path]) -> str | None:
     help=(
         "gspec/abricate screen result TSV/CSV file(s) to type — contig"
         " (FILE/%IDENTITY/%COVERAGE) and reads (#SAMPLE/BREADTH%) tables are"
-        " accepted, plus cluster JSON (gapit.cluster/2 or gapit.locus_map/1);"
+        " accepted, plus cluster JSON (gspec.cluster/2 or gspec.locus_map/1);"
         " '-' = stdin."
     ),
 )

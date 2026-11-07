@@ -2,7 +2,7 @@
 
 ``perform_fetch`` installs database(s) under the datadir (every provider
 downloads from upstream at fetch time); the ``db_list_*`` callables build
-the gapit.dblist/1 database listing. The CLI commands
+the gspec.dblist/1 database listing. The CLI commands
 (:mod:`gspec.cmd_db`) and the MCP tools (:mod:`gspec.mcp_tools`) are thin
 callers — this module owns the behavior and imports no CLI plumbing.
 """
@@ -55,7 +55,7 @@ class ProviderReceipt(BaseModel, frozen=True):
 
 
 class DbListEntry(BaseModel, frozen=True):
-    """One database row in the gapit.dblist/1 listing document."""
+    """One database row in the gspec.dblist/1 listing document."""
 
     name: str
     # Upstream maintainer organisation; distinct from name (the --db value).
@@ -77,14 +77,14 @@ class DbListEntry(BaseModel, frozen=True):
     license: str | None = None
     # "local" marks a datadir-discovered database the registry does not know
     # (db build / db install product); "bundled" marks a database shipped in
-    # the wheel (gapit.bundled) whether or not it is materialized yet.
-    # Absent = registry catalog entry — the additive gapit.dblist/1 rule:
+    # the wheel (gspec.bundled) whether or not it is materialized yet.
+    # Absent = registry catalog entry — the additive gspec.dblist/1 rule:
     # pre-existing entries stay byte-identical.
     source: Literal["local", "bundled"] | None = None
 
 
 class DatadirDocument(BaseModel, frozen=True):
-    """gapit.datadir/1 — the resolved datadir plus how it was chosen.
+    """gspec.datadir/1 — the resolved datadir plus how it was chosen.
 
     A CLI introspection document (like :class:`DbListDocument`, local to this
     module): agents and container entrypoints can discover the effective path
@@ -102,7 +102,7 @@ class DatadirDocument(BaseModel, frozen=True):
 
 
 class DbListDocument(BaseModel, frozen=True):
-    """gapit.dblist/1 — `gspec db list --json` output.
+    """gspec.dblist/1 — `gspec db list --json` output.
 
     Registered as ``gspec schema dblist``; the schema is additive so agents can
     introspect the database catalog without a live datadir.
@@ -193,7 +193,7 @@ def perform_fetch(
 
 
 def datadir_json(cli_value: Path | None) -> str:
-    """The gapit.datadir/1 document for the resolved datadir (CLI + agents)."""
+    """The gspec.datadir/1 document for the resolved datadir (CLI + agents)."""
     path, source = config.datadir_source(cli_value)
     return DatadirDocument(datadir=str(path), exists=path.is_dir(), source=source).model_dump_json(
         by_alias=True
@@ -332,10 +332,10 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
 
 
 def db_list_entries(root: Path) -> list[DbListEntry]:
-    """Database rows for the gapit.dblist/1 listing — shared CLI + MCP path.
+    """Database rows for the gspec.dblist/1 listing — shared CLI + MCP path.
 
     Rows are sorted globally by NAME so CLI TSV, the rich table, and the
-    ``gapit.dblist/1`` JSON all share one deterministic order. Registry
+    ``gspec.dblist/1`` JSON all share one deterministic order. Registry
     providers, bundled databases, and datadir-discovered local databases
     stay distinguishable by their additive ``source`` field and STATUS, not
     by position. Bundled names are skipped in the registry loop because
@@ -432,7 +432,7 @@ def db_list_table(entries: Sequence[DbListEntry]) -> Table:
 
 
 def db_list_json(root: Path) -> str:
-    """The gapit.dblist/1 document JSON — shared CLI + MCP path."""
+    """The gspec.dblist/1 document JSON — shared CLI + MCP path."""
     entries = db_list_entries(root)
     return DbListDocument(providers=tuple(entries)).model_dump_json(
         indent=2, by_alias=True, exclude_none=True

@@ -1,10 +1,10 @@
 """K-mer-only cluster screening: cluster databases accept FASTQ reads.
 
-When a cluster database carries a ``gapit.kmerdb/1`` sidecar, reads-mode
+When a cluster database carries a ``gspec.kmerdb/1`` sidecar, reads-mode
 screening bypasses minimap2 entirely — the query's canonical k-mers are
 counted from FASTQ, per-locus containment provides the coverage/identity
 evidence, and the differential sets deliver SNP-level ``key_kmers`` calls.
-No assembly needed; the same ``gapit.typing/3`` rules evaluate identically.
+No assembly needed; the same ``gspec.typing/3`` rules evaluate identically.
 """
 
 from __future__ import annotations

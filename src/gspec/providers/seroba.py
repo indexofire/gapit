@@ -2,7 +2,7 @@
 
 Downloads SeroBA reference.fasta (GPL-3.0, sequences INSDC public domain),
 annotates CDS with pyrodigal into a GFF3, and builds a cluster database
-with gapit.typing/3 key_kmers differential sets (k=31) resolving SNP-level
+with gspec.typing/3 key_kmers differential sets (k=31) resolving SNP-level
 serotype pairs. Both FASTA (alignment) and FASTQ (k-mer containment) paths
 are supported.
 
@@ -111,7 +111,7 @@ PROVIDER = ClusterProvider(
     license="GPL-3.0 (SeroBA database; sequences INSDC public domain)",
     note=(
         "SeroBA reference.fasta (102 cps loci; NT refs excluded), pyrodigal"
-        " CDS annotation, gapit.typing/3 with key_kmers (k=31) resolving"
+        " CDS annotation, gspec.typing/3 with key_kmers (k=31) resolving"
         " SNP-level serotype pairs; FASTA and FASTQ dual path"
     ),
     typing=_TYPING_PATH if _TYPING_PATH.is_file() else None,

@@ -225,8 +225,8 @@ def run_cluster_screen(
     against the shared locus FASTA; stdout still emits in input order
     (head-of-line, file i waits for files 1..i). The db's typing.json is
     reference-validated once up front (TYPING_UNKNOWN_GENE) and picks the
-    renderer variant: untyped and single-scheme dbs render gapit.cluster/1
-    (byte-frozen), multi-scheme dbs render gapit.cluster/2. With ``emit``,
+    renderer variant: untyped and single-scheme dbs render gspec.cluster/1
+    (byte-frozen), multi-scheme dbs render gspec.cluster/2. With ``emit``,
     chunks stream in document order — tsv/csv/md per completed file (md
     leads with its static frontmatter; each file's section carries its own
     summary row); json is a single document emitted at the end. Chunk

@@ -30,13 +30,13 @@ def _tool_entry(
 TOOLS: list[dict[str, object]] = [
     _tool_entry(
         "screen",
-        "Screen contig files for known genes (json = gapit.report/1;"
-        " aligner minimap2 = fast assembly survey emitting gapit.reads/1)."
+        "Screen contig files for known genes (json = gspec.report/1;"
+        " aligner minimap2 = fast assembly survey emitting gspec.reads/1)."
         " A cluster-kind database dispatches to the cluster engine"
-        " (minimap2 asm20; json = gapit.cluster/1 with a best-locus call,"
+        " (minimap2 asm20; json = gspec.cluster/1 with a best-locus call,"
         " per-locus gene verdicts, the phenotype call + score breakdown"
         " when the db carries a single-scheme typing.json, or"
-        " gapit.cluster/2 with a phenotypes map of every scheme's call"
+        " gspec.cluster/2 with a phenotypes map of every scheme's call"
         " when the typing.json holds more than one scheme, and the"
         " min_gene_cov/min_gene_id/min_cluster_cov thresholds).",
         dict(
@@ -60,8 +60,8 @@ TOOLS: list[dict[str, object]] = [
     ),
     _tool_entry(
         "screen_reads",
-        "Screen FASTQ reads for genes via minimap2 (json = gapit.reads/1;"
-        " min_identity/min_mapq > 0 emits gapit.reads/2). Returns the rendered"
+        "Screen FASTQ reads for genes via minimap2 (json = gspec.reads/1;"
+        " min_identity/min_mapq > 0 emits gspec.reads/2). Returns the rendered"
         " document.",
         dict(
             r1=_FILES,
@@ -79,14 +79,14 @@ TOOLS: list[dict[str, object]] = [
     ),
     _tool_entry(
         "summary",
-        "Summarize report tables into a gapit.summary/1 matrix.",
+        "Summarize report tables into a gspec.summary/1 matrix.",
         dict(files=_FILES, identity={"type": "boolean"}, nopath={"type": "boolean"}),
         ["files"],
     ),
     _tool_entry(
         "typing",
         "Designate phenotypes from a gspec/abricate screen result table (TSV or CSV"
-        " text). Returns gapit.typing_result/1 JSON by default; its notes carry"
+        " text). Returns gspec.typing_result/1 JSON by default; its notes carry"
         " any follow-up guidance (for meningococcal W/Y, the synG EX7E check).",
         dict(
             table=_STR,
@@ -103,18 +103,18 @@ TOOLS: list[dict[str, object]] = [
     ),
     _tool_entry(
         "db_list",
-        "List known databases with NAME, upstream PROVIDER, and install state (gapit.dblist/1).",
+        "List known databases with NAME, upstream PROVIDER, and install state (gspec.dblist/1).",
         dict(datadir=_STR),
     ),
     _tool_entry(
         "db_path",
-        "Resolve the effective datadir and its source without creating it (gapit.datadir/1).",
+        "Resolve the effective datadir and its source without creating it (gspec.datadir/1).",
         dict(datadir=_STR),
     ),
     _tool_entry(
         "db_setup",
         "Bootstrap the datadir, materialize bundled databases, and rebuild BLAST"
-        " indices (gapit.dbsetup/1). names selects databases (missing providers are"
+        " indices (gspec.dbsetup/1). names selects databases (missing providers are"
         " fetched, missing bundles materialized); no_bundles skips bundled"
         " materialization and indexes only what is already installed.",
         dict(datadir=_STR, no_bundles=_FLAG, names=_FILES),

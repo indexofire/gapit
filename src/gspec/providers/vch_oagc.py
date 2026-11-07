@@ -3,7 +3,7 @@
 The 190 OL reference loci come from Murase et al. 2022 (Microb Genom
 000860; NCBI BioProject PRJDB8600), fetched as one NCBI efetch GenBank
 batch. A committed control locus (V. cholerae N16961 ompW) travels with
-the wheel; the committed gapit.typing/2 asset defines the O-group and
+the wheel; the committed gspec.typing/2 asset defines the O-group and
 species schemes. OLU loci are not in this build yet.
 """
 
@@ -225,7 +225,7 @@ PROVIDER = ClusterProvider(
         "190 O-antigen biosynthetic locus records from Murase et al. 2022"
         " (Microb Genom 000860; NCBI BioProject PRJDB8600), fetched from NCBI,"
         " plus a committed V. cholerae N16961 ompW control locus; build uses"
-        " a committed gapit.typing/2 O-group + species asset."
+        " a committed gspec.typing/2 O-group + species asset."
     ),
     typing=_ASSETS / "typing.json",
     extra_sources=(_ASSETS / "control.gbk",),

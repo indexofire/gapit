@@ -1,9 +1,9 @@
-"""Agent-facing JSON documents: gapit.report/1, gapit.version/1.
+"""Agent-facing JSON documents: gspec.report/1, gspec.version/1.
 
-The reads-mode documents (gapit.reads/1 and /2) live in
+The reads-mode documents (gspec.reads/1 and /2) live in
 formats/reads_json.py — split at the 250-LOC ceiling — and the typing
-designation document (gapit.typing_result/1) in formats/typing_result.py.
-gapit.report/1 is pure gene detection: typed and untyped gene databases
+designation document (gspec.typing_result/1) in formats/typing_result.py.
+gspec.report/1 is pure gene detection: typed and untyped gene databases
 serialize byte-identically.
 """
 
@@ -46,7 +46,7 @@ class HitDocument(BaseModel, frozen=True):
     database: str
     accession: str
     product: str
-    # "resistance" is frozen by gapit.report/1 (1:1 with the TSV RESISTANCE
+    # "resistance" is frozen by gspec.report/1 (1:1 with the TSV RESISTANCE
     # column); the value flows from Hit.function and carries functional
     # categories for native DBs (Wave F1 renamed the internal slot only).
     resistance: str
@@ -82,7 +82,7 @@ class ToolDocument(BaseModel, frozen=True):
 
 
 class ReportDocument(BaseModel, frozen=True):
-    """gapit.report/1 — the canonical machine-readable screening output."""
+    """gspec.report/1 — the canonical machine-readable screening output."""
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -96,7 +96,7 @@ class ReportDocument(BaseModel, frozen=True):
 
 
 class VersionDocument(BaseModel, frozen=True):
-    """gapit.version/1 — compact one-line self-description."""
+    """gspec.version/1 — compact one-line self-description."""
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -147,7 +147,7 @@ def _hit_document(hit: Hit) -> HitDocument:
 
 
 def render_json(reports: Iterable[Report], params: ScreeningParams, *, now: datetime) -> str:
-    """Serialize screening results as gapit.report/1 (indented, schema first)."""
+    """Serialize screening results as gspec.report/1 (indented, schema first)."""
     document = ReportDocument(
         created_at=utc_timestamp(now),
         params=ParamsDocument(

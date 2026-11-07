@@ -1,7 +1,7 @@
-"""gapit.typing evaluation on the multi-scheme cluster path (cluster/2).
+"""gspec.typing evaluation on the multi-scheme cluster path (cluster/2).
 
 A cluster database whose typing document holds MORE than one scheme
-(:func:`gspec.typing_models.uses_cluster_v2`) renders gapit.cluster/2:
+(:func:`gspec.typing_models.uses_cluster_v2`) renders gspec.cluster/2:
 every scheme is called — not just the best-locus annotation the /1 path
 makes — and the per-scheme :class:`~gspec.typing_results.SchemeCall` map
 rides the report (``ClusterReport.phenotypes``, insertion order = scheme
@@ -86,7 +86,7 @@ def evaluate_cluster2(
 ) -> dict[str, SchemeCall]:
     """One SchemeCall per scheme name over the whole loci report (compose
     schemes evaluate after their ingredients, in document order) — the
-    evaluation core the gapit.cluster/2 renderers consume. With
+    evaluation core the gspec.cluster/2 renderers consume. With
     ``fallback_evidence``, a low-confidence fallback still carries the best
     same-family locus so KUT/OUT is distinguishable from "no locus";
     ``typeable_coverage`` / ``typeable_identity`` additionally split the

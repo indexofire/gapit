@@ -95,7 +95,7 @@ def detect_read_kind(path: Path) -> ReadFileKind:
 
 class ReadsParams(BaseModel, frozen=True):
     """Parameters for one read-screening run (docs/reads.md). The reads/2
-    thresholds default off; gapit.reads/1 rendering ignores them entirely.
+    thresholds default off; gspec.reads/1 rendering ignores them entirely.
     ``min_depth``/``min_relative_depth`` add the abundance gate: absolute
     mean depth and the gene:control mean-depth ratio (0..1)."""
 
@@ -114,7 +114,7 @@ class GeneCoverage(BaseModel, frozen=True):
     """Per-gene presence call over primary alignments. mean_identity_pct is
     the alen-weighted mean of per-alignment identity over the aggregated
     (kept) rows — the weighting favors long alignments; computed in reads/1
-    mode too but rendered only by gapit.reads/2. ``relative_depth_pct`` is
+    mode too but rendered only by gspec.reads/2. ``relative_depth_pct`` is
     the gene:control mean-depth ratio as a percentage (None when no control
     gene was found or relative-depth gating is off)."""
 
@@ -240,13 +240,13 @@ def screen_reads(
 ) -> ReadsReport:
     """Screen one sample's lanes against one database into a sample-level
     ReadsReport (union of all lanes' primary alignments). With a nonzero
-    min_identity/min_mapq (gapit.reads/2), alignments are filtered BEFORE
+    min_identity/min_mapq (gspec.reads/2), alignments are filtered BEFORE
     aggregation and the identity rule needs the NM tags. ``nm_tags`` is
     ALWAYS on: minimap2's no-CIGAR mode emits clipped coordinates for
     diverged alignments (26ECO0071 astA: 57% breadth without --cs, 100%
     with), silently under-reporting breadth — the reads/1 core metric.
 
-    A database carrying a gapit.floors/1 sidecar additionally drops
+    A database carrying a gspec.floors/1 sidecar additionally drops
     sub-floor alignments per gene BEFORE aggregation
     (:func:`gspec.gene_floors.apply_gene_floors`) — db-driven opt-in; a
     floorless database is byte-identical to the pre-floors behavior."""

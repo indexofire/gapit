@@ -3,8 +3,8 @@
 A bundled database is a directory ``gspec/data/dbs/<name>/`` holding
 ``sequences``, a ``bundled.json`` metadata file, and kind-dependent
 companions: gene bundles an optional ``typing.json`` and ``floors.json``
-(gapit.floors/1), cluster bundles a REQUIRED ``features.json``
-(gapit.features/1) plus their typing document. Materialization replays the
+(gspec.floors/1), cluster bundles a REQUIRED ``features.json``
+(gspec.features/1) plus their typing document. Materialization replays the
 standard build pipelines into the user's datadir — the gene path through
 :func:`gspec.db_build_ops.perform_build`, the cluster path through
 :func:`gspec.bundled_cluster.materialize_cluster_bundle` (which rebuilds
@@ -19,9 +19,9 @@ non-commercial, or third-party provider snapshots whose redistribution terms
 are uncertain. Every provider database — ncbi, card, ecoh, resfinder, ... —
 is fetch-on-demand only, even when its upstream license would permit a
 snapshot. The typed cluster snapshot vpa_ok is a pure built-in (no provider
-behind it) carrying the resolved gapit.features/1 table a completed /2
+behind it) carrying the resolved gspec.features/1 table a completed /2
 build produced; a refresh means a new snapshot riding a wheel release.
-The gene build pipeline re-headers any bundled FASTA into gapit/v1 like a
+The gene build pipeline re-headers any bundled FASTA into gspec/v1 like a
 custom build, so header styles round-trip.
 
 Bundling is the exception, not the pattern, and every new bundle clears
@@ -96,32 +96,32 @@ class BundledDatabase(BaseModel, frozen=True):
 
     @property
     def floors_path(self) -> Path | None:
-        """The bundled gapit.floors/1 sidecar, when the database ships one."""
+        """The bundled gspec.floors/1 sidecar, when the database ships one."""
         floors = self.path / "floors.json"
         return floors if floors.is_file() else None
 
     @property
     def screen_path(self) -> Path | None:
-        """The bundled gapit.screen/1 defaults, when the database ships one."""
+        """The bundled gspec.screen/1 defaults, when the database ships one."""
         screen = self.path / "screen.json"
         return screen if screen.is_file() else None
 
     @property
     def features_path(self) -> Path | None:
-        """The bundled gapit.features/1 table — required (and checked at
+        """The bundled gspec.features/1 table — required (and checked at
         discovery) for cluster bundles, absent from gene bundles."""
         features = self.path / "features.json"
         return features if features.is_file() else None
 
     @property
     def profile_path(self) -> Path | None:
-        """The optional gapit.cluster_profile/1 sidecar for cluster bundles."""
+        """The optional gspec.cluster_profile/1 sidecar for cluster bundles."""
         profile = self.path / "cluster.json"
         return profile if profile.is_file() else None
 
     @property
     def gene_families_path(self) -> Path | None:
-        """The optional gapit.gene_families/1 sidecar for cluster bundles."""
+        """The optional gspec.gene_families/1 sidecar for cluster bundles."""
         families = self.path / "gene_families.json"
         return families if families.is_file() else None
 
@@ -133,7 +133,7 @@ class BundledDatabase(BaseModel, frozen=True):
 
     @property
     def serotype_path(self) -> Path | None:
-        """The optional gapit.serotype/1 profile sidecar for a gene bundle."""
+        """The optional gspec.serotype/1 profile sidecar for a gene bundle."""
         serotype = self.path / "serotype.json"
         return serotype if serotype.is_file() else None
 

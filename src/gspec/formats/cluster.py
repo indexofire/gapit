@@ -1,4 +1,4 @@
-"""gapit.cluster/1 renderers: the cluster-screening JSON document and its
+"""gspec.cluster/1 renderers: the cluster-screening JSON document and its
 TSV/CSV table (stage 2 of the gene-cluster feature; the Markdown renderer
 lives in formats/cluster_md.py, split at the 250-LOC ceiling in stage 3).
 
@@ -92,7 +92,7 @@ class ClusterFileDocument(BaseModel, frozen=True):
 
 
 class ClusterDocument(BaseModel, frozen=True):
-    """gapit.cluster/1 — machine-readable cluster-screening output."""
+    """gspec.cluster/1 — machine-readable cluster-screening output."""
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -148,7 +148,7 @@ def _best_document(best: BestCall) -> ClusterBestDocument:
 def render_cluster_json(
     reports: Iterable[ClusterReport], params: ClusterParams, *, now: datetime, typed: bool = False
 ) -> str:
-    """Serialize cluster screening as gapit.cluster/1 (indented, schema
+    """Serialize cluster screening as gspec.cluster/1 (indented, schema
     first; ``best`` is null when no locus cleared min_cluster_cov). On
     untyped databases the additive ``phenotype_detail`` key is excluded so
     the document stays byte-identical to the stage-2 output; typed runs

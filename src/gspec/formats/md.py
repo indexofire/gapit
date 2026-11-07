@@ -1,4 +1,4 @@
-"""Human- and agent-readable Markdown reports (gapit.report/1, gapit.reads/1).
+"""Human- and agent-readable Markdown reports (gspec.report/1, gspec.reads/1).
 
 The report is pure gene detection (typed and untyped gene databases render
 byte-identically; designation renders from formats/typing_result.py).
@@ -183,7 +183,7 @@ def _render_reads_markdown(
     columns: tuple[str, ...],
     with_identity: bool,
 ) -> str:
-    """Shared reads-report Markdown core; gapit.reads/2 adds the two filter
+    """Shared reads-report Markdown core; gspec.reads/2 adds the two filter
     lines to the frontmatter and an Identity% cell per gene."""
     files = list(reports)
     genes_found = sum(1 for report in files for gene in report.genes if gene.present)
@@ -233,7 +233,7 @@ def render_reads2_markdown(
     reports: Iterable[ReadsReport], params: ReadsParams, *, now: datetime
 ) -> str:
     """Render filtered read-screening results as deterministic Markdown
-    (gapit.reads/2): the reads/1 shape plus the filter thresholds in
+    (gspec.reads/2): the reads/1 shape plus the filter thresholds in
     frontmatter and an Identity% column per gene."""
     return _render_reads_markdown(
         reports,

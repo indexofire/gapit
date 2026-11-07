@@ -15,7 +15,7 @@ four places, so the collector merges them instead of inventing a fifth:
 - an optional **``info.json``** sidecar in a database directory, for
   user-built databases that want to carry their own references/caveats.
 
-The result is the ``gapit.dbinfo/1`` document (``db info --json``) or the
+The result is the ``gspec.dbinfo/1`` document (``db info --json``) or the
 same facts as a stable ``FIELD<TAB>VALUE`` table (the default), list-valued
 fields repeating their key — the agent-first shape ``db list`` established.
 """
@@ -49,7 +49,7 @@ class DbBuildInfo(BaseModel, frozen=True):
 
 
 class DbInfoDocument(BaseModel, frozen=True):
-    """gapit.dbinfo/1 — one database's identity, provenance, and guidance.
+    """gspec.dbinfo/1 — one database's identity, provenance, and guidance.
 
     ``status`` mirrors ``db list``: ``installed`` (manifest on disk),
     ``bundled`` (ships in the wheel, materializes on first use), or
@@ -140,7 +140,7 @@ def _build_info(manifest: Manifest) -> DbBuildInfo:
 
 
 def collect_db_info(name: str, datadir: Path | None) -> DbInfoDocument:
-    """Assemble one database's ``gapit.dbinfo/1`` document.
+    """Assemble one database's ``gspec.dbinfo/1`` document.
 
     Resolution order for the identity fields: the installed manifest (what is
     on disk) wins over the bundled metadata, which wins over the provider

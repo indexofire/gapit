@@ -4,7 +4,7 @@
 called by an agent-facing layer without duplicating the pipeline: create a
 missing datadir, materialize bundled databases that are not installed yet,
 then rebuild the index for every discovered database. The returned
-:class:`DbSetupDocument` is the machine-readable receipt (``gapit.dbsetup/1``)
+:class:`DbSetupDocument` is the machine-readable receipt (``gspec.dbsetup/1``)
 emitted by ``db setup --json``.
 """
 
@@ -32,7 +32,7 @@ class DbSetupEntry(BaseModel, frozen=True):
 
 
 class DbSetupDocument(BaseModel, frozen=True):
-    """gapit.dbsetup/1 — the ``gspec db setup --json`` receipt."""
+    """gspec.dbsetup/1 — the ``gspec db setup --json`` receipt."""
 
     model_config = ConfigDict(populate_by_name=True)
 

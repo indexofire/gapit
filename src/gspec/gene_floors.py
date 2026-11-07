@@ -1,4 +1,4 @@
-"""Per-gene identity floors for reads-mode presence (gapit.floors/1).
+"""Per-gene identity floors for reads-mode presence (gspec.floors/1).
 
 A gene database may carry a ``floors.json`` sidecar declaring a MINIMUM
 alignment identity (%) per gene — the rightsholder-curated answer to
@@ -41,7 +41,7 @@ _Pct = Annotated[float, Field(ge=0.0, le=100.0)]
 
 
 class GeneFloors(BaseModel, frozen=True):
-    """gapit.floors/1 — per-gene minimum alignment identity (%) for
+    """gspec.floors/1 — per-gene minimum alignment identity (%) for
     reads-mode presence. ``default`` covers genes not in ``genes`` (null =
     no floor); an empty document is a no-op, identical to no file."""
 
@@ -131,7 +131,7 @@ def apply_gene_floors(
     per-alignment identity (:func:`gspec.paf.alignment_identity`) is below
     the gene's floor — ``genes.get(gene, default)``; None means no floor and
     the row survives verbatim. Runs BEFORE aggregation (breadth/depth/reads
-    are then computed from the survivors), independent of the gapit.reads/2
+    are then computed from the survivors), independent of the gspec.reads/2
     ``--min-identity`` filter — a row must clear both when both apply
     (max-of-both). The gene is decoded from the target seqid once per
     unique tname (duplicate records of one gene share the floor)."""

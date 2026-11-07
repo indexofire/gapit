@@ -37,7 +37,7 @@ _NAME = "victors"
 _FFN_NAME = "gen_downloads.php"  # nucleotide CDS content
 _FAA_NAME = "gen_downloads_protein.php"  # protein content
 _HYPOTHETICAL = "hypothetical protein"
-_FUNCTION = ("virulence",)  # locked gapit/v1 func vocabulary (Wave F2c)
+_FUNCTION = ("virulence",)  # locked gspec/v1 func vocabulary (Wave F2c)
 
 # Upstream m"^>gi.(\d+).ref.([^|]+). ([^[]+)" — its dots matched the pipes.
 # \s+ eats the id/product separator; the product runs to end of line.
