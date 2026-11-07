@@ -57,7 +57,7 @@ def test_tsv_zero_genes_header_has_no_trailing_separator(
     assert output == "#FILE\tNUM_FOUND\n"
 
 
-def test_json_is_gapit_summary_1(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_json_is_gspec_summary_1(monkeypatch: pytest.MonkeyPatch) -> None:
     """Given a matrix, When rendered as JSON, Then schema/tool/created_at lead,
     params state the metric explicitly, and rows are typed with num_found and
     per-gene value lists preserving the original strings."""

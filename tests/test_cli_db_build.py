@@ -2,7 +2,7 @@
 
 Real binaries (makeblastdb/blastn/minimap2 from the pixi env), synthetic
 fixtures only, everything local to tmp_path — the test_cli_db_fetch.py and
-test_gapit_db_e2e.py conventions. Header auto-detection (plain / abricate
+test_db_e2e.py conventions. Header auto-detection (plain / abricate
 ``~~~`` / ``gspec|``), the --tsv metadata merge, dbtype resolution, the
 DB_ALREADY_EXISTS/--force gate, and one full E2E screen against a built
 database per header kind.
@@ -23,7 +23,7 @@ from gspec.records import Record, read_manifest, read_records
 DB = "myamr"
 OTHER_DB = "myamr2"
 
-# Distinct seeds share no 11-mer in practice (test_gapit_db_e2e.py note), so
+# Distinct seeds share no 11-mer in practice (test_db_e2e.py note), so
 # the synthetic genes cannot cross-match under blastn.
 SEQ_A = "".join(random.Random(1).choice("ACGT") for _ in range(240))  # demov2
 SEQ_B = "".join(random.Random(2).choice("ACGT") for _ in range(240))  # demov3
@@ -132,7 +132,7 @@ def test_db_build_abricate_tilde_headers(tmp_path: Path) -> None:
     assert row[14] == "SULFONAMIDE"
 
 
-def test_db_build_gapit_headers_roundtrip(tmp_path: Path) -> None:
+def test_db_build_gspec_headers_roundtrip(tmp_path: Path) -> None:
     """Given a gspec| tagged FASTA, When built and screened, Then gene,
     accession and the multi-class function decode back through screening
     (roundtrip) and source_id keeps the original id token."""

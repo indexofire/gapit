@@ -277,7 +277,7 @@ def test_db_list_text_shows_installed_state(
     ) in lines
 
 
-def test_db_list_json_emits_gapit_dblist_document(
+def test_db_list_json_emits_gspec_dblist_document(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Given a datadir holding one fetched provider, When `db list --json`,

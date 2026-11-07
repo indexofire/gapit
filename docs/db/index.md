@@ -9,7 +9,7 @@ The catalog, the datadir, and everything gspec writes on disk.
     ---
 
     Fetch, list, install, and inspect databases; the provider catalog, bundled
-    panels, naming rules, and `gapit/v1` format.
+    panels, naming rules, and `gspec/v1` format.
 
     [Database catalog](../databases.md)
 

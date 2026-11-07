@@ -1131,7 +1131,7 @@ packages:
 - pypi: ./
   name: gspec
   version: 0.9.0
-  sha256: 3ff77cbff06417b0e390913f3360a74bcaf21398900b938c83d79918c0ac0780
+  sha256: ce3c358b5142671391a924fb10e17b613018640b742de73b395b8d57bb30a186
   requires_dist:
   - click>=8.2
   - pydantic>=2.7

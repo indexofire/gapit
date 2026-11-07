@@ -23,7 +23,7 @@ from gspec.formats.json import ReportDocument
 from gspec.formats.reads_json import ReadsDocument
 from gspec.records import Record, write_records
 
-DB = "tinygapit"
+DB = "tinygspec"
 SEQ_LEN = 240
 
 

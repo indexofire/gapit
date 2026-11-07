@@ -56,7 +56,7 @@ def test_db_path_uses_xdg_data_home(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert document["exists"] is False
 
 
-def test_db_path_prefers_gapit_datadir_over_xdg(
+def test_db_path_prefers_gspec_datadir_over_xdg(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv("GSPEC_DATADIR", str(tmp_path / "env"))

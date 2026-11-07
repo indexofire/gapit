@@ -66,7 +66,7 @@ def test_bare_invocation_prints_help(argv: list[str], monkeypatch: pytest.Monkey
     assert result.exit_code == BARE_HELP_EXIT
     assert "Usage:" in combined
     assert HELP_SENTINEL in combined
-    assert "gapit.error" not in combined
+    assert "gspec.error" not in combined
 
 
 def test_screen_flag_without_files_keeps_usage_error() -> None:

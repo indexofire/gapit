@@ -51,7 +51,7 @@ packages = ["src/gspec"]
 # Hatchling's `packages` selection ships every non-gitignored file under the
 # package dir (no setuptools-style package_data needed). The only database
 # content riding the wheel is the audited public-domain panel under
-# src/gapit/data/dbs/ (gspec.bundled; 30 MiB budget, AGENTS.md §6); every
+# src/gspec/data/dbs/ (gspec.bundled; 30 MiB budget, AGENTS.md §6); every
 # provider still downloads from upstream at fetch time (license compliance —
 # CARD/VFDB terms forbid redistribution).
 

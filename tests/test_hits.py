@@ -222,7 +222,7 @@ def test_stable_order_on_equal_sequence_start_keys() -> None:
     assert sorted([second, first], key=sort_key) == [second, first]
 
 
-def test_gapit_seqid_decodes_tagged_fields() -> None:
+def test_gspec_seqid_decodes_tagged_fields() -> None:
     """Given a native gspec/v1 sseqid (metachar gene, joined function classes),
     When processed, Then the gene decodes verbatim and function renders in the
     abricate display form 'a;b'."""
@@ -233,7 +233,7 @@ def test_gapit_seqid_decodes_tagged_fields() -> None:
     assert hit.function == "ampicillin;gentamicin"
 
 
-def test_gapit_stitle_strips_leading_tagged_seqid() -> None:
+def test_gspec_stitle_strips_leading_tagged_seqid() -> None:
     """Given a makeblastdb-style stitle prefixed with the tagged seqid, When
     processed, Then the leading token is dropped and commas/tabs are stripped
     (same cleanup as the ~~~ rule, minus the comma in the fixture)."""
@@ -241,7 +241,7 @@ def test_gapit_stitle_strips_leading_tagged_seqid() -> None:
     assert hit.product == "demo beta-lactamase variant A"
 
 
-def test_gapit_bare_seqid_stitle_stays() -> None:
+def test_gspec_bare_seqid_stitle_stays() -> None:
     """Given a stitle that is only the tagged seqid (no description), When
     processed, Then it stays verbatim — the Perl leading-token regex requires
     trailing whitespace, so a bare id is never stripped (quirk parity)."""
@@ -249,7 +249,7 @@ def test_gapit_bare_seqid_stitle_stays() -> None:
     assert hit.product == GAPIT_ID
 
 
-def test_gapit_and_legacy_rows_decode_side_by_side() -> None:
+def test_gspec_and_legacy_rows_decode_side_by_side() -> None:
     """Given one legacy ~~~ row and one native gspec| row in the same batch,
     When processed, Then each decodes through its own branch with its own
     product cleanup (distinct query spans, so dedup keeps both)."""
@@ -266,7 +266,7 @@ def test_gapit_and_legacy_rows_decode_side_by_side() -> None:
     assert native.product == "demo beta-lactamase variant A"
 
 
-def test_malformed_gapit_header_raises_database_error() -> None:
+def test_malformed_header_raises_database_error() -> None:
     """Given a corrupt gspec| sseqid (bad percent escape in the gene), When
     processed, Then DatabaseError HEADER_MALFORMED with exit 4 — the
     documented no-silent-failure contract."""
