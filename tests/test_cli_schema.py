@@ -1,4 +1,4 @@
-"""Tests for the `gapit schema` introspection command."""
+"""Tests for the `gspec schema` introspection command."""
 
 import json
 

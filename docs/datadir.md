@@ -1,25 +1,25 @@
 # Data directory and database layout
 
-gapit keeps **tool environments** and **database state** separate. This page explains
+gspec keeps **tool environments** and **database state** separate. This page explains
 where databases live, what a database directory contains, why the default is not inside
 a conda environment, and how sharing and containers behave.
 
-If you only need the command: `gapit db path` prints the effective datadir, and
-`gapit db list` lists the catalog after bootstrapping that directory.
+If you only need the command: `gspec db path` prints the effective datadir, and
+`gspec db list` lists the catalog after bootstrapping that directory.
 
 ## Quick decision table
 
 | Situation | Recommended datadir |
 |---|---|
-| One user, several conda/envs | Default user-level datadir (shared cache); refresh after gapit upgrades |
-| Project needs reproducible DB versions | Explicit `--datadir` or `GAPIT_DATADIR` per project |
-| Persistent machine / workstation | `$XDG_DATA_HOME/gapit/db`, else `~/.local/share/gapit/db` |
+| One user, several conda/envs | Default user-level datadir (shared cache); refresh after gspec upgrades |
+| Project needs reproducible DB versions | Explicit `--datadir` or `GSPEC_DATADIR` per project |
+| Persistent machine / workstation | `$XDG_DATA_HOME/gspec/db`, else `~/.local/share/gspec/db` |
 | CI | Cache or mount a workspace datadir; pin DB versions |
-| Docker / Podman | Named volume or bind mount + `GAPIT_DATADIR`; never rely on container `$HOME` |
+| Docker / Podman | Named volume or bind mount + `GSPEC_DATADIR`; never rely on container `$HOME` |
 | Multi-user HPC | Per-user datadir; shared read-only references need an explicit permission model |
 | Strict safety boundary | Do not share a writable datadir across users or untrusted jobs |
 
-## What is a gapit database?
+## What is a gspec database?
 
 A database is a **directory under the datadir**, one subdirectory per database name:
 
@@ -27,7 +27,7 @@ A database is a **directory under the datadir**, one subdirectory per database n
 <datadir>/<name>/
 ├── sequences                  # required: FASTA used by BLAST/minimap2
 ├── gapit-manifest.json        # provenance + certification (gapit.manifest/1)
-├── records.jsonl              # gene truth store (gapit-built gene databases)
+├── records.jsonl              # gene truth store (gspec-built gene databases)
 ├── features.json              # locus/gene table (cluster databases)
 ├── typing.json                # optional gapit.typing/1 or /2 rules
 ├── floors.json                # optional per-gene identity floors
@@ -35,14 +35,14 @@ A database is a **directory under the datadir**, one subdirectory per database n
 └── sequences.n* / sequences.p* / sequences.nhr ...   # BLAST index
 ```
 
-`sequences` is the screening input. Its headers carry the gene metadata: native gapit
+`sequences` is the screening input. Its headers carry the gene metadata: native gspec
 databases use the tagged `gapit/v1` form (`gapit|db=...|gene=...|acc=...|func=...` with
 the product after a space); legacy abricate databases use `~~~`-separated headers.
-gapit can read both.
+gspec can read both.
 
 The BLAST index (`.nin/.nsq/.nhr` for nucleotide, `.pin/.psq/.phr` for protein) is a
 generated artifact, not source data. A missing or stale index is rebuilt by
-`gapit db setup` or by the normal build pipeline. Cluster databases additionally carry a
+`gspec db setup` or by the normal build pipeline. Cluster databases additionally carry a
 `sequences.asm20.mmi` minimap2 target index, which `db setup` also refreshes; legacy
 cluster screening uses it when fresh.
 
@@ -55,13 +55,13 @@ legacy abricate compatibility.
 
 A gene database holds one FASTA record per known gene/marker. Contig screening uses
 `blastn` (or `blastx` for protein databases); reads screening uses `minimap2`. A gene
-database may carry an optional `typing.json` so `gapit typing` can designate phenotypes
+database may carry an optional `typing.json` so `gspec typing` can designate phenotypes
 from a screen table.
 
 ### Cluster databases
 
 A cluster database (`kind: cluster`) holds one FASTA record per **locus** plus
-`features.json`, which maps loci to genes and coordinates. `gapit screen` runs the
+`features.json`, which maps loci to genes and coordinates. `gspec screen` runs the
 minimap2 cluster engine and scores genes/loci from the `cs` walk. A multi-scheme
 `typing.json` makes the cluster output `gapit.cluster/2`; otherwise the database renders
 `gapit.cluster/1`. `vpa_ok` is the bundled typed-cluster example.
@@ -84,21 +84,26 @@ under the datadir, not executed from the wheel.
 Resolution order, highest first:
 
 1. `--datadir PATH` / `-D PATH`
-2. `$GAPIT_DATADIR`
-3. `$XDG_DATA_HOME/gapit/db` (only when `XDG_DATA_HOME` is absolute)
-4. `~/.local/share/gapit/db`
+2. `$GSPEC_DATADIR`
+3. `$XDG_DATA_HOME/gspec/db` (only when `XDG_DATA_HOME` is absolute)
+4. `~/.local/share/gspec/db`
 
-`gapit db path` prints the effective path **without creating it**. Add `--json` for a
+`gspec db path` prints the effective path **without creating it**. Add `--json` for a
 `gapit.datadir/1` document with `datadir`, `exists`, and `source` (`cli`, `env`, `xdg`,
 or `default`) — useful in Docker entrypoints and agent workflows.
+
+Two rename accommodations keep pre-0.8 installs working: `$GAPIT_DATADIR` is still read
+when `$GSPEC_DATADIR` is unset, and when only the pre-0.8 `~/.local/share/gapit/db`
+exists it keeps being used as the home default. Run
+`mv ~/.local/share/gapit ~/.local/share/gspec` to adopt the new path.
 
 Commands differ on whether they create the directory:
 
 | Command | Missing datadir |
 |---|---|
-| `gapit db list` | Creates the empty root, then lists the catalog |
-| `gapit db setup` | Creates the root, materializes bundled databases, indexes all |
-| `gapit db fetch` / `db build` | Creates the root as part of the write path |
+| `gspec db list` | Creates the empty root, then lists the catalog |
+| `gspec db setup` | Creates the root, materializes bundled databases, indexes all |
+| `gspec db fetch` / `db build` | Creates the root as part of the write path |
 | `screen` / `typing` against a bundled name | Creates the root and materializes that bundle |
 | `screen` / `typing` against a fetched name | Requires it (`DATADIR_NOT_FOUND`, exit 4) |
 | `db search` / `db outdated` | Requires it (`DATADIR_NOT_FOUND`, exit 4) |
@@ -106,9 +111,9 @@ Commands differ on whether they create the directory:
 `db list` and `db setup` are the explicit first-run bootstrap paths. `db path` is pure
 introspection.
 
-### Bootstrapping with `gapit db setup`
+### Bootstrapping with `gspec db setup`
 
-`gapit db setup` creates a missing datadir, materializes bundled databases that are
+`gspec db setup` creates a missing datadir, materializes bundled databases that are
 not installed yet, and rebuilds the BLAST index for every database it finds. An
 already-installed bundle (manifest present) is left untouched; every discovered
 database is reindexed in place, so the command is a repair path as well as a first-run
@@ -117,10 +122,10 @@ path.
 Select databases explicitly:
 
 ```bash
-gapit db setup                 # same as --all (kept for compatibility)
-gapit db setup -a              # all installed + bundled databases
-gapit db setup -d nme_sero   # only nme_sero
-gapit db setup -d eco_dec -d cje_cps
+gspec db setup                 # same as --all (kept for compatibility)
+gspec db setup -a              # all installed + bundled databases
+gspec db setup -d nme_sero   # only nme_sero
+gspec db setup -d eco_dec -d cje_cps
 ```
 
 `--all/-a` never fetches providers: it materializes missing bundled databases and
@@ -147,7 +152,7 @@ fetched, and every database that was indexed:
 {"schema":"gapit.dbsetup/1","datadir":"/path/to/db","materialized":["eco_dec"],"fetched":[],"databases":[{"db":"eco_dec","records":16,"dbtype":"nucl"}]}
 ```
 
-Introspect it with `gapit schema dbsetup`.
+Introspect it with `gspec schema dbsetup`.
 
 ## Why not `$CONDA_PREFIX` by default?
 
@@ -161,14 +166,14 @@ Conda environments are **toolchain environments**, not user-data stores:
   runtime (bundles materialize once into the shared datadir).
 
 For **immutable reference data shipped by a conda package**, `$CONDA_PREFIX/share/...`
-can be a reasonable location. gapit's databases are fetched, built, refreshed, and
+can be a reasonable location. gspec's databases are fetched, built, refreshed, and
 customized at runtime, so they are user state and belong under the user data directory.
 
 If you do want environment-local data, opt in explicitly:
 
 ```bash
-export GAPIT_DATADIR="$CONDA_PREFIX/db/gapit"
-gapit db list
+export GSPEC_DATADIR="$CONDA_PREFIX/db/gspec"
+gspec db list
 ```
 
 The caveat is the opposite of the default: deleting the env deletes the databases; each
@@ -189,8 +194,8 @@ reference content across envs. It is **not** an isolation or security boundary.
 
 **Version skew.** Environment A may ship a newer bundled snapshot than the datadir
 already contains. `db list` shows installed state, but `db outdated` does not compare a
-wheel's bundled snapshot with the installed copy. After upgrading gapit in one env,
-either refresh explicitly (`gapit db fetch -d <name> --force`) or use a per-project datadir.
+wheel's bundled snapshot with the installed copy. After upgrading gspec in one env,
+either refresh explicitly (`gspec db fetch -d <name> --force`) or use a per-project datadir.
 
 **Name collisions.** Two envs building the same custom name do not silently overwrite
 without `--force`, but `--force` affects every env sharing the datadir. Use unique names
@@ -201,7 +206,7 @@ hidden per-database `flock`, and builds happen in a hidden staging directory bef
 rename swap. Readers normally see the old database or the new one; there is still a
 short rename window where the canonical path is being replaced. Do not schedule
 concurrent writes to the same database against a shared datadir if a reader cannot
-tolerate that window. `gapit db setup` rebuilds BLAST indices in place, so do not run it
+tolerate that window. `gspec db setup` rebuilds BLAST indices in place, so do not run it
 concurrently with `db fetch`/`db build` for the same database.
 
 **Permissions.** New datadirs and transaction staging directories are created `0700`.
@@ -220,29 +225,29 @@ makes the default path fail entirely.
 Use an explicit mount and environment variable:
 
 ```bash
-docker volume create gapit-data
+docker volume create gspec-data
 
 docker run --rm -it \
   --user "$(id -u):$(id -g)" \
-  -v gapit-data:/data/gapit \
-  -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.8 gapit db list
+  -v gspec-data:/data/gspec \
+  -e GSPEC_DATADIR=/data/gspec \
+  gspec:0.8.0 gspec db list
 ```
 
 For CI, mount or cache a workspace directory and pin versions:
 
 ```bash
 docker run --rm \
-  -v "$PWD/.gapit-db:/data/gapit" \
-  -e GAPIT_DATADIR=/data/gapit \
-  gapit:0.6.8 gapit screen sample.fna --db eco_dec
+  -v "$PWD/.gspec-db:/data/gspec" \
+  -e GSPEC_DATADIR=/data/gspec \
+  gspec:0.8.0 gspec screen sample.fna --db eco_dec
 ```
 
 You can bake reference databases into an image for **read-only** screening:
 
 ```dockerfile
-RUN gapit db setup --datadir /opt/gapit/db
-ENV GAPIT_DATADIR=/opt/gapit/db
+RUN gspec db setup --datadir /opt/gspec/db
+ENV GSPEC_DATADIR=/opt/gspec/db
 ```
 
 Runtime `db fetch`/`db build` writes then land in the container layer (and vanish) or
@@ -253,9 +258,9 @@ a project datadir instead.
 ## Security and reproducibility checklist
 
 - Keep the datadir under the user's home or an explicit project/volume path.
-- Use `gapit db path --json` in entrypoints rather than guessing paths.
+- Use `gspec db path --json` in entrypoints rather than guessing paths.
 - Pin database versions for published analyses; record the manifest.
-- Refresh consciously after a gapit upgrade.
+- Refresh consciously after a gspec upgrade.
 - Do not share a writable datadir across users without ACLs.
 - Treat provider downloads as a trust boundary; verify upstream content where possible.
 - Back up `records.jsonl`/custom inputs, not the generated BLAST index.
@@ -263,10 +268,10 @@ a project datadir instead.
 ## Related commands
 
 ```text
-gapit db path [--json]      # resolved datadir, no creation
-gapit db list [--json]      # catalog + install state; bootstraps root
-gapit db setup              # bootstrap + materialize + index
-gapit db fetch -d NAME         # provider download/build
-gapit db build NAME INPUT   # custom gene or cluster database
-gapit db outdated           # installed DB age (strict; requires datadir)
+gspec db path [--json]      # resolved datadir, no creation
+gspec db list [--json]      # catalog + install state; bootstraps root
+gspec db setup              # bootstrap + materialize + index
+gspec db fetch -d NAME         # provider download/build
+gspec db build NAME INPUT   # custom gene or cluster database
+gspec db outdated           # installed DB age (strict; requires datadir)
 ```

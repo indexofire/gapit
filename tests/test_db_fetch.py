@@ -1,4 +1,4 @@
-"""Integration tests: `gapit db install` — verified local-file installation.
+"""Integration tests: `gspec db install` — verified local-file installation.
 
 Generic file plumbing only: plain-text (non-biological) fixtures copied from a
 local source path to a target with a streaming SHA256 check. There is no
@@ -19,7 +19,7 @@ from gapit.errors import ErrorEnvelope
 runner = CliRunner()
 envelope_adapter = TypeAdapter(ErrorEnvelope)
 
-PAYLOAD = b"gapit local install fixture: plain text, not sequence data\n" * 37
+PAYLOAD = b"gspec local install fixture: plain text, not sequence data\n" * 37
 PAYLOAD_SHA256 = hashlib.sha256(PAYLOAD).hexdigest()
 OLD_TARGET = b"previous install, must survive a failed fetch\n"
 

@@ -1,6 +1,6 @@
 """Database setup use-case: bootstrap the datadir and rebuild BLAST indices.
 
-``perform_setup`` is the behavior behind ``gapit db setup`` (CLI) and can be
+``perform_setup`` is the behavior behind ``gspec db setup`` (CLI) and can be
 called by an agent-facing layer without duplicating the pipeline: create a
 missing datadir, materialize bundled databases that are not installed yet,
 then rebuild the index for every discovered database. The returned
@@ -30,7 +30,7 @@ class DbSetupEntry(BaseModel, frozen=True):
 
 
 class DbSetupDocument(BaseModel, frozen=True):
-    """gapit.dbsetup/1 — the ``gapit db setup --json`` receipt."""
+    """gapit.dbsetup/1 — the ``gspec db setup --json`` receipt."""
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -108,7 +108,7 @@ def perform_setup(
             if name in providers:
                 if not fetch:
                     raise DatabaseError(
-                        f"database {name!r} is not installed; run: gapit db fetch -d {name}",
+                        f"database {name!r} is not installed; run: gspec db fetch -d {name}",
                         code="DATABASE_NOT_FOUND",
                         context={"db": name, "datadir": str(root)},
                     )

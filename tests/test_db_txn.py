@@ -30,8 +30,8 @@ def test_staged_database_replaces_on_success(tmp_path: Path) -> None:
 
     assert (db_dir / "new").read_text(encoding="utf-8") == "new"
     assert not (db_dir / "old").exists()
-    assert list(tmp_path.glob(".gapit-txn.backup.*")) == []
-    assert list(tmp_path.glob(".gapit-txn.build.*")) == []
+    assert list(tmp_path.glob(".gspec-txn.backup.*")) == []
+    assert list(tmp_path.glob(".gspec-txn.build.*")) == []
 
 
 def test_staged_database_restores_on_failure(tmp_path: Path) -> None:
@@ -47,7 +47,7 @@ def test_staged_database_restores_on_failure(tmp_path: Path) -> None:
 
     assert (db_dir / "old").read_text(encoding="utf-8") == "old"
     assert not (db_dir / "new").exists()
-    assert list(tmp_path.glob(".gapit-txn.backup.*")) == []
+    assert list(tmp_path.glob(".gspec-txn.backup.*")) == []
 
 
 def test_staged_database_removes_a_failed_first_build(tmp_path: Path) -> None:
@@ -94,7 +94,7 @@ def test_force_rebuild_failure_restores_the_previous_database(
 
     assert (old / "sequences").read_text(encoding="utf-8") == "OLD-SEQUENCES"
     assert (old / "gapit-manifest.json").read_text(encoding="utf-8") == "OLD-MANIFEST"
-    assert list(datadir.glob(".gapit-txn.backup.*")) == []
+    assert list(datadir.glob(".gspec-txn.backup.*")) == []
 
 
 def test_make_blast_db_does_not_delete_an_index_before_preflight(
@@ -177,7 +177,7 @@ def test_discovery_ignores_hidden_transaction_directories(tmp_path: Path) -> Non
     real = tmp_path / "real"
     real.mkdir()
     (real / "sequences").write_text(">g\nACGT\n", encoding="utf-8")
-    for leftover in (".gapit-txn.build.real.dead", ".gapit-txn.backup.real.dead"):
+    for leftover in (".gspec-txn.build.real.dead", ".gspec-txn.backup.real.dead"):
         stale = tmp_path / leftover
         stale.mkdir()
         (stale / "sequences").write_text(">stale\nACGT\n", encoding="utf-8")
@@ -207,4 +207,4 @@ def test_make_blast_db_keeps_the_old_index_when_makeblastdb_fails(
 
     assert excinfo.value.code == "MAKEBLASTDB_FAILED"
     assert old_index.read_text(encoding="utf-8") == "OLD-INDEX"
-    assert list(db_dir.glob(".gapit-index.*")) == []
+    assert list(db_dir.glob(".gspec-index.*")) == []

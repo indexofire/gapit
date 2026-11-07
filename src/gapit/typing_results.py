@@ -2,7 +2,7 @@
 
 Shared by both evaluation paths: PhenotypeDetail annotates gapit.cluster/1's
 ``best`` block (typed cluster dbs), SchemeCall populates the
-``files[].phenotypes`` object of gapit.typing_result/1 (the ``gapit
+``files[].phenotypes`` object of gapit.typing_result/1 (the ``gspec
 typing`` command over typed gene dbs), and
 ScoreComponent/PhenotypeScore/ScoredRule are the explainable-breakdown
 building blocks the decision layer in typing_engine/typing_gene consumes.
@@ -85,7 +85,7 @@ class PhenotypeDetail(BaseModel, frozen=True):
 class SchemeCall(BaseModel, frozen=True):
     """One scheme's call for a screened file — one entry of the
     ``files[].phenotypes`` object of gapit.typing_result/1, keyed by
-    scheme name (the ``gapit typing`` command over a typed gene database),
+    scheme name (the ``gspec typing`` command over a typed gene database),
     and of the gapit.cluster/2 phenotypes map (multi-scheme cluster dbs).
 
     ``phenotype`` is null on an ambiguous call; the plain serializer keeps

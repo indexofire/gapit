@@ -251,7 +251,7 @@ def test_build_database_nucl_produces_all_artifacts(tmp_path: Path) -> None:
     assert on_disk.dbtype == "nucl"
     assert on_disk.header_format == "gapit/v1"
     assert on_disk.upstream_version == ""
-    assert on_disk.tool.name == "gapit"
+    assert on_disk.tool.name == "gspec"
     assert on_disk.tool.version == __version__
     assert on_disk.makeblastdb_version
     assert on_disk.minimap2_version
@@ -317,4 +317,4 @@ def test_manifest_written_last_when_blast_index_fails(
 def test_optional_tool_version_line_tolerates_missing_binary() -> None:
     """Given a binary that is not on PATH, When optional version capture runs,
     Then it returns "" instead of making a gene build fail."""
-    assert optional_tool_version_line(["definitely-not-a-gapit-tool"]) == ""
+    assert optional_tool_version_line(["definitely-not-a-gspec-tool"]) == ""

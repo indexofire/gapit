@@ -12,7 +12,7 @@ def test_provider_is_fetch_on_demand_cluster_with_ncbi_source() -> None:
     assert PROVIDER.name == "vch_oagc"
     assert PROVIDER.kind == "cluster"
     assert PROVIDER.dbtype == "nucl"
-    assert PROVIDER.vendor == "gapit(Hangzhou CDC)"
+    assert PROVIDER.vendor == "gspec(Hangzhou CDC)"
     assert PROVIDER.license and "INSDC" in PROVIDER.license
     assert len(PROVIDER.source_urls) == 1
     url = PROVIDER.source_urls[0]
@@ -43,7 +43,7 @@ def test_committed_control_locus_and_typing_asset() -> None:
 
 def test_db_list_shows_provider_metadata_and_typing(tmp_path: Path) -> None:
     entry = {item.name: item for item in db_list_entries(tmp_path)}["vch_oagc"]
-    assert entry.vendor == "gapit(Hangzhou CDC)"
+    assert entry.vendor == "gspec(Hangzhou CDC)"
     assert entry.description.startswith("Vibrio cholerae O-antigen gene clusters")
     assert entry.dbtype == "nucl"
     assert entry.kind == "cluster"

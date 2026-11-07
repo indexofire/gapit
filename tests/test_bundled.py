@@ -1,6 +1,6 @@
 """Bundled databases: discovery, materialization, and the DEC matrix.
 
-The wheel ships seven license-clean, gapit-curated bundles — the typed
+The wheel ships seven license-clean, gspec-curated bundles — the typed
 eco_dec, lmo_sero, cje_cps, shi_sero, and vch_vf panels plus the typed
 vpa_ok and untyped vpa_pai cluster snapshots. Provider-backed databases (ecoh, ncbi,
 resfinder, card, ...) are fetch-on-demand only: their upstream content
@@ -42,8 +42,8 @@ S3 = TYPING / "dec_s3_stx2a_escV_aggR_uidA.fasta"
 VPA_OK_LOCI = 195
 
 # Wheel budget for the bundled root (AGENTS.md §6 size gate): every
-# `pip install gapit` re-downloads all bundles and PyPI caps one file at
-# 100 MiB — past the budget, split a gapit-data wheel, don't inflate this.
+# `pip install gspec` re-downloads all bundles and PyPI caps one file at
+# 100 MiB — past the budget, split a gspec-data wheel, don't inflate this.
 BUDGET_BYTES = 30 * 1024 * 1024
 
 # MUST-NOT guard: VFDB/CARD tags never ride the wheel (license audit
@@ -125,7 +125,7 @@ def screen_db(sample: Path, datadir: Path, name: str, *extra: str) -> Result:
 
 def test_bundled_discovery_finds_all_bundled() -> None:
     """Given the wheel's data dir, When bundled databases are discovered,
-    Then exactly the thirteen gapit-curated bundles ship in name order —
+    Then exactly the thirteen gspec-curated bundles ship in name order —
     eight gene-kind plus the lpn_sero/pau_sero/vch_oagc/vpa_ok/vpa_pai
     cluster-kind — each metadata parses
     (vendor/dbtype/kind/snapshot date), eco_dec/lmo_sero/cje_cps carry
@@ -149,7 +149,7 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     ]
     by_name = {database.name: database for database in bundled_databases()}
     cje_cps = by_name["cje_cps"]
-    assert cje_cps.metadata.vendor.startswith("gapit-curated (Poly 2015")
+    assert cje_cps.metadata.vendor.startswith("gspec-curated (Poly 2015")
     assert cje_cps.metadata.dbtype == "nucl"
     assert cje_cps.metadata.kind == "gene"
     assert cje_cps.metadata.snapshotted == "2026-10-29"
@@ -157,14 +157,14 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert cje_cps.floors_path is not None
     assert cje_cps.screen_path is not None
     eco_dec = by_name["eco_dec"]
-    assert eco_dec.metadata.vendor == "gapit-curated (public-domain sources)"
+    assert eco_dec.metadata.vendor == "gspec-curated (public-domain sources)"
     assert eco_dec.metadata.dbtype == "nucl"
     assert eco_dec.metadata.kind == "gene"
     assert eco_dec.metadata.snapshotted == "2026-10-02"
     assert eco_dec.typing_path is not None
     assert eco_dec.floors_path is not None
     shi_sero = by_name["shi_sero"]
-    assert shi_sero.metadata.vendor.startswith("gapit-curated (ShigaTyper")
+    assert shi_sero.metadata.vendor.startswith("gspec-curated (ShigaTyper")
     assert shi_sero.metadata.dbtype == "nucl"
     assert shi_sero.metadata.kind == "gene"
     assert shi_sero.typing_path is None
@@ -172,12 +172,12 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert shi_sero.serotype_path is not None
     lmo_sero = by_name["lmo_sero"]
     assert lmo_sero.metadata.description == "Listeria monocytogenes serogrouping (Doumith 2004)"
-    assert lmo_sero.metadata.vendor == "gapit-curated (public-domain INSDC sources)"
+    assert lmo_sero.metadata.vendor == "gspec-curated (public-domain INSDC sources)"
     assert lmo_sero.metadata.dbtype == "nucl"
     assert lmo_sero.metadata.snapshotted == "2026-10-03"
     assert lmo_sero.typing_path is not None
     vch_vf = by_name["vch_vf"]
-    assert vch_vf.metadata.vendor == "gapit-curated (INSDC)"
+    assert vch_vf.metadata.vendor == "gspec-curated (INSDC)"
     assert vch_vf.metadata.dbtype == "nucl"
     assert vch_vf.metadata.kind == "gene"
     assert vch_vf.metadata.snapshotted == "2026-11-02"
@@ -185,7 +185,7 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert vch_vf.screen_path is not None
     vpa_ok = by_name["vpa_ok"]
     assert vpa_ok.metadata.kind == "cluster"
-    assert vpa_ok.metadata.vendor == "gapit-curated (vpasero)"
+    assert vpa_ok.metadata.vendor == "gspec-curated (vpasero)"
     assert vpa_ok.metadata.snapshotted == "2026-10-12"
     assert vpa_ok.metadata.license == "MIT (database content)"
     assert vpa_ok.typing_path is not None
@@ -194,7 +194,7 @@ def test_bundled_discovery_finds_all_bundled() -> None:
     assert vpa_ok.gene_families_path is not None
     vpa_pai = by_name["vpa_pai"]
     assert vpa_pai.metadata.kind == "cluster"
-    assert vpa_pai.metadata.vendor == "gapit-curated (Boyd et al. 2008; INSDC)"
+    assert vpa_pai.metadata.vendor == "gspec-curated (Boyd et al. 2008; INSDC)"
     assert vpa_pai.metadata.license == "Public domain (INSDC sequences)"
     assert vpa_pai.typing_path is None
     assert vpa_pai.features_path is not None
@@ -238,13 +238,13 @@ def test_bundled_headers_carry_no_red_flag_tags() -> None:
 def test_bundled_root_stays_within_the_wheel_budget() -> None:
     """Given every file under the bundled root, When the bytes are summed,
     Then the total stays within the 30 MiB wheel budget (AGENTS.md §6 size
-    gate) — over it, the fix is a gapit-data split or fetch-on-demand,
+    gate) — over it, the fix is a gspec-data split or fetch-on-demand,
     never a ceiling bump."""
     total = sum(path.stat().st_size for path in BUNDLED_ROOT.rglob("*") if path.is_file())
     assert total <= BUDGET_BYTES, (
         f"bundled databases total {total / 1024 / 1024:.1f} MiB, over the "
         f"{BUDGET_BYTES // 1024 // 1024} MiB wheel budget (AGENTS.md §6): "
-        "split a gapit-data wheel or keep the new content fetch-on-demand"
+        "split a gspec-data wheel or keep the new content fetch-on-demand"
     )
 
 
@@ -282,7 +282,7 @@ def test_screen_auto_materializes_on_fresh_empty_datadir(tmp_path: Path) -> None
     result = screen(S1, datadir)
 
     assert result.exit_code == 0, result.stderr
-    assert f"gapit: materializing bundled database eco_dec (16 records) into {datadir}" in (
+    assert f"gspec: materializing bundled database eco_dec (16 records) into {datadir}" in (
         result.stderr
     )
     db_dir = datadir / "eco_dec"
@@ -353,7 +353,7 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     bundled_rows = [line for line in lines if line.startswith("eco_dec\t")]
     assert bundled_rows == [
         "eco_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
-        "\tbundled\tnucl\tgene\tcommand\tgapit-curated (public-domain sources)"
+        "\tbundled\tnucl\tgene\tcommand\tgspec-curated (public-domain sources)"
     ]
     bundled_all = set(bundled_names())
     first_bundled = next(
@@ -369,7 +369,7 @@ def test_db_list_bundled_to_installed_transition(tmp_path: Path) -> None:
     assert after.exit_code == 0
     assert (
         "eco_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
-        "\tinstalled (16)\tnucl\tgene\tcommand\tgapit-curated (public-domain sources)"
+        "\tinstalled (16)\tnucl\tgene\tcommand\tgspec-curated (public-domain sources)"
         in after.stdout
     )
 
@@ -403,7 +403,7 @@ def test_typed_screen_golden_hybrid_and_headline(tmp_path: Path) -> None:
     screened as the DEFAULT format (multi-file, --nopath), Then the output
     is the pure frozen 15-column abricate table — typed and untyped gene
     databases screen byte-identically (the inverted former
-    phenotype-column golden; designation now renders via `gapit typing`)."""
+    phenotype-column golden; designation now renders via `gspec typing`)."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
     result = runner.invoke(

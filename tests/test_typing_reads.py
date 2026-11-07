@@ -1,7 +1,7 @@
-"""Reads-mode input for `gapit typing`: #SAMPLE/BREADTH% tables.
+"""Reads-mode input for `gspec typing`: #SAMPLE/BREADTH% tables.
 
 The second stage originally read only contig screen tables. A reads screen
-(`gapit screen --r1/--r2`) renders the same gene calls under different
+(`gspec screen --r1/--r2`) renders the same gene calls under different
 column names, so typing must fold those rows too: #SAMPLE is the FILE key,
 BREADTH% is the coverage metric, PRESENT=no rows are skipped, and reads/2's
 opt-in IDENTITY% supplies the identity when present.

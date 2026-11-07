@@ -21,7 +21,7 @@
       "Assembly-contig input only (no FASTQ)"
     ],
     "usage": [
-      "gapit screen -d lpn_sero -C 60 -G 90 *.fna"
+      "gspec screen -d lpn_sero -C 60 -G 90 *.fna"
     ]
   }
 }

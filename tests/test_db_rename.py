@@ -1,4 +1,4 @@
-"""`gapit db rename`: re-homing an installed database under a new name.
+"""`gspec db rename`: re-homing an installed database under a new name.
 
 Gene databases carry the name in every record and header, so a rename must
 rebuild them; cluster databases carry it only in the manifest. Both paths are

@@ -6,7 +6,7 @@ with gapit.typing/3 key_kmers differential sets (k=31) resolving SNP-level
 serotype pairs. Both FASTA (alignment) and FASTQ (k-mer containment) paths
 are supported.
 
-GPL-3.0: nothing is bundled with gapit (MIT); `gapit db fetch spn_sero`
+GPL-3.0: nothing is bundled with gspec (MIT); `gspec db fetch spn_sero`
 downloads and builds locally. Cite SeroBA when using results.
 """
 
@@ -141,7 +141,7 @@ PROVIDER = ClusterProvider(
             "key_kmers resolve SNP-level pairs (6A/6B, 9A/9V, 15B/15C);"
             " phase-variable variants may flip with switch state",
             "Rough/unencapsulated strains (R6-like) correctly report non-typeable",
-            "GPL-3.0: fetched on demand, never bundled into the gapit wheel",
+            "GPL-3.0: fetched on demand, never bundled into the gspec wheel",
             "Both assembly (FASTA) and reads (FASTQ) supported",
         ),
     ),

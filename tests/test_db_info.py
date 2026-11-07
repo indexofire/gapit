@@ -1,4 +1,4 @@
-"""`gapit db info`: one database's provenance, references, usage, and caveats.
+"""`gspec db info`: one database's provenance, references, usage, and caveats.
 
 The command is a pure read over four existing sources (provider catalog,
 ``bundled.json``, the installed manifest, and an optional ``info.json``
@@ -92,7 +92,7 @@ def test_info_flips_to_installed_with_build_provenance(datadir: Path) -> None:
     assert document.records == 42
     assert document.kind == "gene"
     assert document.typing_schema == "gapit.typing/2"
-    assert document.build is not None and document.build.tool.startswith("gapit ")
+    assert document.build is not None and document.build.tool.startswith("gspec ")
     assert document.snapshot == "2026-10-29"
     assert len(document.references) == 4
     assert len(document.caveats) >= 5
@@ -125,10 +125,10 @@ def test_info_reads_a_user_database_sidecar(datadir: Path) -> None:
         json.dumps(
             {
                 "description": "In-house AMR panel",
-                "vendor": "gapit(Hangzhou CDC)",
+                "vendor": "gspec(Hangzhou CDC)",
                 "references": [{"citation": "Smith 2026, Lab panel (unpublished)"}],
                 "caveats": ["unpublished panel: validate before reporting"],
-                "usage": ["gapit screen x.fa --db labgenes"],
+                "usage": ["gspec screen x.fa --db labgenes"],
             }
         ),
         encoding="utf-8",
@@ -139,13 +139,13 @@ def test_info_reads_a_user_database_sidecar(datadir: Path) -> None:
     assert document.status == "installed"
     assert document.kind == "gene"
     assert document.description == "In-house AMR panel"
-    assert document.vendor == "gapit(Hangzhou CDC)"
+    assert document.vendor == "gspec(Hangzhou CDC)"
     assert document.source_urls == ("local",)
     assert [reference.citation for reference in document.references] == [
         "Smith 2026, Lab panel (unpublished)"
     ]
     assert document.caveats == ("unpublished panel: validate before reporting",)
-    assert document.usage == ("gapit screen x.fa --db labgenes",)
+    assert document.usage == ("gspec screen x.fa --db labgenes",)
 
 
 def test_info_rejects_a_malformed_sidecar(datadir: Path) -> None:
@@ -190,7 +190,7 @@ def test_info_render_is_two_columns_and_tab_safe(datadir: Path) -> None:
 
 
 def test_dbinfo_schema_is_registered() -> None:
-    """Given `gapit schema dbinfo`, When run, Then the JSON schema of
+    """Given `gspec schema dbinfo`, When run, Then the JSON schema of
     gapit.dbinfo/1 is printed — the document is part of the public surface."""
     result = runner.invoke(app, ["schema", "dbinfo"])
 
@@ -210,10 +210,10 @@ def test_manual_rendering_is_a_man_page(datadir: Path) -> None:
 
     lines = page.splitlines()
     assert lines[0].startswith("CJE_CPS(1)") and lines[0].endswith("CJE_CPS(1)")
-    assert "gapit database manual" in lines[0]
+    assert "gspec database manual" in lines[0]
     headings = [line for line in lines if line and not line.startswith(" ")]
     assert headings == [
-        "CJE_CPS(1)                   gapit database manual                    CJE_CPS(1)",
+        "CJE_CPS(1)                   gspec database manual                    CJE_CPS(1)",
         "NAME",
         "SYNOPSIS",
         "DESCRIPTION",
@@ -262,7 +262,7 @@ def test_manual_rendering_omits_sections_it_does_not_have(datadir: Path) -> None
     assert "STATUS" in page and "installed" in page
     # The usage recipe is derived, so even a bare database is runnable.
     assert "USAGE" in page
-    assert "$ gapit screen -d labgenes [FILE]... --format json" in page
+    assert "$ gspec screen -d labgenes [FILE]... --format json" in page
     # No build-less provenance rows are invented.
     assert "Built by" in page  # this one IS installed, so it has build provenance
     assert "SEE ALSO" in page
@@ -276,7 +276,7 @@ def test_usage_lines_are_not_broken_mid_command(datadir: Path) -> None:
 
     page = render_db_manual(document, width=80)
 
-    assert "       $ gapit screen isolate.fa --db cje_cps --output cps.tsv\n" in page
+    assert "       $ gspec screen isolate.fa --db cje_cps --output cps.tsv\n" in page
     assert "         # stage 1: detect CPS amplicons" in page
 
 
@@ -349,4 +349,4 @@ def test_bundled_cje_cps_usage_is_declared_not_synthesized(datadir: Path) -> Non
     document = collect_db_info("cje_cps", datadir)
 
     assert any("--output cps.tsv" in step for step in document.usage)
-    assert any(step.startswith("gapit typing") for step in document.usage)
+    assert any(step.startswith("gspec typing") for step in document.usage)

@@ -1,4 +1,4 @@
-"""CLI tests for `gapit db path`: resolved datadir introspection."""
+"""CLI tests for `gspec db path`: resolved datadir introspection."""
 
 import json
 from pathlib import Path
@@ -41,9 +41,9 @@ def test_db_path_json_reports_source_and_existence(tmp_path: Path) -> None:
 
 
 def test_db_path_uses_xdg_data_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Given XDG_DATA_HOME and no GAPIT_DATADIR/--datadir, When `db path`
+    """Given XDG_DATA_HOME and no GSPEC_DATADIR/--datadir, When `db path`
     runs, Then the XDG user-data root is selected and reported as source=xdg."""
-    monkeypatch.delenv("GAPIT_DATADIR", raising=False)
+    monkeypatch.delenv("GSPEC_DATADIR", raising=False)
     xdg = tmp_path / "xdg"
     monkeypatch.setenv("XDG_DATA_HOME", str(xdg))
 
@@ -51,7 +51,7 @@ def test_db_path_uses_xdg_data_home(tmp_path: Path, monkeypatch: pytest.MonkeyPa
 
     assert result.exit_code == 0, result.stderr
     document = json.loads(result.stdout)
-    assert document["datadir"] == str((xdg / "gapit" / "db").resolve())
+    assert document["datadir"] == str((xdg / "gspec" / "db").resolve())
     assert document["source"] == "xdg"
     assert document["exists"] is False
 
@@ -59,7 +59,7 @@ def test_db_path_uses_xdg_data_home(tmp_path: Path, monkeypatch: pytest.MonkeyPa
 def test_db_path_prefers_gapit_datadir_over_xdg(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("GAPIT_DATADIR", str(tmp_path / "env"))
+    monkeypatch.setenv("GSPEC_DATADIR", str(tmp_path / "env"))
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "xdg"))
 
     result = runner.invoke(app, ["db", "path", "--json"])

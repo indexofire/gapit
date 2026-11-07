@@ -1,7 +1,7 @@
 # reads 与 assembly 筛查（FASTQ / FASTA）
 
-`gapit screen --r1/--r2` 用 minimap2 把原始 FASTQ reads 或整条 assembly FASTA 比对到
-基因数据库，按比对广度判定基因存在。abricate 完全不能筛查 reads；这个模式是 gapit
+`gspec screen --r1/--r2` 用 minimap2 把原始 FASTQ reads 或整条 assembly FASTA 比对到
+基因数据库，按比对广度判定基因存在。abricate 完全不能筛查 reads；这个模式是 gspec
 扩展 —— 存在阈值（`--min-breadth`）与 contig 流水线的一致性/覆盖度下限不同，但输出
 格式默认值（tsv）与全局的人类默认值一致。
 
@@ -16,7 +16,7 @@
 ## 调用方式
 
 ```text
-gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map-ont|map-hifi]
+gspec screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map-ont|map-hifi]
 ```
 
 - `--r1` 接受 FASTQ reads 或 FASTA assembly（见下文）；逗号分隔，每条 lane 一项。
@@ -34,10 +34,10 @@ gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map
 ## 用通配符筛查一批 FASTQ 文件（自动配对样本）
 
 `--r1`/`--r2` 需要你自己点名各条 lane。批量任务里更省事的做法是把 shell 的通配符
-展开直接交给 `screen`，由 gapit 推断样本：
+展开直接交给 `screen`，由 gspec 推断样本：
 
 ```console
-$ gapit screen -d eco_dec *.gz
+$ gspec screen -d eco_dec *.gz
 ```
 
 当**每个**位置参数文件都是 FASTQ —— 扩展名是 `.fastq`/`.fq`（可带 `.gz`/`.gzip`），或扩展名
@@ -93,7 +93,7 @@ $ gapit screen -d eco_dec *.gz
 
 - **tsv**（默认格式）流式输出：先发 `#SAMPLE` 表头行，随后每完成一个样本即落出它
   的基因行（每基因一行，样本名在第一列；无基因的样本不产生行）。`--format csv` 是
-  同一张表的逗号拼写。tsv 是 gapit 所有界面上的人类默认值 —— 单样本
+  同一张表的逗号拼写。tsv 是 gspec 所有界面上的人类默认值 —— 单样本
   `--r1`/`--r2` 与 `--aligner minimap2` 路径同样默认它；要给 agent 单一文档时改传
   `--format json`。
 - **md** 先发静态 frontmatter（schema、tool、`created_at`、db、阈值 —— 本路径没有
@@ -109,7 +109,7 @@ $ gapit screen -d eco_dec *.gz
 逐样本的 `Screening sample …`/`Detected N present genes` 提示。stderr 被管道或重定向、
 以及 `--quiet` 时，保持与今天逐字节相同的纯文本提示。进度条绝不触碰 stdout：开与关的
 流式字节完全一致，惰性的 `#SAMPLE` 表头依然最先发出。contig 路径
-（[./screen.zh.md](./screen.zh.md)）与 `gapit db fetch -d all` 使用同一条进度条。
+（[./screen.zh.md](./screen.zh.md)）与 `gspec db fetch -d all` 使用同一条进度条。
 
 单样本的 `--r1`/`--r2` 路径在两点上不同：不接受 `--jobs`，其 Markdown
 frontmatter 保留 `files:`/`genes_found:` 运行总计（它的 tsv 默认渲染同一张表，
@@ -117,8 +117,8 @@ frontmatter 保留 `files:`/`genes_found:` 运行总计（它的 tsv 默认渲�
 
 ## 选项
 
-reads 模式走同一条 `gapit screen` 命令；以下是适用的参数（转写自 `gapit screen
---help`，gapit 0.6.8）。这里未列出的 contig 模式参数（`--minid`、`--mincov`、
+reads 模式走同一条 `gspec screen` 命令；以下是适用的参数（转写自 `gspec screen
+--help`，gspec 0.8.0）。这里未列出的 contig 模式参数（`--minid`、`--mincov`、
 `--fofn`、`--noheader`、`--nopath`）不适用；`--jobs` 只适用于通配符路径（见上文）。
 
 | 参数 | 类型 | 默认值 | 说明 |
@@ -132,8 +132,8 @@ reads 模式走同一条 `gapit screen` 命令；以下是适用的参数（转�
 | `--min-depth` | float | `0.0`（关闭） | 判定存在的最小平均深度。 |
 | `--min-relative-depth` | float | `0.0`（关闭） | 基因:对照基因平均深度比的最小值（0..1）；见[相对深度门控](#relative-depth)。 |
 | `--relative-to` | str | `lpxA` | `--min-relative-depth` 的对照基因。 |
-| `--db` | str | 必填 | 用于筛查的数据库（数据目录的子目录）。没有默认值 —— 请显式选择（`gapit db list`）。 |
-| `--datadir` | path | `$GAPIT_DATADIR`，然后 `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db` | 数据库目录。 |
+| `--db` | str | 必填 | 用于筛查的数据库（数据目录的子目录）。没有默认值 —— 请显式选择（`gspec db list`）。 |
+| `--datadir` | path | `$GSPEC_DATADIR`，然后 `$XDG_DATA_HOME/gspec/db`，最后 `~/.local/share/gspec/db` | 数据库目录。 |
 | `--threads` | int | `1` | minimap2 工作线程数。 |
 | `--jobs` | int | `1` | 仅通配符路径：并发筛查 N 个样本（`--r1`/`--r2` 拒绝它）。输出顺序始终是样本顺序。 |
 | `--quiet` | 开关 | 关闭 | 静默 stderr 诊断（包括 assembly-FASTA 提示）。 |
@@ -183,16 +183,16 @@ assembly FASTA 要求 `map-ont`（退出码 2）。FASTQ 接受任何显式预�
 加入缺席判定（breadth 低于阈值）。表尾列为 `PRODUCT`（contig 表保留 abricate 的
 `RESISTANCE` 列；reads 表不携带该列）。
 
-reads 表可以直接喂给 `gapit typing`——`gapit screen --r1 reads.fq --db NAME | gapit
+reads 表可以直接喂给 `gspec typing`——`gspec screen --r1 reads.fq --db NAME | gspec
 typing` 以 `#SAMPLE` 作为 FILE 键、`BREADTH%` 作为覆盖度折叠。reads/1 没有一致性列，
 因此仅按 breadth 判定；当方案的一致性下限重要时，传入非零 `--min-identity` 以输出
 reads/2 的 `IDENTITY%`。见[分型方案](./typing.zh.md#two-stage-workflow)。
 
-默认是流式 **tsv** 表格（tsv 是 gapit 所有界面上的人类默认值；`--format csv` 是它的
+默认是流式 **tsv** 表格（tsv 是 gspec 所有界面上的人类默认值；`--format csv` 是它的
 逗号拼写）：
 
 ```console
-$ gapit screen --r1 tetx_full.fq --db tinyreads
+$ gspec screen --r1 tetx_full.fq --db tinyreads
 Screening reads: tetx_full.fq
 Detected 1 present genes in tetx_full.fq
 #SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
@@ -205,7 +205,7 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 
 - `files[]` 与输入一一对应：每项列出它筛查的 reads 和检出的基因。
 - 基因条目按 `breadth_pct` 降序、再按基因名排序。
-- 用 `gapit schema reads` 自省 schema；细节见
+- 用 `gspec schema reads` 自省 schema；细节见
   [./outputs.md](./outputs.md)。
 
 `--format md` 生成带 YAML frontmatter 的 Markdown 形式。
@@ -229,7 +229,7 @@ reads 模式的存在判定默认只看广度，这会对同源基因家族过�
 - 两个阈值都关闭时一切照旧：运行保持 `gapit.reads/1`，逐字节一致，minimap2 调用也
   不变。任何非零值会把输出切换成 **`gapit.reads/2`** 文档：形状相同，外加
   `params.min_identity` / `params.min_mapq` 和逐基因的 `mean_identity_pct`（幸存比
-  对按比对长度加权的一致性均值）。用 `gapit schema reads2` 自省。`--format md` 下
+  对按比对长度加权的一致性均值）。用 `gspec schema reads2` 自省。`--format md` 下
   frontmatter 多出这两个阈值，每个基因行多出 `Identity%` 列。
 - 一个细节：`/2` 调用会给 minimap2 传 `--cs`（唯一会发出 `NM:i:` 的 PAF 侧参数），
   两种几何下 minimap2 发出的跨度可能略有差异：同一条 reads 的未过滤 `/1` 与过滤
@@ -249,7 +249,7 @@ read 就能完整覆盖短 amplicon，所以绝对 reads 数不是好的门控�
 门控比较每个基因的平均深度与**对照基因**（默认 `lpxA`，面板的单拷贝阳性对照）：
 
 ```bash
-gapit screen -d cje_cps -1 R1.fq.gz -2 R2.fq.gz \
+gspec screen -d cje_cps -1 R1.fq.gz -2 R2.fq.gz \
   --min-relative-depth 0.10 --relative-to lpxA
 ```
 
@@ -274,11 +274,11 @@ gapit screen -d cje_cps -1 R1.fq.gz -2 R2.fq.gz \
 reads，未过滤，两个基因都判定为存在：
 
 ```console
-$ mkdir -p /tmp/gapit-demo/readdb
-$ cp -r tests/data/reads2_db/homologs /tmp/gapit-demo/readdb/
-$ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
+$ mkdir -p /tmp/gspec-demo/readdb
+$ cp -r tests/data/reads2_db/homologs /tmp/gspec-demo/readdb/
+$ export GSPEC_DATADIR=/tmp/gspec-demo/readdb
 $ cd tests/data/reads2
-$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --format json --quiet
+$ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -316,7 +316,7 @@ $ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --format j
 89% 一致性的比对（该基因消失；零 read 基因不输出），保留真基因约 98% 的比对：
 
 ```console
-$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format json --quiet
+$ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format json --quiet
 {
   "schema": "gapit.reads/2",
   ...
@@ -355,10 +355,10 @@ $ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-iden
 Markdown 形式：
 
 ```console
-$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format md --quiet
+$ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format md --quiet
 ---
 schema: gapit.reads/2
-tool: gapit 0.6.8
+tool: gspec 0.8.0
 created_at: 2026-09-20T14:23:33Z
 db: homologs
 read_type: map-ont
@@ -370,7 +370,7 @@ files: 1
 genes_found: 1
 ---
 
-# gapit read screening report
+# gspec read screening report
 
 ## `ont_homologs.fq`
 
@@ -384,7 +384,7 @@ genes_found: 1
 `--min-identity` 是每次运行时由调用方做的决定。有时这个决定应该属于数据库本身：
 一张精选面板知道自己的哪些基因身处同源家族之中、真等位基因必须达到多少一致性。
 这类知识以可选的 `floors.json` 边车文件随数据库发布（与 `sequences` 同目录），
-schema 为 `gapit.floors/1`（用 `gapit schema floors` 内省）：
+schema 为 `gapit.floors/1`（用 `gspec schema floors` 内省）：
 
 ```json
 {"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
@@ -404,7 +404,7 @@ schema 为 `gapit.floors/1`（用 `gapit schema floors` 内省）：
   阈值（`cje_cps` 用 80 搜索、默认 floor 90、`lpxA`/`HS12` 80）。
 - floors 与 `--min-identity` 是合取关系：两者同时生效时，一条比对必须同时通过
   基因下限和全局过滤（逐行取更严者）。
-- 安装方式：`gapit db build NAME genes.fa --floors floors.json`——先校验
+- 安装方式：`gspec db build NAME genes.fa --floors floors.json`——先校验
   （`genes` 中的每个基因必须存在于 FASTA、取值在 [0, 100] 内），再原样拷入数据库
   目录成为 `floors.json`。把 floors.json 直接放进既有数据库目录同样有效；筛查时
   读取。详见
@@ -432,11 +432,11 @@ reads 模式下，该同源序列的比对仍覆盖了基因长度的 97.59%，�
 目录下运行：
 
 ```console
-$ mkdir -p /tmp/gapit-demo/readdb
-$ cp -r tests/data/reads_db/tinyreads /tmp/gapit-demo/readdb/
-$ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
+$ mkdir -p /tmp/gspec-demo/readdb
+$ cp -r tests/data/reads_db/tinyreads /tmp/gspec-demo/readdb/
+$ export GSPEC_DATADIR=/tmp/gspec-demo/readdb
 $ cd tests/data/reads
-$ gapit screen --r1 tetx_full.fq --db tinyreads
+$ gspec screen --r1 tetx_full.fq --db tinyreads
 Screening reads: tetx_full.fq
 Detected 1 present genes in tetx_full.fq
 #SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
@@ -447,12 +447,12 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 `--format json` 换成版本化文档：
 
 ```console
-$ gapit screen --r1 tetx_full.fq --db tinyreads --format json
+$ gspec screen --r1 tetx_full.fq --db tinyreads --format json
 {
   "schema": "gapit.reads/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T01:12:25Z",
   "params": {
@@ -491,7 +491,7 @@ $ gapit screen --r1 tetx_full.fq --db tinyreads --format json
 聚合成的相同结果：
 
 ```console
-$ gapit screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --quiet
+$ gspec screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -514,7 +514,7 @@ $ gapit screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --qu
     }
   ]
 }
-$ gapit screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --quiet
+$ gspec screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -544,10 +544,10 @@ $ gapit screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --q
 ### Markdown 输出
 
 ```console
-$ gapit screen --r1 tetx_full.fq --db tinyreads --format md
+$ gspec screen --r1 tetx_full.fq --db tinyreads --format md
 ---
 schema: gapit.reads/1
-tool: gapit 0.6.8
+tool: gspec 0.8.0
 created_at: 2026-09-19T01:12:25Z
 db: tinyreads
 read_type: sr
@@ -557,7 +557,7 @@ files: 1
 genes_found: 1
 ---
 
-# gapit read screening report
+# gspec read screening report
 
 ## `tetx_full.fq`
 
@@ -572,7 +572,7 @@ genes_found: 1
 false` 报告；降低阈值即可翻转判定，指标不受影响：
 
 ```console
-$ gapit screen --r1 suly_partial.fq --db tinyreads --format json --quiet
+$ gspec screen --r1 suly_partial.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -588,7 +588,7 @@ $ gapit screen --r1 suly_partial.fq --db tinyreads --format json --quiet
     }
   ]
 }
-$ gapit screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --format json --quiet
+$ gspec screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -608,11 +608,11 @@ $ gapit screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --format jso
 
 ### 默认表格
 
-默认运行就是这张表（tsv 是 gapit 所有界面上的人类默认值；`--format csv` 是逗号拼
+默认运行就是这张表（tsv 是 gspec 所有界面上的人类默认值；`--format csv` 是逗号拼
 写）：
 
 ```console
-$ gapit screen --r1 tetx_full.fq --db tinyreads
+$ gspec screen --r1 tetx_full.fq --db tinyreads
 #SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
 tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determinant tetX	TETRACYCLINE
 ```
@@ -621,12 +621,12 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 
 ## 筛查 assembly（快速存在性普查）
 
-主要写法是 `gapit screen --aligner minimap2 assembly.fa`：位置文件被送进 minimap2
+主要写法是 `gspec screen --aligner minimap2 assembly.fa`：位置文件被送进 minimap2
 引擎，且每个输入都必须是 FASTA 内容，gzip 或 plain 均可；FASTQ 文件放这里是用法
-错误（退出码 2）。`--r1 assembly.fa` 写法等价。minimap2 原生接受 FASTA query，gapit
+错误（退出码 2）。`--r1 assembly.fa` 写法等价。minimap2 原生接受 FASTA query，gspec
 与处理 FASTQ 时一样原样传文件；变化只在预设：内容检测强制 `map-ont`（比如一条连续
 的 522 nt contig 在 `sr` 下只能比对到基因的约 14%，短 read 软裁剪会毁掉长 query 的
-比对），gapit 会在 stderr 上说明。每条 contig 相当于一条长 read：`reads_mapped` 统
+比对），gspec 会在 stderr 上说明。每条 contig 相当于一条长 read：`reads_mapped` 统
 计 contig 数，`mean_depth` 在被覆盖区间附近徘徊，`present` 仍表示
 `breadth_pct >= --min-breadth`。文档保持 `gapit.reads/1`；`params.read_type` 报告解
 析出的预设。默认输出是流式 tsv 表格（单样本一个分块）；`--format json` 给出下文展
@@ -635,19 +635,19 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 用 tinyreads 夹具冒充 assembly（任何多 contig FASTA 行为相同）：
 
 ```console
-$ mkdir -p /tmp/gapit-demo/readdb
-$ cp -r tests/data/reads_db/tinyreads /tmp/gapit-demo/readdb/
-$ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
-$ cp tests/data/reads_db/tinyreads/sequences /tmp/gapit-demo/assembly.fa
-$ gapit screen --aligner minimap2 /tmp/gapit-demo/assembly.fa --db tinyreads --format json
+$ mkdir -p /tmp/gspec-demo/readdb
+$ cp -r tests/data/reads_db/tinyreads /tmp/gspec-demo/readdb/
+$ export GSPEC_DATADIR=/tmp/gspec-demo/readdb
+$ cp tests/data/reads_db/tinyreads/sequences /tmp/gspec-demo/assembly.fa
+$ gspec screen --aligner minimap2 /tmp/gspec-demo/assembly.fa --db tinyreads --format json
 assembly FASTA detected; using map-ont
-Screening reads: /tmp/gapit-demo/assembly.fa
-Detected 2 present genes in /tmp/gapit-demo/assembly.fa
+Screening reads: /tmp/gspec-demo/assembly.fa
+Detected 2 present genes in /tmp/gspec-demo/assembly.fa
 {
   "schema": "gapit.reads/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T14:23:00Z",
   "params": {
@@ -659,7 +659,7 @@ Detected 2 present genes in /tmp/gapit-demo/assembly.fa
   "files": [
     {
       "reads": [
-        "/tmp/gapit-demo/assembly.fa"
+        "/tmp/gspec-demo/assembly.fa"
       ],
       "genes": [
         {
@@ -705,11 +705,11 @@ minimap2 一段完全跳过 BLAST 索引，把 assembly 送进 minimap2 引擎�
    性应用一致性与覆盖度下限。
 
 真实数字，一株 K. pneumoniae RefSeq assembly（GCF_000240185.1，5.3 Mb，`--db ncbi`，
-单线程，gapit 0.6.8）：
+单线程，gspec 0.8.0）：
 
 ```console
 $ # Stage 1: survey, ~0.9 s
-$ gapit screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 50 --format json --quiet
+$ gspec screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 50 --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -736,7 +736,7 @@ $ gapit screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 
   ]
 }
 $ # Stage 2: confirm the positives with the contig pipeline, ~13.6 s
-$ gapit screen kpneu_mgh78578.fna.gz --db ncbi --quiet
+$ gspec screen kpneu_mgh78578.fna.gz --db ncbi --quiet
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 kpneu_mgh78578.fna.gz	NC_016838.1	31843	32718	-	blaCTX-M-14	1-876/876	===============	0/0	100.00	100.00	ncbi	NG_048929.1	extended-spectrum class A beta-lactamase CTX-M-14	CEPHALOSPORIN
 kpneu_mgh78578.fna.gz	NC_016838.1	108291	108766	-	dfrA50	2-477/477	===============	0/0	99.79	98.74	ncbi	NG_242637.1	trimethoprim-resistant dihydrofolate reductase DfrA50	TRIMETHOPRIM

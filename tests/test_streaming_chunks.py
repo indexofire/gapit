@@ -304,7 +304,7 @@ def test_emit_md_chunk_arrives_per_file_and_in_order(datadir: Path) -> None:
         emit=collected.append,
     )
     assert collected[0].startswith("---\nschema: gapit.report/1\n")
-    assert "# gapit screening report" in collected[0]
+    assert "# gspec screening report" in collected[0]
     # md headings keep the path as given (--nopath rewrites only the TSV
     # FILE column), so the expected first lines carry the fixture paths.
     assert [chunk.splitlines()[0] for chunk in collected[1:]] == [

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare a gapit serotype typing table with an external reference.
+"""Compare a gspec serotype typing table with an external reference.
 
 Three reference shapes are auto-detected from the first line:
 
@@ -10,7 +10,7 @@ Three reference shapes are auto-detected from the first line:
   ``SF1-5``);
 - **ShigeiFinder** results (``#SAMPLE``/``SEROTYPE`` TSV).
 
-GapIt format: the normal ``gapit typing`` TSV (FILE, SCHEME, PHENOTYPE,
+GapIt format: the normal ``gspec typing`` TSV (FILE, SCHEME, PHENOTYPE,
 CONFIDENCE, ...).
 
 Usage::

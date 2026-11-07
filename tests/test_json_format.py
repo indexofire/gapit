@@ -61,7 +61,7 @@ def test_schema_literal_comes_first(reports: list[Report]) -> None:
 def test_round_trip_parses_into_report_document(reports: list[Report]) -> None:
     """Given emitted JSON, When parsed into ReportDocument, Then it validates."""
     document = report_adapter.validate_json(render_json(reports, PARAMS, now=PINNED_NOW))
-    assert document.tool.name == "gapit"
+    assert document.tool.name == "gspec"
     assert document.created_at == "2026-09-17T12:00:00Z"
     assert document.params.db == "tinyamr"
     assert [f.file for f in document.files] == list(MULTI_FILES)

@@ -4,54 +4,54 @@
 contig 文件，以 TSV 和 JSON 两种形式读结果，用内置 DEC 面板判定一个样本，再把报告
 汇总成一个矩阵。
 
-一切都在仓库根目录运行，并让 gapit 环境在 PATH 上
+一切都在仓库根目录运行，并让 gspec 环境在 PATH 上
 （`export PATH="$PWD/.pixi/envs/default/bin:$PATH"`，或给每条命令加 `pixi run`
 前缀）。
 
 ## 1. 准备一个用完即弃的数据目录
 
 夹具数据库 `tests/data/db/tinyamr` 里有三个短 AMR 基因：`tetA`、`blaTEM-1` 和
-`sul1`。把它复制进一个临时数据目录，剩下的交给 `gapit db setup` 引导：它会物化
+`sul1`。把它复制进一个临时数据目录，剩下的交给 `gspec db setup` 引导：它会物化
 wheel 内置的五个数据库（零网络——包括第 4 节要用来分型的 `eco_dec`）并构建全部
 BLAST 索引，无需手跑 `makeblastdb`：
 
 ```bash
-mkdir -p /tmp/gapit-quickstart/db
-cp -r tests/data/db/tinyamr /tmp/gapit-quickstart/db/
-export GAPIT_DATADIR=/tmp/gapit-quickstart/db
-gapit db setup
+mkdir -p /tmp/gspec-quickstart/db
+cp -r tests/data/db/tinyamr /tmp/gspec-quickstart/db/
+export GSPEC_DATADIR=/tmp/gspec-quickstart/db
+gspec db setup
 ```
 
 全部进度走 stderr；一次运行的输出（有删节）：
 
 ```console
-gapit: materializing bundled database cje_cps (42 records) into /tmp/gapit-quickstart/db
-gapit: materializing bundled database eco_dec (16 records) into /tmp/gapit-quickstart/db
-gapit: materializing bundled database lmo_sero (5 records) into /tmp/gapit-quickstart/db
-gapit: materializing bundled database vpa_ok (195 loci) into /tmp/gapit-quickstart/db
+gspec: materializing bundled database cje_cps (42 records) into /tmp/gspec-quickstart/db
+gspec: materializing bundled database eco_dec (16 records) into /tmp/gspec-quickstart/db
+gspec: materializing bundled database lmo_sero (5 records) into /tmp/gspec-quickstart/db
+gspec: materializing bundled database vpa_ok (195 loci) into /tmp/gspec-quickstart/db
 ...
-gapit: indexed eco_dec (16 sequences, nucl)
-gapit: indexed tinyamr (3 sequences, nucl)
+gspec: indexed eco_dec (16 sequences, nucl)
+gspec: indexed tinyamr (3 sequences, nucl)
 ```
 
-`gapit db list` 展示数据库目录和安装状态（下面有删节；`--json` 返回
+`gspec db list` 展示数据库目录和安装状态（下面有删节；`--json` 返回
 `gapit.dblist/1` 文档）。夹具 `tinyamr` 是一个普通的自定义数据库，不在目录里，所以
 不会出现在列表里，下一节的筛查会证明它可用：
 
 ```console
-$ gapit db list
+$ gspec db list
 NAME	DESCRIPTION	STATUS	DBTYPE	KIND	TYPING	PROVIDER
 argannot	ARG-ANNOT acquired resistance genes	available	nucl	gene	-	IHU Méditerranée-Infection
-cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	installed (42)	nucl	gene	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
+cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	installed (42)	nucl	gene	command	gspec-curated (Poly 2015; CC0 + NCBI public domain)
 ```
 
 （共二十六个目录数据库：五个内置库在这个数据目录里已显示 `installed`，其余仅可
-抓取的注册表条目在 `gapit db fetch` 之前显示 `available`。）
+抓取的注册表条目在 `gspec db fetch` 之前显示 `available`。）
 
 ## 2. 筛查一个 contig 文件
 
 ```console
-$ gapit screen tests/data/contigs/full.fa --db tinyamr
+$ gspec screen tests/data/contigs/full.fa --db tinyamr
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 tests/data/contigs/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.00	100.00	tinyamr	NC_000913.3:100-900	tetracycline efflux pump TetA	TETRACYCLINE
 ```
@@ -82,15 +82,15 @@ TSV 与 abricate 兼容，可以直接丢进任何已在解析 abricate 的流�
 ## 3. 同一结果的 JSON 形式
 
 ```bash
-gapit screen tests/data/contigs/full.fa --db tinyamr --format json
+gspec screen tests/data/contigs/full.fa --db tinyamr --format json
 ```
 
 ```json
 {
   "schema": "gapit.report/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T01:11:06Z",
   "params": {
@@ -125,19 +125,19 @@ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
 }
 ```
 
-文档携带 `"schema": "gapit.report/1"`，消费方可以锁定契约；`gapit schema report`
+文档携带 `"schema": "gapit.report/1"`，消费方可以锁定契约；`gspec schema report`
 打印它的 JSON Schema。字段级细节见[输出](./outputs.md)。
 
 ## 4. 给样本分型
 
-筛查只检测基因。判定（致病型、血清群）是第二条命令：`gapit screen` 写出基因表，
-`gapit typing` 读回该表并按数据库的分型方案打分。内置的 `eco_dec` 面板携带双方案
+筛查只检测基因。判定（致病型、血清群）是第二条命令：`gspec screen` 写出基因表，
+`gspec typing` 读回该表并按数据库的分型方案打分。内置的 `eco_dec` 面板携带双方案
 的 DEC（致泻性大肠杆菌）判定。用一个测试夹具 assembly 代替你的样本：
 
 ```bash
-cp tests/data/typing/dec_s3_stx2a_escV_aggR_uidA.fasta /tmp/gapit-quickstart/sample.fna
-gapit screen /tmp/gapit-quickstart/sample.fna -d eco_dec -o /tmp/gapit-quickstart/result.tsv -p -q
-gapit typing /tmp/gapit-quickstart/result.tsv -q
+cp tests/data/typing/dec_s3_stx2a_escV_aggR_uidA.fasta /tmp/gspec-quickstart/sample.fna
+gspec screen /tmp/gspec-quickstart/sample.fna -d eco_dec -o /tmp/gspec-quickstart/result.tsv -p -q
+gspec typing /tmp/gspec-quickstart/result.tsv -q
 ```
 
 ```console
@@ -151,18 +151,18 @@ sample.fna	risk_monitoring	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	.
 可以直接经管道衔接——screen 的 stdout 就是 typing 的 stdin：
 
 ```bash
-gapit screen /tmp/gapit-quickstart/sample.fna -d eco_dec -p -q | gapit typing -q
+gspec screen /tmp/gspec-quickstart/sample.fna -d eco_dec -p -q | gspec typing -q
 ```
 
 reads 走通配符路径也一样：当所有位置参数文件都是 FASTQ 时，样本按文件名自动配对
 （`_R1`/`_R2`、`_1`/`_2`），`--jobs` 并行各样本：
 
 ```bash
-mkdir -p /tmp/gapit-quickstart/reads
+mkdir -p /tmp/gspec-quickstart/reads
 cp tests/data/reads/s1_1.fq.gz tests/data/reads/s1_2.fq.gz \
-  tests/data/reads/s2_R1.fq.gz tests/data/reads/s2_R2.fq.gz /tmp/gapit-quickstart/reads/
-cd /tmp/gapit-quickstart/reads
-gapit screen -d eco_dec *.fq.gz -j 4
+  tests/data/reads/s2_R1.fq.gz tests/data/reads/s2_R2.fq.gz /tmp/gspec-quickstart/reads/
+cd /tmp/gspec-quickstart/reads
+gspec screen -d eco_dec *.fq.gz -j 4
 ```
 
 ```console
@@ -183,9 +183,9 @@ Detected 0 present genes in sample s1
 `sul1`，比对中有缺口：
 
 ```bash
-gapit screen tests/data/contigs/full.fa --db tinyamr > full.tsv
-gapit screen tests/data/contigs/gap.fa --db tinyamr > gap.tsv
-gapit summary full.tsv gap.tsv
+gspec screen tests/data/contigs/full.fa --db tinyamr > full.tsv
+gspec screen tests/data/contigs/gap.fa --db tinyamr > gap.tsv
+gspec summary full.tsv gap.tsv
 ```
 
 ```console
@@ -207,28 +207,28 @@ gap.tsv	1	+	-
 `gapit.typing/1` 表型评分规范：
 
 ```bash
-gapit db build tinykps tests/data/cluster/screening.gbk \
-  --datadir /tmp/gapit-quickstart/db \
+gspec db build tinykps tests/data/cluster/screening.gbk \
+  --datadir /tmp/gspec-quickstart/db \
   --typing tests/data/cluster/typing_screen.json
 # 从数据库里取出一个位点，作为单位点 query 装配体
 awk '/^>locusA$/{p=1} /^>/{if($0!~/>locusA$/)p=0} p' \
-  /tmp/gapit-quickstart/db/tinykps/sequences > /tmp/gapit-quickstart/locusA.fa
-gapit screen /tmp/gapit-quickstart/locusA.fa --db tinykps
+  /tmp/gspec-quickstart/db/tinykps/sequences > /tmp/gspec-quickstart/locusA.fa
+gspec screen /tmp/gspec-quickstart/locusA.fa --db tinykps
 ```
 
 筛查基因簇数据库会分发到 minimap2 基因簇引擎；TSV 的形状变为每文件一个最佳位点
 判定，typing 规范再把它转成表型：
 
 ```console
-Processing: /tmp/gapit-quickstart/locusA.fa
-Best locus in /tmp/gapit-quickstart/locusA.fa: locusA
+Processing: /tmp/gspec-quickstart/locusA.fa
+Best locus in /tmp/gspec-quickstart/locusA.fa: locusA
 FILE	BEST_LOCUS	TYPE	PHENOTYPE	COVERAGE	IDENTITY	PRESENT	PARTIAL	MISSING_IDS
-/tmp/gapit-quickstart/locusA.fa	locusA	KL101	K101	100.00	100.00	3	0	-
+/tmp/gspec-quickstart/locusA.fa	locusA	KL101	K101	100.00	100.00	3	0	-
 ```
 
 `PHENOTYPE` 为 `-` 表示没有表型越过规范的 cutoff，或两个表型打平在歧义容差之内
 （把两个位点一起筛查，K101/K102 打平正是这种情况）。七个 kaptive 提供商
-（`gapit db fetch -d kpsc_k`、`kpsc_o`、`kosc_k`、`kosc_o`、`ab_k`、`ab_o`、
+（`gspec db fetch -d kpsc_k`、`kpsc_o`、`kosc_k`、`kosc_o`、`ab_k`、`ab_o`、
 `ecoli_kps`）会以同样的方式安装真实的
 Kaptive 位点数据库。完整细节见[筛查](./screen.md)与[数据库](./databases.md)。
 
@@ -237,6 +237,6 @@ Kaptive 位点数据库。完整细节见[筛查](./screen.md)与[数据库](./d
 - [筛查](./screen.md)：contig 模式的全部参数、阈值、多输入、`--jobs`
 - [reads（FASTQ）筛查](./reads.md)：FASTQ 输入走 minimap2
 - [分型方案](./typing.md)：两阶段判定流水线与分型文档格式
-- [数据库](./databases.md)：安装真实数据库（`gapit db fetch`）、提供商、数据目录、基因簇数据库与 typing 规范
+- [数据库](./databases.md)：安装真实数据库（`gspec db fetch`）、提供商、数据目录、基因簇数据库与 typing 规范
 - [输出](./outputs.md)：格式、schema、错误信封、退出码
-- [MCP 服务器](./mcp.md)与[面向 agent 的指南](./agents.md)：从 agent 驱动 gapit
+- [MCP 服务器](./mcp.md)与[面向 agent 的指南](./agents.md)：从 agent 驱动 gspec

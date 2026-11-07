@@ -1,9 +1,9 @@
 [workspace]
 authors = ["indexofire <indexofire@gmail.com>"]
 channels = ["conda-forge", "bioconda"]
-name = "gapit"
+name = "gspec"
 platforms = ["linux-64"]
-version = "0.7.3"
+version = "0.8.0"
 
 [tasks]
 lint = "ruff check"
@@ -11,7 +11,7 @@ fmt = "ruff format"
 fmt-check = "ruff format --check"
 typecheck = "basedpyright"
 test = "pytest"
-gapit = "gapit"
+gspec = "gspec"
 
 [dependencies]
 blast = ">=2.15"
@@ -24,7 +24,7 @@ python = "3.12.*"
 
 
 [pypi-dependencies]
-gapit = { path = ".", editable = true }
+gspec = { path = ".", editable = true }
 ruff = ">=0.6"
 basedpyright = ">=1.19"
 pytest = ">=8"
@@ -41,7 +41,7 @@ abricate = "*"
 parity = ".pixi/envs/default/bin/python tests/parity/run_parity.py"
 summary-parity = ".pixi/envs/default/bin/python tests/parity/run_summary_parity.py"
 
-# Docs site (MkDocs Material). Dev-only: never in gapit's runtime deps or the
+# Docs site (MkDocs Material). Dev-only: never in gspec's runtime deps or the
 # gates environments (AGENTS.md §2 dependency discipline).
 [feature.docs.pypi-dependencies]
 mkdocs-material = ">=9.5"

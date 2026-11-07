@@ -2,7 +2,7 @@
 
 The 15-column abricate table is the frozen parity surface and the only
 report table: typed gene databases screen byte-identically to untyped
-ones (designation is the ``gapit typing`` command's job). The cluster
+ones (designation is the ``gspec typing`` command's job). The cluster
 TSV's typed-only PHENOTYPE column (formats.cluster) is the cluster-side
 exception — locus databases have no re-readable screen table.
 """

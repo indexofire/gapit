@@ -1,4 +1,4 @@
-"""Shared models for `gapit db info` provenance (a leaf module, no imports).
+"""Shared models for `gspec db info` provenance (a leaf module, no imports).
 
 Two consumers need these shapes: :mod:`gapit.bundled` (the wheel's
 ``bundled.json`` declares the literature and caveats that ship with a

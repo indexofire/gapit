@@ -3,15 +3,15 @@
 Terse answers to questions that come up in practice. Every claim is backed by
 the source or a live run.
 
-## Is gapit a drop-in abricate replacement?
+## Is gspec a drop-in abricate replacement?
 
 Contig screening keeps the abricate surface on purpose: same BLAST pipeline, same hit
 rules, abricate-format TSV on stdout, byte-checked against real abricate on a corpus.
-From v0.5.0 that baseline is frozen rather than a release gate — gapit pursues its own
+From v0.5.0 that baseline is frozen rather than a release gate — gspec pursues its own
 contract (native JSON/Markdown, reads and cluster engines, typing), and the parity
 harness (`pixi run -e parity parity`) serves as a regression reference for the frozen
-surface. gapit reads abricate-format databases (legacy `~~~` headers) as-is. The
-reverse does not hold: gapit-native databases (`gapit/v1` tagged headers) cannot be
+surface. gspec reads abricate-format databases (legacy `~~~` headers) as-is. The
+reverse does not hold: gspec-native databases (`gapit/v1` tagged headers) cannot be
 read by abricate. Details: `./databases.md`.
 
 ## Why does a hit showing 80.00% coverage get filtered?
@@ -30,7 +30,7 @@ an input with no matches is not an error: the header row still prints and the
 exit code is 0.
 
 ```console
-$ gapit screen none.fa --db tinyamr
+$ gspec screen none.fa --db tinyamr
 Processing: none.fa
 Found 0 genes in none.fa
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
@@ -43,7 +43,7 @@ $ echo $?
 Refetch over the old one with `--force`:
 
 ```console
-$ gapit db fetch -d ncbi --force
+$ gspec db fetch -d ncbi --force
 ```
 
 Without `--force`, fetching into an existing database fails instead of
@@ -51,33 +51,33 @@ overwriting.
 
 ## Where is my datadir?
 
-Resolution order: `--datadir` on the command line, then `$GAPIT_DATADIR`, then
-`$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`. `gapit db path` prints it
-without creating; `gapit db list` and `gapit db setup` create a missing root
+Resolution order: `--datadir` on the command line, then `$GSPEC_DATADIR`, then
+`$XDG_DATA_HOME/gspec/db`, then `~/.local/share/gspec/db`. `gspec db path` prints it
+without creating; `gspec db list` and `gspec db setup` create a missing root
 automatically; strict queries such as `db outdated` and `db search` require it and fail
 with `DATADIR_NOT_FOUND` (exit 4). To keep databases inside an activated conda
-environment, set `GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"` (the home default survives
+environment, set `GSPEC_DATADIR="${CONDA_PREFIX}/db/gspec"` (the home default survives
 environment rebuilds and is shared across envs). See `./databases.md`.
 
 ## Can I use my existing abricate databases?
 
-Yes, unchanged: point gapit at the datadir that abricate built and screen.
+Yes, unchanged: point gspec at the datadir that abricate built and screen.
 If the BLAST indices are missing or stale, rebuild them all with:
 
 ```console
-$ gapit db setup
+$ gspec db setup
 ```
 
-Only gapit-native output goes the other way (abricate cannot read `gapit/v1`
+Only gspec-native output goes the other way (abricate cannot read `gapit/v1`
 databases).
 
 ## How do I screen gene clusters or Kaptive loci?
 
 Cluster databases are a second database kind, built from GenBank/GFF files
-with `gapit db build NAME loci.gbk` (optionally `--typing FILE` for phenotype
+with `gspec db build NAME loci.gbk` (optionally `--typing FILE` for phenotype
 calls) or fetched from the seven kaptive providers (`kpsc_k`, `kpsc_o`, `kosc_k`,
 `kosc_o`, `ab_k`, `ab_o`, `ecoli_kps` — the official Kaptive v3 install keywords).
-`gapit screen assembly.fa --db kpsc_k` dispatches to the
+`gspec screen assembly.fa --db kpsc_k` dispatches to the
 minimap2 cluster engine and reports one best-locus call per file, with
 per-gene verdicts and, on typed databases, a phenotype. Details:
 `./screen.md` and `./databases.md`.
@@ -95,21 +95,21 @@ reads first, then screen the assembly; gene databases keep their reads mode. Rat
 
 Designation is two-stage on gene databases: screen with a typed database, then read
 the table back. The bundled `eco_dec` panel carries the dual-scheme DEC designation:
-`gapit screen -d eco_dec sample.fna -o result.tsv`, then `gapit typing result.tsv`
+`gspec screen -d eco_dec sample.fna -o result.tsv`, then `gspec typing result.tsv`
 — or pipe one straight into the other. Cluster databases are the exception: their
 designation is integrated into the screen itself (the `PHENOTYPE` column). Details:
 `./typing.md`.
 
-## How is `gapit summary` different from `gapit typing`?
+## How is `gspec summary` different from `gspec typing`?
 
 `summary` builds a gene × file presence matrix from screen tables — a comparative
 overview with no database scoring. `typing` designates phenotypes by evaluating the
 database's `typing.json` over the same rows. They can consume the same table (and both
 read stdin), but the outputs answer different questions; neither replaces the other.
 
-## Is `gapit screen` the same as `gside scan`?
+## Is `gspec screen` the same as `gside scan`?
 
-No. `gside scan` is species identification; `gapit screen` screens known genes against a
+No. `gside scan` is species identification; `gspec screen` screens known genes against a
 database. The names differ because the operations do, and `screen` is the stable CLI name
 — renaming it would break existing pipelines and MCP clients without making the two
 semantics match.
@@ -123,16 +123,16 @@ huge file, `--threads` does.
 
 ## What format does reads mode output?
 
-TSV by default — tsv is the human default on every gapit surface, and json/md are the
+TSV by default — tsv is the human default on every gspec surface, and json/md are the
 agent opt-ins. Reads results are per-gene breadth/depth rows, so the streaming table
 puts the sample key in the first `#SAMPLE` column; `--format json` (or `md`) gives the
 versioned `gapit.reads/1` document instead:
 
 ```console
-$ gapit screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads
+$ gspec screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads
 #SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
 tests/data/reads/tetx_full.fq	tetX	100.00	2.30	12	yes	tinyreads	SYN-001	extended resistance determinant tetX
-$ gapit screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads --format json
+$ gspec screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads --format json
 {"schema": "gapit.reads/1", ...}
 ```
 
@@ -140,9 +140,9 @@ Reads mode: `./reads.md`.
 
 ## Can I screen a wildcard of FASTQ files?
 
-Yes: when every positional file is FASTQ, `gapit screen` enters reads mode and
+Yes: when every positional file is FASTQ, `gspec screen` enters reads mode and
 auto-pairs samples from the filenames (`_R1`/`_R2`, `_1`/`_2` conventions), so
-`gapit screen -d eco_dec *.fq.gz -j 4` screens all samples concurrently with one
+`gspec screen -d eco_dec *.fq.gz -j 4` screens all samples concurrently with one
 command. Mixing FASTA and FASTQ positionals is a usage error; the pairing conventions
 and the per-sample output are documented in `./reads.md`.
 
@@ -154,7 +154,7 @@ breadth and depth are aggregated, so a close-but-not-exact homolog no longer ove
 the gene. The real case that motivated it: the SPATE-homolog `pic` in the bundled
 `eco_dec` panel read about 86.6% identity at 97.6% breadth and crossed the 90%
 presence threshold, while the blastn contig path correctly rejected it; the shipped
-floor (`pic` at 90) makes reads mode agree. Install one with `gapit db build --floors
+floor (`pic` at 90) makes reads mode agree. Install one with `gspec db build --floors
 FILE` or by dropping the file into the db directory; a database without one screens
 byte-identically to before. Details: `./reads.md` and `./databases.md`.
 
@@ -167,13 +167,13 @@ defaults (identity prefilter, MAPQ, depth, relative-depth control, contig
 identity/coverage, merge-fragments). Precedence is CLI flag > `screen.json` > global
 default. The bundled `cje_cps` panel uses MAPQ 20, depth 5, and a 10% `lpxA`
 relative-depth gate, plus `floors.json` with a 90% default and 80% for `lpxA`/`HS12`.
-Install with `gapit db build NAME INPUT --screen FILE`; details in
+Install with `gspec db build NAME INPUT --screen FILE`; details in
 `./databases.md#screenjson`.
 
 ## What is this "MISSING_DEPENDENCY" error?
 
 An external binary (blastn, makeblastdb, blastdbcmd, minimap2) is
-not on PATH. gapit exits 3 with the envelope naming the binary:
+not on PATH. gspec exits 3 with the envelope naming the binary:
 
 ```text
 {"schema":"gapit.error/1","code":"MISSING_DEPENDENCY","message":"required binary not found on PATH: blastn","context":{"binary":"blastn"}}
@@ -184,22 +184,22 @@ PATH.
 
 ## What licenses apply to the databases?
 
-gapit itself is MIT-licensed. Four gapit-curated, permissively licensed bundles ship
+gspec itself is MIT-licensed. Four gspec-curated, permissively licensed bundles ship
 inside the wheel (the public-domain `cje_cps`, `eco_dec`, and `lmo_sero` panels plus
 the MIT typed-cluster snapshot `vpa_ok`) and
 materialize into the datadir on first use; every provider — `ncbi`, `card`, `ecoh`,
 `resfinder`, and the rest — downloads from upstream at fetch time, and the content keeps
 its original
 licenses (CARD's McMaster non-commercial terms, VFDB's CC BY-NC,
-CGE, Kaptive's GPL-3.0, and so on); gapit does not relicense it. Providers that pin a
-license expose it in `gapit db list --json`. Details in SPEC.md §9 and the
+CGE, Kaptive's GPL-3.0, and so on); gspec does not relicense it. Providers that pin a
+license expose it in `gspec db list --json`. Details in SPEC.md §9 and the
 [bundled section](./databases.md#bundled-databases-install-time-ready).
 
 ## How do I add a new database to the default set?
 
 Write a provider module and fetch it by name: every provider downloads from its
 upstream source at fetch time, transforms the records, and builds locally. Nothing
-beyond the seven gapit-curated bundles ships in the wheel (upstream licenses such as
+beyond the seven gspec-curated bundles ships in the wheel (upstream licenses such as
 CARD's or VFDB's forbid redistribution inside an MIT-licensed distribution, and provider
 snapshots carry provenance risk beyond the license text). The header format,
 transforms, and build pipeline are specified in docs/databases.md.

@@ -1,7 +1,7 @@
 {
   "name": "vpa_pai",
   "description": "V. parahaemolyticus VPaI-1..VPaI-10 pathogenicity islands",
-  "vendor": "gapit-curated (Boyd et al. 2008; INSDC)",
+  "vendor": "gspec-curated (Boyd et al. 2008; INSDC)",
   "dbtype": "nucl",
   "kind": "cluster",
   "snapshotted": "2026-11-02",

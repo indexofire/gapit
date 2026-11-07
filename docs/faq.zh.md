@@ -2,14 +2,14 @@
 
 对实践中常出现的问题给出简短回答。每个论断都有源码或真实运行支撑。
 
-## gapit 是 abricate 的即插即用替代品吗？
+## gspec 是 abricate 的即插即用替代品吗？
 
 contig 筛查刻意保留 abricate 的界面：同一 BLAST 流水线、同样的命中规则、stdout 输出
 abricate 格式 TSV，并在一个语料上对真实 abricate 做过逐字节校验。从 v0.5.0 起，这条
-基线被冻结为历史基线面，而不再是发布门槛——gapit 走自己的契约（原生
+基线被冻结为历史基线面，而不再是发布门槛——gspec 走自己的契约（原生
 JSON/Markdown、reads 与基因簇引擎、分型），parity 校验（`pixi run -e parity parity`）
 只作为冻结面的回归参照。它能原样读取 abricate 格
-式的数据库（遗留 `~~~` 表头）。反过来不成立：abricate 读不了 gapit 原生数据库
+式的数据库（遗留 `~~~` 表头）。反过来不成立：abricate 读不了 gspec 原生数据库
 （`gapit/v1` 标记表头）。细节：`./databases.md`。
 
 ## 显示 80.00% 覆盖度的命中为什么被过滤了？
@@ -25,7 +25,7 @@ JSON/Markdown、reads 与基因簇引擎、分型），parity 校验（`pixi run
 低。注意零匹配的输入不是错误：表头行照常打印，退出码为 0。
 
 ```console
-$ gapit screen none.fa --db tinyamr
+$ gspec screen none.fa --db tinyamr
 Processing: none.fa
 Found 0 genes in none.fa
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
@@ -38,38 +38,38 @@ $ echo $?
 用 `--force` 覆盖旧库重新抓取：
 
 ```console
-$ gapit db fetch -d ncbi --force
+$ gspec db fetch -d ncbi --force
 ```
 
 不带 `--force`，抓进已存在的数据库会失败而不是覆盖。
 
 ## 我的数据目录在哪里？
 
-解析顺序：命令行 `--datadir`，然后 `$GAPIT_DATADIR`，然后
-`$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db`。`gapit db path` 只打印路径、
-不创建；`gapit db list` 与 `gapit db setup` 会自动创建缺失的根目录；
+解析顺序：命令行 `--datadir`，然后 `$GSPEC_DATADIR`，然后
+`$XDG_DATA_HOME/gspec/db`，最后 `~/.local/share/gspec/db`。`gspec db path` 只打印路径、
+不创建；`gspec db list` 与 `gspec db setup` 会自动创建缺失的根目录；
 `db outdated`、`db search` 等严格查询仍要求它存在，否则以 `DATADIR_NOT_FOUND`
 （退出码 4）失败。若要把数据库放进当前激活的 conda 环境，可设置
-`GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"`（home 默认值能跨环境重建保留，并被所有
+`GSPEC_DATADIR="${CONDA_PREFIX}/db/gspec"`（home 默认值能跨环境重建保留，并被所有
 环境共享）。见 `./databases.md`。
 
 ## 能用现有的 abricate 数据库吗？
 
-能，原样使用：把 gapit 指向 abricate 建好的数据目录，直接筛查。BLAST 索引缺失或
+能，原样使用：把 gspec 指向 abricate 建好的数据目录，直接筛查。BLAST 索引缺失或
 过期时，全部重建：
 
 ```console
-$ gapit db setup
+$ gspec db setup
 ```
 
-只有 gapit 原生输出是单向的（abricate 读不了 `gapit/v1` 数据库）。
+只有 gspec 原生输出是单向的（abricate 读不了 `gapit/v1` 数据库）。
 
 ## 如何筛查基因簇或 Kaptive 位点？
 
-基因簇数据库是第二种数据库，用 `gapit db build NAME loci.gbk` 从 GenBank/GFF 构建
+基因簇数据库是第二种数据库，用 `gspec db build NAME loci.gbk` 从 GenBank/GFF 构建
 （可选 `--typing FILE` 获得表型判定），或从七个 kaptive 提供商（`kpsc_k`、`kpsc_o`、
 `kosc_k`、`kosc_o`、`ab_k`、`ab_o`、`ecoli_kps`，即 Kaptive v3 官方安装关键字）抓取。
-`gapit screen assembly.fa --db kpsc_k` 会分发到
+`gspec screen assembly.fa --db kpsc_k` 会分发到
 minimap2 基因簇引擎，每文件报告一个最佳位点判定，附逐基因判定，typed 数据库上还有
 表型。细节：`./screen.md` 和 `./databases.md`。
 
@@ -84,19 +84,19 @@ reads 模式。原因见 `./screen.zh.md#cluster-input`。
 ## 如何判定致病型或血清群？
 
 基因数据库上的判定是两阶段的：先用 typed 数据库筛查，再把结果表读回来。内置的
-`eco_dec` 面板携带双方案 DEC 判定：`gapit screen -d eco_dec sample.fna -o
-result.tsv`，然后 `gapit typing result.tsv`——或者直接用管道把一步送进另一步。基因
+`eco_dec` 面板携带双方案 DEC 判定：`gspec screen -d eco_dec sample.fna -o
+result.tsv`，然后 `gspec typing result.tsv`——或者直接用管道把一步送进另一步。基因
 簇数据库是例外：其判定集成在筛查本身（`PHENOTYPE` 列）。细节：`./typing.md`。
 
-## `gapit summary` 与 `gapit typing` 功能重复吗？
+## `gspec summary` 与 `gspec typing` 功能重复吗？
 
 不重复。`summary` 把筛查表折叠成基因 × 文件的存在矩阵，用于比较性总览，不做数据库
 评分；`typing` 则对同样的行评估数据库的 `typing.json`，产出表型判定。两者可以消费
 同一张表（也都支持 stdin），但回答的是不同问题，互相不可替代。
 
-## `gapit screen` 和 `gside scan` 是一回事吗？
+## `gspec screen` 和 `gside scan` 是一回事吗？
 
-不是。`gside scan` 是物种鉴定；`gapit screen` 是用数据库筛查已知基因。名称不同是
+不是。`gside scan` 是物种鉴定；`gspec screen` 是用数据库筛查已知基因。名称不同是
 因为操作本身不同，而且 `screen` 是稳定的 CLI 名称——改名会破坏现有流水线和 MCP
 客户端，也不会让两者的语义变得一致。
 
@@ -108,15 +108,15 @@ result.tsv`，然后 `gapit typing result.tsv`——或者直接用管道把一�
 
 ## reads 模式输出什么格式？
 
-默认 TSV —— tsv 是 gapit 所有界面上的人类默认值，json/md 是给智能体的显式选项。
+默认 TSV —— tsv 是 gspec 所有界面上的人类默认值，json/md 是给智能体的显式选项。
 reads 结果是逐基因的广度/深度行，流式表格把样本名放在第一列 `#SAMPLE`；
 `--format json`（或 `md`）则给出版本化的 `gapit.reads/1` 文档：
 
 ```console
-$ gapit screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads
+$ gspec screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads
 #SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
 tests/data/reads/tetx_full.fq	tetX	100.00	2.30	12	yes	tinyreads	SYN-001	extended resistance determinant tetX
-$ gapit screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads --format json
+$ gspec screen --r1 tests/data/reads/tetx_full.fq --read-type sr --db tinyreads --format json
 {"schema": "gapit.reads/1", ...}
 ```
 
@@ -124,8 +124,8 @@ reads 模式：`./reads.md`。
 
 ## 能用通配符一次筛查多个 FASTQ 文件吗？
 
-能：当所有位置参数文件都是 FASTQ 时，`gapit screen` 进入 reads 模式，并按文件名
-（`_R1`/`_R2`、`_1`/`_2` 约定）自动配对样本，所以 `gapit screen -d eco_dec *.fq.gz
+能：当所有位置参数文件都是 FASTQ 时，`gspec screen` 进入 reads 模式，并按文件名
+（`_R1`/`_R2`、`_1`/`_2` 约定）自动配对样本，所以 `gspec screen -d eco_dec *.fq.gz
 -j 4` 一条命令就能并发筛查全部样本。FASTA 与 FASTQ 位置参数混用是用法错误；配对
 约定与按样本输出见 `./reads.md`。
 
@@ -135,7 +135,7 @@ reads 模式：`./reads.md`。
 声明每个基因的最小比对一致性：低于下限的比对在广度/深度聚合之前被丢弃，于是"接近但不完全相同"
 的同源基因不再过量判定。催生它的真实案例：内置 `eco_dec` 面板中的 SPATE 同源基因
 `pic` 在约 86.6% 一致性、97.6% 广度时越过了 90% 存在阈值，而 blastn contig 路径
-正确地拒绝了它；随库发布的下限（`pic` 90）让 reads 模式与之一致。用 `gapit db
+正确地拒绝了它；随库发布的下限（`pic` 90）让 reads 模式与之一致。用 `gspec db
 build --floors FILE` 安装，或直接把文件放进数据库目录；没有该文件的数据库筛查输出
 与之前逐字节一致。细节：`./reads.md` 和 `./databases.md`。
 
@@ -147,12 +147,12 @@ build --floors FILE` 安装，或直接把文件放进数据库目录；没有�
 depth、相对深度对照、contig identity/coverage、merge-fragments）。优先级是
 CLI 显式参数 > `screen.json` > 全局默认值。内置 `cje_cps` 使用 MAPQ 20、depth 5、
 10% `lpxA` 相对深度门控，以及 `floors.json`（默认 90%，`lpxA`/`HS12` 80%）。
-用 `gapit db build NAME INPUT --screen FILE` 安装；细节见
+用 `gspec db build NAME INPUT --screen FILE` 安装；细节见
 `./databases.zh.md#screenjson`。
 
 ## 这个 "MISSING_DEPENDENCY" 错误是什么？
 
-某个外部二进制（blastn、makeblastdb、blastdbcmd、minimap2）不在 PATH 上。gapit 以
+某个外部二进制（blastn、makeblastdb、blastdbcmd、minimap2）不在 PATH 上。gspec 以
 退出码 3 结束，信封指明是哪个二进制：
 
 ```text
@@ -163,16 +163,16 @@ CLI 显式参数 > `screen.json` > 全局默认值。内置 `cje_cps` 使用 MAP
 
 ## 数据库适用哪些许可证？
 
-gapit 本身以 MIT 许可。五个由 gapit 策划、许可宽松的内置库随 wheel 发布（公有领域的
+gspec 本身以 MIT 许可。五个由 gspec 策划、许可宽松的内置库随 wheel 发布（公有领域的
 `cje_cps`、`eco_dec`、`lmo_sero` 面板，以及 MIT 的 `vpa_ok` typed-cluster
 快照），首次使用时物化进数据目录；每个提供商——`ncbi`、`card`、`ecoh`、
 `resfinder` 以及其余所有提供商——都在抓取时从上游下载，内容保留其原始许可证（CARD 的 McMaster 非商业条款、VFDB 的
-CC BY-NC、CGE、Kaptive 的 GPL-3.0 等），gapit 不重新授权。声明了许可证的提供商会在
-`gapit db list --json` 中暴露它。细节见 SPEC.md §9 与数据库指南的
+CC BY-NC、CGE、Kaptive 的 GPL-3.0 等），gspec 不重新授权。声明了许可证的提供商会在
+`gspec db list --json` 中暴露它。细节见 SPEC.md §9 与数据库指南的
 [内置数据库一节](./databases.zh.md)。
 
 ## 如何向默认集合添加新数据库？
 
 写一个提供商模块并按名字抓取：每个提供商都在抓取时从上游下载、变换记录、本地构建。
-除五个由 gapit 策划的内置库之外，wheel 不携带任何内容（CARD、VFDB 等上游许可禁止
+除五个由 gspec 策划的内置库之外，wheel 不携带任何内容（CARD、VFDB 等上游许可禁止
 随 MIT 许可的发行版再分发，而且提供商快照还有许可证文本之外的来源风险）。表头格式、变换和构建流水线见 docs/databases.md。

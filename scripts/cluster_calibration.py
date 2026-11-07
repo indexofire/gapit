@@ -17,7 +17,7 @@ Usage:
 LABELS.tsv is two columns, sample_path<TAB>expected_phenotype, one row per
 sample (a leading '#' starts a comment; blank lines are skipped). The
 database must be a typed cluster database (typing.json installed via
-`gapit db build --typing`). A sample that fails to screen aborts with its
+`gspec db build --typing`). A sample that fails to screen aborts with its
 typed error; otherwise the exit code is 0 however badly the model scores.
 """
 
@@ -100,7 +100,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("db", help="cluster database name under the datadir")
     parser.add_argument(
-        "--datadir", type=Path, default=None, help="datadir (default: gapit resolution)"
+        "--datadir", type=Path, default=None, help="datadir (default: gspec resolution)"
     )
     parser.add_argument("labels", type=Path, help="TSV: sample_path<TAB>expected_phenotype")
     parser.add_argument("--min-gene-cov", type=float, default=90.0)

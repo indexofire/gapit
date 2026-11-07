@@ -140,7 +140,7 @@ def main(argv: list[str] | None = None) -> int:
                 "description": (
                     "Shigella molecular serotype marker panel (ShigaTyper public-domain markers)"
                 ),
-                "vendor": "gapit-curated (ShigaTyper public-domain markers)",
+                "vendor": "gspec-curated (ShigaTyper public-domain markers)",
                 "dbtype": "nucl",
                 "kind": "gene",
                 "snapshotted": datetime.now(UTC).strftime("%Y-%m-%d"),
@@ -150,7 +150,7 @@ def main(argv: list[str] | None = None) -> int:
                     " markers.json carries the O-antigen/POAC/virulence roles and"
                     " serotype.json carries the first conservative marker-set resolver."
                     " The ipaH_c control is split into two non-overlapping presence"
-                    " fragments (1-640 and 641-780), a gapit-derived sensitivity"
+                    " fragments (1-640 and 641-780), a gspec-derived sensitivity"
                     " marker for divergent ipaH alleles."
                 ),
                 "guidance": {

@@ -1,4 +1,4 @@
-"""Integration tests: --jobs parallel screening (gapit extension) — input-order
+"""Integration tests: --jobs parallel screening (gspec extension) — input-order
 stdout, threads determinism, and validation, over the real pipeline on tinyamr."""
 
 import json
@@ -33,7 +33,7 @@ def datadir(tmp_path: Path) -> Path:
 
 
 def screen(datadir: Path, *extra: str) -> Result:
-    """Invoke `gapit screen ... --db tinyamr --datadir <dd> [extra]`."""
+    """Invoke `gspec screen ... --db tinyamr --datadir <dd> [extra]`."""
     return runner.invoke(app, ["screen", "--db", "tinyamr", "--datadir", str(datadir), *extra])
 
 
@@ -46,12 +46,12 @@ def test_gseek_batch_stdout_matches_legacy(datadir: Path) -> None:
     legacy = runner.invoke(
         app,
         ["screen", "--db", "tinyamr", "--datadir", str(datadir), "--nopath", *files],
-        env={"GAPIT_ENGINE": "legacy"},
+        env={"GSPEC_ENGINE": "legacy"},
     )
     batch = runner.invoke(
         app,
         ["screen", "--db", "tinyamr", "--datadir", str(datadir), "--nopath", *files],
-        env={"GAPIT_ENGINE": "gseek"},
+        env={"GSPEC_ENGINE": "gseek"},
     )
     assert legacy.exit_code == 0, legacy.stderr
     assert batch.exit_code == 0, batch.stderr
@@ -66,12 +66,12 @@ def test_gseek_batch_jobs_4_stdout_matches_legacy(datadir: Path) -> None:
     legacy = runner.invoke(
         app,
         ["screen", "--db", "tinyamr", "--datadir", str(datadir), "--nopath", "--jobs", "4", *files],
-        env={"GAPIT_ENGINE": "legacy"},
+        env={"GSPEC_ENGINE": "legacy"},
     )
     batch = runner.invoke(
         app,
         ["screen", "--db", "tinyamr", "--datadir", str(datadir), "--nopath", "--jobs", "4", *files],
-        env={"GAPIT_ENGINE": "gseek"},
+        env={"GSPEC_ENGINE": "gseek"},
     )
     assert legacy.exit_code == 0, legacy.stderr
     assert batch.exit_code == 0, batch.stderr

@@ -1,10 +1,10 @@
-site_name: gapit
+site_name: gspec
 site_description: >-
-  Mass screening of contigs and reads for known genes — an agent-first
-  Python reimplementation of abricate.
-site_url: https://indexofire.github.io/gapit/
-repo_url: https://github.com/indexofire/gapit
-repo_name: indexofire/gapit
+  Declarative typing databases for bacterial genomes — gene-panel and locus
+  screening, serotype/AMR/virulence designation, machine-readable contracts.
+site_url: https://indexofire.github.io/gspec/
+repo_url: https://github.com/indexofire/gspec
+repo_name: indexofire/gspec
 strict: true
 
 theme:
@@ -44,8 +44,9 @@ plugins:
           nav_translations:
             Home: 首页
             Getting started: 快速上手
-            Installing gapit: 安装 gapit
+            Installing gspec: 安装 gspec
             Quickstart: 快速开始
+            Migrating from gapit: 从 gapit 迁移
             User guide: 使用指南
             Screening: 筛查
             Contigs: contig 筛查
@@ -61,7 +62,7 @@ plugins:
             Interfaces: 接口
             gseek engine: gseek 引擎
             MCP server: MCP 服务器
-            gapit for agents: 面向 agent 的 gapit
+            gspec for agents: 面向 agent 的 gspec
             FAQ: 常见问题
 
 extra_css:
@@ -84,8 +85,9 @@ nav:
   - Home: index.md
   - Getting started:
       - start/index.md
-      - Installing gapit: installation.md
+      - Installing gspec: installation.md
       - Quickstart: quickstart.md
+      - Migrating from gapit: migration.md
   - User guide:
       - guide/index.md
       - Screening:
@@ -105,5 +107,5 @@ nav:
       - interfaces/index.md
       - gseek engine: gseek-engine.md
       - MCP server: mcp.md
-      - gapit for agents: agents.md
+      - gspec for agents: agents.md
   - FAQ: faq.md

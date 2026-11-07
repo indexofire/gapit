@@ -64,7 +64,7 @@ def md_report_preamble(params: ScreeningParams, *, now: datetime) -> str:
     lines: list[str] = [
         "---",
         "schema: gapit.report/1",
-        f"tool: gapit {__version__}",
+        f"tool: gspec {__version__}",
         f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
         f"db: {yaml_scalar(params.db)}",
         f"minid: {params.minid}",
@@ -72,7 +72,7 @@ def md_report_preamble(params: ScreeningParams, *, now: datetime) -> str:
         f"threads: {params.threads}",
         "---",
         "",
-        "# gapit screening report",
+        "# gspec screening report",
         "",
     ]
     return "\n".join(lines) + "\n"
@@ -190,7 +190,7 @@ def _render_reads_markdown(
     lines: list[str] = [
         "---",
         f"schema: {schema}",
-        f"tool: gapit {__version__}",
+        f"tool: gspec {__version__}",
         f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
         f"db: {yaml_scalar(params.db)}",
         f"read_type: {params.read_type}",
@@ -205,7 +205,7 @@ def _render_reads_markdown(
         f"genes_found: {genes_found}",
         "---",
         "",
-        "# gapit read screening report",
+        "# gspec read screening report",
         "",
     ]
     return (
@@ -256,7 +256,7 @@ def reads_md_preamble(params: ReadsParams, *, now: datetime, reads2: bool = Fals
     lines: list[str] = [
         "---",
         "schema: gapit.reads/2" if reads2 else "schema: gapit.reads/1",
-        f"tool: gapit {__version__}",
+        f"tool: gspec {__version__}",
         f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
         f"db: {yaml_scalar(params.db)}",
         f"read_type: {params.read_type}",
@@ -266,7 +266,7 @@ def reads_md_preamble(params: ReadsParams, *, now: datetime, reads2: bool = Fals
     if reads2:
         lines.append(f"min_identity: {params.min_identity}")
         lines.append(f"min_mapq: {params.min_mapq}")
-    lines += ["---", "", "# gapit read screening report", ""]
+    lines += ["---", "", "# gspec read screening report", ""]
     return "\n".join(lines) + "\n"
 
 

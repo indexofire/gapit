@@ -4,10 +4,10 @@ The non-MLST, gene-presence part of MDU-PHL/meningotype (GPL-3.0): the
 serogroup A/B/C/W/X/Y amplicons, the ctrA capsule marker, and a single-copy
 sodC depth control. MLST and allele-level finetyping (PorA/FetA/PorB/BAST)
 are deliberately absent: MLST/cc belongs to a gMLST pipeline, and allele
-calling is outside gapit's gene-presence contract.
+calling is outside gspec's gene-presence contract.
 
-The gapit-native nucleotide database carries the eight records, so
-``gapit screen -d nme_sero`` and ``gapit typing`` work from FASTQ or
+The gspec-native nucleotide database carries the eight records, so
+``gspec screen -d nme_sero`` and ``gspec typing`` work from FASTQ or
 contigs. sodC is the reads-mode relative-depth control (``screen.json`` sets
 ``relative_to: sodC``); its reference is NC_013016.1:1293529-1294089
 (N. meningitidis alpha14), embedded here because the upstream meningotype
@@ -187,7 +187,7 @@ PROVIDER = Provider(
             " EX7E follow-up is required for a final W vs Y call. Run menwy on the"
             " assembly; it aligns synG and translates reference positions 919-945"
             " (synG-relative, not genome coordinates): P=W, G=Y, S=W/Y.",
-            "PorA/FetA/PorB/BAST allele-level finetyping is outside gapit's"
+            "PorA/FetA/PorB/BAST allele-level finetyping is outside gspec's"
             " gene-presence scope; use the gMLST database for strain typing and"
             " an external finetyping pipeline for antigen allele IDs.",
             "sodC is a conserved single-copy Neisseria control; use its depth as a"

@@ -1025,16 +1025,6 @@ packages:
   license: GPL-2.0-only OR FTL
   size: 634972
   timestamp: 1694615932610
-- pypi: ./
-  name: gapit
-  version: 0.7.3
-  sha256: 82c3f4be79a77e91712176f3330a92fe8a37ef97b21796ee4355621a535bbbbf
-  requires_dist:
-  - click>=8.2
-  - pydantic>=2.7
-  - rich>=13
-  - gseek>=0.10.4 ; extra == 'gseek'
-  requires_python: '>=3.12,<3.13'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/gawk-5.4.1-h0a3468a_0.conda
   sha256: 0ae20399bc13d1097237cf29653c1f2dd68e37f08b47a9b3cab76f97556a6bfa
   md5: 64fd8d804a6aaef55d6d6c562446d72b
@@ -1138,6 +1128,16 @@ packages:
   license_family: GPL
   size: 3376423
   timestamp: 1626369596591
+- pypi: ./
+  name: gspec
+  version: 0.8.0
+  sha256: 4c3f0c3ef662a00ff5fc179fb5d38244e0a79f0b370a054550654abf0c78cd4a
+  requires_dist:
+  - click>=8.2
+  - pydantic>=2.7
+  - rich>=13
+  - gseek>=0.10.4 ; extra == 'gseek'
+  requires_python: '>=3.12,<3.13'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/gzip-1.14-hb9d3cd8_0.conda
   sha256: 7f0a85e34c384216448b468ac3af2b3b02b609b488f2ba079ca8443db83c2b22
   md5: 84fa0d10c305971e39f516ca8354a9cd

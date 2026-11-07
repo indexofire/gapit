@@ -199,7 +199,7 @@ def test_first_row_without_hash_is_header_and_data(tmp_path: Path) -> None:
 
 def test_csv_separator_autodetected_per_file(monkeypatch: pytest.MonkeyPatch) -> None:
     """Given comma-separated reports (no --csv flag), When summarized, Then
-    each file's separator is auto-detected [gapit-extension] and parsing
+    each file's separator is auto-detected [gspec-extension] and parsing
     matches the tab equivalents."""
     monkeypatch.chdir(FIXTURES)
     matrix, _ = summarize(["sample_a.csv", "sample_b.csv"])
@@ -221,7 +221,7 @@ def test_missing_file_raises_input_error(tmp_path: Path) -> None:
 def test_short_data_row_raises_input_error(tmp_path: Path) -> None:
     """Given a report with a data row shorter than the mapped columns, When
     summarized, Then InputError SUMMARY_MALFORMED with file and line context
-    (gapit refuses upstream's silent undef)."""
+    (gspec refuses upstream's silent undef)."""
     text = (FIXTURES / "empty.tsv").read_text(encoding="utf-8") + "sampleA.fa\tcontig1\t1\n"
     path = write(tmp_path, "short.tsv", text)
     with pytest.raises(InputError) as excinfo:

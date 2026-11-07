@@ -1,50 +1,50 @@
 # 分型方案（typing）
 
-分型文档（typing document）是数据库侧的评分规范，把筛查命中转换为表型判定——血清型、血清群、致病型。通过 `gapit db build --typing FILE` 安装后，该数据库即可对筛查过它的任何样本作出判定。本页面是 `gapit.typing/2` 的完整参考，外加一份实战手册（cookbook）：六个经调研的鉴定方案，全部编码为经过校验、自带测试的示例文档。
+分型文档（typing document）是数据库侧的评分规范，把筛查命中转换为表型判定——血清型、血清群、致病型。通过 `gspec db build --typing FILE` 安装后，该数据库即可对筛查过它的任何样本作出判定。本页面是 `gapit.typing/2` 的完整参考，外加一份实战手册（cookbook）：六个经调研的鉴定方案，全部编码为经过校验、自带测试的示例文档。
 
 - 数据库侧机制（`--typing`、校验、manifest）见
   [数据库](./databases.md) 的 typing.json 一节。
 - 判定输出文档（`gapit.typing_result/1`）见 [输出](./outputs.md)。
-- 分型文档的 JSON Schema 用 `gapit schema typing` 打印。
+- 分型文档的 JSON Schema 用 `gspec schema typing` 打印。
 
 ## 两阶段判定工作流 {#two-stage-workflow}
 
-基因类判定是两阶段流水线（权利方设计）：**`gapit screen` 检测基因，`gapit typing`
+基因类判定是两阶段流水线（权利方设计）：**`gspec screen` 检测基因，`gspec typing`
 从结果中获得型别。**
 
 ```console
-$ gapit screen contigs.fa --db eco_dec --output result.tsv --quiet
-$ gapit typing result.tsv --quiet
+$ gspec screen contigs.fa --db eco_dec --output result.tsv --quiet
+$ gspec typing result.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 contigs.fa	gb4789_6	EHEC	escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
 contigs.fa	risk_monitoring	EHEC	escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
 ```
 
 第一阶段是纯基因检测：typed 基因数据库与 untyped 的筛查输出逐字节相同——每种格式
-都是冻结的 15 列 abricate 表。第二阶段读取一份或多份 gapit/abricate 筛查结果表
+都是冻结的 15 列 abricate 表。第二阶段读取一份或多份 gspec/abricate 筛查结果表
 （TSV 或 CSV），从所有行共享的 `DATABASE` 列解析数据库，把每个 `(FILE, GENE)` 折叠
 为其 `(%IDENTITY, %COVERAGE)` 最佳的行（并列时首行获胜——与报告命中原有的逐基因
 折叠一致），再对该 FILE 的基因评估数据库的 `typing.json`。
 
-reads 模式的表也可以直接输入：`gapit screen --r1/--r2 ... | gapit typing` 会折叠
+reads 模式的表也可以直接输入：`gspec screen --r1/--r2 ... | gspec typing` 会折叠
 `#SAMPLE`/`BREADTH%` 表，以 `#SAMPLE` 作为 FILE 键、breadth 作为覆盖度，并跳过
 `--all-genes` 加入的 `PRESENT=no` 行。reads/1 不携带一致性，因此无法检查 identity
-下限，gapit 仅按 breadth 判定；如果方案依赖一致性（例如等位基因探针），请传入非零的
+下限，gspec 仅按 breadth 判定；如果方案依赖一致性（例如等位基因探针），请传入非零的
 `--min-identity`，让表带上 reads/2 的 `IDENTITY%` 列，从而执行每条规则的
 `identity_floor`。
 
 两个阶段也可以直接经管道衔接——规范一行式：
 
 ```console
-$ gapit screen 1.fna --db eco_dec --quiet | gapit typing --quiet
+$ gspec screen 1.fna --db eco_dec --quiet | gspec typing --quiet
 ```
 
-只要 stdin 不是终端（管道或重定向），`gapit typing` 就从 stdin 读取结果表；在终端
-下裸调用仍然打印帮助。显式 `-` 标记——`gapit typing -`——即使挂着终端也从 stdin
+只要 stdin 不是终端（管道或重定向），`gspec typing` 就从 stdin 读取结果表；在终端
+下裸调用仍然打印帮助。显式 `-` 标记——`gspec typing -`——即使挂着终端也从 stdin
 读取，直到 EOF；`-` 与文件参数混用是用法错误（v1 只取其一，stdin 或文件，不可兼得）。
 管道输入的 JSON `source` 渲染为 `["-"]`。
 
-用法：`gapit typing RESULT.tsv [RESULT2.tsv ...] [-D datadir] [-f tsv|json|md] [-o FILE]
+用法：`gspec typing RESULT.tsv [RESULT2.tsv ...] [-D datadir] [-f tsv|json|md] [-o FILE]
 [-q]`，或如上经管道输入（`-` 为显式 stdin）。默认 TSV 按 (FILE, scheme) 一行，列为
 `FILE`、`SCHEME`、`PHENOTYPE`、
 `GENES`、`CONFIDENCE`、`SCORE`、`RUNNER_UP`、`NOTES`——歧义判定的表型（与 runner-up）
@@ -52,14 +52,14 @@ $ gapit screen 1.fna --db eco_dec --quiet | gapit typing --quiet
 （排序后、`;` 串接），且在该 FILE 的每个 scheme 行上重复——即驱动该判定的命中，
 一目了然。
 `json` 输出 `gapit.typing_result/1`（完整分数分解外加同样的逐文件 `genes` 列表；
-`gapit schema typing_result`）；`md` 在标明数据库与来源表的 frontmatter 下渲染同样的
+`gspec schema typing_result`）；`md` 在标明数据库与来源表的 frontmatter 下渲染同样的
 八列表。类型化错误：`DATABASE` 值混杂为 `DATABASE_MISMATCH`，无数据行的表为
 `TYPING_NO_DATA`（要评估的数据库只能从数据行得知），无 `typing.json` 的数据库为
 `TYPING_NO_SCHEME`，基因簇数据库为 `TYPING_CLUSTER_DB`——基因簇判定不经过该命令。
 
-**基因簇例外。** 基因簇数据库的判定保持集成在 `gapit screen` 内：其判定单元是最佳
+**基因簇例外。** 基因簇数据库的判定保持集成在 `gspec screen` 内：其判定单元是最佳
 *位点* call，只有 minimap2 基因簇引擎能算。紧凑的 cluster TSV 不是基因表，也没有
-重新判定所需的 scheme 元数据；请使用 cluster JSON：`gapit typing result.json` 可读取
+重新判定所需的 scheme 元数据；请使用 cluster JSON：`gspec typing result.json` 可读取
 `gapit.cluster/2` 或 `gapit.locus_map/1`，把已经算好的 phenotypes 渲染成
 `gapit.typing_result/1`，不重新运行比对。筛查 typed 基因簇数据库会直接注释簇文档——单 scheme 数据库注释 `gapit.cluster/1`（仅限 typed 的 TSV
 `PHENOTYPE` 列、JSON/MD 中的 `best.phenotype` + `best.phenotype_detail`），多 scheme
@@ -93,9 +93,9 @@ cluster/2 的 `phenotypes` 中给出 `locus_status`（`known` / `unknown_locus` 
 
 | 数据库类型 | 输入 | 引擎 | 判定出现的位置 |
 |---|---|---|---|
-| **gene（基因）** | 标记 FASTA | blastn 基因路径 | 对筛查结果运行 `gapit typing`：`gapit.typing_result/1`（JSON）与八列 TSV/MD 表 |
-| **cluster（基因簇，单 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gapit screen` 内：`gapit.cluster/1` 的 `best.phenotype` + `best.phenotype_detail`，以及仅限已分型数据库的 TSV `PHENOTYPE` 列 |
-| **cluster（基因簇，多 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gapit screen` 内：`gapit.cluster/2` 的 `files[].phenotypes`（每个 scheme 一个 call，compose 由兄弟 scheme 渲染），以及每方案的胜出位点证据 TSV 列 |
+| **gene（基因）** | 标记 FASTA | blastn 基因路径 | 对筛查结果运行 `gspec typing`：`gapit.typing_result/1`（JSON）与八列 TSV/MD 表 |
+| **cluster（基因簇，单 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gspec screen` 内：`gapit.cluster/1` 的 `best.phenotype` + `best.phenotype_detail`，以及仅限已分型数据库的 TSV `PHENOTYPE` 列 |
+| **cluster（基因簇，多 scheme）** | GBK/GFF 位点 | minimap2 位点路径 | 集成在 `gspec screen` 内：`gapit.cluster/2` 的 `files[].phenotypes`（每个 scheme 一个 call，compose 由兄弟 scheme 渲染），以及每方案的胜出位点证据 TSV 列 |
 
 按类型区分的两条硬约束：
 
@@ -116,7 +116,7 @@ cluster/2 的 `phenotypes` 中给出 `locus_status`（`known` / `unknown_locus` 
 
 ## rule 与 scheme 原语
 
-每条 rule 由其 `model` 判别。完整细节见 `gapit schema typing`；这里是工作参考。
+每条 rule 由其 `model` 判别。完整细节见 `gspec schema typing`；这里是工作参考。
 
 ### rule 模型
 
@@ -152,7 +152,7 @@ ambiguous。
 ## 实战手册（cookbook）
 
 六份示例文档位于
-[`tests/data/typing/schemes/`](https://github.com/indexofire/gapit/tree/main/tests/data/typing/schemes)，
+[`tests/data/typing/schemes/`](https://github.com/indexofire/gspec/tree/main/tests/data/typing/schemes)，
 每份配一个标记 FASTA 或 GBK 位点文件。每份文档都通过当前 schema 校验，
 `tests/test_typing_schemes.py` / `tests/test_typing_schemes_cluster.py` 会构建每个夹具
 数据库并断言下文的表型判定。**所有序列均为合成序列**——它们编码的是方案逻辑而非
@@ -207,8 +207,8 @@ ORF2819+ORF2110 谱式判给变体。大写基因名（`ORF2819`、`ORF2110`）�
 分型全程原样传递。两阶段使用，零网络（首次筛检时自动物化）：
 
 ```console
-$ gapit screen isolates.fa --db lmo_sero --output lm.tsv --quiet
-$ gapit typing lm.tsv --quiet
+$ gspec screen isolates.fa --db lmo_sero --output lm.tsv --quiet
+$ gspec typing lm.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 lmo_sero_iia.fa	doumith_serogroup	IIa	lmo0737;prs	high	1.0000	IVb-v (0.0000)	...
 lmo_sero_ivb.fa	doumith_serogroup	IVb	ORF2110;ORF2819;prs	high	1.0000	IVb-v (0.0000)	...
@@ -351,7 +351,7 @@ K_COVERAGE ...`）。历史 `/1` 安装——用同一 GBK
 
 两个实操约束：
 
-- 探针记录必须在数据库中**独立存在**。gapit 以 abricate 的 `-culling_limit 1` 运行
+- 探针记录必须在数据库中**独立存在**。gspec 以 abricate 的 `-culling_limit 1` 运行
   blastn（字节级兼容是特性），包含探针区的更长记录会遮蔽探针的比对——所以
   meningotype 夹具在探针旁没有全长的 synG 记录。
 - 落在探针**之间**的等位基因（双重 W/Y 的 S 基序，或新的 wbeT 错义突变）两条阈值都
@@ -363,7 +363,7 @@ K_COVERAGE ...`）。历史 `/1` 安装——用同一 GBK
 ## 校准与 learned_linear 展望
 
 对照带标签的装配调阈值，正是
-[`scripts/cluster_calibration.py`](https://github.com/indexofire/gapit/blob/main/scripts/cluster_calibration.py)
+[`scripts/cluster_calibration.py`](https://github.com/indexofire/gspec/blob/main/scripts/cluster_calibration.py)
 （开发者工具）的用途：指向一个已分型的基因簇数据库和标签 TSV，它打印每个期望表型的
 分数分布、判定×期望一致性矩阵、以及分歧清单：
 
@@ -378,33 +378,33 @@ $ python scripts/cluster_calibration.py mycps --datadir ./db labels.tsv
 ## 构建并分型手册方案
 
 ```console
-$ gapit db build doumith doumith.fa --typing doumith.json
+$ gspec db build doumith doumith.fa --typing doumith.json
 {"db":"doumith","records":5,"dbtype":"nucl","destination":".../doumith"}
 
-$ gapit screen lm_4b.fa --db doumith --output lm_4b.tsv --quiet
-$ gapit typing lm_4b.tsv --quiet
+$ gspec screen lm_4b.fa --db doumith --output lm_4b.tsv --quiet
+$ gspec typing lm_4b.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 lm_4b.fa	doumith	4b-4d-4e	orf2110;orf2819;prs	high	1.0000	1/2a-3a (0.0000)	...
 
-$ gapit screen vc_inaba.fa --db vc_subserotype --quiet
+$ gspec screen vc_inaba.fa --db vc_subserotype --quiet
 FILE      BEST_LOCUS  TYPE  PHENOTYPE  COVERAGE  IDENTITY  PRESENT  PARTIAL  MISSING_IDS
 vc_inaba.fa  wbe      O1    inaba      100.00    99.44     3        0        -
 ```
 
-第二个代码块是基因簇例外：typed 基因簇数据库在 `gapit screen` 内直接判定（没有
+第二个代码块是基因簇例外：typed 基因簇数据库在 `gspec screen` 内直接判定（没有
 第二阶段——不存在可供重读的筛查表）。
 
 基因簇 O/K 模式：合并的 /2 安装（一次扫描、全部 scheme）与历史 /1 拆分
 （每个 scheme 一个数据库）：
 
 ```console
-$ gapit db build vpa_ok vpa_ok.gbk --typing vpa_ok.json   # 一个合并库 → gapit.cluster/2
-$ gapit screen sample.fa --db vpa_ok --quiet
+$ gspec db build vpa_ok vpa_ok.gbk --typing vpa_ok.json   # 一个合并库 → gapit.cluster/2
+$ gspec screen sample.fa --db vpa_ok --quiet
 FILE      SEROTYPE   O_GROUP  O_LOCUS     O_COVERAGE  ...  K_GROUP  K_LOCUS  K_COVERAGE  ...
 sample.fa O3/O13:K6  O3/O13   OL3_or_O13  100.00      ...  K6       KL6     100.00      ...
 
-$ gapit db build vp_o vpa_ok.gbk --typing vp_o_group.json   # /1 拆分（各一个 scheme）
-$ gapit db build vp_k vpa_ok.gbk --typing vp_k_group.json
-$ gapit screen sample.fa --db vp_o --quiet   # → O3/O13
-$ gapit screen sample.fa --db vp_k --quiet   # → K6
+$ gspec db build vp_o vpa_ok.gbk --typing vp_o_group.json   # /1 拆分（各一个 scheme）
+$ gspec db build vp_k vpa_ok.gbk --typing vp_k_group.json
+$ gspec screen sample.fa --db vp_o --quiet   # → O3/O13
+$ gspec screen sample.fa --db vp_k --quiet   # → K6
 ```

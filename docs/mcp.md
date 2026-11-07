@@ -1,6 +1,6 @@
 # MCP server
 
-gapit ships a Model Context Protocol (MCP) stdio server that exposes the CLI as
+gspec ships a Model Context Protocol (MCP) stdio server that exposes the CLI as
 tools. An agent runtime can screen assemblies and reads, summarize reports,
 type screen results, introspect schemas, and self-provision databases without
 shelling out or parsing terminal output. The protocol is hand-rolled newline-delimited JSON-RPC 2.0
@@ -11,8 +11,8 @@ line on stdout.
 
 | Command | What it is |
 |---|---|
-| `gapit mcp` | The `mcp` subcommand of the CLI. |
-| `gapit-mcp` | Console script installed with the package (same code). |
+| `gspec mcp` | The `mcp` subcommand of the CLI. |
+| `gspec-mcp` | Console script installed with the package (same code). |
 
 Both serve until stdin closes (EOF ends the process cleanly). stdout carries
 protocol lines only; stderr is reserved for protocol-internal errors.
@@ -22,17 +22,17 @@ protocol lines only; stderr is reserved for protocol-internal errors.
 Register the console script with an MCP client, Claude-style:
 
 ```json
-{"mcpServers": {"gapit": {"command": "gapit-mcp"}}}
+{"mcpServers": {"gspec": {"command": "gspec-mcp"}}}
 ```
 
-If `gapit-mcp` is not on the client's PATH, use the absolute path, or invoke
-the module CLI as `{"command": "gapit", "args": ["mcp"]}`.
+If `gspec-mcp` is not on the client's PATH, use the absolute path, or invoke
+the module CLI as `{"command": "gspec", "args": ["mcp"]}`.
 
 ## Tools
 
 Twelve tools: five analysis tools (`screen`, `screen_reads`, `summary`, `typing`,
 `schema`) and seven database tools (`db_list`, `db_path`, `db_setup`, `db_fetch`,
-`db_build`, `db_search`, `db_outdated`) that mirror `gapit db ...`. `db_list`/`db_search`/
+`db_build`, `db_search`, `db_outdated`) that mirror `gspec db ...`. `db_list`/`db_search`/
 `db_outdated` are read-only (`db_list` may create an empty datadir on first
 use); `db_setup`/`db_fetch`/`db_build` mutate the datadir. Argument lists below are
 transcribed from the live `tools/list` `inputSchema` objects.
@@ -59,7 +59,7 @@ EX7E check with `menwy`.
 
 Omitted `screen` thresholds fall back to the CLI defaults (`minid` 80,
 `mincov` 80; with `aligner minimap2`: `min_breadth` 90, `min_identity` 0,
-`min_mapq` 0), matching `gapit screen`. The `min_breadth`/`min_identity`/
+`min_mapq` 0), matching `gspec screen`. The `min_breadth`/`min_identity`/
 `min_mapq` arguments are rejected on the default `blastn` path (they are
 reads-engine parameters); `minid`/`mincov` are ignored by `minimap2`.
 
@@ -70,8 +70,8 @@ Notes:
   accepted as aliases for compatibility, but new clients should use snake_case.
 - File paths resolve relative to the server's working directory; absolute
   paths are safest.
-- The datadir comes from `--datadir` (where available), then `$GAPIT_DATADIR`, then
-  `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db` (see `./datadir.md`). The db tools also accept
+- The datadir comes from `--datadir` (where available), then `$GSPEC_DATADIR`, then
+  `$XDG_DATA_HOME/gspec/db`, then `~/.local/share/gspec/db` (see `./datadir.md`). The db tools also accept
   an explicit `datadir` argument per call. `db_list` creates a missing datadir
   before listing (fresh-install bootstrap); `db_search`/`db_outdated` require
   it and return the typed `DATADIR_NOT_FOUND` envelope.
@@ -89,17 +89,17 @@ suite uses), then talk to the server directly:
 
 ```bash
 export PATH="$PWD/.pixi/envs/default/bin:$PATH"
-export GAPIT_DATADIR=/tmp/gapit-mcp-demo/datadir
-mkdir -p "$GAPIT_DATADIR"
-cp -r tests/data/db/tinyamr "$GAPIT_DATADIR/"
-makeblastdb -in "$GAPIT_DATADIR/tinyamr/sequences" -dbtype nucl \
-  -out "$GAPIT_DATADIR/tinyamr/sequences" > /dev/null
+export GSPEC_DATADIR=/tmp/gspec-mcp-demo/datadir
+mkdir -p "$GSPEC_DATADIR"
+cp -r tests/data/db/tinyamr "$GSPEC_DATADIR/"
+makeblastdb -in "$GSPEC_DATADIR/tinyamr/sequences" -dbtype nucl \
+  -out "$GSPEC_DATADIR/tinyamr/sequences" > /dev/null
 ```
 
-Feed three request lines to `gapit mcp`:
+Feed three request lines to `gspec mcp`:
 
 ```bash
-cat <<'EOF' | gapit mcp
+cat <<'EOF' | gspec mcp
 {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}
 {"jsonrpc":"2.0","id":2,"method":"tools/list"}
 {"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen","arguments":{"files":["tests/data/contigs/full.fa"],"db":"tinyamr"}}}
@@ -109,7 +109,7 @@ EOF
 Response line 1, verbatim:
 
 ```text
-{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.6.8"}}}
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gspec","version":"0.8.0"}}}
 ```
 
 Response line 2 (real output, elided in the middle; each tool carries its full
@@ -132,7 +132,7 @@ the same run):
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.6.8"},
+  "tool": {"name": "gspec", "version": "0.8.0"},
   "created_at": "2026-09-19T01:15:44Z",
   "params": {"db": "tinyamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [
@@ -171,16 +171,16 @@ read `files[].phenotypes.<scheme>.notes`. For `nme_sero`, a W/Y call returns a
 
 ### Screening reads
 
-`screen_reads` mirrors `gapit screen --r1/--r2`: minimap2 per lane, presence
+`screen_reads` mirrors `gspec screen --r1/--r2`: minimap2 per lane, presence
 on alignment breadth. Same datadir convention as `screen`, but no BLAST
 index is needed — minimap2 reads the sequences file directly. Real session
 against a throwaway copy of the repo's `tinyreads` fixture:
 
 ```bash
-mkdir -p /tmp/gapit-mcp-demo/datadir
-cp -r tests/data/reads_db/tinyreads /tmp/gapit-mcp-demo/datadir/
-cat <<'EOF' | gapit mcp
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen_reads","arguments":{"r1":["tests/data/reads/tetx_full.fq"],"db":"tinyreads","datadir":"/tmp/gapit-mcp-demo/datadir"}}}
+mkdir -p /tmp/gspec-mcp-demo/datadir
+cp -r tests/data/reads_db/tinyreads /tmp/gspec-mcp-demo/datadir/
+cat <<'EOF' | gspec mcp
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen_reads","arguments":{"r1":["tests/data/reads/tetx_full.fq"],"db":"tinyreads","datadir":"/tmp/gspec-mcp-demo/datadir"}}}
 EOF
 ```
 
@@ -196,7 +196,7 @@ the same run):
 ```json
 {
   "schema": "gapit.reads/1",
-  "tool": {"name": "gapit", "version": "0.6.8"},
+  "tool": {"name": "gspec", "version": "0.8.0"},
   "created_at": "2026-09-22T00:07:35Z",
   "params": {
     "db": "tinyreads",
@@ -239,7 +239,7 @@ the `map-ont` preset.
 A missing input file returns a tool error, not a protocol error (real lines):
 
 ```text
-{"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"text","text":"{\"schema\":\"gapit.error/1\",\"code\":\"INPUT_NOT_FOUND\",\"message\":\"input file not found or unreadable: /tmp/gapit-mcp-demo/nope.fa\",\"context\":{\"file\":\"/tmp/gapit-mcp-demo/nope.fa\"}}"}],"isError":true}}
+{"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"text","text":"{\"schema\":\"gapit.error/1\",\"code\":\"INPUT_NOT_FOUND\",\"message\":\"input file not found or unreadable: /tmp/gspec-mcp-demo/nope.fa\",\"context\":{\"file\":\"/tmp/gspec-mcp-demo/nope.fa\"}}"}],"isError":true}}
 ```
 
 Parse `content[0].text` as JSON and branch on `code` (codes and exit-code
@@ -252,16 +252,16 @@ session against a fresh datadir (`my_genes.fa` holds one 240 bp synthetic
 gene, `query.fa` a 200 bp substring of it):
 
 ```bash
-mkdir -p /tmp/gapit-mcp-demo/datadir
-export GAPIT_DATADIR=/tmp/gapit-mcp-demo/datadir
+mkdir -p /tmp/gspec-mcp-demo/datadir
+export GSPEC_DATADIR=/tmp/gspec-mcp-demo/datadir
 ```
 
 Two request lines and their verbatim responses:
 
 ```text
-{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"db_build","arguments":{"name":"myamr","fasta":"/tmp/gapit-mcp-demo/my_genes.fa"}}}
-{"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"db\":\"myamr\",\"records\":1,\"dbtype\":\"nucl\",\"destination\":\"/tmp/gapit-mcp-demo/datadir/myamr\"}"}],"isError":false}}
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen","arguments":{"files":["/tmp/gapit-mcp-demo/query.fa"],"db":"myamr"}}}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"db_build","arguments":{"name":"myamr","fasta":"/tmp/gspec-mcp-demo/my_genes.fa"}}}
+{"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"db\":\"myamr\",\"records\":1,\"dbtype\":\"nucl\",\"destination\":\"/tmp/gspec-mcp-demo/datadir/myamr\"}"}],"isError":false}}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen","arguments":{"files":["/tmp/gspec-mcp-demo/query.fa"],"db":"myamr"}}}
 {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{ ... gapit.report/1 ... }"}],"isError":false}}
 ```
 
@@ -271,12 +271,12 @@ hit is the gene the agent just built the database from (real output):
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.6.8"},
+  "tool": {"name": "gspec", "version": "0.8.0"},
   "created_at": "2026-09-20T13:38:39Z",
   "params": {"db": "myamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [
     {
-      "file": "/tmp/gapit-mcp-demo/query.fa",
+      "file": "/tmp/gspec-mcp-demo/query.fa",
       "hits": [
         {
           "sequence": "contig1",
@@ -311,7 +311,7 @@ metadata): `./custom-db.md`.
   request on stdout, UTF-8, LF endings. Responses use compact separators.
 - **initialize.** Echoes a requested string `protocolVersion`; when absent or
   empty it answers with the built-in default `2025-06-18`. The result carries
-  `capabilities.tools` and `serverInfo` (`name: gapit`, package version).
+  `capabilities.tools` and `serverInfo` (`name: gspec`, package version).
 - **Methods.** Exactly three are handled: `initialize`, `tools/list`,
   `tools/call`. Anything else gets a JSON-RPC error `-32601`:
 

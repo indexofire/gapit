@@ -8,7 +8,7 @@ Screening, summarization, typing, and custom databases.
 
     ---
 
-    Run `gapit screen` on FASTA, GenBank, and EMBL inputs with abricate-compatible
+    Run `gspec screen` on FASTA, GenBank, and EMBL inputs with abricate-compatible
     thresholds and output formats.
 
     [Screening contigs](../screen.md)
@@ -51,7 +51,7 @@ Screening, summarization, typing, and custom databases.
 
     ---
 
-    Two-stage designation with `gapit typing`: rule and scheme primitives,
+    Two-stage designation with `gspec typing`: rule and scheme primitives,
     worked examples, and calibration.
 
     [Typing schemes](../typing.md)

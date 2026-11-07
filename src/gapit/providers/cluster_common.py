@@ -10,7 +10,7 @@ Providers may declare MULTIPLE source URLs (every downloaded file is
 parsed and the loci concatenated in ``source_urls`` order — the merge a
 multi-reference provider needs) and may carry a committed
 gapit.typing asset (``typing``), validated exactly like
-``gapit db build --typing`` — a multi-scheme document resolves gene ids
+``gspec db build --typing`` — a multi-scheme document resolves gene ids
 first, then ``validate_references`` gates drift against the downloaded
 content BEFORE any artifact is written.
 """
@@ -52,7 +52,7 @@ class ClusterProvider:
     Kaptive's GPL-3.0) must never ship inside the wheel — every cluster
     provider downloads on fetch. Cluster loci are always nucleotide, so
     dbtype is fixed. ``typing`` optionally points at a committed
-    gapit.typing asset riding the wheel (gapit-authored, MIT) that
+    gapit.typing asset riding the wheel (gspec-authored, MIT) that
     installs with the database; None keeps the untyped kaptive behavior."""
 
     name: str
@@ -68,7 +68,7 @@ class ClusterProvider:
     dbtype: Dbtype = "nucl"
     kind: Literal["cluster"] = "cluster"
     typing: Path | None = None
-    # Literature references + interpretation caveats for `gapit db info`
+    # Literature references + interpretation caveats for `gspec db info`
     # (usage is synthesized from the kind).
     guidance: DbGuidance = field(default_factory=DbGuidance)
     # Optional pre-parse hook: (download workdir) -> None. Providers whose
@@ -95,7 +95,7 @@ def fetch_cluster_provider(
     """Download the provider's GBK/GFF sources (every URL, loci concatenated
     in declaration order) and build a kind-cluster database through the
     cluster pipeline. A declared ``typing`` asset validates exactly like
-    ``gapit db build --typing`` (multi-scheme documents resolve gene ids
+    ``gspec db build --typing`` (multi-scheme documents resolve gene ids
     first) BEFORE any artifact is written, so a spec drifting from upstream
     content fails TYPING_UNKNOWN_GENE with no half-built database. Otherwise
     the kaptive behavior is untouched: no typing model, phenotype calls stay

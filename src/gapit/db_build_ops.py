@@ -1,6 +1,6 @@
 """The custom-database build use-case, shared by the CLI and MCP.
 
-Turns a user-supplied input into a fully built gapit-native database: FASTA
+Turns a user-supplied input into a fully built gspec-native database: FASTA
 inputs run the gene pipeline (records.jsonl -> sequences + BLAST index +
 manifest, written last), GBK/GFF inputs run the cluster pipeline (locus
 FASTA + features.json + manifest ``kind: cluster``, gapit.dbbuild). This
@@ -104,7 +104,7 @@ def _reproject_installed(
     if manifest.kind != "gene":
         raise DatabaseError(
             f"{name} is a cluster database: rebuild it from its source GBK/GFF with"
-            " `gapit db build` (its locus FASTA and features.json are generated"
+            " `gspec db build` (its locus FASTA and features.json are generated"
             " artifacts, not an editable truth source)",
             code="DB_REBUILD_CLUSTER",
             context={"db": name, "kind": manifest.kind},

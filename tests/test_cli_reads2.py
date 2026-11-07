@@ -110,7 +110,7 @@ def test_run_always_adds_cs_to_minimap2_argv(
         ],
     )
     assert result.exit_code == 0, result.stderr
-    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gapit: run:")]
+    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gspec: run:")]
     assert run_lines
     assert "--cs" in run_lines[0]
 
@@ -247,7 +247,7 @@ def test_reads2_debug_argv_contains_cs(datadir: Path, monkeypatch: pytest.Monkey
         ],
     )
     assert result.exit_code == 0
-    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gapit: run:")]
+    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gspec: run:")]
     assert run_lines
     assert " --cs " in run_lines[0]
 
@@ -366,7 +366,7 @@ def test_blastn_engine_rejects_mapq_flag() -> None:
 
 
 def test_schema_reads2_emits_valid_schema() -> None:
-    """Given `gapit schema reads2`, When run, Then valid JSON Schema for the
+    """Given `gspec schema reads2`, When run, Then valid JSON Schema for the
     gapit.reads/2 document (mean_identity_pct present, /1 const absent)."""
     result = runner.invoke(app, ["schema", "reads2"])
     assert result.exit_code == 0

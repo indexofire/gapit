@@ -154,9 +154,9 @@ class DbOutdatedEntry(BaseModel, frozen=True):
 
 
 class DbOutdatedDocument(BaseModel, frozen=True):
-    """gapit.dboutdated/1 — `gapit db outdated --json` output.
+    """gapit.dboutdated/1 — `gspec db outdated --json` output.
 
-    Registered as ``gapit schema dboutdated`` (mirrors the gapit.dblist/1
+    Registered as ``gspec schema dboutdated`` (mirrors the gapit.dblist/1
     registration).
     """
 

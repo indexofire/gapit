@@ -1,6 +1,6 @@
 # Databases
 
-The catalog, the datadir, and everything gapit writes on disk.
+The catalog, the datadir, and everything gspec writes on disk.
 
 <div class="grid cards" markdown>
 

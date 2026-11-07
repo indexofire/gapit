@@ -218,7 +218,7 @@ PROVIDER = ClusterProvider(
     description=(
         "Vibrio cholerae O-antigen gene clusters (OAGC; 190 OL loci) + ompW species control"
     ),
-    vendor="gapit(Hangzhou CDC)",
+    vendor="gspec(Hangzhou CDC)",
     source_urls=(_SOURCE_URL,),
     license="CC BY 4.0 (paper) / INSDC public domain (sequences)",
     note=(

@@ -1,6 +1,6 @@
 # MCP 服务器
 
-gapit 内置一个 Model Context Protocol（MCP）stdio 服务器，把 CLI 暴露为工具。agent
+gspec 内置一个 Model Context Protocol（MCP）stdio 服务器，把 CLI 暴露为工具。agent
 运行时可以筛查 assembly 和 reads、汇总报告、对筛查结果做分型、自省 schema、
 自行准备数据库，无需 shell 外调或解析终端输出。协议是手写的换行分隔 JSON-RPC 2.0，零额外依赖：stdin 每
 行一个请求，stdout 每行一个响应。
@@ -9,8 +9,8 @@ gapit 内置一个 Model Context Protocol（MCP）stdio 服务器，把 CLI 暴�
 
 | 命令 | 是什么 |
 |---|---|
-| `gapit mcp` | CLI 的 `mcp` 子命令。 |
-| `gapit-mcp` | 随包安装的 console script（同一份代码）。 |
+| `gspec mcp` | CLI 的 `mcp` 子命令。 |
+| `gspec-mcp` | 随包安装的 console script（同一份代码）。 |
 
 两者一直服务到 stdin 关闭（EOF 干净地结束进程）。stdout 只承载协议行；stderr 留给
 协议内部错误。
@@ -20,17 +20,17 @@ gapit 内置一个 Model Context Protocol（MCP）stdio 服务器，把 CLI 暴�
 用 MCP 客户端注册 console script，Claude 风格写法：
 
 ```json
-{"mcpServers": {"gapit": {"command": "gapit-mcp"}}}
+{"mcpServers": {"gspec": {"command": "gspec-mcp"}}}
 ```
 
-如果 `gapit-mcp` 不在客户端的 PATH 上，用绝对路径，或以
-`{"command": "gapit", "args": ["mcp"]}` 调用模块 CLI。
+如果 `gspec-mcp` 不在客户端的 PATH 上，用绝对路径，或以
+`{"command": "gspec", "args": ["mcp"]}` 调用模块 CLI。
 
 ## 工具
 
 十二个工具：五个分析工具（`screen`、`screen_reads`、`summary`、`typing`、`schema`）
 和七个数据库工具（`db_list`、`db_path`、`db_setup`、`db_fetch`、`db_build`、`db_search`、
-`db_outdated`），与 `gapit db ...` 对应。`db_list`/`db_search`/`db_outdated` 是只读的
+`db_outdated`），与 `gspec db ...` 对应。`db_list`/`db_search`/`db_outdated` 是只读的
 （`db_list` 首次使用可能创建空 datadir）；`db_setup`/`db_fetch`/`db_build` 会修改 datadir。
 下表参数列表转写自线上的
 `tools/list` `inputSchema` 对象。
@@ -56,7 +56,7 @@ gapit 内置一个 Model Context Protocol（MCP）stdio 服务器，把 CLI 暴�
 
 省略的 `screen` 阈值回退到 CLI 默认值（`minid` 80、`mincov` 80；
 `aligner minimap2` 时：`min_breadth` 90、`min_identity` 0、`min_mapq` 0），与
-`gapit screen` 一致。`min_breadth`/`min_identity`/`min_mapq` 参数在默认 `blastn`
+`gspec screen` 一致。`min_breadth`/`min_identity`/`min_mapq` 参数在默认 `blastn`
 路径上被拒绝（它们是 reads 引擎参数）；`minimap2` 忽略 `minid`/`mincov`。
 
 注意事项：
@@ -65,8 +65,8 @@ gapit 内置一个 Model Context Protocol（MCP）stdio 服务器，把 CLI 暴�
   `min_cluster_cov`）；0.6.5 之前的 camelCase 拼写仍作为兼容别名接受，新客户端
   应使用 snake_case。
 - 文件路径相对服务器的工作目录解析；绝对路径最稳妥。
-- 数据目录来自 `--datadir`（可用时），然后 `$GAPIT_DATADIR`，然后
-  `$XDG_DATA_HOME/gapit/db`，最后 `~/.local/share/gapit/db`（见 `./datadir.md`）。
+- 数据目录来自 `--datadir`（可用时），然后 `$GSPEC_DATADIR`，然后
+  `$XDG_DATA_HOME/gspec/db`，最后 `~/.local/share/gspec/db`（见 `./datadir.md`）。
   db 工具也接受每次调用显式的 `datadir` 参数。`db_list` 在列出
   前会创建缺失的数据目录（全新安装引导）；`db_search`/`db_outdated` 要求它存在，
   否则返回类型化的 `DATADIR_NOT_FOUND` 信封。
@@ -84,17 +84,17 @@ gapit 内置一个 Model Context Protocol（MCP）stdio 服务器，把 CLI 暴�
 
 ```bash
 export PATH="$PWD/.pixi/envs/default/bin:$PATH"
-export GAPIT_DATADIR=/tmp/gapit-mcp-demo/datadir
-mkdir -p "$GAPIT_DATADIR"
-cp -r tests/data/db/tinyamr "$GAPIT_DATADIR/"
-makeblastdb -in "$GAPIT_DATADIR/tinyamr/sequences" -dbtype nucl \
-  -out "$GAPIT_DATADIR/tinyamr/sequences" > /dev/null
+export GSPEC_DATADIR=/tmp/gspec-mcp-demo/datadir
+mkdir -p "$GSPEC_DATADIR"
+cp -r tests/data/db/tinyamr "$GSPEC_DATADIR/"
+makeblastdb -in "$GSPEC_DATADIR/tinyamr/sequences" -dbtype nucl \
+  -out "$GSPEC_DATADIR/tinyamr/sequences" > /dev/null
 ```
 
-向 `gapit mcp` 喂三行请求：
+向 `gspec mcp` 喂三行请求：
 
 ```bash
-cat <<'EOF' | gapit mcp
+cat <<'EOF' | gspec mcp
 {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}
 {"jsonrpc":"2.0","id":2,"method":"tools/list"}
 {"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen","arguments":{"files":["tests/data/contigs/full.fa"],"db":"tinyamr"}}}
@@ -104,7 +104,7 @@ EOF
 响应第 1 行，原样：
 
 ```text
-{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gapit","version":"0.6.8"}}}
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"gspec","version":"0.8.0"}}}
 ```
 
 响应第 2 行（真实输出，中段省略；每个工具携带完整的 `inputSchema`）：
@@ -125,7 +125,7 @@ EOF
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.6.8"},
+  "tool": {"name": "gspec", "version": "0.8.0"},
   "created_at": "2026-09-19T01:15:44Z",
   "params": {"db": "tinyamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [
@@ -164,15 +164,15 @@ EOF
 
 ### 筛查 reads
 
-`screen_reads` 对应 `gapit screen --r1/--r2`：每条 lane 一个 minimap2，存在判定看
+`screen_reads` 对应 `gspec screen --r1/--r2`：每条 lane 一个 minimap2，存在判定看
 比对广度。数据目录约定与 `screen` 相同，但不需要 BLAST 索引：minimap2 直接读取
 sequences 文件。对仓库 `tinyreads` 夹具的临时副本的真实会话：
 
 ```bash
-mkdir -p /tmp/gapit-mcp-demo/datadir
-cp -r tests/data/reads_db/tinyreads /tmp/gapit-mcp-demo/datadir/
-cat <<'EOF' | gapit mcp
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen_reads","arguments":{"r1":["tests/data/reads/tetx_full.fq"],"db":"tinyreads","datadir":"/tmp/gapit-mcp-demo/datadir"}}}
+mkdir -p /tmp/gspec-mcp-demo/datadir
+cp -r tests/data/reads_db/tinyreads /tmp/gspec-mcp-demo/datadir/
+cat <<'EOF' | gspec mcp
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen_reads","arguments":{"r1":["tests/data/reads/tetx_full.fq"],"db":"tinyreads","datadir":"/tmp/gspec-mcp-demo/datadir"}}}
 EOF
 ```
 
@@ -187,7 +187,7 @@ EOF
 ```json
 {
   "schema": "gapit.reads/1",
-  "tool": {"name": "gapit", "version": "0.6.8"},
+  "tool": {"name": "gspec", "version": "0.8.0"},
   "created_at": "2026-09-22T00:07:35Z",
   "params": {
     "db": "tinyreads",
@@ -229,7 +229,7 @@ assembly FASTA 请改用 `aligner: "minimap2"` 调 `screen`：普查会自动解
 缺失的输入文件返回工具错误，而非协议错误（真实行）：
 
 ```text
-{"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"text","text":"{\"schema\":\"gapit.error/1\",\"code\":\"INPUT_NOT_FOUND\",\"message\":\"input file not found or unreadable: /tmp/gapit-mcp-demo/nope.fa\",\"context\":{\"file\":\"/tmp/gapit-mcp-demo/nope.fa\"}}"}],"isError":true}}
+{"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"text","text":"{\"schema\":\"gapit.error/1\",\"code\":\"INPUT_NOT_FOUND\",\"message\":\"input file not found or unreadable: /tmp/gspec-mcp-demo/nope.fa\",\"context\":{\"file\":\"/tmp/gspec-mcp-demo/nope.fa\"}}"}],"isError":true}}
 ```
 
 把 `content[0].text` 解析为 JSON，按 `code` 分支（错误码与退出码映射：
@@ -241,16 +241,16 @@ db 工具让 agent 在会话中途自备数据库。对新数据目录的真实�
 条 240 bp 合成基因，`query.fa` 是它的 200 bp 子串）：
 
 ```bash
-mkdir -p /tmp/gapit-mcp-demo/datadir
-export GAPIT_DATADIR=/tmp/gapit-mcp-demo/datadir
+mkdir -p /tmp/gspec-mcp-demo/datadir
+export GSPEC_DATADIR=/tmp/gspec-mcp-demo/datadir
 ```
 
 两行请求及其原样响应：
 
 ```text
-{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"db_build","arguments":{"name":"myamr","fasta":"/tmp/gapit-mcp-demo/my_genes.fa"}}}
-{"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"db\":\"myamr\",\"records\":1,\"dbtype\":\"nucl\",\"destination\":\"/tmp/gapit-mcp-demo/datadir/myamr\"}"}],"isError":false}}
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen","arguments":{"files":["/tmp/gapit-mcp-demo/query.fa"],"db":"myamr"}}}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"db_build","arguments":{"name":"myamr","fasta":"/tmp/gspec-mcp-demo/my_genes.fa"}}}
+{"jsonrpc":"2.0","id":2,"result":{"content":[{"type":"text","text":"{\"db\":\"myamr\",\"records\":1,\"dbtype\":\"nucl\",\"destination\":\"/tmp/gspec-mcp-demo/datadir/myamr\"}"}],"isError":false}}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"screen","arguments":{"files":["/tmp/gspec-mcp-demo/query.fa"],"db":"myamr"}}}
 {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{ ... gapit.report/1 ... }"}],"isError":false}}
 ```
 
@@ -260,12 +260,12 @@ export GAPIT_DATADIR=/tmp/gapit-mcp-demo/datadir
 ```json
 {
   "schema": "gapit.report/1",
-  "tool": {"name": "gapit", "version": "0.6.8"},
+  "tool": {"name": "gspec", "version": "0.8.0"},
   "created_at": "2026-09-20T13:38:39Z",
   "params": {"db": "myamr", "minid": 80.0, "mincov": 80.0, "threads": 1},
   "files": [
     {
-      "file": "/tmp/gapit-mcp-demo/query.fa",
+      "file": "/tmp/gspec-mcp-demo/query.fa",
       "hits": [
         {
           "sequence": "contig1",
@@ -298,7 +298,7 @@ export GAPIT_DATADIR=/tmp/gapit-mcp-demo/datadir
 - **分帧。** stdin 每行一个 JSON-RPC 2.0 消息，stdout 每个请求一行响应，UTF-8、LF
   行尾。响应使用紧凑分隔符。
 - **initialize。** 原样回显请求的字符串 `protocolVersion`；缺失或为空时以内置默认
-  `2025-06-18` 应答。结果携带 `capabilities.tools` 和 `serverInfo`（`name: gapit`，
+  `2025-06-18` 应答。结果携带 `capabilities.tools` 和 `serverInfo`（`name: gspec`，
   包版本）。
 - **方法。** 只处理三个：`initialize`、`tools/list`、`tools/call`。其他一律返回
   JSON-RPC 错误 `-32601`：

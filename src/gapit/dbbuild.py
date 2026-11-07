@@ -1,4 +1,4 @@
-"""Wave A3 build pipeline: records.jsonl -> a fully built gapit-native database.
+"""Wave A3 build pipeline: records.jsonl -> a fully built gspec-native database.
 
 ``build_database`` turns a directory's truth source (``records.jsonl``) into
 the three artifacts consumers rely on — the ``sequences`` FASTA projection,
@@ -250,7 +250,7 @@ def build_database(
     quiet: bool = True,
     debug: bool = False,
 ) -> Manifest:
-    """Build every gapit-native artifact in ``db_dir`` from its records.jsonl.
+    """Build every gspec-native artifact in ``db_dir`` from its records.jsonl.
 
     Pipeline — each step runs only after the previous one succeeded, and the
     manifest is written LAST (it certifies the artifacts):

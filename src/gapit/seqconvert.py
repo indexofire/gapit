@@ -35,7 +35,7 @@ Deliberate divergences, invisible to BLAST: sequence is re-wrapped at 60
 columns (the Perl reuses input wrapping) and input is read with universal
 newlines (the Perl preserves ``\\r``). Parsed records — id, description,
 uppercased sequence — are identical, so the blastn query is unchanged and
-abricate parity is unaffected. gapit owns no any2fasta dependency; the
+abricate parity is unaffected. gspec owns no any2fasta dependency; the
 differential suite runs the real binary from the parity env's PATH, where
 abricate provides it transitively (tests/test_seqconvert_differential.py).
 """

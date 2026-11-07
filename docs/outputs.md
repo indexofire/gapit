@@ -1,6 +1,6 @@
 # Outputs
 
-Every gapit command follows one contract: data on stdout, diagnostics on stderr, errors as
+Every gspec command follows one contract: data on stdout, diagnostics on stderr, errors as
 typed JSON envelopes with documented exit codes. This page is the reference for each format.
 The schemas are versioned and machine-discoverable, so agents can consume them without
 reading this page. See also [screen.md](./screen.md), [reads.md](./reads.md), and
@@ -9,26 +9,26 @@ reading this page. See also [screen.md](./screen.md), [reads.md](./reads.md), an
 ## stdout and stderr
 
 - **stdout carries data only**: the TSV/CSV table, the JSON document, the Markdown report,
-  or the one-line receipts printed by `gapit db fetch` and `gapit db install`. With
-  `gapit screen --output PATH` the data goes to the file instead and stdout stays empty.
+  or the one-line receipts printed by `gspec db fetch` and `gspec db install`. With
+  `gspec screen --output PATH` the data goes to the file instead and stdout stays empty.
 - **stderr carries diagnostics**: progress lines like `Processing: <file>` during screening,
   fetch progress, warnings. `--quiet` silences stderr; it never touches stdout.
 - Output is deterministic: stable sort orders, fixed tool parameters, no wall-clock
   timestamps inside data payloads (only the `created_at` metadata field).
-- **Emission timing** (`gapit screen`): tsv/csv/md stream — the header or static frontmatter
+- **Emission timing** (`gspec screen`): tsv/csv/md stream — the header or static frontmatter
   first, then each file's rows/section the moment that file finishes (input order;
   head-of-line under `--jobs`). json is a single document written once at the end. The
   concatenated bytes are identical either way.
 
 ## TSV (default format)
 
-`gapit screen` prints abricate-compatible TSV, one header row then one row per surviving
+`gspec screen` prints abricate-compatible TSV, one header row then one row per surviving
 hit. Real output from a three-gene fixture database:
 
 ```console
-$ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr /tmp/opencode/gapit-own-db/gap.fa
+$ gspec screen --datadir /tmp/opencode/gspec-own-db/db --db tinyamr /tmp/opencode/gspec-own-db/gap.fa
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
-/tmp/opencode/gapit-own-db/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
+/tmp/opencode/gspec-own-db/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
 ```
 
 ### The 15 columns
@@ -74,7 +74,7 @@ The minimap sketches where the alignment lands on the gene in 15 character cells
 - Each cell covers `slen / cells` gene bases. Cells between the alignment's start and end
   get `=`, everything else `.`. With gaps, `/` sits in the middle cell position.
 - Coordinates are truncated to integers, so edge cells can stay `.` even for a full-length
-  alignment on a long gene. abricate has the same quirk; gapit reproduces it rather than
+  alignment on a long gene. abricate has the same quirk; gspec reproduces it rather than
   "fixing" it.
 
 The example row above is a gapped alignment of `sul1` (94 bp gene, 1 gap opening spanning 3
@@ -92,7 +92,7 @@ alignment is gapped. An ungapped full-length alignment prints 15 `=` characters,
 `tetA` row:
 
 ```text
-/tmp/opencode/gapit-own-db/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.00	100.00	tinyamr	NC_000913.3:100-900	tetracycline efflux pump TetA	TETRACYCLINE
+/tmp/opencode/gspec-own-db/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.00	100.00	tinyamr	NC_000913.3:100-900	tetracycline efflux pump TetA	TETRACYCLINE
 ```
 
 ### Variations
@@ -109,12 +109,12 @@ alignment is gapped. An ungapped full-length alignment prints 15 `=` characters,
 A gene database carrying a `typing.json` (a **typed** database — the bundled `eco_dec` is
 the example) screens exactly like an untyped one: the frozen 15-column abricate table above,
 byte-for-byte, in every format. Designation is the second stage of the two-stage pipeline —
-[`gapit typing`](./typing.md#the-two-stage-designation-workflow) reads a screen result
+[`gspec typing`](./typing.md#the-two-stage-designation-workflow) reads a screen result
 table and renders the calls (real output; `screen --output` wrote the table):
 
 ```console
-$ gapit screen dec_s2_pic_astA_uidA.fasta --db eco_dec --output dec.tsv --quiet
-$ gapit typing dec.tsv --quiet
+$ gspec screen dec_s2_pic_astA_uidA.fasta --db eco_dec --output dec.tsv --quiet
+$ gspec typing dec.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	astA;pic;uidA	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
 dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	astA;pic;uidA	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
@@ -140,8 +140,8 @@ Real document, same run as the TSV above:
 {
   "schema": "gapit.report/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -152,7 +152,7 @@ Real document, same run as the TSV above:
   },
   "files": [
     {
-      "file": "/tmp/opencode/gapit-own-db/gap.fa",
+      "file": "/tmp/opencode/gspec-own-db/gap.fa",
       "hits": [
         {
           "sequence": "contig1",
@@ -179,7 +179,7 @@ Real document, same run as the TSV above:
 | Field | Type | Meaning |
 |---|---|---|
 | `schema` | string | Always `gapit.report/1` |
-| `tool` | object | `{name, version}` of gapit |
+| `tool` | object | `{name, version}` of gspec |
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
 | `params` | object | Screening parameters in effect |
 | `params.db` | string | Database name |
@@ -209,7 +209,7 @@ Each hit mirrors the TSV columns one to one:
 | `product` | string | Product description |
 | `resistance` | string | Resistance or functional category (frozen name, kept for TSV parity) |
 
-Two additive optional fields appear on hits produced by `gapit screen --merge-fragments`
+Two additive optional fields appear on hits produced by `gspec screen --merge-fragments`
 (cross-contig fragment merging; [screen.md](./screen.md#fragment-merging-merge-fragments))
 and are absent from every other row:
 
@@ -225,7 +225,7 @@ retype, no schema version bump).
 
 ### gapit.typing_result/1 (designation from screen results)
 
-`gapit typing RESULT.tsv [RESULT2.tsv ...]` reads one or more gapit/abricate screen result
+`gspec typing RESULT.tsv [RESULT2.tsv ...]` reads one or more gspec/abricate screen result
 tables (TSV or CSV), resolves the database from the rows' shared `DATABASE` column, and
 evaluates its `typing.json` over each FILE's genes — every `(FILE, GENE)` folds to its best
 row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
@@ -233,7 +233,7 @@ row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
 ```json
 {
   "schema": "gapit.typing_result/1",
-  "tool": {"name": "gapit", "version": "0.6.8"},
+  "tool": {"name": "gspec", "version": "0.8.0"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
   "db": "eco_dec",
@@ -280,7 +280,7 @@ row by `(%IDENTITY, %COVERAGE)`. Real document (trimmed):
 | Field | Type | Meaning |
 |---|---|---|
 | `schema` | string | Always `gapit.typing_result/1` |
-| `tool` | object | `{name, version}` of gapit |
+| `tool` | object | `{name, version}` of gspec |
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
 | `source` | array | The result table path(s) as given |
 | `db` | string | The database every row screened against |
@@ -299,19 +299,19 @@ phenotype with the FILE's sorted `;`-joined gene list, repeated on every scheme 
 Typed errors: mixed `DATABASE` values across rows are `DATABASE_MISMATCH`, a table with no
 data rows `TYPING_NO_DATA`,
 a database without a `typing.json` `TYPING_NO_SCHEME`, and a cluster database
-`TYPING_CLUSTER_DB` (its typing is integrated into `gapit screen`). Its JSON Schema prints
-with `gapit schema typing_result`.
+`TYPING_CLUSTER_DB` (its typing is integrated into `gspec screen`). Its JSON Schema prints
+with `gspec schema typing_result`.
 
 ### gapit.reads/1 (reads and assembly screening)
 
 Reads mode reports per-gene coverage across the read set (or assembly; `--r1` accepts FASTQ and
 FASTA) instead of per-hit rows. Gene entries sort by `breadth_pct` descending; genes with zero
-mapped reads are omitted. Fields from `gapit schema reads`:
+mapped reads are omitted. Fields from `gspec schema reads`:
 
 | Field | Type | Meaning |
 |---|---|---|
 | `schema` | string | Always `gapit.reads/1` |
-| `tool` | object | `{name, version}` of gapit |
+| `tool` | object | `{name, version}` of gspec |
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
 | `params` | object | Read-screening parameters in effect |
 | `params.db` | string | Database name |
@@ -343,7 +343,7 @@ Opt-in variant of reads/1, emitted only when `--min-identity` or `--min-mapq` is
 alignments below the thresholds are dropped before aggregation, which removes the
 family-splitting over-calls breadth-only presence suffers on homologous genes. With both
 thresholds off the output stays `gapit.reads/1`, byte-identical. Fields from
-`gapit schema reads2` — identical to reads/1 except:
+`gspec schema reads2` — identical to reads/1 except:
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -369,12 +369,12 @@ homolog worked example and threshold guidance.
 Screening a `kind: cluster` database (minimap2 `asm20` engine; [screen.md](./screen.md#cluster-databases-kind-cluster))
 emits one document per run: the best-locus call per file, every covered locus with its
 per-gene verdicts, and — on databases carrying a `typing.json` — the phenotype call with its
-explainable score breakdown. Fields from `gapit schema cluster`:
+explainable score breakdown. Fields from `gspec schema cluster`:
 
 | Field | Type | Meaning |
 |---|---|---|
 | `schema` | string | Always `gapit.cluster/1` |
-| `tool` | object | `{name, version}` of gapit |
+| `tool` | object | `{name, version}` of gspec |
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
 | `params` | object | `db`, `preset` (always `asm20`), `min_gene_cov`, `min_gene_id`, `min_cluster_cov`, `threads` |
 | `files` | array | One entry per input file |
@@ -411,7 +411,7 @@ no locus call renders `- - - 0.00 0.00 0 0 -`-shaped dashes.
 
 ### gapit.features/1 and gapit.typing/1 (database-side documents)
 
-Two cluster-database artifacts are versioned documents you can introspect with `gapit
+Two cluster-database artifacts are versioned documents you can introspect with `gspec
 schema` but that never appear on stdout: `features` (the `features.json` locus/gene feature
 table written by `db build`) and `typing` (the declarative scoring spec installed with
 `db build --typing FILE` — rules of kind `weighted_genes` / `cluster_match` /
@@ -420,13 +420,13 @@ the contract the phenotype evaluator implements; see [databases.md](./databases.
 
 ### gapit.dbsetup/1 (db setup receipt)
 
-`gapit db setup --json` emits one document describing the bootstrap/index run. Progress
+`gspec db setup --json` emits one document describing the bootstrap/index run. Progress
 is suppressed so stdout carries only the receipt:
 
 ```json
 {
   "schema": "gapit.dbsetup/1",
-  "datadir": "/home/me/.local/share/gapit/db",
+  "datadir": "/home/me/.local/share/gspec/db",
   "materialized": ["eco_dec"],
   "fetched": [],
   "databases": [
@@ -449,15 +449,15 @@ is suppressed so stdout carries only the receipt:
 
 ### gapit.summary/1 (summary matrix)
 
-`gapit summary --format json` turns report tables into a gene matrix. Real output
+`gspec summary --format json` turns report tables into a gene matrix. Real output
 summarizing two report files, one with a `tetA` hit and one with none:
 
 ```json
 {
   "schema": "gapit.summary/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -472,7 +472,7 @@ summarizing two report files, one with a `tetA` hit and one with none:
   ],
   "rows": [
     {
-      "file": "/tmp/opencode/gapit-docs-Ifvc44/full.tsv",
+      "file": "/tmp/opencode/gspec-docs-Ifvc44/full.tsv",
       "num_found": 1,
       "cells": {
         "tetA": [
@@ -481,7 +481,7 @@ summarizing two report files, one with a `tetA` hit and one with none:
       }
     },
     {
-      "file": "/tmp/opencode/gapit-docs-Ifvc44/partial.tsv",
+      "file": "/tmp/opencode/gspec-docs-Ifvc44/partial.tsv",
       "num_found": 0,
       "cells": {}
     }
@@ -492,7 +492,7 @@ summarizing two report files, one with a `tetA` hit and one with none:
 | Field | Type | Meaning |
 |---|---|---|
 | `schema` | string | Always `gapit.summary/1` |
-| `tool` | object | `{name, version}` of gapit |
+| `tool` | object | `{name, version}` of gspec |
 | `created_at` | string | ISO-8601 UTC timestamp, second precision |
 | `params.metric` | string | Primary metric: `%COVERAGE` or `%IDENTITY` |
 | `params.metrics` | array | Every metric selected by `-i`/`-c` (both under `-ic`) |
@@ -510,7 +510,7 @@ and `%IDENTITY` summaries round-trip without reformatting.
 
 Schema names are semver'd (`gapit.report/1`). Within a major version, existing fields are
 never renamed or retyped; additive changes come with a schema-version bump and a note in
-`PLAN.md`. Validate anything you build against the schemas printed by `gapit schema`.
+`PLAN.md`. Validate anything you build against the schemas printed by `gspec schema`.
 
 ## Markdown
 
@@ -533,7 +533,7 @@ Any failure prints one line of JSON to stderr:
 | Field | Type | Meaning |
 |---|---|---|
 | `schema` | string | Always `gapit.error/1` |
-| `code` | string | Machine-stable error code, SCREAMING_SNAKE_CASE; the enum is exposed by `gapit schema error` |
+| `code` | string | Machine-stable error code, SCREAMING_SNAKE_CASE; the enum is exposed by `gspec schema error` |
 | `message` | string | Human-readable description |
 | `context` | object | String-valued details (file paths, digests, db names) |
 
@@ -551,7 +551,7 @@ The exit code tells you the failure class:
 Screening a file that doesn't exist exits 5 with this real stderr line:
 
 ```console
-$ gapit screen /nonexistent/contigs.fa --db ncbi
+$ gspec screen /nonexistent/contigs.fa --db ncbi
 {"schema":"gapit.error/1","code":"INPUT_NOT_FOUND","message":"input file not found or unreadable: /nonexistent/contigs.fa","context":{"file":"/nonexistent/contigs.fa"}}
 $ echo $?
 5
@@ -560,11 +560,11 @@ $ echo $?
 Two more, each produced by the command shown:
 
 ```console
-$ gapit db fetch -d nosuchdb            # exit 2, usage
+$ gspec db fetch -d nosuchdb            # exit 2, usage
 {"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
 
-$ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr contigs.fa   # exit 4, db error, before indexing
-{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gapit-own-db/db/tinyamr/sequences is not indexed, please try: gapit db setup","context":{"db":"/tmp/opencode/gapit-own-db/db/tinyamr/sequences"}}
+$ gspec screen --datadir /tmp/opencode/gspec-own-db/db --db tinyamr contigs.fa   # exit 4, db error, before indexing
+{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gspec-own-db/db/tinyamr/sequences is not indexed, please try: gspec db setup","context":{"db":"/tmp/opencode/gspec-own-db/db/tinyamr/sequences"}}
 ```
 
 A missing external binary (exit 3) reports which one:
@@ -580,18 +580,18 @@ stdout stays empty on failure: no partial tables, no partial JSON.
 An agent can discover the whole contract from the binary alone.
 
 ```console
-$ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.8"}
+$ gspec --version --json
+{"schema":"gapit.version/1","name":"gspec","version":"0.8.0"}
 ```
 
-`gapit schema <name>` prints the JSON Schema for each document. The eighteen names:
+`gspec schema <name>` prints the JSON Schema for each document. The eighteen names:
 `report`, `typing_result`, `reads`, `reads2`, `cluster`, `cluster2`, `summary`, `error`,
 `version`, `dblist`, `dbsetup`, `dboutdated`, `datadir`, `dbinfo`, plus the database-side
 documents `features` (gapit.features/1, a cluster db's feature table), `typing`
 (gapit.typing/2, a cluster db's declarative scoring spec; /1 still reads), `floors`
 (gapit.floors/1, per-gene identity floors for reads + contigs), and `screen`
 (gapit.screen/1, per-database screening defaults). A trimmed fragment of
-`gapit schema report`:
+`gspec schema report`:
 
 ```json
 {

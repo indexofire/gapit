@@ -117,8 +117,8 @@ PROVIDER = Provider(
             "The Reference Gene Catalog spans resistance, stress-response and virulence"
             " genes: a hit is not automatically an AMR determinant.",
             "Point mutations (gyrA, parC, rpoB, 23S rRNA) are a separate AMRFinderPlus"
-            " module and are not in this FASTA; gapit reports presence only.",
-            "gapit's 80/80 defaults are more permissive than AMRFinderPlus's curated"
+            " module and are not in this FASTA; gspec reports presence only.",
+            "gspec's 80/80 defaults are more permissive than AMRFinderPlus's curated"
             " per-family cutoffs, so borderline hits deserve confirmation.",
         ),
     ),

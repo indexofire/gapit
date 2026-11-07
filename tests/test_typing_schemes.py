@@ -6,7 +6,7 @@ ShigaTyper-semantics Shigella/EIEC skeleton, the meningotype serogroup
 panel with the EX7E allele-probe trick, and the dual-scheme DEC
 designation (GB 4789.6-2016 vs the risk-monitoring variant). Each fixture
 db is built with ``db build --typing`` and run through the two-stage
-pipeline — ``screen -o table.tsv`` (real blastn engine), then ``gapit
+pipeline — ``screen -o table.tsv`` (real blastn engine), then ``gspec
 typing table.tsv`` — with samples deterministic concatenations/mutations
 of the fixture markers (synthetic content only — curation is future
 work). These are the equivalence locks: the typing command's calls equal

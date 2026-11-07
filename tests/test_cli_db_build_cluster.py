@@ -1,4 +1,4 @@
-"""CLI integration tests: `gapit db build` cluster kind (GBK/GFF inputs).
+"""CLI integration tests: `gspec db build` cluster kind (GBK/GFF inputs).
 
 Real makeblastdb from the pixi env, synthetic fixtures from
 tests/data/cluster, everything local to tmp_path — the test_cli_db_build.py

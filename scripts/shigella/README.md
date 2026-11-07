@@ -1,6 +1,6 @@
 # Shigella serotype database (branch prototype)
 
-This branch starts the gapit-native Shigella molecular serotype panel.
+This branch starts the gspec-native Shigella molecular serotype panel.
 
 ## Current slice
 
@@ -15,7 +15,7 @@ This branch starts the gapit-native Shigella molecular serotype panel.
   ShigaTyper 2.0.5 `ShigellaRef5.fasta`.
 
 The bundle now carries `serotype.json` (`gapit.serotype/1`) and a first
-conservative marker-set resolver: `gapit typing` reads the screen table and
+conservative marker-set resolver: `gspec typing` reads the screen table and
 returns one `serotype` call. It covers the direct Sd/Sb wzx markers, S.
 sonnei forms I/II, Sf6, the S. flexneri POAC combinations, and Sd1 rfp+/rfp-.
 S. boydii 6 vs 10 uses the `wbaM` 5' alignment start (IS629 interruption vs

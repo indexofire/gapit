@@ -245,7 +245,7 @@ class TestEngineSamples:
         plain_run = runner.invoke(app, [*args, "--quiet"])
         assert debug_run.exit_code == 0, debug_run.stderr
         argv_lines = [
-            line for line in debug_run.stderr.splitlines() if line.startswith("gapit: run:")
+            line for line in debug_run.stderr.splitlines() if line.startswith("gspec: run:")
         ]
         assert argv_lines and "-x asm20" in argv_lines[0] and "--cs" in argv_lines[0]
         assert "sequences.asm20.mmi" in argv_lines[0]

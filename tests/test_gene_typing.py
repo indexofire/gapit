@@ -2,7 +2,7 @@
 fixture database (four marker genes, two weighted_genes schemes — DEC
 pathology-panel style) built with ``db build --typing`` and run through
 the two-stage pipeline: ``screen -o result.tsv`` (real blastn engine),
-then ``gapit typing result.tsv``.
+then ``gspec typing result.tsv``.
 
 Covers the gapit.typing_result/1 calls (JSON + MD + TSV), the
 identity-floor gating over the folded best rows, the multi-scheme
@@ -221,7 +221,7 @@ class TestPurifiedScreen:
         """Given the same inputs against the typed and the untyped build,
         When screened in every format, Then the outputs are byte-identical
         (modulo each run's created_at timestamp) — gene screening is pure
-        detection; designation lives in `gapit typing` (the inverted former
+        detection; designation lives in `gspec typing` (the inverted former
         phenotype-column pin)."""
         inputs = [str(DATA / f"{sample}.fa") for sample in SAMPLES]
         for extra in ([], ["--format", "json"], ["--format", "md"]):

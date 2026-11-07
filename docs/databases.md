@@ -1,7 +1,7 @@
 # Databases
 
-A gapit database is a directory of reference genes you screen contigs and reads against.
-This page covers where databases live, how to get them, what gapit writes on disk, and how
+A gspec database is a directory of reference genes you screen contigs and reads against.
+This page covers where databases live, how to get them, what gspec writes on disk, and how
 to bring your own. For the full datadir layout, sharing, conda/Docker guidance, and the
 database anatomy, see [Data directory](./datadir.md). For how screening uses them, see
 [screen.md](./screen.md).
@@ -23,23 +23,23 @@ by this convention.
 
 ## Where databases live
 
-Every database sits in a **datadir**, one subdirectory per database. gapit resolves the
+Every database sits in a **datadir**, one subdirectory per database. gspec resolves the
 datadir in this order:
 
 1. `--datadir` on the individual call
-2. `$GAPIT_DATADIR`
-3. `$XDG_DATA_HOME/gapit/db` (absolute `XDG_DATA_HOME` only)
-4. `~/.local/share/gapit/db`
+2. `$GSPEC_DATADIR`
+3. `$XDG_DATA_HOME/gspec/db` (absolute `XDG_DATA_HOME` only)
+4. `~/.local/share/gspec/db`
 
-The location is resolved even before it exists. `gapit db list` and `gapit db setup`
-bootstrap the missing root automatically (so a fresh `pip install gapit` can be inspected
+The location is resolved even before it exists. `gspec db list` and `gspec db setup`
+bootstrap the missing root automatically (so a fresh `pip install gspec` can be inspected
 and set up immediately); `db fetch`/`db build` create it as part of their write path.
 Commands that consume installed databases require it — except that `screen`/`typing`
 against a **bundled** name materialize that bundle and create the root on first use. A
 missing root on a strict read path is a typed error and exit 4:
 
 ```console
-$ gapit db outdated --datadir /no/such/dir
+$ gspec db outdated --datadir /no/such/dir
 {"schema":"gapit.error/1","code":"DATADIR_NOT_FOUND","message":"datadir does not exist: /no/such/dir","context":{"datadir":"/no/such/dir"}}
 ```
 
@@ -48,75 +48,75 @@ opt in explicitly (recommended only when you need env-local data — the home de
 survives environment rebuilds and is shared by every env):
 
 ```bash
-export GAPIT_DATADIR="${CONDA_PREFIX}/db/gapit"
+export GSPEC_DATADIR="${CONDA_PREFIX}/db/gspec"
 ```
 
 ## Listing what's installed
 
-`gapit db list` shows every known database and whether it is installed:
+`gspec db list` shows every known database and whether it is installed:
 
 ```console
-$ gapit db list
+$ gspec db list
 NAME	DESCRIPTION	STATUS	DBTYPE	KIND	TYPING	PROVIDER
 ab_k	A. baumannii K locus (Kaptive)	available	nucl	cluster	-	Kaptive (Kenyon lab)
 ab_o	A. baumannii OC locus — official keyword ab_o (Kaptive)	available	nucl	cluster	-	Kaptive (Kenyon lab)
 argannot	ARG-ANNOT acquired resistance genes	available	nucl	gene	-	IHU Méditerranée-Infection
 bacmet2	BacMet2 experimentally confirmed biocide/resistance genes (protein)	available	prot	gene	-	University of Gothenburg
 card	CARD protein homolog resistance models	available	nucl	gene	-	McMaster University
-cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	gene	command	gapit-curated (Poly 2015; CC0 + NCBI public domain)
+cje_cps	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel	bundled	nucl	gene	command	gspec-curated (Poly 2015; CC0 + NCBI public domain)
 ecoh	E. coli O and H antigens (srst2 EcOH)	available	nucl	gene	-	Holt lab (srst2)
-eco_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gene	command	gapit-curated (public-domain sources)
+eco_dec	Diarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)	bundled	nucl	gene	command	gspec-curated (public-domain sources)
 ecoli_kps	E. coli group 2+3 capsular polysaccharide loci (Kaptive)	available	nucl	cluster	-	Kaptive (Gladstone lab)
 ecoli_vf	E. coli virulence factors (phac-nml)	available	nucl	gene	-	PHAC-NML
 kosc_k	K. oxytoca species complex K locus (Kaptive)	available	nucl	cluster	-	Kaptive (klebgenomics)
 kosc_o	K. oxytoca species complex O locus (Kaptive)	available	nucl	cluster	-	Kaptive (klebgenomics)
 kpsc_k	K. pneumoniae species complex K locus (Kaptive)	available	nucl	cluster	-	Kaptive (klebgenomics)
 kpsc_o	K. pneumoniae species complex O locus (Kaptive)	available	nucl	cluster	-	Kaptive (klebgenomics)
-lmo_sero	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	gene	command	gapit-curated (public-domain INSDC sources)
+lmo_sero	Listeria monocytogenes serogrouping (Doumith 2004)	bundled	nucl	gene	command	gspec-curated (public-domain INSDC sources)
 megares	MEGARes antimicrobial resistance genes	available	nucl	gene	-	MEG Lab
 ncbi	NCBI AMRFinderPlus (reference finder) curated AMR	available	nucl	gene	-	NCBI
 nme_sero	Neisseria meningitidis serogroup + ctrA + sodC control (non-MLST)	available	nucl	gene	command	MDU-PHL
 plasmidfinder	CGE PlasmidFinder replicons	available	nucl	gene	-	DTU CGE
 resfinder	CGE ResFinder acquired resistance genes	available	nucl	gene	-	DTU CGE
 upec_expec_vf	UPEC/ExPEC virulence genes (FordeGenomics)	available	nucl	gene	-	FordeGenomics
-vch_oagc	Vibrio cholerae O-antigen gene clusters (OAGC; 190 OL loci) + ompW species control	bundled	nucl	cluster	integrated	gapit(Hangzhou CDC)
+vch_oagc	Vibrio cholerae O-antigen gene clusters (OAGC; 190 OL loci) + ompW species control	bundled	nucl	cluster	integrated	gspec(Hangzhou CDC)
 vfdb	VFDB virulence factors (set A, nucleotide)	available	nucl	gene	-	USTC (VFDB)
 victors	Victors virulence factors	available	nucl	gene	-	University of Chicago
-vpa_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	cluster	integrated	gapit-curated (vpasero)
+vpa_ok	V. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)	bundled	nucl	cluster	integrated	gspec-curated (vpasero)
 ```
 
 Rows are sorted globally by NAME, so the TSV and JSON listings can be consumed without
 a second sort. NAME is the database name you pass to `--db`; PROVIDER names the upstream
 maintainer organisation.
 
-For shell loops, `gapit db list -n` prints one space-separated line of names (no
+For shell loops, `gspec db list -n` prints one space-separated line of names (no
 header, no fields):
 
 ```console
-$ gapit db list -n
+$ gspec db list -n
 ab_k ab_o argannot ... vpa_ok vpa_vf
-$ for name in $(gapit db list -n); do gapit db setup -d "$name"; done
+$ for name in $(gspec db list -n); do gspec db setup -d "$name"; done
 ```
 
 The loop is the explicit "acquire and index everything" pattern: a named provider is
 fetched when missing, a named bundled database is materialized, and installed databases
-are reindexed. For a repair-only pass that never fetches, use `gapit db setup --all`. Every row is a screening database (`gapit screen`); KIND distinguishes gene from
+are reindexed. For a repair-only pass that never fetches, use `gspec db setup --all`. Every row is a screening database (`gspec screen`); KIND distinguishes gene from
 cluster databases, and TYPING says how the optional designation works, if the
 database carries a `typing.json`:
 
-- `command` — a gene database: screen to a table, then run `gapit typing RESULT.tsv`.
-- `integrated` — a cluster database: the phenotype is evaluated by `gapit screen`
-  itself. `gapit typing` can reformat cluster JSON (`cluster/2` or `locus_map/1`)
+- `command` — a gene database: screen to a table, then run `gspec typing RESULT.tsv`.
+- `integrated` — a cluster database: the phenotype is evaluated by `gspec screen`
+  itself. `gspec typing` can reformat cluster JSON (`cluster/2` or `locus_map/1`)
   but does not re-evaluate it; cluster TSV is not re-typable.
 - `-` — no typing scheme; screen-only.
 
 STATUS reads `installed (N)` when `<datadir>/<name>/gapit-manifest.json`
 exists, with N the record count, otherwise `available`. The four
 wheel-shipped [bundled](#bundled-databases-install-time-ready) databases — `cje_cps`,
-`eco_dec`, `lmo_sero`, `vpa_ok` — are gapit-curated, with no provider and no fetch path:
+`eco_dec`, `lmo_sero`, `vpa_ok` — are gspec-curated, with no provider and no fetch path:
 they read `bundled` before materialization and `installed (N)` after. Every provider,
 including `ecoh`, `ncbi`, and `resfinder`, is fetch-on-demand and reads `available` until
-`gapit db fetch -d <name>` installs it. Databases installed
+`gspec db fetch -d <name>` installs it. Databases installed
 into the datadir outside the catalog also appear, after the bundled section and sorted by
 name: `db build` products (gene and cluster kinds alike) and manifest-less directories
 (abricate-style or `db install` bytes) render with PROVIDER `local`, the record count
@@ -127,7 +127,7 @@ redirected output always stays the plain TSV above. For agents, `--json` emits a
 `gapit.dblist/1` document (first three entries shown, output trimmed):
 
 ```console
-$ gapit db list --json
+$ gspec db list --json
 {
   "schema": "gapit.dblist/1",
   "providers": [
@@ -169,27 +169,27 @@ $ gapit db list --json
 |---|---|---|
 | `schema` | string | Always `gapit.dblist/1` |
 | `providers` | array | One entry per known database |
-| `providers[].name` | string | Database name, as passed to `--db` / `gapit db fetch` |
+| `providers[].name` | string | Database name, as passed to `--db` / `gspec db fetch` |
 | `providers[].vendor` | string | Upstream maintainer organisation (NCBI, DTU CGE, Kaptive (klebgenomics), ...) |
 | `providers[].description` | string | Short content summary |
 | `providers[].dbtype` | string | `nucl` (screened with blastn) or `prot` (screened with blastx) |
 | `providers[].kind` | string | `gene` (per-gene BLAST screening) or `cluster` (minimap2 locus screening, [screen.md](./screen.md#cluster-databases-kind-cluster)) |
-| `providers[].typing` | boolean | True when the database carries a `typing.json`; gene databases designate via `gapit typing`, cluster databases inside `gapit screen` |
+| `providers[].typing` | boolean | True when the database carries a `typing.json`; gene databases designate via `gspec typing`, cluster databases inside `gspec screen` |
 | `providers[].installed` | boolean | True when a manifest and readable `sequences` exist in the datadir |
 | `providers[].indexed` | boolean | True when a BLAST index (`.nin` or `.pin`) exists; `db setup` rebuilds the indices |
 | `providers[].records` | integer | Record count, omitted when the database isn't installed |
 | `providers[].license` | string | Upstream content license, omitted unless the provider or bundled snapshot pins one (card, vfdb, ecoli_vf, kaptive, bundled content) |
 | `providers[].source` | string | `local` for a datadir-discovered database outside the catalog (`db build` / `db install`), `bundled` for a wheel-shipped database (see below); absent for registry entries |
 
-`gapit db list` is the single listing surface: the database catalog above, with `--json`
+`gspec db list` is the single listing surface: the database catalog above, with `--json`
 returning the `gapit.dblist/1` document. (The former standalone listing command and its
 schema were removed; abricate `--list` byte-parity is intentionally dropped for this
 surface.) See [outputs.md](./outputs.md).
 
 ## Inspecting one database
 
-`gapit db list` answers "which databases exist, and are they installed";
-`gapit db info -d NAME` answers "what is this database, where does its content come from,
+`gspec db list` answers "which databases exist, and are they installed";
+`gspec db info -d NAME` answers "what is this database, where does its content come from,
 how is it meant to be used, and where does it mislead". It is a pure read over four
 existing sources — the provider catalog, the wheel's `bundled.json`, the installed
 manifest, and an optional `info.json` sidecar in the database directory — so nothing
@@ -199,16 +199,16 @@ On a terminal it prints a man-style page (plain text, no colour, wrapped to the 
 width; `less` can page it):
 
 ```console
-$ gapit db info -d cje_cps | head -20
-CJE_CPS(1)                   gapit database manual                    CJE_CPS(1)
+$ gspec db info -d cje_cps | head -20
+CJE_CPS(1)                   gspec database manual                    CJE_CPS(1)
 
 NAME
        cje_cps — Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel
 
 SYNOPSIS
-       $ gapit screen -d cje_cps [FILE]... -o RESULT.tsv
-       $ gapit typing RESULT.tsv
-       $ gapit db info -d cje_cps
+       $ gspec screen -d cje_cps [FILE]... -o RESULT.tsv
+       $ gspec typing RESULT.tsv
+       $ gspec db info -d cje_cps
 
 DESCRIPTION
        36 CPS amplicon targets + lpxA control; extracted from the GenBank
@@ -236,17 +236,17 @@ key, and a reference's `REFERENCE_DOI`/`REFERENCE_URL`/`REFERENCE_NOTE` rows fol
 own `REFERENCE` row.
 
 ```console
-$ gapit db info -d cje_cps --tsv | head -4
+$ gspec db info -d cje_cps --tsv | head -4
 NAME	cje_cps
 DESCRIPTION	Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel
-VENDOR	gapit-curated (Poly 2015; CC0 + NCBI public domain)
+VENDOR	gspec-curated (Poly 2015; CC0 + NCBI public domain)
 KIND	gene
 ```
 
-`--json` emits the `gapit.dbinfo/1` document (`gapit schema dbinfo`) for agents:
+`--json` emits the `gapit.dbinfo/1` document (`gspec schema dbinfo`) for agents:
 
 ```console
-$ gapit db info -d vpa_ok --json | head -1
+$ gspec db info -d vpa_ok --json | head -1
 {"schema":"gapit.dbinfo/1","name":"vpa_ok","description":"V. parahaemolyticus O and K ...
 ```
 
@@ -257,8 +257,8 @@ first use), or `available` (fetch-time download). An unknown name is exit 4
 **Every catalog database is documented.** The `db info` page is not limited to the
 bundled panels: each of the twenty-one providers declares its own literature reference and
 interpretation caveats in its provider module, and the bundled panels carry theirs in
-`bundled.json`, so `gapit db info -d card`, `-d resfinder`, `-d kpsc_k` and friends all
-answer with a citation and the limits you must respect (CARD model cutoffs vs gapit's
+`bundled.json`, so `gspec db info -d card`, `-d resfinder`, `-d kpsc_k` and friends all
+answer with a citation and the limits you must respect (CARD model cutoffs vs gspec's
 80/80 screen, ResFinder's acquired-gene-only scope, Kaptive's locus-vs-serotype
 distinction, VFDB's CC BY-NC terms). `tests/test_db_info.py` enforces the gate: a
 database added without at least one reference, one caveat, and a usage recipe fails CI.
@@ -269,10 +269,10 @@ database added without at least one reference, one caveat, and a usage recipe fa
 ```json
 {
   "description": "In-house AMR panel",
-  "vendor": "gapit(Hangzhou CDC)",
+  "vendor": "gspec(Hangzhou CDC)",
   "references": [{"citation": "Smith 2026, in-house panel (unpublished)"}],
   "caveats": ["unpublished markers: confirm before reporting"],
-  "usage": ["gapit screen x.fa --db labgenes"]
+  "usage": ["gspec screen x.fa --db labgenes"]
 }
 ```
 
@@ -285,7 +285,7 @@ wheel's notes without rebuilding anything.
 
 Most databases download from upstream at `db fetch` time because their licenses forbid
 redistribution (see [Providers](#providers)). A small set of **bundled** databases ships
-inside the gapit wheel instead — thirteen gapit-curated databases whose content provenance
+inside the gspec wheel instead — thirteen gspec-curated databases whose content provenance
 was audited record-by-record (public-domain sources plus the MIT `vpa_ok` panel). The
 policy is stricter than "the license permits it": third-party provider snapshots
 (`ncbi`, `card`, `ecoh`, `resfinder`, ...) never ride the wheel, because their
@@ -342,7 +342,7 @@ locus with its coverage, identity, present/partial/missing gene evidence.
 
 **Snapshots are point-in-time.** Each snapshot's `sequences` file is byte-for-byte what
 the curated build produces on the snapshot date (a regression test proves the
-byte-identity for `vpa_ok` against a `gapit db build` over the real vpautils GenBank files
+byte-identity for `vpa_ok` against a `gspec db build` over the real vpautils GenBank files
 when local copies exist — `features.json` included, gene-id resolution included).
 Bundled databases have no provider and no `db fetch` path: a refresh means a new snapshot
 riding a wheel release. `bundled.json` records the snapshot date for reference.
@@ -366,20 +366,20 @@ use the same alignment evidence as Kaptive and KUT still names the detected KL l
 Other cluster databases have no profile and keep the historical primary-only behavior
 byte-for-byte.
 
-**How materialization works.** The first `gapit screen ... --db <bundled-name>` against
+**How materialization works.** The first `gspec screen ... --db <bundled-name>` against
 a datadir that does not hold the database builds it there automatically — one stderr note
-(`gapit: materializing bundled database eco_dec (16 records) into <datadir>`,
+(`gspec: materializing bundled database eco_dec (16 records) into <datadir>`,
 silenced by `--quiet`), then the standard gene-build pipeline: `records.jsonl`, the
 `sequences` FASTA with gapit/v1 headers, the BLAST index, the `typing.json` copy when the
 bundle ships one, and a manifest stamped `source: "bundled"`. That pipeline — shared with
-`gapit db build` — drops exact `(gene, sequence)` duplicate records at build time (first
+`gspec db build` — drops exact `(gene, sequence)` duplicate records at build time (first
 kept; a stderr note and the receipt's `duplicates_dropped` count the drops). Cluster
 bundles (`vpa_ok`) run the cluster pipeline instead: materialization rebuilds the locus
 FASTA and `features.json` from the committed artifacts through the same cluster build
 entry a `db build` uses — gene ids stay snapshot-resolved, the typing spec re-validates
 against them, no re-resolution. Deterministic, zero
-network. A missing datadir is bootstrapped by `gapit db list`, `gapit db setup`,
-`db fetch`/`db build`, and the first screen against a bundled name; `gapit db setup`
+network. A missing datadir is bootstrapped by `gspec db list`, `gspec db setup`,
+`db fetch`/`db build`, and the first screen against a bundled name; `gspec db setup`
 materializes every bundled database alongside indexing; re-running either is a no-op
 once the manifest exists. `db list` shows the database as `bundled` before that and
 `installed (16)` after — on all four listing surfaces (TSV, rich table, `--json`, MCP
@@ -399,8 +399,8 @@ Designation is two-stage over a gene database (`gapit.typing/2`, scheme `penner_
 `lpxA` as `control_gene`):
 
 ```console
-$ gapit screen isolate.fa --db cje_cps --output cj.tsv --quiet
-$ gapit typing cj.tsv --quiet
+$ gspec screen isolate.fa --db cje_cps --output cj.tsv --quiet
+$ gspec typing cj.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 isolate.fa	penner_cps	HS4 complex (HS4/13/43/50/62/65)	HS4A;lpxA	high	1.0000	HS16 (0.0000)	...
 ```
@@ -428,7 +428,7 @@ Fallback `untypeable (atypical CPS profile or non-jejuni)`. Coverage floor 90, i
 floor 95 (the HS5/31 rule sits at 90 because the HS45 band in that locus is a divergent
 amplicon).
 
-`gapit db info -d cje_cps` carries the panel's four literature references (Poly 2015 for the
+`gspec db info -d cje_cps` carries the panel's four literature references (Poly 2015 for the
 panel, Klena 2004 for the `lpxA` control, Penner 1980 for the scheme, Pike 2013 for the
 serotype distribution) and the seven interpretation caveats — the complex collapse, the
 shared-amplicon profiles, the `lpxA`-is-not-speciation warning, the 62 bp HS2 E-value
@@ -444,8 +444,8 @@ groups (Doumith et al. 2004, J Clin Microbiol 42:3819), extended with the Huang 
 4b variant: `prs` gates the scheme as a genus-level control gene, `IIa` (1/2a or 3a),
 `IIc` (1/2c or 3c), `IIb` (1/2b, 3b or 7), `IVb` (4b, 4d or 4e), and `IVb-v` (the
 lmo0737-carrying 4b variant) — the same in-silico semantics as tools like LisSero.
-Designation runs through the two-stage pipeline: `gapit screen -o table.tsv --db
-lmo_sero`, then `gapit typing table.tsv`.
+Designation runs through the two-stage pipeline: `gspec screen -o table.tsv --db
+lmo_sero`, then `gspec typing table.tsv`.
 
 Known limitations, carried on the calls as notes where relevant:
 
@@ -472,7 +472,7 @@ honest answer for everything the five markers cannot resolve.
 O-antigen gene cluster loci) and `CPSgc.gbk` (163 capsular polysaccharide loci) —
 into ONE merged `kind: cluster` database. It is a PURE built-in bundled database in
 the `eco_dec`/`lmo_sero` pattern: no provider, no source URLs, no
-`gapit db fetch -d vpa_ok`. The committed three-scheme typing asset
+`gspec db fetch -d vpa_ok`. The committed three-scheme typing asset
 (`src/gapit/data/dbs/vpa_ok/typing.json`, generated reproducibly by
 `scripts/generate_vp_typing.py`) installs with it, so screening renders
 `gapit.cluster/2` with per-file phenotypes `o_group`, `k_group`, and the composed
@@ -480,7 +480,7 @@ the `eco_dec`/`lmo_sero` pattern: no provider, no source URLs, no
 single scan:
 
 ```console
-$ gapit screen RIMD.fna --db vpa_ok --format json
+$ gspec screen RIMD.fna --db vpa_ok --format json
 {"schema": "gapit.cluster/2", ..., "phenotypes": {"o_group": {"phenotype": "O3"},
  "k_group": {"phenotype": "K6"}, "serotype": {"phenotype": "O3:K6"}}}
 ```
@@ -499,11 +499,11 @@ documented per-locus tuning).
 
 ## Checking database freshness
 
-`gapit db outdated` reports every installed database's age against the staleness
+`gspec db outdated` reports every installed database's age against the staleness
 threshold. Against a fully installed datadir (output trimmed to three of twenty-eight rows):
 
 ```console
-$ gapit db outdated --days 30
+$ gspec db outdated --days 30
 NAME	FETCHED_AT	AGE_DAYS	STATUS
 argannot	2026-09-17T23:22:06Z	2.58	ok
 bacmet2	2026-09-17T23:13:51Z	2.58	ok
@@ -514,7 +514,7 @@ card	2026-09-17T23:14:25Z	2.58	ok
 A database installed long ago simply reports `stale`:
 
 ```console
-$ gapit db outdated --datadir /tmp/opencode/gapit-outdated-demo
+$ gspec db outdated --datadir /tmp/opencode/gspec-outdated-demo
 NAME	FETCHED_AT	AGE_DAYS	STATUS
 card	2020-01-01T00:00:00Z	2454.55	stale
 ```
@@ -531,10 +531,10 @@ databases the report is manifest-based as everywhere else: a materialized bundle
 from its materialization time, and no bundled-vs-upstream comparison happens in v1
 (see [Bundled databases](#bundled-databases-install-time-ready) — future work). For
 agents, `--json` emits a `gapit.dboutdated/1` document (introspectable via
-`gapit schema dboutdated`):
+`gspec schema dboutdated`):
 
 ```console
-$ gapit db outdated --days 3 --json
+$ gspec db outdated --days 3 --json
 {
   "schema": "gapit.dboutdated/1",
   "databases": [
@@ -558,18 +558,18 @@ $ gapit db outdated --days 3 --json
 
 ## Searching records across databases
 
-`gapit db search TERM` looks up genes in the `records.jsonl` truth store of every installed
+`gspec db search TERM` looks up genes in the `records.jsonl` truth store of every installed
 database — no BLAST, just a fast scan. Matching is case-insensitive substring by default;
 `--exact` switches to full-field equality:
 
 ```console
-$ gapit db search ctx-m --limit 3
+$ gspec db search ctx-m --limit 3
 argannot	(Bla)blaCTX-M-1	X92506:63-938		(Bla)blaCTX-M-1	876
 argannot	(Bla)blaCTX-M-10	AF255298:1-873		(Bla)blaCTX-M-10	873
 argannot	(Bla)blaCTX-M-100	FR682582:1-876		(Bla)blaCTX-M-100	876
-$ gapit db search "blaCTX-M-1" --field gene --exact
+$ gspec db search "blaCTX-M-1" --field gene --exact
 ncbi	blaCTX-M-1	NG_048897.1	CEPHALOSPORIN	extended-spectrum class A beta-lactamase CTX-M-1	876
-$ gapit db search virulence --db vfdb --field function --limit 2
+$ gspec db search virulence --db vfdb --field function --limit 2
 vfdb	AAA92657	AAA92657	virulence	(AAA92657) unknown protein [TraJ (VF0241) - Invasion (VFC0083)] [Escherichia coli]	606
 vfdb	AAC38364	AAC38364	virulence	(AAC38364) Orf1 [Ler (VF0189) - Regulation (VFC0301)] [Escherichia coli O127:H6 str. E2348/69]	390
 ```
@@ -582,7 +582,7 @@ truncation (`--quiet` silences it); zero hits exit 0 with empty stdout. `--json`
 JSON object per hit with the same fields as snake_case (`function` as an array):
 
 ```console
-$ gapit db search "tet(M)" --field gene --exact --json | head -1
+$ gspec db search "tet(M)" --field gene --exact --json | head -1
 {"db":"card","gene":"tet(M)","accession":"AB039845.1:25-1945","function":["tetracycline"],"product":"Tet(M) is a ribosomal protection protein that confers tetracycline resistance. It is found on transposable DNA elements and its horizontal transfer between bacterial species has been documented.","length":1920}
 ```
 
@@ -592,9 +592,9 @@ unknown `--db NAME` is a usage error (exit 2) listing what is installed.
 
 ## Providers
 
-Twenty-one providers ship with gapit. Every one of them — `card`, `ncbi`, and `vfdb`
+Twenty-one providers ship with gspec. Every one of them — `card`, `ncbi`, and `vfdb`
 included — downloads from its upstream source at fetch time. No provider snapshot is
-bundled: only the seven gapit-curated, permissively licensed bundles above ride the
+bundled: only the seven gspec-curated, permissively licensed bundles above ride the
 package. Several upstream licenses (CARD's McMaster terms, VFDB's CC BY-NC, Kaptive's
 GPL-3.0) forbid redistribution inside an MIT-licensed distribution, and even
 permissively licensed provider snapshots carry provenance risk, so they stay
@@ -611,7 +611,7 @@ Kaptive providers ([Kaptive providers](#kaptive-providers-gpl-downloaded-on-fetc
 | `resfinder` | DTU CGE | CGE ResFinder acquired resistance genes | nucl |
 | `argannot` | IHU Méditerranée-Infection | ARG-ANNOT acquired resistance genes | nucl |
 | `nme_sero` | MDU-PHL | N. meningitidis serogroup + ctrA + sodC control (non-MLST); see [nme_sero.md](./nme_sero.md) | nucl |
-| `vch_oagc` | gapit(Hangzhou CDC) | V. cholerae O-antigen gene clusters (190 OL loci + ompW control; cluster, NCBI efetch) | nucl |
+| `vch_oagc` | gspec(Hangzhou CDC) | V. cholerae O-antigen gene clusters (190 OL loci + ompW control; cluster, NCBI efetch) | nucl |
 | `plasmidfinder` | DTU CGE | CGE PlasmidFinder replicons | nucl |
 | `megares` | MEG Lab | MEGARes antimicrobial resistance genes | nucl |
 | `ecoh` | Holt lab (srst2) | E. coli O and H antigens (srst2 EcOH) | nucl |
@@ -655,40 +655,40 @@ per-species upstream repository — `klebgenomics/KpSC_surface_antigen_loci` (`k
 `johannajkenyon/Abaumannii_surface_polysaccharide_loci` (`ab_k`, `ab_o`), and
 `rgladstone/EC-K-typing` (`ecoli_kps`) — so a fetched database tracks current upstream
 curation rather than a frozen release. Those repos also ship `.toml` metadata with upstream
-identity thresholds; gapit does not fetch it in v1 (a future `typing.json` source).
+identity thresholds; gspec does not fetch it in v1 (a future `typing.json` source).
 
-The database content is **GPL-3.0**, while gapit is MIT — so nothing kaptive is ever
-bundled: `gapit db fetch -d kpsc_k` (and the other six keywords) downloads the GenBank file at
+The database content is **GPL-3.0**, while gspec is MIT — so nothing kaptive is ever
+bundled: `gspec db fetch -d kpsc_k` (and the other six keywords) downloads the GenBank file at
 fetch time and builds a `kind: cluster` database through the cluster pipeline. The manifest
 records the upstream URL, the `GPL-3.0 (database content)` license, and the citation note.
 No typing model ships with them (phenotype calls stay null); you get kaptive-style best
 locus calls, and you can later install your own `typing.json` semantics by rebuilding with
-`gapit db build --typing`.
+`gspec db build --typing`.
 
 ## Fetching databases
 
 ### The default set
 
-`gapit db fetch -d all` installs the default set, `card` then `vfdb`. Like every
+`gspec db fetch -d all` installs the default set, `card` then `vfdb`. Like every
 provider it downloads from upstream, transforms the records, and builds `sequences` plus
 the BLAST index locally — so the index always matches the BLAST version actually
-installed on your machine. Network access is required. A bare `gapit db fetch` prints the
+installed on your machine. Network access is required. A bare `gspec db fetch` prints the
 command help: a multi-database download is always named explicitly (`all` or one or
 more NAMEs), never implied by an omitted `-s`.
 
 ### Fetching a named database
 
-`gapit db fetch -d NAME [NAME ...]` runs the full pipeline for one or more databases. Here is `card`
+`gspec db fetch -d NAME [NAME ...]` runs the full pipeline for one or more databases. Here is `card`
 (stderr progress lines, then a one-line JSON receipt on stdout):
 
 ```console
-$ gapit db fetch -d card --datadir /tmp/opencode/gapit-dbs-demo
-gapit: downloaded 1 source file(s)
-gapit: read 6059 records from card
-gapit: generated /tmp/opencode/gapit-dbs-demo/card/sequences
-gapit: self-check passed for card
-gapit: BLAST index built (nucl)
-{"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/opencode/gapit-dbs-demo/card"}
+$ gspec db fetch -d card --datadir /tmp/opencode/gspec-dbs-demo
+gspec: downloaded 1 source file(s)
+gspec: read 6059 records from card
+gspec: generated /tmp/opencode/gspec-dbs-demo/card/sequences
+gspec: self-check passed for card
+gspec: BLAST index built (nucl)
+{"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/opencode/gspec-dbs-demo/card"}
 ```
 
 | Receipt field | Type | Meaning |
@@ -702,7 +702,7 @@ Every database downloads from its upstream source at fetch time, so fetches need
 access. Unknown names are rejected before the datadir is even resolved:
 
 ```console
-$ gapit db fetch -d nosuchdb
+$ gspec db fetch -d nosuchdb
 {"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
 ```
 
@@ -712,20 +712,20 @@ An existing database directory is never overwritten silently. Refetching without
 fails with exit 4:
 
 ```console
-$ gapit db fetch -d card --datadir /tmp/opencode/gapit-dbs-demo
+$ gspec db fetch -d card --datadir /tmp/opencode/gspec-dbs-demo
 {"schema":"gapit.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database card (use --force)","context":{"db":"card"}}
 ```
 
 `--force` deletes and rebuilds in place:
 
 ```console
-$ gapit db fetch -d card --datadir /tmp/opencode/gapit-dbs-demo --force
-{"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/opencode/gapit-dbs-demo/card"}
+$ gspec db fetch -d card --datadir /tmp/opencode/gspec-dbs-demo --force
+{"db":"card","records":6059,"dbtype":"nucl","destination":"/tmp/opencode/gspec-dbs-demo/card"}
 ```
 
 ## Installing a local file
 
-`gapit db install SOURCE --sha256 HASH --output TARGET` is a verified local-file install.
+`gspec db install SOURCE --sha256 HASH --output TARGET` is a verified local-file install.
 It knows nothing about the provider catalog, archives, or sequence content: it streams SOURCE through
 SHA256, compares the digest against `--sha256`, and only then atomically replaces TARGET.
 A failed check leaves any existing TARGET untouched.
@@ -733,7 +733,7 @@ A failed check leaves any existing TARGET untouched.
 ```console
 $ sha256sum card.json
 65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025  card.json
-$ gapit db install card.json \
+$ gspec db install card.json \
     --sha256 65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025 \
     --output /tmp/opencode/card-copy.json
 {"destination":"/tmp/opencode/card-copy.json","sha256":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}
@@ -742,13 +742,13 @@ $ gapit db install card.json \
 A wrong digest aborts with exit 5:
 
 ```console
-$ gapit db install card.json \
+$ gspec db install card.json \
     --sha256 0000000000000000000000000000000000000000000000000000000000000000 \
     --output /tmp/opencode/card-bad.json
 {"schema":"gapit.error/1","code":"CHECKSUM_MISMATCH","message":"SHA256 mismatch for card.json","context":{"source":"card.json","expected":"0000000000000000000000000000000000000000000000000000000000000000","actual":"65838c8d4f160923fbf8c296c0f986bd5b55f7f5b5a15a7bbeb35412b945e025"}}
 ```
 
-## What's inside a gapit-built database
+## What's inside a gspec-built database
 
 ```
 <datadir>/<name>/
@@ -774,7 +774,7 @@ per line; the first card record, verbatim:
 | Field | Type | Meaning |
 |---|---|---|
 | `db` | string | Source database name |
-| `gene` | string | Gene name, the identity gapit reports on |
+| `gene` | string | Gene name, the identity gspec reports on |
 | `sequence` | string | Normalized sequence (uppercase; `N`/`X` for ambiguous bases) |
 | `accession` | string | Accession or coordinate span, empty when unpublished |
 | `function` | array of string | Functional categories, sorted (see the vocabulary below) |
@@ -800,8 +800,8 @@ versions. A real one, from the plasmidfinder database:
   "header_format": "gapit/v1",
   "upstream_version": "",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "makeblastdb_version": "blastn: 2.17.0+",
   "minimap2_version": "2.31-r1302"
@@ -817,22 +817,22 @@ versions. A real one, from the plasmidfinder database:
 | `sha256` | string | Digest of the built `sequences` file, 64 lowercase hex chars |
 | `n_records` | integer | Record count, matches `records.jsonl` |
 | `dbtype` | string | `nucl` or `prot`, chosen explicitly at build time |
-| `header_format` | string | Always `gapit/v1` for gapit-built databases |
+| `header_format` | string | Always `gapit/v1` for gspec-built databases |
 | `upstream_version` | string | Upstream release label when the source has one |
 | `license` | string | Database-content license, present only when the provider declares one (kaptive: `GPL-3.0 (database content)`; card: McMaster non-commercial terms; vfdb: `CC BY-NC 4.0`) |
 | `note` | string | Free-text provenance note (kaptive: source file + citation), present only when set |
-| `tool` | object | `{name, version}` of the gapit that built the database |
+| `tool` | object | `{name, version}` of the gspec that built the database |
 | `makeblastdb_version` | string | BLAST+ version that built the index |
 | `minimap2_version` | string | minimap2 version in the build environment (reads mode indexes in memory; no `.mmi` is built) |
 
 `records.jsonl` and the manifest are file contracts. They never appear on stdout and are
-not registered with `gapit schema` (the stdio/listing documents `dblist`, `dbsetup`, `dboutdated`,
+not registered with `gspec schema` (the stdio/listing documents `dblist`, `dbsetup`, `dboutdated`,
 `datadir`, and `dbinfo` are).
 
 ### floors.json — per-gene identity floors
 
 An optional sidecar declaring a MINIMUM alignment identity (%) per gene for reads-mode
-and contig-mode presence (schema `gapit.floors/1`, introspect with `gapit schema floors`; see
+and contig-mode presence (schema `gapit.floors/1`, introspect with `gspec schema floors`; see
 [reads.md](./reads.md#per-gene-identity-floors-gapitfloors1-database-side) for the
 screening semantics and the `pic` worked example):
 
@@ -859,19 +859,19 @@ false-positive fix.
 
 ## Header formats and compatibility
 
-gapit reads two header formats and detects them per record:
+gspec reads two header formats and detects them per record:
 
 - **abricate legacy**: `>DB~~~GENE~~~ACCESSION~~~RESISTANCE PRODUCT`. Fields may be
   missing; missing trailing fields decode to empty strings.
-- **gapit-native `gapit/v1`**: `>gapit|db=<v>|gene=<v>|acc=<v>|func=<v> PRODUCT` with
+- **gspec-native `gapit/v1`**: `>gapit|db=<v>|gene=<v>|acc=<v>|func=<v> PRODUCT` with
   percent-encoded values, so gene names and products survive BLAST and minimap2 byte for
   byte, spaces and pipes included.
 
 Both decode into the same four identity fields, and the TSV/JSON outputs are identical in
 shape either way. For native databases the `RESISTANCE` column carries the `func` value.
 
-> **Warning:** abricate cannot read gapit-built databases. The `gapit/v1` header format is
-> not the `~~~` convention. gapit reading abricate datadirs is one-directional by design;
+> **Warning:** abricate cannot read gspec-built databases. The `gapit/v1` header format is
+> not the `~~~` convention. gspec reading abricate datadirs is one-directional by design;
 > keep a legacy copy if a downstream tool still runs abricate.
 
 ### The `func` vocabulary
@@ -890,25 +890,25 @@ through to the TSV `RESISTANCE` column and the JSON `resistance` field:
 
 ## Bringing your own database
 
-`gapit db build NAME FASTA` turns any FASTA of reference genes into a fully built
-gapit-native database — `records.jsonl`, the `sequences` projection with `gapit/v1`
+`gspec db build NAME FASTA` turns any FASTA of reference genes into a fully built
+gspec-native database — `records.jsonl`, the `sequences` projection with `gapit/v1`
 headers, the BLAST index, and the manifest — in one command.
 Here is a two-gene synthetic FASTA plus a metadata TSV (fields below), run against a
 scratch datadir:
 
 ```console
-$ gapit db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv
-gapit: generated /tmp/opencode/gapit-build-demo/db/tinyamr/sequences
-gapit: self-check passed for tinyamr
-gapit: BLAST index built (nucl)
-{"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
+$ gspec db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv
+gspec: generated /tmp/opencode/gspec-build-demo/db/tinyamr/sequences
+gspec: self-check passed for tinyamr
+gspec: BLAST index built (nucl)
+{"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gspec-build-demo/db/tinyamr"}
 ```
 
 stderr carries the per-step progress, stdout the one-line JSON receipt (same fields
 as `db fetch`, see the table above). The database screens immediately:
 
 ```console
-$ gapit screen --datadir ./db --db tinyamr contig.fa
+$ gspec screen --datadir ./db --db tinyamr contig.fa
 Processing: contig.fa
 Found 1 genes in contig.fa
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
@@ -928,7 +928,7 @@ The header kind is detected per record, so mixed files work:
 |---|---|---|---|---|
 | `>syn_betalac synthetic class A beta-lactamase` | `syn_betalac` | — | — | `synthetic class A beta-lactamase` |
 | `>olddb~~~sul1~~~U12338.4:1-940~~~SULFONAMIDE sulfonamide resistance` | `sul1` | `U12338.4:1-940` | `SULFONAMIDE` | `sulfonamide resistance` |
-| `>gapit\|db=old\|gene=sul2\|acc=X\|func=streptomycin aminoglycoside` | `sul2` | `X` | `streptomycin` | `aminoglycoside` |
+| `>gspec\|db=old\|gene=sul2\|acc=X\|func=streptomycin aminoglycoside` | `sul2` | `X` | `streptomycin` | `aminoglycoside` |
 
 Plain headers without any description text fall back to `--description TEXT`, then
 to the gene name. The `db` field of every record is always NAME (the database being
@@ -974,8 +974,8 @@ input rejects `--floors` as a usage error.
 ```console
 $ cat my_floors.json
 {"schema": "gapit.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
-$ gapit db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --floors my_floors.json
-{"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
+$ gspec db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --floors my_floors.json
+{"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gspec-build-demo/db/tinyamr"}
 $ cat ./db/tinyamr/floors.json
 {"schema": "gapit.floors/1", "default": null, "genes": {"syn_betalac": 95.0}}
 ```
@@ -995,7 +995,7 @@ $ cat my_screen.json
  "reads": {"min_identity": 80.0, "min_mapq": 20, "min_depth": 5.0,
            "min_relative_depth": 0.10, "relative_to": "lpxA"},
  "contigs": {"minid": 80.0, "mincov": 80.0, "merge_fragments": true}}
-$ gapit db build tinyamr my_genes.fa --datadir ./db --screen my_screen.json
+$ gspec db build tinyamr my_genes.fa --datadir ./db --screen my_screen.json
 $ cat ./db/tinyamr/screen.json
 ```
 
@@ -1004,25 +1004,25 @@ $ cat ./db/tinyamr/screen.json
 Like `db fetch`, an existing database is never overwritten silently:
 
 ```console
-$ gapit db build tinyamr my_genes.fa --datadir ./db
+$ gspec db build tinyamr my_genes.fa --datadir ./db
 {"schema":"gapit.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database tinyamr (use --force)","context":{"db":"tinyamr"}}
-$ gapit db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --force
-gapit: generated /tmp/opencode/gapit-build-demo/db/tinyamr/sequences
-gapit: self-check passed for tinyamr
-gapit: BLAST index built (nucl)
-{"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gapit-build-demo/db/tinyamr"}
+$ gspec db build tinyamr my_genes.fa --datadir ./db --tsv my_meta.tsv --force
+gspec: generated /tmp/opencode/gspec-build-demo/db/tinyamr/sequences
+gspec: self-check passed for tinyamr
+gspec: BLAST index built (nucl)
+{"db":"tinyamr","records":2,"dbtype":"nucl","destination":"/tmp/opencode/gspec-build-demo/db/tinyamr"}
 ```
 
 Because `records.jsonl` is the editable truth, editing it and rebuilding regenerates every
 downstream artifact. Omitting the input does exactly that — no source FASTA needed:
 
 ```console
-$ vim ~/.local/share/gapit/db/mypanel/records.jsonl   # curate: rename, merge, drop, fix
-$ gapit db build mypanel
-gapit: rebuilding mypanel from records.jsonl
-gapit: generated .../mypanel/sequences
-gapit: self-check passed for mypanel
-gapit: BLAST index built (nucl)
+$ vim ~/.local/share/gspec/db/mypanel/records.jsonl   # curate: rename, merge, drop, fix
+$ gspec db build mypanel
+gspec: rebuilding mypanel from records.jsonl
+gspec: generated .../mypanel/sequences
+gspec: self-check passed for mypanel
+gspec: BLAST index built (nucl)
 {"db":"mypanel","records":4,"dbtype":"nucl","destination":".../mypanel"}
 ```
 
@@ -1043,16 +1043,16 @@ Two guard rails keep the two modes from being confused:
 
 Cluster databases cannot be re-projected this way: their locus FASTA and `features.json`
 are generated from a source GBK/GFF (and their typing rules key on resolved gene ids), so
-the call fails with `DB_REBUILD_CLUSTER` — rebuild them with `gapit db build NAME FILE`.
+the call fails with `DB_REBUILD_CLUSTER` — rebuild them with `gspec db build NAME FILE`.
 
 ### Renaming an installed database
 
-`gapit db rename OLD NEW` re-homes a database under a new name without a re-download:
+`gspec db rename OLD NEW` re-homes a database under a new name without a re-download:
 
 ```console
-$ gapit db rename cam cam_vf
-gapit: renaming cam -> cam_vf (gene database)
-gapit: BLAST index built (nucl)
+$ gspec db rename cam cam_vf
+gspec: renaming cam -> cam_vf (gene database)
+gspec: BLAST index built (nucl)
 {"db":"cam_vf","renamed_from":"cam","records":17,"kind":"gene","destination":".../cam_vf"}
 ```
 
@@ -1073,31 +1073,31 @@ and are refused with `DATABASE_NOT_FOUND` — rebuild them with `db build` inste
 
 `db build` is the recommended route, but any abricate-format datadir also works
 as-is: point `--datadir` at a directory containing `<name>/sequences` (a nucleotide
-FASTA with `~~~` headers) and run `gapit db setup` once to build the BLAST index. The
+FASTA with `~~~` headers) and run `gspec db setup` once to build the BLAST index. The
 mol-type heuristic from abricate picks `nucl` vs `prot`.
 
 End to end with a tiny three-gene database copied into a scratch datadir:
 
 ```console
-$ ls /tmp/opencode/gapit-own-db/db/tinyamr
+$ ls /tmp/opencode/gspec-own-db/db/tinyamr
 sequences
-$ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr /tmp/opencode/gapit-own-db/gap.fa
-Processing: /tmp/opencode/gapit-own-db/gap.fa
-{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gapit-own-db/db/tinyamr/sequences is not indexed, please try: gapit db setup","context":{"db":"/tmp/opencode/gapit-own-db/db/tinyamr/sequences"}}
-$ gapit db setup --datadir /tmp/opencode/gapit-own-db/db
+$ gspec screen --datadir /tmp/opencode/gspec-own-db/db --db tinyamr /tmp/opencode/gspec-own-db/gap.fa
+Processing: /tmp/opencode/gspec-own-db/gap.fa
+{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gspec-own-db/db/tinyamr/sequences is not indexed, please try: gspec db setup","context":{"db":"/tmp/opencode/gspec-own-db/db/tinyamr/sequences"}}
+$ gspec db setup --datadir /tmp/opencode/gspec-own-db/db
 Indexed tinyamr (3 sequences, nucl)
-$ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr /tmp/opencode/gapit-own-db/gap.fa
+$ gspec screen --datadir /tmp/opencode/gspec-own-db/db --db tinyamr /tmp/opencode/gspec-own-db/gap.fa
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
-/tmp/opencode/gapit-own-db/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
+/tmp/opencode/gspec-own-db/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
 ```
 
-`gapit db setup` indexes every subdirectory with a readable `sequences` file and exits 0
+`gspec db setup` indexes every subdirectory with a readable `sequences` file and exits 0
 when all of them have `sequences.nin` or `sequences.pin`.
 
 ### Reads mode and legacy datadirs
 
 For reads screening (see [reads.md](./reads.md)), minimap2 always indexes the `sequences`
-FASTA in memory; no `.mmi` is built, and one left in a datadir by an older gapit is never
+FASTA in memory; no `.mmi` is built, and one left in a datadir by an older gspec is never
 consulted. Persisted indexes were tried and rejected: a default-built `.mmi` overrides the
 `-x sr` preset's indexing parameters (minimap2 warns "-k, -w or -H overridden by prebuilt
 index"), which misassigns close homologs (CTX-M/SHV allele divergence in the deciding
@@ -1110,16 +1110,16 @@ databases, metadata TSVs, and a troubleshooting table lives in
 
 ## Cluster databases (GBK/GFF)
 
-`gapit db build NAME input.gbk` (or `.gbff`, `.gb`, `.gff`, `.gff3`, each plain or
+`gspec db build NAME input.gbk` (or `.gbff`, `.gb`, `.gff`, `.gff3`, each plain or
 `.gz`/`.bz2`) builds a different kind of database: one record = one gene locus. The input
 kind is detected by suffix (`--kind gene|cluster` must agree or the build is a usage
 error); the FASTA gene pipeline of the previous section is untouched.
 
 ```console
-$ gapit db build mycps cps_loci.gbk --datadir ./db
-gapit: generated ./db/mycps/sequences
-gapit: self-check passed for mycps
-gapit: BLAST index built (nucl)
+$ gspec db build mycps cps_loci.gbk --datadir ./db
+gspec: generated ./db/mycps/sequences
+gspec: self-check passed for mycps
+gspec: BLAST index built (nucl)
 {"db":"mycps","records":2,"dbtype":"nucl","destination":"./db/mycps"}
 ```
 
@@ -1132,7 +1132,7 @@ simple CDS annotations.
 
 The artifacts differ from a gene database: `sequences` holds one bare-locus-id record per
 locus (plain headers — abricate cannot read these), `features.json` is the
-`gapit.features/1` feature table (introspect with `gapit schema features`), the manifest
+`gapit.features/1` feature table (introspect with `gspec schema features`), the manifest
 declares `kind: cluster`, and there is no `records.jsonl`. Screening dispatches to the
 minimap2 cluster engine ([screen.md](./screen.md#cluster-databases-kind-cluster)).
 
@@ -1178,7 +1178,7 @@ markers, and an any-of gate), `cluster_match` (weighted locus coverage/identity/
 components with per-component floors), and `learned_linear` (a trained sigmoid over named
 features `gene:<id>:<cov|ident|present>` / `cluster:<locus>:<coverage|identity>`) — plus
 the document-level `cutoff`, `ambiguity_margin`, and `fallback` the decision layer applies.
-The full schema prints with `gapit schema typing`. Validation is strict at build time: a
+The full schema prints with `gspec schema typing`. Validation is strict at build time: a
 malformed document fails with `TYPING_MALFORMED`, and a rule referencing a gene or locus
 the input does not carry fails with `TYPING_UNKNOWN_GENE` before any artifact is written
 (the same check reruns at screen time, so hand-edited databases cannot smuggle dead
@@ -1190,13 +1190,13 @@ references).
 anonymous `default` scheme, so existing typed databases keep their output. `--typing`
 also works on GENE (FASTA) builds — `weighted_genes` rules only in v1, gene references
 checked against the FASTA records. A typed gene db screens exactly like an untyped one
-(pure gene detection); its designations come from the two-stage pipeline — `gapit screen
--o result.tsv` writes the table, and `gapit typing result.tsv` renders one call per
+(pure gene detection); its designations come from the two-stage pipeline — `gspec screen
+-o result.tsv` writes the table, and `gspec typing result.tsv` renders one call per
 scheme as `gapit.typing_result/1`
 ([typing.md](./typing.md#the-two-stage-designation-workflow)).
 
 typing/2 stage 2 adds six rule/scheme primitives (all optional and additive; full
-detail in `gapit schema typing`): the `exact_set` rule (Doumith/Shigella-style marker
+detail in `gspec schema typing`): the `exact_set` rule (Doumith/Shigella-style marker
 tables — score 1.0 iff every `requires` gene is present AND every `excludes` gene is
 absent, floors defaulting to 90/90; a 1.0 tie involving a satisfied exact_set resolves
 by declaration order instead of the ambiguity margin), an optional `coverage_floor` on
@@ -1251,12 +1251,12 @@ a panel with `lpxA` can gate presence on relative depth. A database may ship a
 ```
 
 Precedence: **CLI flag > `screen.json` > global CLI default**. Only options the
-user did not pass are filled from the sidecar, so `gapit screen -d cje_cps ...`
+user did not pass are filled from the sidecar, so `gspec screen -d cje_cps ...`
 works with no flags while `--min-mapq 30` still wins for one run.
 
-Install it with `gapit db build NAME INPUT --screen FILE` or drop `screen.json`
-into an installed database directory (then `gapit db build NAME` re-projects
-the gene database and carries the sidecar verbatim). `gapit schema screen`
+Install it with `gspec db build NAME INPUT --screen FILE` or drop `screen.json`
+into an installed database directory (then `gspec db build NAME` re-projects
+the gene database and carries the sidecar verbatim). `gspec schema screen`
 prints the JSON Schema.
 
 The bundled `cje_cps` panel ships one: MAPQ 20, 10% `lpxA` relative-depth,
@@ -1266,5 +1266,5 @@ depth 5, and contig `--merge-fragments`. Per-gene identity remains in
 Upgrading an existing `cje_cps` directory: the wheel's bundle is only
 materialized when the database is absent, so an already-installed copy keeps
 its old records/sidecars. Copy the new `records.jsonl`/`floors.json`/
-`screen.json` into the directory and run `gapit db build cje_cps`, or remove
+`screen.json` into the directory and run `gspec db build cje_cps`, or remove
 the directory and let the next screen re-materialize the bundle.

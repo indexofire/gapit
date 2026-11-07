@@ -1,6 +1,6 @@
 ---
 schema: gapit.typing_result/1
-tool: gapit 0.6.8
+tool: gspec 0.8.0
 created_at: 2026-10-02T12:00:00Z
 db: markers
 source:
@@ -8,7 +8,7 @@ source:
 files: 3
 ---
 
-# gapit typing results
+# gspec typing results
 
 | FILE | SCHEME | PHENOTYPE | GENES | CONFIDENCE | SCORE | RUNNER_UP | NOTES |
 |---|---|---|---|---|---|---|---|

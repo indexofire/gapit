@@ -1,6 +1,6 @@
 # 数据库
 
-数据库目录、数据目录，以及 gapit 在磁盘上写入的全部内容。
+数据库目录、数据目录，以及 gspec 在磁盘上写入的全部内容。
 
 <div class="grid cards" markdown>
 

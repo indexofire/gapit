@@ -1,4 +1,4 @@
-"""The `gapit db info` command: one database's provenance and guidance.
+"""The `gspec db info` command: one database's provenance and guidance.
 
 Read-only: it reports what is installed, what ships in the wheel, or what the
 provider catalog declares — including the literature the content came from and
@@ -33,7 +33,7 @@ def _stdout_is_tty() -> bool:
     "-d",
     "db_name",
     required=True,
-    help="Database name to describe (see: gapit db list).",
+    help="Database name to describe (see: gspec db list).",
 )
 @datadir_option()
 @click.option(

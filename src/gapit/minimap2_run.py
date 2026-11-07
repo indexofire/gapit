@@ -123,7 +123,7 @@ def _iter_legacy(
         if r2 is not None:
             argv.append(str(r2.absolute()))
         if debug:
-            print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
+            print(f"gspec: run: {shlex.join(argv)}", file=sys.stderr)
         yield from _iter_minimap2(argv, r1)
 
 

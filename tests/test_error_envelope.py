@@ -164,7 +164,7 @@ def test_error_schema_exposes_the_registered_code_enum() -> None:
 
 
 def test_every_raise_site_uses_a_registered_code() -> None:
-    """Given every typed raise helper/call in src/gapit, When scanned, Then
+    """Given every typed raise helper/call in src/gspec, When scanned, Then
     its code is in ERROR_CODES (so the public enum cannot drift)."""
     source = Path(__file__).parents[1] / "src" / "gapit"
     names = {"_fail", "GapitError", "DatabaseError", "InputError", "UsageError", "DependencyError"}

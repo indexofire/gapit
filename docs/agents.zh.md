@@ -1,6 +1,6 @@
-# 面向 agent 的 gapit
+# 面向 agent 的 gspec
 
-gapit 生来就是被程序驱动的。每个输出都以机器可读为设计目标，整个契约可以从二进制
+gspec 生来就是被程序驱动的。每个输出都以机器可读为设计目标，整个契约可以从二进制
 本身发现，失败是类型化的 JSON 而不是散文。本页就是契约：集成时你不需要其他任何文
 档。
 
@@ -11,8 +11,8 @@ gapit 生来就是被程序驱动的。每个输出都以机器可读为设计�
 版本，一行 JSON：
 
 ```console
-$ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.8"}
+$ gspec --version --json
+{"schema":"gapit.version/1","name":"gspec","version":"0.8.0"}
 ```
 
 输出 schema。十八个文档可自省：`report`、`typing_result`、`reads`、`reads2`、
@@ -21,27 +21,27 @@ $ gapit --version --json
 打印完整的 JSON Schema：
 
 ```console
-$ gapit schema report          # gapit.report/1 (contig screening)
-$ gapit schema typing_result   # gapit.typing_result/1 (gapit typing 判定)
-$ gapit schema reads           # gapit.reads/1  (FASTQ screening)
-$ gapit schema reads2          # gapit.reads/2  (filtered FASTQ screening)
-$ gapit schema cluster         # gapit.cluster/1 (cluster-database screening)
-$ gapit schema cluster2        # gapit.cluster/2 (multi-scheme cluster screening)
-$ gapit schema summary         # gapit.summary/1
-$ gapit schema error           # gapit.error/1
-$ gapit schema version         # gapit.version/1
-$ gapit schema dblist          # gapit.dblist/1（数据库目录）
-$ gapit schema dbsetup         # gapit.dbsetup/1（db setup 回执）
-$ gapit schema dbinfo          # gapit.dbinfo/1（单个数据库的来源与注意事项）
-$ gapit schema dboutdated      # gapit.dboutdated/1（过期报告）
-$ gapit schema datadir         # gapit.datadir/1（解析路径/来源）
-$ gapit schema features        # gapit.features/1 (cluster db feature table)
-$ gapit schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
-$ gapit schema floors          # gapit.floors/1 (per-gene identity floors, reads mode)
-$ gapit schema screen          # gapit.screen/1（数据库筛查默认值）
+$ gspec schema report          # gapit.report/1 (contig screening)
+$ gspec schema typing_result   # gapit.typing_result/1 (gspec typing 判定)
+$ gspec schema reads           # gapit.reads/1  (FASTQ screening)
+$ gspec schema reads2          # gapit.reads/2  (filtered FASTQ screening)
+$ gspec schema cluster         # gapit.cluster/1 (cluster-database screening)
+$ gspec schema cluster2        # gapit.cluster/2 (multi-scheme cluster screening)
+$ gspec schema summary         # gapit.summary/1
+$ gspec schema error           # gapit.error/1
+$ gspec schema version         # gapit.version/1
+$ gspec schema dblist          # gapit.dblist/1（数据库目录）
+$ gspec schema dbsetup         # gapit.dbsetup/1（db setup 回执）
+$ gspec schema dbinfo          # gapit.dbinfo/1（单个数据库的来源与注意事项）
+$ gspec schema dboutdated      # gapit.dboutdated/1（过期报告）
+$ gspec schema datadir         # gapit.datadir/1（解析路径/来源）
+$ gspec schema features        # gapit.features/1 (cluster db feature table)
+$ gspec schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
+$ gspec schema floors          # gapit.floors/1 (per-gene identity floors, reads mode)
+$ gspec schema screen          # gapit.screen/1（数据库筛查默认值）
 ```
 
-例如 `gapit schema version`（真实输出）：
+例如 `gspec schema version`（真实输出）：
 
 ```json
 {
@@ -54,7 +54,7 @@ $ gapit schema screen          # gapit.screen/1（数据库筛查默认值）
       "type": "string"
     },
     "name": {
-      "default": "gapit",
+      "default": "gspec",
       "title": "Name",
       "type": "string"
     },
@@ -69,11 +69,11 @@ $ gapit schema screen          # gapit.screen/1（数据库筛查默认值）
 }
 ```
 
-数据库：数据库目录与安装状态（`gapit db list --json`；真实输出，二十三个中的前两
+数据库：数据库目录与安装状态（`gspec db list --json`；真实输出，二十三个中的前两
 个，有删节）：
 
 ```console
-$ gapit db list --json
+$ gspec db list --json
 {
   "schema": "gapit.dblist/1",
   "providers": [
@@ -132,7 +132,7 @@ $ gapit db list --json
 - schema 遵循 semver。minor 变更绝不重命名或改型既有字段；新字段可能出现，所以请
   忽略未知键而不是拒绝它们。
 - 键是 snake_case，单位显式（`identity_pct`、`coverage_pct`）。
-- 权威的机器契约就是 schema 本身：`gapit schema <doc>` 永远是最新的，本页可能滞
+- 权威的机器契约就是 schema 本身：`gspec schema <doc>` 永远是最新的，本页可能滞
   后。
 
 ## 错误信封解析
@@ -146,7 +146,7 @@ $ gapit db list --json
 真实示例，对一个不存在的数据库筛查（退出码 4）：
 
 ```text
-{"schema":"gapit.error/1","code":"DATABASE_NOT_FOUND","message":"Database nosuchdb is not in /tmp/gapit-mcp-demo/datadir. Available: tinyamr","context":{"db":"nosuchdb","datadir":"/tmp/gapit-mcp-demo/datadir"}}
+{"schema":"gapit.error/1","code":"DATABASE_NOT_FOUND","message":"Database nosuchdb is not in /tmp/gspec-mcp-demo/datadir. Available: tinyamr","context":{"db":"nosuchdb","datadir":"/tmp/gspec-mcp-demo/datadir"}}
 ```
 
 缺外部二进制（退出码 3）：
@@ -168,16 +168,16 @@ $ gapit db list --json
 发现、筛查、解析、汇总。下面的会话对仓库测试夹具数据目录运行（搭建配方见
 `./mcp.md`）。
 
-1. 如果环境可能重定向数据目录，先解析生效位置（`gapit db path --json`；
-   `gapit.datadir/1` 给出路径与来源），再发现可用数据库（`gapit db list --json`，
+1. 如果环境可能重定向数据目录，先解析生效位置（`gspec db path --json`；
+   `gapit.datadir/1` 给出路径与来源），再发现可用数据库（`gspec db list --json`，
    或 `db_list` MCP 工具），选一个 `db`
    名。
 
 2. 以 JSON 筛查每个样本，直接从文档解析命中：
 
    ```console
-   $ gapit screen sampleA.fa --db tinyamr --format json > sampleA.json
-   $ gapit screen sampleB.fa --db tinyamr --format json > sampleB.json
+   $ gspec screen sampleA.fa --db tinyamr --format json > sampleA.json
+   $ gspec screen sampleB.fa --db tinyamr --format json > sampleB.json
    ```
 
    ```python
@@ -197,12 +197,12 @@ $ gapit db list --json
    sampleA.fa tetA 100.0 100.0
    ```
 
-3. 需要跨样本矩阵时，保留默认的 TSV 报告，喂给 `gapit summary`：
+3. 需要跨样本矩阵时，保留默认的 TSV 报告，喂给 `gspec summary`：
 
    ```console
-   $ gapit screen sampleA.fa --db tinyamr > sampleA.tsv
-   $ gapit screen sampleB.fa --db tinyamr > sampleB.tsv
-   $ gapit summary sampleA.tsv sampleB.tsv
+   $ gspec screen sampleA.fa --db tinyamr > sampleA.tsv
+   $ gspec screen sampleB.fa --db tinyamr > sampleB.tsv
+   $ gspec summary sampleA.tsv sampleB.tsv
    #FILE	NUM_FOUND	tetA
    sampleA.tsv	1	100.00
    sampleB.tsv	0	.
@@ -212,7 +212,7 @@ $ gapit db list --json
 
 ## 工具运行时集成
 
-如果你的运行时讲 MCP，把 gapit 注册为服务器，用 `screen`、`screen_reads`、
+如果你的运行时讲 MCP，把 gspec 注册为服务器，用 `screen`、`screen_reads`、
 `summary`、`typing`、`schema` 和 `db_list` 作为工具而不是子进程：`./mcp.md`。
 服务器也暴露 `db` 命令（`db_setup`、`db_fetch`、`db_build`、`db_search`、
 `db_outdated`），agent 可以在同一个会话里准备好数据库、完成筛查并做分型。

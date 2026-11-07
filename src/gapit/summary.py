@@ -2,7 +2,7 @@
 
 Mirrors abricate 1.4.0 ``summary_table`` (SPEC.md §6) exactly where it is
 defined, and replaces its silent-undef edges with typed InputErrors
-(``SUMMARY_MALFORMED``) — a documented [gapit-extension] divergence.
+(``SUMMARY_MALFORMED``) — a documented [gspec-extension] divergence.
 
 Tables arrive as paths or as already-read text (the piped-stdin table the
 CLI hands in, labeled :data:`STDIN_LABEL`) — stdin is one more input and
@@ -102,7 +102,7 @@ def _lines(text: str) -> list[str]:
 
 
 def _detect_separator(text: str) -> str:
-    """[gapit-extension] auto-detect the table separator per file: tab if the
+    """[gspec-extension] auto-detect the table separator per file: tab if the
     first line has any, else comma, else tab (single-column degenerate)."""
     first = _lines(text)[0] if text else ""
     if "\t" in first:

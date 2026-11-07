@@ -1,6 +1,6 @@
-"""`gapit typing` input side: screen report tables → per-FILE gene calls.
+"""`gspec typing` input side: screen report tables → per-FILE gene calls.
 
-Reads gapit/abricate contig screen tables and gapit reads tables (the
+Reads gspec/abricate contig screen tables and gspec reads tables (the
 ``#SAMPLE``/``BREADTH%`` shape), TSV or CSV, auto-detected per file, and
 folds them into the evaluation input: one present
 :class:`gapit.cluster.GeneCall` per (FILE, GENE) — the best row by

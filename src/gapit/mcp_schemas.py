@@ -85,7 +85,7 @@ TOOLS: list[dict[str, object]] = [
     ),
     _tool_entry(
         "typing",
-        "Designate phenotypes from a gapit/abricate screen result table (TSV or CSV"
+        "Designate phenotypes from a gspec/abricate screen result table (TSV or CSV"
         " text). Returns gapit.typing_result/1 JSON by default; its notes carry"
         " any follow-up guidance (for meningococcal W/Y, the synG EX7E check).",
         dict(
@@ -97,7 +97,7 @@ TOOLS: list[dict[str, object]] = [
     ),
     _tool_entry(
         "schema",
-        "Print the JSON Schema of a gapit output document.",
+        "Print the JSON Schema of a gspec output document.",
         dict(name={"type": "string", "enum": sorted(SCHEMA_MODELS)}),
         ["name"],
     ),

@@ -24,11 +24,11 @@ runner = CliRunner()
 
 @pytest.fixture()
 def datadir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """Fresh tinyamr datadir, published on $GAPIT_DATADIR (MCP resolves it)."""
+    """Fresh tinyamr datadir, published on $GSPEC_DATADIR (MCP resolves it)."""
     target = tmp_path / "datadir"
     shutil.copytree(FIXTURE_DB_DIR, target)
     make_blast_db(target / "tinyamr" / "sequences", "tinyamr")
-    monkeypatch.setenv("GAPIT_DATADIR", str(target))
+    monkeypatch.setenv("GSPEC_DATADIR", str(target))
     return target
 
 
@@ -55,7 +55,7 @@ def tool_call(name: str, arguments: dict[str, object], *, id_value: int = 1) -> 
 
 def test_initialize_negotiates_supported_protocol_version() -> None:
     """Given initialize, When the requested version is supported it is
-    echoed; an unsupported version falls back to gapit's supported version."""
+    echoed; an unsupported version falls back to gspec's supported version."""
     supported, unsupported = exchange(
         {
             "jsonrpc": "2.0",
@@ -74,7 +74,7 @@ def test_initialize_negotiates_supported_protocol_version() -> None:
     assert result["protocolVersion"] == "2025-06-18"
     assert unsupported["result"]["protocolVersion"] == "2025-06-18"
     assert result["capabilities"] == {"tools": {}}
-    assert result["serverInfo"]["name"] == "gapit"
+    assert result["serverInfo"]["name"] == "gspec"
     assert result["serverInfo"]["version"]
 
 
@@ -209,10 +209,10 @@ def test_screen_call_without_db_is_usage_error(datadir: Path) -> None:
 def test_screen_call_honors_datadir_argument_without_env(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given NO $GAPIT_DATADIR in the environment, When tools/call screen
+    """Given NO $GSPEC_DATADIR in the environment, When tools/call screen
     passes the datadir argument, Then the fixture database screens and the
     tetA hit returns — the db tools' datadir symmetry, no env bridge."""
-    monkeypatch.delenv("GAPIT_DATADIR", raising=False)
+    monkeypatch.delenv("GSPEC_DATADIR", raising=False)
     target = tmp_path / "datadir"
     shutil.copytree(FIXTURE_DB_DIR, target)
     make_blast_db(target / "tinyamr" / "sequences", "tinyamr")
@@ -237,7 +237,7 @@ def test_screen_call_merge_fragments_returns_merged_hit(
     datadir = tmp_path / "datadir"
     shutil.copytree(Path(__file__).parent / "data" / "fragments" / "fragdb", datadir / "fragdb")
     make_blast_db(datadir / "fragdb" / "sequences", "fragdb")
-    monkeypatch.setenv("GAPIT_DATADIR", str(datadir))
+    monkeypatch.setenv("GSPEC_DATADIR", str(datadir))
     fixture = str(Path(__file__).parent / "data" / "fragments" / "split4060.fa")
     (response,) = exchange(
         tool_call("screen", {"files": [fixture], "db": "fragdb", "merge_fragments": True})
@@ -385,7 +385,7 @@ def test_eof_terminates_cleanly() -> None:
 
 
 def test_cli_mcp_subcommand_streams_protocol_lines() -> None:
-    """Given `gapit mcp` fed two request lines via CliRunner, When invoked,
+    """Given `gspec mcp` fed two request lines via CliRunner, When invoked,
     Then exit 0 and exactly two JSON-RPC response lines on stdout."""
     lines = (
         json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
@@ -397,7 +397,7 @@ def test_cli_mcp_subcommand_streams_protocol_lines() -> None:
     assert result.exit_code == 0
     responses = [json.loads(line) for line in result.stdout.splitlines()]
     assert [response["id"] for response in responses] == [1, 2]
-    assert responses[0]["result"]["serverInfo"]["name"] == "gapit"
+    assert responses[0]["result"]["serverInfo"]["name"] == "gspec"
     assert len(responses[1]["result"]["tools"]) == 12
 
 

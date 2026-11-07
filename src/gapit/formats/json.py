@@ -49,7 +49,7 @@ class HitDocument(BaseModel, frozen=True):
     # column); the value flows from Hit.function and carries functional
     # categories for native DBs (Wave F1 renamed the internal slot only).
     resistance: str
-    # Additive gapit extension (schema-compatible, no version bump): present
+    # Additive gspec extension (schema-compatible, no version bump): present
     # only on --merge-fragments rows; None is excluded at serialization, so
     # default-mode documents stay byte-identical.
     merged: bool | None = None
@@ -76,7 +76,7 @@ class ParamsDocument(BaseModel, frozen=True):
 class ToolDocument(BaseModel, frozen=True):
     """Tool self-identification."""
 
-    name: str = "gapit"
+    name: str = "gspec"
     version: str = __version__
 
 
@@ -98,7 +98,7 @@ class VersionDocument(BaseModel, frozen=True):
     model_config = ConfigDict(populate_by_name=True)
 
     schema_name: Literal["gapit.version/1"] = Field(default="gapit.version/1", alias="schema")
-    name: str = "gapit"
+    name: str = "gspec"
     version: str
 
 

@@ -1,17 +1,17 @@
 # gseek 引擎（可选）
 
-gapit 可以把对齐子进程切到 [gseek](https://github.com/indexofire/gseek)，但原有
+gspec 可以把对齐子进程切到 [gseek](https://github.com/indexofire/gseek)，但原有
 子进程实现仍是默认值，并且始终可用。
 
 ## 开关
 
 ```bash
-GAPIT_ENGINE=legacy   # 默认：原有 blastn/blastx/minimap2 调用
-GAPIT_ENGINE=gseek    # 由 gseek 规划并解析同样的对齐
-GAPIT_ENGINE=shadow   # 两套都跑，记录粗粒度差异，返回 legacy
+GSPEC_ENGINE=legacy   # 默认：原有 blastn/blastx/minimap2 调用
+GSPEC_ENGINE=gseek    # 由 gseek 规划并解析同样的对齐
+GSPEC_ENGINE=shadow   # 两套都跑，记录粗粒度差异，返回 legacy
 ```
 
-`GAPIT_ENGINE` 每次调用时读取。非法值会在任何对齐启动前报错。`shadow` 是验证
+`GSPEC_ENGINE` 每次调用时读取。非法值会在任何对齐启动前报错。`shadow` 是验证
 模式，不是第三条生产路径：它始终返回 legacy 结果。
 
 ## 影响范围
@@ -23,9 +23,9 @@ GAPIT_ENGINE=shadow   # 两套都跑，记录粗粒度差异，返回 legacy
 | reads 筛查 | 流式 `minimap2` PAF | `gseek.align(backend="minimap2")` |
 | cluster 筛查 | `minimap2 -x asm20 --cs` | `gseek.align(backend="minimap2", preset="asm20", cs=True)` |
 
-gseek 模式保留 gapit 的阈值、坐标约定和输出契约，只改变命令规划与行解析。
+gseek 模式保留 gspec 的阈值、坐标约定和输出契约，只改变命令规划与行解析。
 gseek 模式下 minimap2 PAF 由 gseek API 按 lane 物化，legacy 路径则是流式的。
-gseek 返回确定性的排序视图，因此原始 PAF 行序可能与 minimap2 不同；gapit 的
+gseek 返回确定性的排序视图，因此原始 PAF 行序可能与 minimap2 不同；gspec 的
 reads/cluster 消费者会聚合/排序，最终报告不变。bridge 还保留两个消费者兼容
 处理：VFDB 的重复 subject ID 由 gseek 全量保留；CARD 中超 255 字符的 target
 名改用直接 FASTA target（`index="none"`），因为 minimap2 的 `.mmi` 索引会把
@@ -33,20 +33,20 @@ reads/cluster 消费者会聚合/排序，最终报告不变。bridge 还保留�
 
 ## 安装
 
-gapit 要求 Python >= 3.12，所有支持的环境都包含 gseek：
+gspec 要求 Python >= 3.12，所有支持的环境都包含 gseek：
 
 ```bash
-pip install "gapit[gseek]"
+pip install "gspec[gseek]"
 ```
 
 pixi 的 `default` 环境（启用 `py312` feature）使用 Python 3.12，并包含 `gseek>=0.10.4`。
-没有 gseek 时，`GAPIT_ENGINE=gseek` 会抛类型化的 `MISSING_DEPENDENCY` 错误；
+没有 gseek 时，`GSPEC_ENGINE=gseek` 会抛类型化的 `MISSING_DEPENDENCY` 错误；
 `legacy` 和所有现有命令不受影响。
 
 ## 为什么保留 legacy
 
 切换本身使用 `gseek.compat.Engine`，与其他消费者共享 legacy/gseek/shadow
-选择与回退逻辑；gapit 只保留自己的 legacy 实现、gseek 调用和结果语义。
+选择与回退逻辑；gspec 只保留自己的 legacy 实现、gseek 调用和结果语义。
 
 这是有意的双路径设计：
 
@@ -65,13 +65,13 @@ pixi 的 `default` 环境（启用 `py312` feature）使用 Python 3.12，并包
   每个查询仍要做规划/解析。gseek >= 0.10.2 只探测当前任务需要的工具版本；bridge 还会
   按进程复用同一个 `ToolResolver`/`Executor`/`IndexStore`（`PATH` 或 `GSEEK_*` 变化会
   重建会话），因此两层都不会逐文件重复探测所有 BLAST 二进制。如果安装的 gseek 暴露
-  预计算 refs/外部 DB 钩子，bridge 只哈希一次 target，并让 gseek 直接用 gapit 现有的
+  预计算 refs/外部 DB 钩子，bridge 只哈希一次 target，并让 gseek 直接用 gspec 现有的
   BLAST DB；较旧版本仍使用自己的索引。如果 gseek 还暴露 `align_many` 且所有输入都是
-  FASTA，gapit 会把文件合并为一次调用（按 `--jobs` 拆成至多 N 个 chunk），摊销
-  process/index 初始化；在带新 batch 选项的 gseek 上，gapit 还会跳过 query 输入哈希
+  FASTA，gspec 会把文件合并为一次调用（按 `--jobs` 拆成至多 N 个 chunk），摊销
+  process/index 初始化；在带新 batch 选项的 gseek 上，gspec 还会跳过 query 输入哈希
   和 gseek 的 canonical 排序，因为它自己会折叠并排序 hits。否则仍逐文件执行。
 - **reads 与 cluster minimap2。** 有 `iter_align` 时，gseek bridge 直接流式产出 PAF
-  记录给 gapit 的 breadth/cluster 计算，不再先由 `gseek.align` materialize。
+  记录给 gspec 的 breadth/cluster 计算，不再先由 `gseek.align` materialize。
 - **基因簇 minimap2（assembly 模式）。** cluster 构建（以及 `db setup`）会写出
   `<db>/sequences.asm20.mmi`；legacy 在索引新鲜时直接使用它，不再为每个文件重建 locus
   FASTA 索引。gseek 则在 `~/.cache/gseek` 维护自己的内容寻址 `.mmi`，所以两条路径都能
@@ -86,6 +86,6 @@ pixi 的 `default` 环境（启用 `py312` feature）使用 Python 3.12，并包
 
 ## 验证
 
-bridge 单测覆盖 `GAPIT_ENGINE`、坐标/链方向映射、蛋白任务选择、PAF/NM/cs
+bridge 单测覆盖 `GSPEC_ENGINE`、坐标/链方向映射、蛋白任务选择、PAF/NM/cs
 标签、分派和 shadow 回退。真实 parity 测试会构建小型核酸/蛋白 BLAST 数据库
 和 minimap2 target，逐行比较 legacy 与 gseek；缺少 gseek 或外部二进制时 skip。

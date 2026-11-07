@@ -1,16 +1,16 @@
 # Summarizing reports
 
-`gapit summary` collapses one or more abricate-format report tables (including gapit screen
+`gspec summary` collapses one or more abricate-format report tables (including gspec screen
 output) into a gene presence/absence matrix: one row per file, one column per gene. It replaces
 `abricate --summary`.
 
 Input reports are TSV or CSV with the standard 15-column header (`#FILE  SEQUENCE  ...`),
-exactly what `gapit screen` writes. See [./screen.md](./screen.md) for producing them and
+exactly what `gspec screen` writes. See [./screen.md](./screen.md) for producing them and
 [./outputs.md](./outputs.md) for the output schemas.
 
 ## Options
 
-Transcribed from `gapit summary --help` (gapit 0.6.8):
+Transcribed from `gspec summary --help` (gspec 0.8.0):
 
 | Flag | Type | Default | Description |
 |---|---|---|---|
@@ -31,7 +31,7 @@ Row keys depend on the input count, matching abricate's behavior:
   A file with no hits still appears, with `NUM_FOUND 0`.
 
 ```console
-$ gapit summary tests/data/summary/multi_sample.tsv
+$ gspec summary tests/data/summary/multi_sample.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
 aa_assembly.fa	1	+	-
 mm_assembly.fa	1	-	+
@@ -41,7 +41,7 @@ zz_assembly.fa	1	+	-
 The same three assemblies summarized as separate reports instead would key by filename:
 
 ```console
-$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv tests/data/summary/empty.tsv
+$ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv tests/data/summary/empty.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
 tests/data/summary/empty.tsv	0	-	-
 tests/data/summary/sample_a.tsv	2	+	+
@@ -54,26 +54,26 @@ presence mode multiple hits on the same gene collapse to one `+`; with `--identi
 
 ## Piping screen output
 
-`gapit summary` reads its table from stdin whenever stdin is not a terminal (piped or
+`gspec summary` reads its table from stdin whenever stdin is not a terminal (piped or
 redirected), so the screen stage can feed it directly — the canonical batch pipe. One
 screen call over many assemblies writes one batched table (every row carries the same
 `DATABASE`; the `FILE` column spans the whole batch), and a piped table counts as ONE
 input, so dutch mode applies — one row per FILE value, the gene×file presence matrix:
 
 ```console
-$ gapit screen -d eco_dec *.fna --nopath --quiet | gapit summary
+$ gspec screen -d eco_dec *.fna --nopath --quiet | gspec summary
 #FILE	NUM_FOUND	aggR	astA	escV	pic	stx2a	uidA
 dec_s1_aggR_pic_uidA.fna	3	+	-	-	+	-	+
 dec_s2_pic_astA_uidA.fna	3	-	+	-	+	-	+
 dec_s3_stx2a_escV_aggR_uidA.fna	4	+	-	+	-	+	+
 ```
 
-The same matrix `gapit summary combined.tsv` prints after
-`gapit screen -d eco_dec *.fna --output combined.tsv`. Rules:
+The same matrix `gspec summary combined.tsv` prints after
+`gspec screen -d eco_dec *.fna --output combined.tsv`. Rules:
 
-- **Bare `gapit summary` at a terminal keeps printing help** (exit 2); with a pipe or a
+- **Bare `gspec summary` at a terminal keeps printing help** (exit 2); with a pipe or a
   redirect attached it reads stdin instead.
-- **`gapit summary -`** is the explicit stdin marker — it reads stdin even with a terminal
+- **`gspec summary -`** is the explicit stdin marker — it reads stdin even with a terminal
   attached, until EOF.
 - **Mixing `-` with file arguments is a usage error** (v1 takes either stdin or files,
   never both).
@@ -87,7 +87,7 @@ gene, `-` when absent.
 
 | Mode | Invocation | Cells |
 |---|---|---|
-| Presence (default) | `gapit summary a.tsv b.tsv` | `+` / `-` |
+| Presence (default) | `gspec summary a.tsv b.tsv` | `+` / `-` |
 | Identity | `--identity` / `-i` | each hit's %IDENTITY, `;`-joined (`.` = absent) |
 | Coverage | `--coverage` / `-c` | each hit's %COVERAGE, `;`-joined (`.` = absent) |
 | Both | `-ic` (combined) | each hit's `identity/coverage`, `;`-joined (`.` = absent) |
@@ -97,7 +97,7 @@ noted on stderr. `--coverage` reproduces the classic abricate `--summary` cell s
 the parity harness runs in this mode.
 
 ```console
-$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv
+$ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
 sample_a.tsv	2	+	+
 sample_b.tsv	2	+	+
@@ -113,7 +113,7 @@ all inputs, sorted lexicographically; a gene absent from a row shows `.`.
   first line, so you can mix tab and comma reports in one call without flags:
 
 ```console
-$ gapit summary tests/data/summary/sample_a.csv tests/data/summary/sample_b.csv --nopath
+$ gspec summary tests/data/summary/sample_a.csv tests/data/summary/sample_b.csv --nopath
 #FILE	NUM_FOUND	feature_a	feature_b
 sample_a.csv	2	+	+
 sample_b.csv	2	+	+
@@ -123,7 +123,7 @@ sample_b.csv	2	+	+
   basenaming) warns on stderr and is processed once:
 
 ```console
-$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_a.tsv
+$ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_a.tsv
 WARNING: Skipping duplicate file: tests/data/summary/sample_a.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
 tests/data/summary/sample_a.tsv	2	+	+
@@ -145,12 +145,12 @@ tests/data/summary/sample_a.tsv	2	+	+
 machine-readable params:
 
 ```console
-$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv --format json --quiet
+$ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv --format json --quiet
 {
   "schema": "gapit.summary/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T01:12:48Z",
   "params": {
@@ -194,7 +194,7 @@ $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv 
 }
 ```
 
-Introspect the schema with `gapit schema summary`; field contracts live in
+Introspect the schema with `gspec schema summary`; field contracts live in
 [./outputs.md](./outputs.md).
 
 ## Notes
@@ -204,7 +204,7 @@ Introspect the schema with `gapit schema summary`; field contracts live in
   appear unsorted:
 
 ```console
-$ gapit summary /tmp/gapit-demo/sortdemo/1dir/zeta.tsv /tmp/gapit-demo/sortdemo/2dir/mid.tsv --nopath
+$ gspec summary /tmp/gspec-demo/sortdemo/1dir/zeta.tsv /tmp/gspec-demo/sortdemo/2dir/mid.tsv --nopath
 #FILE	NUM_FOUND	feature_a	feature_b
 zeta.tsv	1	+	-
 mid.tsv	1	-	+
@@ -215,10 +215,10 @@ mid.tsv	1	-	+
   order:
 
 ```console
-$ gapit summary /tmp/gapit-demo/sortdemo/1dir/zeta.tsv /tmp/gapit-demo/sortdemo/2dir/mid.tsv
+$ gspec summary /tmp/gspec-demo/sortdemo/1dir/zeta.tsv /tmp/gspec-demo/sortdemo/2dir/mid.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-/tmp/gapit-demo/sortdemo/1dir/zeta.tsv	1	+	-
-/tmp/gapit-demo/sortdemo/2dir/mid.tsv	1	-	+
+/tmp/gspec-demo/sortdemo/1dir/zeta.tsv	1	+	-
+/tmp/gspec-demo/sortdemo/2dir/mid.tsv	1	-	+
 ```
 
 - **Dutch mode keys come from the report.** With one input, the row labels are the `FILE` values

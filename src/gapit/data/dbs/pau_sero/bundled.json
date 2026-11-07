@@ -24,10 +24,10 @@
       "O5 is NOT in the reference set; O5 strains (PAO1) cross-react with O2 at 100%cov/99.8%id — same limitation as PAst/pasty",
       "Serogroups O1-O4, O6-O13, O15, O17 are covered; O5, O14, O16 and novel OSA types are not",
       "wzyB is reported in a separate scheme (B-band marker); its presence does not determine serogroup",
-      "Apache-2.0: CAN be bundled into the gapit wheel"
+      "Apache-2.0: CAN be bundled into the gspec wheel"
     ],
     "usage": [
-      "gapit screen -d pau_sero -C 50 -G 85 assembly.fna"
+      "gspec screen -d pau_sero -C 50 -G 85 assembly.fna"
     ]
   }
 }

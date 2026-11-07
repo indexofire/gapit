@@ -1,7 +1,7 @@
 {
   "name": "vch_oagc",
   "description": "Vibrio cholerae O-antigen gene clusters (OAGC, 190 OL loci) + ompW control",
-  "vendor": "gapit(Hangzhou CDC)",
+  "vendor": "gspec(Hangzhou CDC)",
   "dbtype": "nucl",
   "kind": "cluster",
   "snapshotted": "2026-11-06",
@@ -30,8 +30,8 @@
       "Bundled snapshot of the Hangzhou CDC build from a combined GenBank file (INSDC LC594800-LC594991, BioProject PRJDB8600); sequences retain their INSDC provenance and the panel is not a serologically validated scheme."
     ],
     "usage": [
-      "gapit screen isolate.fa -d vch_oagc --format json",
-      "gapit screen isolate.fa -d vch_oagc --output vch_oagc.tsv"
+      "gspec screen isolate.fa -d vch_oagc --format json",
+      "gspec screen isolate.fa -d vch_oagc --output vch_oagc.tsv"
     ]
   }
 }

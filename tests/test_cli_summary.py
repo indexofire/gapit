@@ -1,4 +1,4 @@
-"""CLI integration tests for `gapit summary` (goldens pinned like the others)."""
+"""CLI integration tests for `gspec summary` (goldens pinned like the others)."""
 
 import json
 from datetime import UTC, datetime
@@ -129,7 +129,7 @@ def test_quiet_silences_duplicate_warning() -> None:
 def test_no_files_with_flag_reads_stdin() -> None:
     """Given a flag but no report files (an empty pipe on stdin), When
     summarized, Then the empty matrix renders — an omitted input now means
-    stdin, not a usage error (the `gapit typing` precedent)."""
+    stdin, not a usage error (the `gspec typing` precedent)."""
     result = summary("--quiet", input="")
     assert result.exit_code == 0
     assert result.stdout == "#FILE\tNUM_FOUND\n"
@@ -208,7 +208,7 @@ def test_golden_md_render(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_schema_summary_registered() -> None:
-    """Given `gapit schema summary`, When run, Then it prints the JSON Schema
+    """Given `gspec schema summary`, When run, Then it prints the JSON Schema
     of gapit.summary/1."""
     result = runner.invoke(app, ["schema", "summary"])
     assert result.exit_code == 0
@@ -224,7 +224,7 @@ def test_schema_unknown_still_lists_summary() -> None:
 
 
 class TestStdinInput:
-    """The piped report table: `gapit screen -d eco_dec *.fna | gapit
+    """The piped report table: `gspec screen -d eco_dec *.fna | gspec
     summary` summarizes stdin with no file arguments; `-` is the explicit
     marker (it reads stdin even under a terminal, until EOF)."""
 

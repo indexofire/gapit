@@ -118,7 +118,7 @@ def cluster_md_head(
     lines: list[str] = [
         "---",
         f"schema: {schema_tag}",
-        f"tool: gapit {__version__}",
+        f"tool: gspec {__version__}",
         f"created_at: {now.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}",
         f"db: {yaml_scalar(params.db)}",
         f"preset: {params.preset}",
@@ -128,7 +128,7 @@ def cluster_md_head(
         f"threads: {params.threads}",
         "---",
         "",
-        "# gapit cluster screening report",
+        "# gspec cluster screening report",
         "",
     ]
     return "\n".join(lines) + "\n"

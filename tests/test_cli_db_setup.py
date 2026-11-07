@@ -1,4 +1,4 @@
-"""Integration tests: gapit db setup against a real fixture datadir.
+"""Integration tests: gspec db setup against a real fixture datadir.
 
 Exercises the real makeblastdb/blastdbcmd binaries from the pixi environment;
 each test copies the committed fixture into its own tmp datadir (isolated).
@@ -69,7 +69,7 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
     assert setup.exit_code == 0
     stderr_lines = setup.stderr.splitlines()
     expected_materialize = [
-        f"gapit: materializing bundled database {name} ({count}) into {datadir}"
+        f"gspec: materializing bundled database {name} ({count}) into {datadir}"
         for name, count in (
             ("cje_cps", "42 records"),
             ("eco_dec", "16 records"),
@@ -88,20 +88,20 @@ def test_setup_then_listing_roundtrip(tmp_path: Path) -> None:
     ]
     assert stderr_lines[:13] == expected_materialize
     assert stderr_lines[13:] == [
-        "gapit: indexed cje_cps (42 sequences, nucl)",
-        "gapit: indexed eco_dec (16 sequences, nucl)",
-        "gapit: indexed lmo_sero (5 sequences, nucl)",
-        "gapit: indexed lpn_sero (16 sequences, nucl)",
-        "gapit: indexed lpn_vf (275 sequences, prot)",
-        "gapit: indexed pau_sero (14 sequences, nucl)",
-        "gapit: indexed sag_sero (14 sequences, nucl)",
-        "gapit: indexed shi_sero (96 sequences, nucl)",
-        "gapit: indexed str_lancefield (29 sequences, nucl)",
-        "gapit: indexed tinyamr (3 sequences, nucl)",
-        "gapit: indexed vch_oagc (191 sequences, nucl)",
-        "gapit: indexed vch_vf (13 sequences, nucl)",
-        "gapit: indexed vpa_ok (195 sequences, nucl)",
-        "gapit: indexed vpa_pai (10 sequences, nucl)",
+        "gspec: indexed cje_cps (42 sequences, nucl)",
+        "gspec: indexed eco_dec (16 sequences, nucl)",
+        "gspec: indexed lmo_sero (5 sequences, nucl)",
+        "gspec: indexed lpn_sero (16 sequences, nucl)",
+        "gspec: indexed lpn_vf (275 sequences, prot)",
+        "gspec: indexed pau_sero (14 sequences, nucl)",
+        "gspec: indexed sag_sero (14 sequences, nucl)",
+        "gspec: indexed shi_sero (96 sequences, nucl)",
+        "gspec: indexed str_lancefield (29 sequences, nucl)",
+        "gspec: indexed tinyamr (3 sequences, nucl)",
+        "gspec: indexed vch_oagc (191 sequences, nucl)",
+        "gspec: indexed vch_vf (13 sequences, nucl)",
+        "gspec: indexed vpa_ok (195 sequences, nucl)",
+        "gspec: indexed vpa_pai (10 sequences, nucl)",
     ]
 
     infos = list_databases(datadir, reindex=False)
@@ -136,7 +136,7 @@ def test_setup_on_empty_datadir_materializes_bundled(tmp_path: Path) -> None:
     setup = runner.invoke(app, ["db", "setup", "--datadir", str(datadir)])
     assert setup.exit_code == 0
     assert "materializing bundled database eco_dec" in setup.stderr
-    assert "gapit: indexed eco_dec (16 sequences, nucl)" in setup.stderr
+    assert "gspec: indexed eco_dec (16 sequences, nucl)" in setup.stderr
     assert (datadir / "eco_dec" / "gapit-manifest.json").is_file()
     assert (datadir / "eco_dec" / "typing.json").is_file()
 
@@ -167,18 +167,18 @@ def test_setup_bootstraps_a_missing_datadir(
 
 def test_setup_debug_echoes_makeblastdb_argv(tmp_path: Path) -> None:
     """Given an unindexed fixture datadir, When `db setup --debug` runs, Then
-    exit 0 and the makeblastdb argv is echoed to stderr as a `gapit: run:`
+    exit 0 and the makeblastdb argv is echoed to stderr as a `gspec: run:`
     line (the no-flag default keeps stderr to the Indexed line only — pinned
     by test_setup_then_listing_roundtrip)."""
     datadir = make_datadir(tmp_path)
     result = runner.invoke(app, ["db", "setup", "--debug", "--datadir", str(datadir)])
     assert result.exit_code == 0
-    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gapit: run:")]
-    assert run_lines and run_lines[0].startswith("gapit: run: makeblastdb -in ")
+    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gspec: run:")]
+    assert run_lines and run_lines[0].startswith("gspec: run: makeblastdb -in ")
 
 
 def test_setup_honors_manifest_dbtype_on_reindex(tmp_path: Path) -> None:
-    """Given a gapit-built prot database whose sequences are pure A/G/T/C
+    """Given a gspec-built prot database whose sequences are pure A/G/T/C
     (the abricate mol_type heuristic alone would say nucl), When the BLAST
     index is deleted and rebuilt via db setup, Then the manifest dbtype wins:
     a .pin index exists, .nin does not, and list_databases reports prot.
@@ -201,7 +201,7 @@ def test_setup_honors_manifest_dbtype_on_reindex(tmp_path: Path) -> None:
         index_file.unlink()
     setup = runner.invoke(app, ["db", "setup", "--datadir", str(datadir)])
     assert setup.exit_code == 0
-    assert "gapit: indexed agtcprot (2 sequences, prot)" in setup.stderr.splitlines()
+    assert "gspec: indexed agtcprot (2 sequences, prot)" in setup.stderr.splitlines()
     assert (db_dir / "sequences.pin").is_file()
     assert not (db_dir / "sequences.nin").exists()
     agtcprot = next(
@@ -287,7 +287,7 @@ def test_setup_named_bundled_database_materializes_only_that(tmp_path: Path) -> 
     assert document["materialized"] == ["eco_dec"]
     assert [entry["db"] for entry in document["databases"]] == ["eco_dec"]
     visible = sorted(
-        path.name for path in datadir.iterdir() if not path.name.startswith(".gapit-txn")
+        path.name for path in datadir.iterdir() if not path.name.startswith(".gspec-txn")
     )
     assert visible == ["eco_dec"]
 

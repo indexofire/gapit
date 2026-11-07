@@ -1,6 +1,6 @@
-# gapit 文档
+# gspec 文档
 
-gapit 筛查 contig 文件和 FASTQ reads 中的已知基因：AMR（抗微生物药物耐药性）、毒力、
+gspec 筛查 contig 文件和 FASTQ reads 中的已知基因：AMR（抗微生物药物耐药性）、毒力、
 血清型、质粒复制子、物种靶点，或任意自定义数据库。它是 [abricate](https://github.com/tseemann/abricate)
 的 agent 优先 Python 重实现：stdout 输出 abricate 兼容的 TSV，同时提供带版本号 schema
 的一等 JSON 与 Markdown 输出。
@@ -11,41 +11,41 @@ gapit 筛查 contig 文件和 FASTQ reads 中的已知基因：AMR（抗微生�
 |---|---|
 | [安装](./installation.md) | PyPI wheel、conda environment.yml 与 pixi 三条安装路径、外部二进制依赖、安装验证、数据库引导、shell 补全 |
 | [快速开始](./quickstart.md) | 在离线环境下用测试夹具数据库完成一次完整的首个会话 |
-| [contig 筛查](./screen.md) | 对 FASTA/GBK/EMBL 输入运行 `gapit screen`：阈值、过滤器、输出格式 |
+| [contig 筛查](./screen.md) | 对 FASTA/GBK/EMBL 输入运行 `gspec screen`：阈值、过滤器、输出格式 |
 | [reads（FASTQ）筛查](./reads.md) | FASTQ 与 assembly FASTA 走 minimap2：`--r1`/`--r2`、预设参数、基于广度的存在判定、两阶段普查 |
-| [汇总报告](./summary.md) | `gapit summary`：把多份报告表折叠成基因存在/缺失矩阵 |
-| [数据库](./databases.md) | 数据库目录（NAME 与上游 PROVIDER）、`gapit db fetch/list/install`、数据目录、原生 `gapit/v1` 格式、基因簇数据库（GBK/GFF、typing.json、kaptive） |
+| [汇总报告](./summary.md) | `gspec summary`：把多份报告表折叠成基因存在/缺失矩阵 |
+| [数据库](./databases.md) | 数据库目录（NAME 与上游 PROVIDER）、`gspec db fetch/list/install`、数据目录、原生 `gapit/v1` 格式、基因簇数据库（GBK/GFF、typing.json、kaptive） |
 | [数据目录](./datadir.md) | datadir 解析（`db path`）、数据库结构、跨环境共享、conda/Docker 规范、安全与可复现性 |
-| [自定义数据库](./custom-db.md) | `gapit db build` 实战演练：任意 FASTA 变成可筛查的数据库，完整示例 |
-| [分型方案](./typing.md) | 两阶段判定流水线（`gapit screen` 而后 `gapit typing`）与 `gapit.typing/2`——rule/scheme 原语、六方案实战手册（Doumith、ShigaTyper、meningotype、副溶血弧菌 O/K、霍乱弧菌、DEC）、等位基因探针技巧、校准 |
-| [脑膜炎奈瑟菌血清群分型](./nme_sero.md) | `nme_sero` 数据库：血清群 + ctrA + sodC 深度内参（`gapit screen` + `gapit typing`；不含 MLST/等位基因分型） |
+| [自定义数据库](./custom-db.md) | `gspec db build` 实战演练：任意 FASTA 变成可筛查的数据库，完整示例 |
+| [分型方案](./typing.md) | 两阶段判定流水线（`gspec screen` 而后 `gspec typing`）与 `gapit.typing/2`——rule/scheme 原语、六方案实战手册（Doumith、ShigaTyper、meningotype、副溶血弧菌 O/K、霍乱弧菌、DEC）、等位基因探针技巧、校准 |
+| [脑膜炎奈瑟菌血清群分型](./nme_sero.md) | `nme_sero` 数据库：血清群 + ctrA + sodC 深度内参（`gspec screen` + `gspec typing`；不含 MLST/等位基因分型） |
 | [输出](./outputs.md) | TSV/JSON/Markdown 格式、schema、错误信封、退出码 |
-| [MCP 服务器](./mcp.md) | `gapit mcp`：通过 stdio JSON-RPC 为 agent 运行时提供分析 + 数据库工具 |
-| [面向 agent 的指南](./agents.md) | 自主 agent 如何消费 gapit：schema、自省、错误处理 |
+| [MCP 服务器](./mcp.md) | `gspec mcp`：通过 stdio JSON-RPC 为 agent 运行时提供分析 + 数据库工具 |
+| [面向 agent 的指南](./agents.md) | 自主 agent 如何消费 gspec：schema、自省、错误处理 |
 | [常见问题](./faq.md) | 常见问题、与 abricate 的差异、故障排查 |
 
 ## 命令
 
 | 命令 | 作用 | 文档 |
 |---|---|---|
-| `gapit screen` | 筛查 contig 文件或 FASTQ reads 中的已知基因 | [筛查](./screen.md) |
-| `gapit typing` | 从筛查结果表判定表型（typed 基因数据库） | [分型方案](./typing.md) |
-| `gapit summary` | 把一份或多份报告表汇总成基因存在/缺失矩阵 | [汇总报告](./summary.md) |
-| `gapit db fetch` | 抓取并构建数据库到数据目录（kaptive 基因簇数据库在抓取时下载） | [数据库](./databases.md) |
-| `gapit db list` | 列出已知数据库（NAME、上游 PROVIDER、安装状态）；`-n` 只输出名称 | [数据库](./databases.md) |
-| `gapit db path` | 打印解析后的数据目录（不创建） | [数据目录](./datadir.md) |
-| `gapit db install` | 校验 SHA256 后安装本地文件 | [数据库](./databases.md) |
-| `gapit db build` | 从基因 FASTA 构建数据库，或从 GBK/GFF 位点构建基因簇数据库（可选配 `--typing` 表型评分规范） | [自定义数据库](./custom-db.md) |
-| `gapit db setup` | 引导/建索引（`-a` 全部，`-d NAME` 单个；指定缺失 provider 会自动下载） | [数据目录](./datadir.md) |
-| `gapit schema` | 打印 gapit 输出文档的 JSON Schema（`report`、`typing_result`、`reads`、`reads2`、`cluster`、`summary`、`error`、`version`、`dblist`、`dbsetup`、`dboutdated`、`datadir`、`features`、`typing`、`floors`、`screen`） | [输出](./outputs.md) |
-| `gapit mcp` | 运行 MCP stdio 服务器（同时安装为 `gapit-mcp` console script） | [MCP 服务器](./mcp.md) |
+| `gspec screen` | 筛查 contig 文件或 FASTQ reads 中的已知基因 | [筛查](./screen.md) |
+| `gspec typing` | 从筛查结果表判定表型（typed 基因数据库） | [分型方案](./typing.md) |
+| `gspec summary` | 把一份或多份报告表汇总成基因存在/缺失矩阵 | [汇总报告](./summary.md) |
+| `gspec db fetch` | 抓取并构建数据库到数据目录（kaptive 基因簇数据库在抓取时下载） | [数据库](./databases.md) |
+| `gspec db list` | 列出已知数据库（NAME、上游 PROVIDER、安装状态）；`-n` 只输出名称 | [数据库](./databases.md) |
+| `gspec db path` | 打印解析后的数据目录（不创建） | [数据目录](./datadir.md) |
+| `gspec db install` | 校验 SHA256 后安装本地文件 | [数据库](./databases.md) |
+| `gspec db build` | 从基因 FASTA 构建数据库，或从 GBK/GFF 位点构建基因簇数据库（可选配 `--typing` 表型评分规范） | [自定义数据库](./custom-db.md) |
+| `gspec db setup` | 引导/建索引（`-a` 全部，`-d NAME` 单个；指定缺失 provider 会自动下载） | [数据目录](./datadir.md) |
+| `gspec schema` | 打印 gspec 输出文档的 JSON Schema（`report`、`typing_result`、`reads`、`reads2`、`cluster`、`summary`、`error`、`version`、`dblist`、`dbsetup`、`dboutdated`、`datadir`、`features`、`typing`、`floors`、`screen`） | [输出](./outputs.md) |
+| `gspec mcp` | 运行 MCP stdio 服务器（同时安装为 `gspec-mcp` console script） | [MCP 服务器](./mcp.md) |
 
 ## 项目文档
 
 | 文件 | 内容 |
 |---|---|
-| [README](https://github.com/indexofire/gapit/blob/main/README.md) | 项目概览、安装、快速上手、文档索引 |
-| [SPEC.md](https://github.com/indexofire/gapit/blob/main/SPEC.md) | abricate 表格/表头互操作契约；parity 仅作回归参考 |
-| [PLAN.md](https://github.com/indexofire/gapit/blob/main/PLAN.md) | 按阶段划分的开发路线图 |
-| [AGENTS.md](https://github.com/indexofire/gapit/blob/main/AGENTS.md) | 贡献者与 agent 指南：目录结构、约定、验证 |
-| [CHANGELOG.md](https://github.com/indexofire/gapit/blob/main/CHANGELOG.md) | 变更历史 |
+| [README](https://github.com/indexofire/gspec/blob/main/README.md) | 项目概览、安装、快速上手、文档索引 |
+| [SPEC.md](https://github.com/indexofire/gspec/blob/main/SPEC.md) | abricate 表格/表头互操作契约；parity 仅作回归参考 |
+| [PLAN.md](https://github.com/indexofire/gspec/blob/main/PLAN.md) | 按阶段划分的开发路线图 |
+| [AGENTS.md](https://github.com/indexofire/gspec/blob/main/AGENTS.md) | 贡献者与 agent 指南：目录结构、约定、验证 |
+| [CHANGELOG.md](https://github.com/indexofire/gspec/blob/main/CHANGELOG.md) | 变更历史 |

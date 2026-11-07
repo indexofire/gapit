@@ -1,5 +1,5 @@
 """Integration tests for the oversubscription note (#7): when
-``--jobs * --threads`` exceeds ``os.cpu_count()``, `gapit screen` emits ONE
+``--jobs * --threads`` exceeds ``os.cpu_count()``, `gspec screen` emits ONE
 stderr note; it never fires when quiet or when the product stays within the
 cpu count (including exactly at it, and when cpu_count is unknown)."""
 

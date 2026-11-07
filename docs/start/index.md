@@ -1,17 +1,17 @@
 # Getting started
 
-Install gapit, verify the external binaries, and complete an offline first run.
+Install gspec, verify the external binaries, and complete an offline first run.
 
 <div class="grid cards" markdown>
 
--   **Installing gapit**
+-   **Installing gspec**
 
     ---
 
     PyPI, conda, and pixi installation, external binaries, verification, and shell
     completions.
 
-    [Install gapit](../installation.md)
+    [Install gspec](../installation.md)
 
 -   **Quickstart**
 

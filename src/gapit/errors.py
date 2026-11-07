@@ -103,7 +103,7 @@ ERROR_CODE_ENUM = cast(list[JsonValue], sorted(ERROR_CODES))
 
 
 class GapitError(Exception):
-    """Base class for all typed gapit errors."""
+    """Base class for all typed gspec errors."""
 
     code: str
     exit_code: int = 1

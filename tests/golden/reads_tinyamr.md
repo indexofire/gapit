@@ -1,6 +1,6 @@
 ---
 schema: gapit.reads/1
-tool: gapit 0.6.8
+tool: gspec 0.8.0
 created_at: 2026-09-17T12:00:00Z
 db: tinyreads
 read_type: sr
@@ -10,7 +10,7 @@ files: 1
 genes_found: 1
 ---
 
-# gapit read screening report
+# gspec read screening report
 
 ## `tetx_full.fq`
 

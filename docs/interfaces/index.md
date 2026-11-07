@@ -9,7 +9,7 @@ Optional engines, machine-readable surfaces, and agent integration.
     ---
 
     Route alignment through the optional gseek backend while keeping the same
-    gapit outputs.
+    gspec outputs.
 
     [gseek engine](../gseek-engine.md)
 
@@ -21,13 +21,13 @@ Optional engines, machine-readable surfaces, and agent integration.
 
     [MCP server](../mcp.md)
 
--   **gapit for agents**
+-   **gspec for agents**
 
     ---
 
-    Consume gapit from autonomous agents: schemas, introspection, deterministic
+    Consume gspec from autonomous agents: schemas, introspection, deterministic
     outputs, and errors.
 
-    [gapit for agents](../agents.md)
+    [gspec for agents](../agents.md)
 
 </div>

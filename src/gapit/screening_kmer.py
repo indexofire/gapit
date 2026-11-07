@@ -45,7 +45,7 @@ def screen_cluster_kmer(
     if kmer_doc is None:
         usage_fail(
             f"cluster database '{db_name}' has no kmer.json sidecar;"
-            " k-mer reads screening requires gapit db build -K"
+            " k-mer reads screening requires gspec db build -K"
         )
     features = load_features(database)
     typing_document = load_typing(database)

@@ -1,4 +1,4 @@
-"""Unit tests for cross-contig gene-fragment merging (gapit extension).
+"""Unit tests for cross-contig gene-fragment merging (gspec extension).
 
 The merge math is pure: interval unions over subject coordinates, the
 minimap.py 15-char binning applied to a union of spans, aligned-length

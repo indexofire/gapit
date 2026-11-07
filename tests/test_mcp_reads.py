@@ -273,7 +273,7 @@ def test_screen_reads_comma_in_filename_survives(reads_datadir: Path, tmp_path: 
 
 
 def test_cli_mcp_serve_streams_screen_reads_response(reads_datadir: Path) -> None:
-    """Given `gapit mcp` fed initialize + a single-end screen_reads call via
+    """Given `gspec mcp` fed initialize + a single-end screen_reads call via
     CliRunner, When invoked, Then exit 0 and the gapit.reads/1 document
     rides the second response line (r2 is optional)."""
     request = tool_call(

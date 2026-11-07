@@ -136,7 +136,7 @@ def run_screen(
     ``blastdbcmd -info``) fire once up front, so MISSING_DEPENDENCY and
     DATABASE_NOT_INDEXED errors precede any "Processing:" stderr lines.
     ``merge_fragments`` is the opt-in cross-contig gene-fragment merge
-    (gapit extension; default off keeps abricate parity).
+    (gspec extension; default off keeps abricate parity).
 
     A cluster-kind database dispatches to the minimap2 cluster engine
     (gapit.cluster) after the kind guards: gene-engine flags on a cluster

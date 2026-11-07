@@ -1,6 +1,6 @@
 """--jobs and streaming tests for the positional-FASTQ wildcard path.
 
-The wildcard (``gapit screen -d db *.fastq.gz``) mirrors the contig path's
+The wildcard (``gspec screen -d db *.fastq.gz``) mirrors the contig path's
 parallel/streaming contract: ``--jobs N`` screens samples concurrently while
 output stays in sample order; tsv (the default) and md stream a static
 preamble plus one chunk per completed sample (head-of-line under --jobs);
@@ -408,7 +408,7 @@ def test_reads_md_preamble_is_static_and_chunks_carry_the_schema_variants() -> N
     report = _read_report("s1", present=True)
     preamble = reads_md_preamble(params, now=PINNED_NOW)
     assert preamble.startswith("---\nschema: gapit.reads/1\n")
-    assert preamble.endswith("# gapit read screening report\n\n")
+    assert preamble.endswith("# gspec read screening report\n\n")
     assert "files:" not in preamble and "genes_found:" not in preamble
     reads2_preamble = reads_md_preamble(params, now=PINNED_NOW, reads2=True)
     assert "schema: gapit.reads/2" in reads2_preamble

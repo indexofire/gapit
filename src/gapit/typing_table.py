@@ -1,8 +1,8 @@
 """Screen result table parsing: contig and reads tables → :class:`ScreenRow`.
 
-The `gapit typing` input boundary. Contig tables (gapit screen / abricate)
+The `gspec typing` input boundary. Contig tables (gspec screen / abricate)
 carry ``FILE``/``GENE``/``%IDENTITY``/``%COVERAGE``; reads tables
-(``gapit screen --r1/--r2``) carry ``#SAMPLE``/``GENE``/``BREADTH%`` and,
+(``gspec screen --r1/--r2``) carry ``#SAMPLE``/``GENE``/``BREADTH%`` and,
 only under reads/2's opt-in identity filter, ``IDENTITY%``. Both shapes fold
 into the same row model: breadth is the coverage metric, and reads/1's
 missing identity arrives as 100.0 because that format cannot gate identity —

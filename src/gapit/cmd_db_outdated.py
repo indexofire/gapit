@@ -1,4 +1,4 @@
-"""The `gapit db outdated` command: click shell over the use-case
+"""The `gspec db outdated` command: click shell over the use-case
 (:mod:`gapit.db_query_ops`) — installed-database staleness report.
 
 Reports every installed database's age against a staleness threshold.

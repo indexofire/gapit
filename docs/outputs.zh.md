@@ -1,32 +1,32 @@
 # 输出
 
-每条 gapit 命令遵循同一个契约：数据走 stdout，诊断走 stderr，错误是带文档化退出码
+每条 gspec 命令遵循同一个契约：数据走 stdout，诊断走 stderr，错误是带文档化退出码
 的类型化 JSON 信封。本页是各格式的参考。schema 带版本号、可被机器发现，agent 无需
 阅读本页即可消费。产生这些输出的命令另见 [screen.md](./screen.md)、
 [reads.md](./reads.md) 和 [summary.md](./summary.md)。
 
 ## stdout 与 stderr
 
-- **stdout 只承载数据**：TSV/CSV 表、JSON 文档、Markdown 报告，或 `gapit db fetch`
-  与 `gapit db install` 打印的单行回执。使用 `gapit screen --output PATH` 时数据改写
+- **stdout 只承载数据**：TSV/CSV 表、JSON 文档、Markdown 报告，或 `gspec db fetch`
+  与 `gspec db install` 打印的单行回执。使用 `gspec screen --output PATH` 时数据改写
   入该文件，stdout 保持为空。
 - **stderr 承载诊断**：筛查期间的 `Processing: <file>` 等进度行、抓取进度、警告。
   `--quiet` 静默 stderr；绝不触碰 stdout。
 - 输出是确定性的：稳定的排序、固定的工具参数、数据载荷内没有墙钟时间戳（只有
   `created_at` 元数据字段）。
-- **发射时机**（`gapit screen`）：tsv/csv/md 流式输出 —— 先表头或静态 frontmatter，
+- **发射时机**（`gspec screen`）：tsv/csv/md 流式输出 —— 先表头或静态 frontmatter，
   随后每个文件完成的那一刻输出该文件的行/小节（输入顺序；`--jobs` 下按队头阻塞）。
   json 是单一文档，在结束时一次性写出。两种方式的拼接字节完全一致。
 
 ## TSV（默认格式）
 
-`gapit screen` 打印 abricate 兼容的 TSV：一行表头，随后每个幸存命中一行。来自三基
+`gspec screen` 打印 abricate 兼容的 TSV：一行表头，随后每个幸存命中一行。来自三基
 因夹具数据库的真实输出：
 
 ```console
-$ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr /tmp/opencode/gapit-own-db/gap.fa
+$ gspec screen --datadir /tmp/opencode/gspec-own-db/db --db tinyamr /tmp/opencode/gspec-own-db/gap.fa
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
-/tmp/opencode/gapit-own-db/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
+/tmp/opencode/gspec-own-db/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
 ```
 
 ### 15 列
@@ -70,7 +70,7 @@ minimap 用 15 个字符格勾画比对落在基因的什么位置：
 - 每格覆盖 `slen / cells` 个基因碱基。比对起止之间的格子是 `=`，其余是 `.`。有缺
   口时 `/` 落在中间格位置。
 - 坐标截断为整数，所以长基因上整段比对也可能有边缘格停留在 `.`。abricate 有同样
-  的怪癖，gapit 复现它而不是去"修"。
+  的怪癖，gspec 复现它而不是去"修"。
 
 上文的示例行是 `sul1` 的带缺口比对（94 bp 基因，1 个缺口开口跨 3 列）：
 
@@ -85,7 +85,7 @@ minimap 用 15 个字符格勾画比对落在基因的什么位置：
 印 15 个 `=`，如下面这行 `tetA`：
 
 ```text
-/tmp/opencode/gapit-own-db/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.00	100.00	tinyamr	NC_000913.3:100-900	tetracycline efflux pump TetA	TETRACYCLINE
+/tmp/opencode/gspec-own-db/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.00	100.00	tinyamr	NC_000913.3:100-900	tetracycline efflux pump TetA	TETRACYCLINE
 ```
 
 ### 变体
@@ -100,12 +100,12 @@ minimap 用 15 个字符格勾画比对落在基因的什么位置：
 
 携带 `typing.json` 的基因数据库（**typed** 数据库 —— 捆绑的 `eco_dec` 即是示例）
 的筛查输出与 untyped 完全相同：上面冻结的 15 列 abricate 表，每种格式都逐字节一致。
-判定是两阶段流水线的第二阶段 —— [`gapit typing`](./typing.zh.md#two-stage-workflow)
+判定是两阶段流水线的第二阶段 —— [`gspec typing`](./typing.zh.md#two-stage-workflow)
 读取筛查结果表并渲染判定（真实输出；结果表由 `screen --output` 写出）：
 
 ```console
-$ gapit screen dec_s2_pic_astA_uidA.fasta --db eco_dec --output dec.tsv --quiet
-$ gapit typing dec.tsv --quiet
+$ gspec screen dec_s2_pic_astA_uidA.fasta --db eco_dec --output dec.tsv --quiet
+$ gspec typing dec.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 dec_s2_pic_astA_uidA.fasta	gb4789_6	EAEC	astA;pic;uidA	high	1.0000	EHEC (0.0000)	GB 4789.6: any of aggR/pic/astA
 dec_s2_pic_astA_uidA.fasta	risk_monitoring	non-DEC	astA;pic;uidA	low	0.0000	STEC (0.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
@@ -129,8 +129,8 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 {
   "schema": "gapit.report/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T01:12:20Z",
   "params": {
@@ -141,7 +141,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
   },
   "files": [
     {
-      "file": "/tmp/opencode/gapit-own-db/gap.fa",
+      "file": "/tmp/opencode/gspec-own-db/gap.fa",
       "hits": [
         {
           "sequence": "contig1",
@@ -168,7 +168,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 | 字段 | 类型 | 含义 |
 |---|---|---|
 | `schema` | string | 恒为 `gapit.report/1` |
-| `tool` | object | gapit 的 `{name, version}` |
+| `tool` | object | gspec 的 `{name, version}` |
 | `created_at` | string | ISO-8601 UTC 时间戳，秒精度 |
 | `params` | object | 生效的筛查参数 |
 | `params.db` | string | 数据库名 |
@@ -198,7 +198,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 | `product` | string | 产物描述 |
 | `resistance` | string | 耐药或功能类别（字段名冻结，为 TSV 一致性保留） |
 
-`gapit screen --merge-fragments`（跨 contig 片段合并；见
+`gspec screen --merge-fragments`（跨 contig 片段合并；见
 [screen.md](./screen.md)）产生的 hit 带两个累加的可选字段，其他任何行都不出现：
 
 | 字段 | 类型 | 含义 |
@@ -212,7 +212,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 
 ### gapit.typing_result/1（从筛查结果判定）
 
-`gapit typing RESULT.tsv [RESULT2.tsv ...]` 读取一份或多份 gapit/abricate 筛查结果
+`gspec typing RESULT.tsv [RESULT2.tsv ...]` 读取一份或多份 gspec/abricate 筛查结果
 表（TSV 或 CSV），从所有行共享的 `DATABASE` 列解析数据库，并对其 `typing.json` 在
 每个 FILE 的基因上评估 —— 每个 `(FILE, GENE)` 折叠为其 `(%IDENTITY, %COVERAGE)`
 最佳的行。真实文档（有裁剪）：
@@ -220,7 +220,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 ```json
 {
   "schema": "gapit.typing_result/1",
-  "tool": {"name": "gapit", "version": "0.6.8"},
+  "tool": {"name": "gspec", "version": "0.8.0"},
   "created_at": "2026-10-02T10:04:55Z",
   "source": ["dec.tsv"],
   "db": "eco_dec",
@@ -267,7 +267,7 @@ non-DEC。零命中文件不产生筛查行，因此不会出现在判定输出�
 | 字段 | 类型 | 含义 |
 |---|---|---|
 | `schema` | string | 恒为 `gapit.typing_result/1` |
-| `tool` | object | gapit 的 `{name, version}` |
+| `tool` | object | gspec 的 `{name, version}` |
 | `created_at` | string | ISO-8601 UTC 时间戳，秒精度 |
 | `source` | array | 按输入原样的结果表路径 |
 | `db` | string | 所有行共同筛查的数据库 |
@@ -284,19 +284,19 @@ NOTES（runner-up 单元格同样为 `-`——候选对已说明一切）；`GEN
 FILE 排序后 `;` 串接的基因名，并在该 FILE 的每个 scheme 行上重复。类型化错误：行间
 `DATABASE` 值混杂为 `DATABASE_MISMATCH`，无数据行的表为 `TYPING_NO_DATA`，无
 `typing.json` 的数据库为 `TYPING_NO_SCHEME`，基因簇数据库为 `TYPING_CLUSTER_DB`
-（其判定集成在 `gapit screen` 内）。其 JSON Schema 用 `gapit schema typing_result`
+（其判定集成在 `gspec screen` 内）。其 JSON Schema 用 `gspec schema typing_result`
 打印。
 
 ### gapit.reads/1（reads 与 assembly 筛查）
 
 reads 模式报告的是每个基因在整个 read 集（或 assembly；`--r1` 接受 FASTQ 和
 FASTA）上的覆盖情况，而不是逐命中行。基因条目按 `breadth_pct` 降序；零 mapped
-reads 的基因省略。字段来自 `gapit schema reads`：
+reads 的基因省略。字段来自 `gspec schema reads`：
 
 | 字段 | 类型 | 含义 |
 |---|---|---|
 | `schema` | string | 恒为 `gapit.reads/1` |
-| `tool` | object | gapit 的 `{name, version}` |
+| `tool` | object | gspec 的 `{name, version}` |
 | `created_at` | string | ISO-8601 UTC 时间戳，秒精度 |
 | `params` | object | 生效的 read 筛查参数 |
 | `params.db` | string | 数据库名 |
@@ -327,7 +327,7 @@ reads 的基因省略。字段来自 `gapit schema reads`：
 reads/1 的可选变体，仅在 `--min-identity` 或 `--min-mapq` 非零时输出：低于阈值的
 PAF 比对在聚合前被丢弃，消除只看广度的存在判定在同源基因上的家族拆分型过量判定。
 两个阈值都关闭时输出保持 `gapit.reads/1`，逐字节一致。字段来自
-`gapit schema reads2`，除以下各项外与 reads/1 相同：
+`gspec schema reads2`，除以下各项外与 reads/1 相同：
 
 | 字段 | 类型 | 含义 |
 |---|---|---|
@@ -352,12 +352,12 @@ PAF 比对在聚合前被丢弃，消除只看广度的存在判定在同源基�
 筛查 `kind: cluster` 数据库（minimap2 `asm20` 引擎；见 [screen.md](./screen.md)）
 每次运行输出一个文档：每文件一个最佳位点判定、每个被覆盖位点及其逐基因判定，以及
 在携带 `typing.json` 的数据库上的表型判定和可解释的分数分解。字段来自
-`gapit schema cluster`：
+`gspec schema cluster`：
 
 | 字段 | 类型 | 含义 |
 |---|---|---|
 | `schema` | string | 恒为 `gapit.cluster/1` |
-| `tool` | object | gapit 的 `{name, version}` |
+| `tool` | object | gspec 的 `{name, version}` |
 | `created_at` | string | ISO-8601 UTC 时间戳，秒精度 |
 | `params` | object | `db`、`preset`（恒为 `asm20`）、`min_gene_cov`、`min_gene_id`、`min_cluster_cov`、`threads` |
 | `files` | array | 每个输入文件一项 |
@@ -394,7 +394,7 @@ typing 的数据库是同一个表头去掉 `PHENOTYPE`。没有位点判定的�
 
 ### gapit.features/1 与 gapit.typing/1（数据库侧文档）
 
-两份基因簇数据库产物是可用 `gapit schema` 自省的带版本文档，但绝不出现在 stdout：
+两份基因簇数据库产物是可用 `gspec schema` 自省的带版本文档，但绝不出现在 stdout：
 `features`（`db build` 写出的 `features.json` 位点/基因特征表）和 `typing`（用
 `db build --typing FILE` 安装的声明式评分规范：`weighted_genes` / `cluster_match` /
 `learned_linear` 规则，外加 `cutoff`、`ambiguity_margin` 和 `fallback`）。typing
@@ -402,13 +402,13 @@ typing 的数据库是同一个表头去掉 `PHENOTYPE`。没有位点判定的�
 
 ### gapit.dbsetup/1（`db setup` 回执）
 
-`gapit db setup --json` 输出一份描述引导/建索引过程的文档，并抑制进度信息，保证
+`gspec db setup --json` 输出一份描述引导/建索引过程的文档，并抑制进度信息，保证
 stdout 只有回执：
 
 ```json
 {
   "schema": "gapit.dbsetup/1",
-  "datadir": "/home/me/.local/share/gapit/db",
+  "datadir": "/home/me/.local/share/gspec/db",
   "materialized": ["eco_dec"],
   "fetched": [],
   "databases": [
@@ -431,15 +431,15 @@ stdout 只有回执：
 
 ### gapit.summary/1（汇总矩阵）
 
-`gapit summary --format json` 把报告表折叠成基因矩阵。真实输出，汇总两份报告：一份
+`gspec summary --format json` 把报告表折叠成基因矩阵。真实输出，汇总两份报告：一份
 有 `tetA` 命中，一份没有：
 
 ```json
 {
   "schema": "gapit.summary/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T01:11:09Z",
   "params": {
@@ -454,7 +454,7 @@ stdout 只有回执：
   ],
   "rows": [
     {
-      "file": "/tmp/opencode/gapit-docs-Ifvc44/full.tsv",
+      "file": "/tmp/opencode/gspec-docs-Ifvc44/full.tsv",
       "num_found": 1,
       "cells": {
         "tetA": [
@@ -463,7 +463,7 @@ stdout 只有回执：
       }
     },
     {
-      "file": "/tmp/opencode/gapit-docs-Ifvc44/partial.tsv",
+      "file": "/tmp/opencode/gspec-docs-Ifvc44/partial.tsv",
       "num_found": 0,
       "cells": {}
     }
@@ -474,7 +474,7 @@ stdout 只有回执：
 | 字段 | 类型 | 含义 |
 |---|---|---|
 | `schema` | string | 恒为 `gapit.summary/1` |
-| `tool` | object | gapit 的 `{name, version}` |
+| `tool` | object | gspec 的 `{name, version}` |
 | `created_at` | string | ISO-8601 UTC 时间戳，秒精度 |
 | `params.metric` | string | 主指标：`%COVERAGE` 或 `%IDENTITY` |
 | `params.metrics` | array | `-i`/`-c` 选中的所有指标（`-ic` 时为两者） |
@@ -492,7 +492,7 @@ stdout 只有回执：
 
 schema 名带 semver（`gapit.report/1`）。在一个主版本内，既有字段绝不重命名或改
 型；累加式变更伴随 schema 版本号变更和 `PLAN.md` 里的说明。你构建的任何东西都可以
-对照 `gapit schema` 打印的 schema 校验。
+对照 `gspec schema` 打印的 schema 校验。
 
 ## Markdown
 
@@ -514,7 +514,7 @@ frontmatter 在第一个文件之前即可知，因此 md 与 tsv 行一样逐�
 | 字段 | 类型 | 含义 |
 |---|---|---|
 | `schema` | string | 恒为 `gapit.error/1` |
-| `code` | string | 机器稳定的错误码，SCREAMING_SNAKE_CASE；枚举由 `gapit schema error` 暴露 |
+| `code` | string | 机器稳定的错误码，SCREAMING_SNAKE_CASE；枚举由 `gspec schema error` 暴露 |
 | `message` | string | 人类可读的描述 |
 | `context` | object | 字符串值的细节（文件路径、摘要、数据库名） |
 
@@ -532,7 +532,7 @@ frontmatter 在第一个文件之前即可知，因此 md 与 tsv 行一样逐�
 筛查不存在的文件退出码 5，stderr 真实输出：
 
 ```console
-$ gapit screen /nonexistent/contigs.fa --db ncbi
+$ gspec screen /nonexistent/contigs.fa --db ncbi
 {"schema":"gapit.error/1","code":"INPUT_NOT_FOUND","message":"input file not found or unreadable: /nonexistent/contigs.fa","context":{"file":"/nonexistent/contigs.fa"}}
 $ echo $?
 5
@@ -541,11 +541,11 @@ $ echo $?
 再举两例，各自由所示命令产生：
 
 ```console
-$ gapit db fetch -d nosuchdb            # exit 2, usage
+$ gspec db fetch -d nosuchdb            # exit 2, usage
 {"schema":"gapit.error/1","code":"USAGE_ERROR","message":"unknown database: nosuchdb (available: argannot, bacmet2, card, ecoh, ecoli_vf, megares, ncbi, plasmidfinder, resfinder, upec_expec_vf, vfdb, victors)","context":{"db":"nosuchdb"}}
 
-$ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr contigs.fa   # exit 4, db error, before indexing
-{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gapit-own-db/db/tinyamr/sequences is not indexed, please try: gapit db setup","context":{"db":"/tmp/opencode/gapit-own-db/db/tinyamr/sequences"}}
+$ gspec screen --datadir /tmp/opencode/gspec-own-db/db --db tinyamr contigs.fa   # exit 4, db error, before indexing
+{"schema":"gapit.error/1","code":"DATABASE_NOT_INDEXED","message":"Database /tmp/opencode/gspec-own-db/db/tinyamr/sequences is not indexed, please try: gspec db setup","context":{"db":"/tmp/opencode/gspec-own-db/db/tinyamr/sequences"}}
 ```
 
 缺外部二进制（退出码 3）时会报告是哪一个：
@@ -561,17 +561,17 @@ $ gapit screen --datadir /tmp/opencode/gapit-own-db/db --db tinyamr contigs.fa  
 agent 只凭二进制就能发现整个契约。
 
 ```console
-$ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.8"}
+$ gspec --version --json
+{"schema":"gapit.version/1","name":"gspec","version":"0.8.0"}
 ```
 
-`gapit schema <name>` 打印每个文档的 JSON Schema。十八个名字：`report`、
+`gspec schema <name>` 打印每个文档的 JSON Schema。十八个名字：`report`、
 `typing_result`、`reads`、`reads2`、`cluster`、`cluster2`、`summary`、`error`、
 `version`、`dblist`、`dbsetup`、`dboutdated`、`datadir`、`dbinfo`，外加数据库侧文档
 `features`（gapit.features/1，基因簇数据库的特征表）、`typing`（gapit.typing/2，
 基因簇数据库的声明式评分规范；/1 仍可读取）、`floors`（gapit.floors/1，reads/contig
 模式存在判定的逐基因一致性下限）和 `screen`（gapit.screen/1，每数据库筛查默认值）。
-`gapit schema report` 的裁剪片段：
+`gspec schema report` 的裁剪片段：
 
 ```json
 {

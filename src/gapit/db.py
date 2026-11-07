@@ -44,7 +44,7 @@ class BlastDbInfo(BaseModel, frozen=True):
 
 class Database(BaseModel, frozen=True):
     """One discovered database directory under the datadir. ``kind`` comes
-    from the gapit manifest (cluster databases declare it); legacy/abricate
+    from the gspec manifest (cluster databases declare it); legacy/abricate
     directories without a manifest are gene databases."""
 
     name: str
@@ -54,7 +54,7 @@ class Database(BaseModel, frozen=True):
 
 
 class DatabaseInfo(BaseModel, frozen=True):
-    """One row of ``gapit list`` output."""
+    """One row of ``gspec list`` output."""
 
     name: str
     n_sequences: int
@@ -123,7 +123,7 @@ def make_blast_db(
     """(Re)build the BLAST index for one database directory.
 
     ``dbtype=None`` (the default) keeps the abricate ``mol_type`` heuristic;
-    an explicit ``"nucl"``/``"prot"`` — e.g. from a gapit manifest, which
+    an explicit ``"nucl"``/``"prot"`` — e.g. from a gspec manifest, which
     declares the type — skips the heuristic entirely. With ``debug``, echo
     the makeblastdb argv to stderr (abricate --debug parity).
     """
@@ -136,7 +136,7 @@ def make_blast_db(
             code="MISSING_DEPENDENCY",
             context={"binary": "makeblastdb"},
         )
-    with tempfile.TemporaryDirectory(dir=sequences_path.parent, prefix=".gapit-index.") as tmp:
+    with tempfile.TemporaryDirectory(dir=sequences_path.parent, prefix=".gspec-index.") as tmp:
         temp_prefix = Path(tmp) / sequences_path.name
         argv = [
             "makeblastdb",
@@ -152,7 +152,7 @@ def make_blast_db(
             "/dev/null",
         ]
         if debug:
-            print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
+            print(f"gspec: run: {shlex.join(argv)}", file=sys.stderr)
         result = run_tool(argv)
         if result.returncode != 0:
             raise DatabaseError(
@@ -200,11 +200,11 @@ def make_minimap2_index(
     if not minimap2_target_names_safe(sequences_path):
         return None
     target = sequences_path.parent / f"{sequences_path.name}.{preset}.mmi"
-    with tempfile.TemporaryDirectory(dir=sequences_path.parent, prefix=".gapit-mmi.") as tmp:
+    with tempfile.TemporaryDirectory(dir=sequences_path.parent, prefix=".gspec-mmi.") as tmp:
         temp = Path(tmp) / target.name
         argv = ["minimap2", "-x", preset, "-d", str(temp), str(sequences_path)]
         if debug:
-            print(f"gapit: run: {shlex.join(argv)}", file=sys.stderr)
+            print(f"gspec: run: {shlex.join(argv)}", file=sys.stderr)
         result = run_tool(argv)
         if result.returncode != 0:
             raise DatabaseError(
@@ -250,7 +250,7 @@ def blast_db_info(db_prefix: Path) -> BlastDbInfo:
     result = run_tool(["blastdbcmd", "-info", "-db", str(db_prefix)])
     if result.returncode != 0:
         raise DatabaseError(
-            f"Database {db_prefix} is not indexed, please try: gapit db setup",
+            f"Database {db_prefix} is not indexed, please try: gspec db setup",
             code="DATABASE_NOT_INDEXED",
             context={"db": str(db_prefix)},
         )
@@ -283,7 +283,7 @@ def discover_databases(datadir: Path) -> list[Database]:
 
 
 def _manifest_kind(db_dir: Path) -> Literal["gene", "cluster"]:
-    """The kind declared by the database's gapit manifest, ``"gene"`` for
+    """The kind declared by the database's gspec manifest, ``"gene"`` for
     legacy (manifest-less) directories. Same propagation contract as
     :func:`_manifest_dbtype` (a malformed manifest is never swallowed)."""
     from gapit.records import read_manifest
@@ -297,7 +297,7 @@ def _manifest_kind(db_dir: Path) -> Literal["gene", "cluster"]:
 
 
 def _manifest_dbtype(db_dir: Path) -> Literal["nucl", "prot"] | None:
-    """The dbtype declared by a database's gapit manifest, or ``None`` when the
+    """The dbtype declared by a database's gspec manifest, or ``None`` when the
     directory has none (abricate-built) — the caller then falls back to the
     ``mol_type`` heuristic. A malformed manifest propagates (no silent
     degradation).
@@ -347,7 +347,7 @@ def list_databases(
         if not index_exists:
             raise DatabaseError(
                 f"Database {database.name} is not indexed, please try:"
-                f" gapit db setup {database.name}",
+                f" gspec db setup {database.name}",
                 code="DATABASE_NOT_INDEXED",
                 context={"db": database.name},
             )

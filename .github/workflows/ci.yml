@@ -47,7 +47,7 @@ jobs:
 
   # Independent of gates: the bioconda solve is slow and orthogonal to the
   # python matrix. Needs BOTH envs installed — the harness runs on the default
-  # env's python and invokes .pixi/envs/default/bin/gapit while parity env
+  # env's python and invokes .pixi/envs/default/bin/gspec while parity env
   # supplies abricate (see pixi.toml parity feature).
   parity:
     runs-on: ubuntu-latest

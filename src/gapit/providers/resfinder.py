@@ -1,7 +1,7 @@
 """resfinder database provider — CGE ResFinder acquired resistance genes.
 
 Upstream ``get_resfinder`` (abricate-get_db 1.4.0) git-clones the resfinder_db
-repo; gapit downloads the same tree as the bitbucket ``HEAD.zip`` archive (no
+repo; gspec downloads the same tree as the bitbucket ``HEAD.zip`` archive (no
 git dependency) whose members sit under an arbitrary top-level directory.
 ``phenotypes.txt`` maps each gene to its function categories; every ``*.fsa``
 carries ids like ``demoA_1_FAKE0001`` — gene prefix, copy number, accession.

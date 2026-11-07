@@ -4,7 +4,7 @@ Each concrete provider is a module exporting a ``Provider`` (gene pipeline,
 providers.common) or ``ClusterProvider`` (kaptive-style GBK providers,
 providers.cluster_common) value consumed by ``fetch_provider`` /
 ``fetch_cluster_provider``. ``REGISTRY`` maps every provider name to its
-value — the CLI's ``gapit db fetch`` / ``gapit db list`` lookup table (Wave
+value — the CLI's ``gspec db fetch`` / ``gspec db list`` lookup table (Wave
 C-a). Imports are static and alphabetized; no dynamic import magic.
 """
 

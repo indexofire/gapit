@@ -21,7 +21,7 @@
       "Source FASTA repaired: Q5ZZC1 header had lost '>' and was merged into Q5ZZD0"
     ],
     "usage": [
-      "gapit screen -d leg_vf *.fna"
+      "gspec screen -d leg_vf *.fna"
     ]
   }
 }

@@ -1,4 +1,4 @@
-"""`gapit typing` on cluster screen JSON (already-evaluated phenotypes)."""
+"""`gspec typing` on cluster screen JSON (already-evaluated phenotypes)."""
 
 from __future__ import annotations
 

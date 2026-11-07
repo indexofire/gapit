@@ -1,7 +1,7 @@
 """gapit.typing — the declarative scoring schema of a typed database.
 
 A typing document is a DATABASE-SIDE artifact (``typing.json`` inside a db
-directory, installed via ``gapit db build --typing``): it declares how hits
+directory, installed via ``gspec db build --typing``): it declares how hits
 against the database map to phenotype calls. This module owns the document
 container and its validation (readers, reference checks, the cluster
 contract discriminator); the RULE models live in gapit.typing_rules, the

@@ -1,35 +1,35 @@
 # Custom databases
 
-`gapit db build` turns any FASTA of reference genes into a fully built gapit-native database in one command: `records.jsonl`, the `sequences` projection, the BLAST index, the manifest. This page is a worked tour with real session output. For providers, `db fetch`, and the datadir layout, see [Databases](./databases.md).
+`gspec db build` turns any FASTA of reference genes into a fully built gspec-native database in one command: `records.jsonl`, the `sequences` projection, the BLAST index, the manifest. This page is a worked tour with real session output. For providers, `db fetch`, and the datadir layout, see [Databases](./databases.md).
 
 ## When you need this
 
 - You screen for genes no provider ships: a private marker panel, lab-curated variants.
 - You want a small database with only the genes you report on, so outputs stay short.
-- You have an abricate-era `~~~` FASTA and want it as a native gapit database.
+- You have an abricate-era `~~~` FASTA and want it as a native gspec database.
 
 ## Command reference
 
 ```text
-gapit db build NAME FASTA [OPTIONS]
+gspec db build NAME FASTA [OPTIONS]
 ```
 
 | Option | Value | Meaning |
 |---|---|---|
 | `NAME` (argument) | text | Target database name (created under the datadir). |
-| `FASTA` (argument) | path | Input FASTA: plain, abricate `~~~`, or `gapit\|` headers, detected per record (`.gz`/`.bz2` accepted). |
+| `FASTA` (argument) | path | Input FASTA: plain, abricate `~~~`, or `gspec\|` headers, detected per record (`.gz`/`.bz2` accepted). |
 | `--tsv` | path | Metadata TSV: header row with `gene`/`accession`/`function` columns. |
 | `--dbtype` | `nucl` or `prot` | Force the molecule type (default: auto-detect from the sequences). |
 | `--kind` / `-k` | `gene` or `cluster` | Force the database kind (default: auto-detect from the input suffix; a disagreement is a usage error). |
 | `--typing` / `-T` | path | `gapit.typing/1` or `/2` scoring spec: validated, copied into the db as `typing.json`, recorded in its manifest. |
 | `--floors` / `-F` | path | `gapit.floors/1` per-gene identity floors for reads + contigs: validated, copied into the db as `floors.json` (gene builds only). |
 | `--screen` / `-S` | path | `gapit.screen/1` per-database reads/contigs defaults: validated, copied into the db as `screen.json` (gene builds only). |
-| `--datadir` | path | Database directory (default: `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`). |
+| `--datadir` | path | Database directory (default: `$GSPEC_DATADIR`, then `$XDG_DATA_HOME/gspec/db`, then `~/.local/share/gspec/db`). |
 | `--description` | text | Default product for records whose FASTA header has no description text. |
 | `--force` | flag | Overwrite the database if it already exists. |
 | `--quiet` | flag | Silence stderr diagnostics. |
 
-Build progress lines go to stderr, the one-line JSON receipt to stdout. The receipt carries `db`, `records`, `dbtype`, and `destination`, the same fields as `db fetch`. Screen blocks below show stdout only; `gapit screen` prints its `Processing:` lines to stderr (see [Screening](./screen.md)).
+Build progress lines go to stderr, the one-line JSON receipt to stdout. The receipt carries `db`, `records`, `dbtype`, and `destination`, the same fields as `db fetch`. Screen blocks below show stdout only; `gspec screen` prints its `Processing:` lines to stderr (see [Screening](./screen.md)).
 
 Every example below was executed in one session inside a scratch directory, so receipts quote its absolute path. To reproduce, run from the repo root:
 
@@ -66,12 +66,12 @@ $ grep '>' genes.fa
 Build a database named `labgenes` into a local datadir, then screen a query contig that carries the first 200 bases of `labcur1` plus flanking bases:
 
 ```console
-$ gapit db build labgenes genes.fa --datadir ./db
-gapit: generated /tmp/opencode/customdb-docs/db/labgenes/sequences
-gapit: self-check passed for labgenes
-gapit: BLAST index built (nucl)
+$ gspec db build labgenes genes.fa --datadir ./db
+gspec: generated /tmp/opencode/customdb-docs/db/labgenes/sequences
+gspec: self-check passed for labgenes
+gspec: BLAST index built (nucl)
 {"db":"labgenes","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labgenes"}
-$ gapit screen query1.fa --db labgenes --datadir ./db
+$ gspec screen query1.fa --db labgenes --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 query1.fa	contigA	31	230	+	labcur1	1-200/240	=============..	0/0	83.33	100.00	labgenes		synthetic tetracycline efflux pump	
 ```
@@ -87,12 +87,12 @@ $ cat meta1.tsv
 gene	accession	function
 labcur1	LAB-0001	tetracycline
 labcur2	LAB-0002	macrolide
-$ gapit db build labmeta genes.fa --datadir ./db --tsv meta1.tsv
-gapit: generated /tmp/opencode/customdb-docs/db/labmeta/sequences
-gapit: self-check passed for labmeta
-gapit: BLAST index built (nucl)
+$ gspec db build labmeta genes.fa --datadir ./db --tsv meta1.tsv
+gspec: generated /tmp/opencode/customdb-docs/db/labmeta/sequences
+gspec: self-check passed for labmeta
+gspec: BLAST index built (nucl)
 {"db":"labmeta","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labmeta"}
-$ gapit screen query1.fa --db labmeta --datadir ./db
+$ gspec screen query1.fa --db labmeta --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 query1.fa	contigA	31	230	+	labcur1	1-200/240	=============..	0/0	83.33	100.00	labmeta	LAB-0001	synthetic tetracycline efflux pump	tetracycline
 ```
@@ -104,12 +104,12 @@ $ cat meta2.tsv
 gene	accession	function
 labcur1	LAB-0001	virulence;marker
 labcur2	LAB-0002	macrolide
-$ gapit db build labmulti genes.fa --datadir ./db --tsv meta2.tsv
-gapit: generated /tmp/opencode/customdb-docs/db/labmulti/sequences
-gapit: self-check passed for labmulti
-gapit: BLAST index built (nucl)
+$ gspec db build labmulti genes.fa --datadir ./db --tsv meta2.tsv
+gspec: generated /tmp/opencode/customdb-docs/db/labmulti/sequences
+gspec: self-check passed for labmulti
+gspec: BLAST index built (nucl)
 {"db":"labmulti","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labmulti"}
-$ gapit screen query1.fa --db labmulti --datadir ./db
+$ gspec screen query1.fa --db labmulti --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 query1.fa	contigA	31	230	+	labcur1	1-200/240	=============..	0/0	83.33	100.00	labmulti	LAB-0001	synthetic tetracycline efflux pump	virulence;marker
 ```
@@ -122,12 +122,12 @@ Files exported from abricate conventions build without changes. Fields split on 
 $ grep '>' legacy.fa
 >oldlab~~~tetA_lab~~~SYN-100~~~TETRACYCLINE synthetic tetracycline pump
 >oldlab~~~ermX~~~SYN-101~~~MACROLIDE synthetic methylase
-$ gapit db build oldlab legacy.fa --datadir ./db
-gapit: generated /tmp/opencode/customdb-docs/db/oldlab/sequences
-gapit: self-check passed for oldlab
-gapit: BLAST index built (nucl)
+$ gspec db build oldlab legacy.fa --datadir ./db
+gspec: generated /tmp/opencode/customdb-docs/db/oldlab/sequences
+gspec: self-check passed for oldlab
+gspec: BLAST index built (nucl)
 {"db":"oldlab","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/oldlab"}
-$ gapit screen query_tet.fa --db oldlab --datadir ./db
+$ gspec screen query_tet.fa --db oldlab --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 query_tet.fa	contigB	1	240	+	tetA_lab	1-240/240	===============	0/0	100.00	100.00	oldlab	SYN-100	synthetic tetracycline pump	TETRACYCLINE
 ```
@@ -142,12 +142,12 @@ Native records are portable. Regenerate a FASTA from the `records.jsonl` written
 $ grep '>' ported.fa
 >gapit|db=labgenes|gene=labcur1|acc=|func= synthetic tetracycline efflux pump
 >gapit|db=labgenes|gene=labcur2|acc=|func= synthetic macrolide esterase
-$ gapit db build labgenes_rt ported.fa --datadir ./db
-gapit: generated /tmp/opencode/customdb-docs/db/labgenes_rt/sequences
-gapit: self-check passed for labgenes_rt
-gapit: BLAST index built (nucl)
+$ gspec db build labgenes_rt ported.fa --datadir ./db
+gspec: generated /tmp/opencode/customdb-docs/db/labgenes_rt/sequences
+gspec: self-check passed for labgenes_rt
+gspec: BLAST index built (nucl)
 {"db":"labgenes_rt","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labgenes_rt"}
-$ gapit screen query1.fa --db labgenes_rt --datadir ./db
+$ gspec screen query1.fa --db labgenes_rt --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 query1.fa	contigA	31	230	+	labcur1	1-200/240	=============..	0/0	83.33	100.00	labgenes_rt		synthetic tetracycline efflux pump	
 ```
@@ -161,22 +161,22 @@ Amino acid input is detected automatically. Note the receipt says `"dbtype":"pro
 ```console
 $ grep '>' toxins.faa
 >toxA synthetic pore-forming toxin
-$ gapit db build toxins toxins.faa --datadir ./db
-gapit: generated /tmp/opencode/customdb-docs/db/toxins/sequences
-gapit: self-check passed for toxins
-gapit: BLAST index built (prot)
+$ gspec db build toxins toxins.faa --datadir ./db
+gspec: generated /tmp/opencode/customdb-docs/db/toxins/sequences
+gspec: self-check passed for toxins
+gspec: BLAST index built (prot)
 {"db":"toxins","records":1,"dbtype":"prot","destination":"/tmp/opencode/customdb-docs/db/toxins"}
-$ gapit db build toxins2 toxins.faa --datadir ./db --dbtype prot
-gapit: generated /tmp/opencode/customdb-docs/db/toxins2/sequences
-gapit: self-check passed for toxins2
-gapit: BLAST index built (prot)
+$ gspec db build toxins2 toxins.faa --datadir ./db --dbtype prot
+gspec: generated /tmp/opencode/customdb-docs/db/toxins2/sequences
+gspec: self-check passed for toxins2
+gspec: BLAST index built (prot)
 {"db":"toxins2","records":1,"dbtype":"prot","destination":"/tmp/opencode/customdb-docs/db/toxins2"}
 ```
 
 Screening a protein database runs `blastx`, so the query file must be nucleotide. Here the query contig carries the toxin's coding sequence, back-translated one codon per amino acid, with flanking bases:
 
 ```console
-$ gapit screen query_toxin.fa --db toxins --datadir ./db
+$ gspec screen query_toxin.fa --db toxins --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 query_toxin.fa	contigT	31	390	+	toxA	1-120/120	===============	0/0	100.00	100.00	toxins		synthetic pore-forming toxin
 ```
@@ -188,10 +188,10 @@ Reading the row: `START`/`END` are nucleotide coordinates on the contig (30 bp f
 `.gz` (and `.bz2`) inputs build exactly like plain ones:
 
 ```console
-$ gapit db build labgz genes.fa.gz --datadir ./db
-gapit: generated /tmp/opencode/customdb-docs/db/labgz/sequences
-gapit: self-check passed for labgz
-gapit: BLAST index built (nucl)
+$ gspec db build labgz genes.fa.gz --datadir ./db
+gspec: generated /tmp/opencode/customdb-docs/db/labgz/sequences
+gspec: self-check passed for labgz
+gspec: BLAST index built (nucl)
 {"db":"labgz","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labgz"}
 ```
 
@@ -204,7 +204,7 @@ $ grep '>' genes_v2.fa
 >labcur1 synthetic tetracycline efflux pump
 >labcur2 synthetic macrolide esterase
 >labcur3 synthetic fosfomycin thiolase
-$ gapit db build labgenes genes_v2.fa --datadir ./db
+$ gspec db build labgenes genes_v2.fa --datadir ./db
 {"schema":"gapit.error/1","code":"DB_ALREADY_EXISTS","message":"won't overwrite existing database labgenes (use --force)","context":{"db":"labgenes"}}
 $ echo $?
 4
@@ -215,12 +215,12 @@ The envelope is the standard `gapit.error/1` shape (exit 4, database error).
 `--force` deletes and rebuilds in place. The metadata TSV from example 2 still applies:
 
 ```console
-$ gapit db build labgenes genes_v2.fa --datadir ./db --tsv meta1.tsv --force
-gapit: generated /tmp/opencode/customdb-docs/db/labgenes/sequences
-gapit: self-check passed for labgenes
-gapit: BLAST index built (nucl)
+$ gspec db build labgenes genes_v2.fa --datadir ./db --tsv meta1.tsv --force
+gspec: generated /tmp/opencode/customdb-docs/db/labgenes/sequences
+gspec: self-check passed for labgenes
+gspec: BLAST index built (nucl)
 {"db":"labgenes","records":3,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labgenes"}
-$ gapit screen query1.fa --db labgenes --datadir ./db
+$ gspec screen query1.fa --db labgenes --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 query1.fa	contigA	31	230	+	labcur1	1-200/240	=============..	0/0	83.33	100.00	labgenes	LAB-0001	synthetic tetracycline efflux pump	tetracycline
 ```
@@ -236,13 +236,13 @@ $ cat dup.tsv
 gene	accession	function
 labcur1	KEEP-1	tetracycline
 labcur1	LOST-2	macrolide
-$ gapit db build labdup genes.fa --datadir ./db --tsv dup.tsv
+$ gspec db build labdup genes.fa --datadir ./db --tsv dup.tsv
 WARNING: duplicate gene 'labcur1' in metadata TSV: keeping the first row
-gapit: generated /tmp/opencode/customdb-docs/db/labdup/sequences
-gapit: self-check passed for labdup
-gapit: BLAST index built (nucl)
+gspec: generated /tmp/opencode/customdb-docs/db/labdup/sequences
+gspec: self-check passed for labdup
+gspec: BLAST index built (nucl)
 {"db":"labdup","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labdup"}
-$ gapit screen query1.fa --db labdup --datadir ./db
+$ gspec screen query1.fa --db labdup --datadir ./db
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 query1.fa	contigA	31	230	+	labcur1	1-200/240	=============..	0/0	83.33	100.00	labdup	KEEP-1	synthetic tetracycline efflux pump	tetracycline
 ```
@@ -254,11 +254,11 @@ $ cat ghost.tsv
 gene	accession	function
 labcur1	LAB-0001	tetracycline
 ghostgene	G-999	virulence
-$ gapit db build labghost genes.fa --datadir ./db --tsv ghost.tsv
+$ gspec db build labghost genes.fa --datadir ./db --tsv ghost.tsv
 WARNING: gene 'ghostgene' in metadata TSV not found in FASTA: skipped
-gapit: generated /tmp/opencode/customdb-docs/db/labghost/sequences
-gapit: self-check passed for labghost
-gapit: BLAST index built (nucl)
+gspec: generated /tmp/opencode/customdb-docs/db/labghost/sequences
+gspec: self-check passed for labghost
+gspec: BLAST index built (nucl)
 {"db":"labghost","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labghost"}
 $ grep -c '"gene"' db/labghost/records.jsonl
 2
@@ -266,16 +266,16 @@ $ grep -c '"gene"' db/labghost/records.jsonl
 
 ### 9. Where builds land without --datadir
 
-The datadir resolves per call: `--datadir`, then `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db`. This example points `GAPIT_DATADIR` at a scratch directory (unset, the same command writes into the XDG/default datadir):
+The datadir resolves per call: `--datadir`, then `$GSPEC_DATADIR`, then `$XDG_DATA_HOME/gspec/db`, then `~/.local/share/gspec/db`. This example points `GSPEC_DATADIR` at a scratch directory (unset, the same command writes into the XDG/default datadir):
 
 ```console
-$ export GAPIT_DATADIR=/tmp/opencode/customdb-default/db
-$ gapit db build labenv genes.fa
-gapit: generated /tmp/opencode/customdb-default/db/labenv/sequences
-gapit: self-check passed for labenv
-gapit: BLAST index built (nucl)
+$ export GSPEC_DATADIR=/tmp/opencode/customdb-default/db
+$ gspec db build labenv genes.fa
+gspec: generated /tmp/opencode/customdb-default/db/labenv/sequences
+gspec: self-check passed for labenv
+gspec: BLAST index built (nucl)
 {"db":"labenv","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-default/db/labenv"}
-$ gapit db outdated
+$ gspec db outdated
 NAME	FETCHED_AT	AGE_DAYS	STATUS
 labenv	2026-09-27T14:46:27Z	0.00	ok
 ```
@@ -284,18 +284,18 @@ Unlike screening, a build creates a missing datadir instead of failing, so a fre
 
 ### 10. Finishing the pipeline: two samples, one matrix
 
-Screen two contig files against `labmeta` from example 2, save the report tables, and fold them into a summary matrix with [gapit summary](./summary.md):
+Screen two contig files against `labmeta` from example 2, save the report tables, and fold them into a summary matrix with [gspec summary](./summary.md):
 
 ```console
-$ gapit screen sample1.fa --db labmeta --datadir ./db > sample1.tsv
-$ gapit screen sample2.fa --db labmeta --datadir ./db > sample2.tsv
+$ gspec screen sample1.fa --db labmeta --datadir ./db > sample1.tsv
+$ gspec screen sample2.fa --db labmeta --datadir ./db > sample2.tsv
 $ cat sample1.tsv
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 sample1.fa	SAM001	41	280	+	labcur1	1-240/240	===============	0/0	100.00	100.00	labmeta	LAB-0001	synthetic tetracycline efflux pump	tetracycline
 $ cat sample2.tsv
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 sample2.fa	SAM002	16	255	+	labcur2	1-240/240	===============	0/0	100.00	100.00	labmeta	LAB-0002	synthetic macrolide esterase	macrolide
-$ gapit summary sample1.tsv sample2.tsv
+$ gspec summary sample1.tsv sample2.tsv
 #FILE	NUM_FOUND	labcur1	labcur2
 sample1.tsv	1	+	-
 sample2.tsv	1	-	+
@@ -311,7 +311,7 @@ The header kind is detected per record, so one FASTA can mix all three formats:
 |---|---|---|---|---|
 | `>mixplain plain header gene` | `mixplain` | none | none | `plain header gene` |
 | `>oldlab~~~fromtilde~~~SYN-100~~~TETRACYCLINE tilde gene` | `fromtilde` | `SYN-100` | `TETRACYCLINE` | `tilde gene` |
-| `>gapit\|db=elsewhere\|gene=fromtag\|acc=SYN-200\|func=ampicillin;gentamicin tagged gene` | `fromtag` | `SYN-200` | `ampicillin`, `gentamicin` | `tagged gene` |
+| `>gspec\|db=elsewhere\|gene=fromtag\|acc=SYN-200\|func=ampicillin;gentamicin tagged gene` | `fromtag` | `SYN-200` | `ampicillin`, `gentamicin` | `tagged gene` |
 | `>secondplain` (bare) | `secondplain` | none | none | `--description`, else `secondplain` |
 
 For a plain header, the text after the id is the product when present. When absent, `--description TEXT` fills in, and with neither the gene name becomes the product:
@@ -319,17 +319,17 @@ For a plain header, the text after the id is the product when present. When abse
 ```console
 $ grep '>' bare.fa
 >baregene
-$ gapit db build bare_desc bare.fa --datadir ./db --description "lab-curated reference gene"
-gapit: generated /tmp/opencode/customdb-docs/db/bare_desc/sequences
-gapit: self-check passed for bare_desc
-gapit: BLAST index built (nucl)
+$ gspec db build bare_desc bare.fa --datadir ./db --description "lab-curated reference gene"
+gspec: generated /tmp/opencode/customdb-docs/db/bare_desc/sequences
+gspec: self-check passed for bare_desc
+gspec: BLAST index built (nucl)
 {"db":"bare_desc","records":1,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/bare_desc"}
 $ grep -o '"product":"[^"]*"' db/bare_desc/records.jsonl
 "product":"lab-curated reference gene"
-$ gapit db build bare_plain bare.fa --datadir ./db --force
-gapit: generated /tmp/opencode/customdb-docs/db/bare_plain/sequences
-gapit: self-check passed for bare_plain
-gapit: BLAST index built (nucl)
+$ gspec db build bare_plain bare.fa --datadir ./db --force
+gspec: generated /tmp/opencode/customdb-docs/db/bare_plain/sequences
+gspec: self-check passed for bare_plain
+gspec: BLAST index built (nucl)
 {"db":"bare_plain","records":1,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/bare_plain"}
 $ grep -o '"product":"[^"]*"' db/bare_plain/records.jsonl
 "product":"baregene"
@@ -338,14 +338,14 @@ $ grep -o '"product":"[^"]*"' db/bare_plain/records.jsonl
 A header that starts with `gapit|` but is not valid tagged syntax fails the build with exit 4:
 
 ```console
-$ gapit db build labbroken broken_tag.fa --datadir ./db
+$ gspec db build labbroken broken_tag.fa --datadir ./db
 {"schema":"gapit.error/1","code":"HEADER_MALFORMED","message":"malformed gapit/v1 sequence header: segment_without_key","context":{"seqid":"gapit|nonsense","reason":"segment_without_key"}}
 ```
 
 The mixed file from the table above builds each record by its own rules, and the generated `sequences` projection shows the retargeting (`db` is always the NAME built, the original `elsewhere` tag is dropped):
 
 ```console
-$ gapit db build labmix mixed.fa --datadir ./db 2>/dev/null
+$ gspec db build labmix mixed.fa --datadir ./db 2>/dev/null
 {"db":"labmix","records":4,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labmix"}
 $ grep '>' db/labmix/sequences
 >gapit|db=labmix|gene=mixplain|acc=|func= plain header gene
@@ -357,10 +357,10 @@ $ grep '>' db/labmix/sequences
 Records keep input order, so `records.jsonl` line N is the Nth FASTA record. Duplicate gene names are allowed; a FASTA carrying `twingene` twice builds a two-record database:
 
 ```console
-$ gapit db build labtwin dupname.fa --datadir ./db --force
-gapit: generated /tmp/opencode/customdb-docs/db/labtwin/sequences
-gapit: self-check passed for labtwin
-gapit: BLAST index built (nucl)
+$ gspec db build labtwin dupname.fa --datadir ./db --force
+gspec: generated /tmp/opencode/customdb-docs/db/labtwin/sequences
+gspec: self-check passed for labtwin
+gspec: BLAST index built (nucl)
 {"db":"labtwin","records":2,"dbtype":"nucl","destination":"/tmp/opencode/customdb-docs/db/labtwin"}
 $ grep -c '"gene":"twingene"' db/labtwin/records.jsonl
 2
@@ -392,7 +392,7 @@ sequences.nto
 ## Provenance and license metadata (mandatory)
 
 Every custom database **must** carry its provenance in the manifest (`gapit-manifest.json`) so that
-`gapit db info -d NAME` shows where the content came from. There are no exceptions:
+`gspec db info -d NAME` shows where the content came from. There are no exceptions:
 
 1. **Source in `note`** — the literature citation (authors, journal, year, DOI), the source
    software/database with version (e.g. `CjejuniTyper 2026-03`, `el_gato db 2025-03`), the
@@ -409,7 +409,7 @@ Every custom database **must** carry its provenance in the manifest (`gapit-mani
 
 A build without these fields is considered unfinished: the curation path is to edit
 `gapit-manifest.json` directly (add `license`, `note`, `source_urls`, `upstream_version`)
-and re-verify with `gapit db info`.
+and re-verify with `gspec db info`.
 
 5. **Short list description via `info.json`** — the manifest `note` carries the full
    provenance and shows under `db info` NOTE; it must NOT be the list description.
@@ -432,7 +432,7 @@ Cluster builds accept an optional `-K/--kmerdb PATH` installing a
 }
 ```
 
-At build time gapit computes the full k-mer set of every locus and the
+At build time gspec computes the full k-mer set of every locus and the
 differential set of every declaration (the `of` locus's k-mers minus the
 union of the `against` loci), storing them as sorted uint64 arrays under
 `kmers/`. Differential sets resolve SNP-level reference pairs that locus
@@ -462,11 +462,11 @@ behave identically to typing/2 (backward compatible).
 
 ### FASTQ reads for cluster databases
 
-When a cluster database carries `kmer.json`, `gapit screen --r1` routes
+When a cluster database carries `kmer.json`, `gspec screen --r1` routes
 to the k-mer containment path (no minimap2, no assembly):
 
 ```bash
-gapit screen -d my_sero --r1 reads_R1.fastq --r2 reads_R2.fastq
+gspec screen -d my_sero --r1 reads_R1.fastq --r2 reads_R2.fastq
 ```
 
 Per-locus coverage = k-mer containment, identity = containment^(1/k)
@@ -486,7 +486,7 @@ picture of how alignment and k-mer backends combine.
 | Metadata TSV rejected | `METADATA_MALFORMED` (5) | The first row must be a header containing a `gene` column. |
 | Build fails on an empty input | `BUILD_INVALID` (4) | The FASTA parsed to zero records; check the file has `>` headers. |
 | FASTA or TSV path missing | `INPUT_NOT_FOUND` (5) | The envelope's `context.file` names the unreadable path. |
-| Build fails on a `gapit\|` header | `HEADER_MALFORMED` (4) | Fix the tagged header; plain and `~~~` headers can't use `gapit\|` syntax. |
+| Build fails on a `gspec\|` header | `HEADER_MALFORMED` (4) | Fix the tagged header; plain and `~~~` headers can't use `gspec\|` syntax. |
 | Screen against the custom db finds nothing | none, exit 0 | Empty result tables are normal output. Loosen `--minid`/`--mincov` or check the query matches the strand; see [Screening](./screen.md). |
 
 Error envelopes are documented in [Outputs](./outputs.md); the full screening flag set in [Screening](./screen.md).

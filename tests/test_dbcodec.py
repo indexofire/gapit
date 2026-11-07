@@ -201,5 +201,5 @@ def test_is_gapit_header_sniff() -> None:
     assert is_gapit_header("gapit|db=ncbi|gene=tetA")
     assert is_gapit_header("gapit|")
     assert not is_gapit_header("ncbi~~~tetA")
-    assert not is_gapit_header("gapit")
+    assert not is_gapit_header("gspec")
     assert not is_gapit_header("xgapit|db=ncbi")

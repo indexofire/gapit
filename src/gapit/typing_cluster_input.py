@@ -1,9 +1,9 @@
-"""`gapit typing` input for cluster screen results (JSON only).
+"""`gspec typing` input for cluster screen results (JSON only).
 
 Cluster designation already rides the screen: ``gapit.cluster/2`` and the
 rich ``gapit.locus_map/1`` carry the evaluated ``phenotypes`` map.  This
 reader turns those documents into the same :class:`TypingFileResult` shape
-the gene path renders, so ``gapit typing`` can produce the concise
+the gene path renders, so ``gspec typing`` can produce the concise
 designation table without re-running minimap2 or loading the database.
 
 TSV cluster results are intentionally not parsed here: the per-scheme table
@@ -62,7 +62,7 @@ def _parse_document(label: str, text: str) -> tuple[str, list[TypingFileResult]]
         document = _ClusterDocument.model_validate_json(text)
     except ValidationError as exc:
         raise InputError(
-            f"cluster screen result is not a valid gapit cluster/2 or locus_map/1 document:"
+            f"cluster screen result is not a valid gspec cluster/2 or locus_map/1 document:"
             f" {label}",
             code="TYPING_MALFORMED",
             context={"file": label},

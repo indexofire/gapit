@@ -1,4 +1,4 @@
-r"""Minimal MCP stdio server: gapit as a tool provider for agents.
+r"""Minimal MCP stdio server: gspec as a tool provider for agents.
 
 Hand-rolled on purpose (AGENTS.md §2 keeps the dependency list deliberately
 short): no `mcp` SDK — just the essential MCP stdio behavior, JSON-RPC 2.0,
@@ -76,7 +76,7 @@ def _initialize(params: dict[str, Any] | None) -> dict[str, object]:
     return {
         "protocolVersion": negotiated,
         "capabilities": {"tools": {}},
-        "serverInfo": {"name": "gapit", "version": __version__},
+        "serverInfo": {"name": "gspec", "version": __version__},
     }
 
 
@@ -157,5 +157,5 @@ def register_mcp_command(app: click.Group) -> None:
 
 
 def main() -> None:
-    """`gapit-mcp` console script; also backs the `gapit mcp` subcommand."""
+    """`gspec-mcp` console script; also backs the `gspec mcp` subcommand."""
     serve(sys.stdin, sys.stdout)

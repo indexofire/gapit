@@ -1,12 +1,12 @@
-# SPEC.md — gapit legacy-table and compatibility contract
+# SPEC.md — gspec legacy-table and compatibility contract
 
 > **Scope.** This document is the frozen interoperability contract for the
-> abricate-shaped surface gapit still consumes and emits: `~~~` database
+> abricate-shaped surface gspec still consumes and emits: `~~~` database
 > headers, the 15-column screen table, the value rules behind its fields, and
-> the table shapes `gapit typing` / `gapit summary` accept. It is **not** the
-> abricate CLI specification and it is not the only gapit contract.
+> the table shapes `gspec typing` / `gspec summary` accept. It is **not** the
+> abricate CLI specification and it is not the only gspec contract.
 >
-> Current gapit features — subcommands, reads, cluster screening, typing,
+> Current gspec features — subcommands, reads, cluster screening, typing,
 > database providers/bundles, gseek, JSON documents — are specified by the
 > docs and schemas linked in §7. The abricate parity harness remains a
 > regression reference for this legacy surface; from v0.5.0 it is not a
@@ -14,7 +14,7 @@
 >
 > **Frozen** means field names/order/units and the named arithmetic below do
 > not change without the compatibility decision in AGENTS.md §5/§10. New
-> gapit surfaces may diverge from abricate by design.
+> gspec surfaces may diverge from abricate by design.
 
 ## 1. Scope and compatibility policy
 
@@ -23,17 +23,17 @@
 | `~~~` database headers (§2) | frozen read contract |
 | Legacy contig BLAST path and its field values (§3–§4) | frozen |
 | 15-column screen table (§5) | frozen |
-| `gapit typing` / `gapit summary` legacy-table inputs (§6) | frozen shape |
-| Current CLI, subcommands, exit codes, schemas | gapit-owned; AGENTS.md §5 |
-| Reads, clusters, typing rules, databases/providers, gseek | gapit-owned; §7 links |
+| `gspec typing` / `gspec summary` legacy-table inputs (§6) | frozen shape |
+| Current CLI, subcommands, exit codes, schemas | gspec-owned; AGENTS.md §5 |
+| Reads, clusters, typing rules, databases/providers, gseek | gspec-owned; §7 links |
 
-Where this file and a linked current-feature doc disagree about a gapit-only
+Where this file and a linked current-feature doc disagree about a gspec-only
 feature, the linked doc wins. For §2–§6, this file wins for the frozen
 interop surface.
 
 The parity harness (`pixi run -e parity parity` / `summary-parity`) checks
 the legacy surface against real abricate. It is opt-in, regression-only, and
-does not constrain new gapit features.
+does not constrain new gspec features.
 
 ## 2. Legacy database layout and `~~~` headers `[frozen]`
 
@@ -51,8 +51,8 @@ does not constrain new gapit features.
 - Legacy indexing runs `makeblastdb` with an explicit `-dbtype`, selected by
   the abricate mol_type heuristic: concatenate non-header sequence, delete
   `[AGTC]` case-insensitively; if the remainder is >50% of the total it is
-  `prot`, else `nucl`. Current `gapit db setup` / `gapit db build` and the
-  native `gapit/v1` format are documented in `docs/databases.md`; gapit reads
+  `prot`, else `nucl`. Current `gspec db setup` / `gspec db build` and the
+  native `gapit/v1` format are documented in `docs/databases.md`; gspec reads
   both native and legacy datadirs.
 - DBTYPE introspection uses `blastdbcmd -info`; `prot` iff the output
   contains `total residues`, else `nucl`. DBTYPE selects `blastn` vs `blastx`.
@@ -60,7 +60,7 @@ does not constrain new gapit features.
 ## 3. Legacy contig screening path `[frozen]`
 
 These are the defaults and the BLAST invocation behind the legacy table.
-Reads and cluster modes are separate gapit contracts (§7).
+Reads and cluster modes are separate gspec contracts (§7).
 
 - Defaults for the legacy contig path: `--minid 80`, `--mincov 80`,
   `--threads 1`. `--minid` is enforced only through `blastn -perc_identity`;
@@ -80,7 +80,7 @@ Reads and cluster modes are separate gapit contracts (§7).
   `-perc_identity`; the legacy path silently ignores `--minid` and emits a
   stderr note. This quirk is retained for compatibility.
 - Input normalization is native (`seqconvert.py`, any2fasta `-q -u`
-  semantics): fa/fq/gbk/embl, gz/bz2 → FASTA. gapit re-wraps at 60 columns and
+  semantics): fa/fq/gbk/embl, gz/bz2 → FASTA. gspec re-wraps at 60 columns and
   reads universal newlines; these are blast-invisible. Current screening
   options (`--fofn`, `--jobs`, CSV/JSON/MD, progress) are in
   `docs/screen.md`.
@@ -96,7 +96,7 @@ For each BLAST row, in order:
 2. **Dedup (the only "merge")**: drop a row if `qseqid~qstart~qend` was already
    seen for this input file; first row wins; the key ignores strand. There is
    no interval-overlap merging and no best-gene choice in the default path.
-   `--merge-fragments` is an explicit gapit extension
+   `--merge-fragments` is an explicit gspec extension
    (`docs/screen.md`), not part of this frozen path.
 3. **Coverage filter**:
    `pct_cov = 100 * (length - gaps) / slen` (ungapped aligned columns over
@@ -108,7 +108,7 @@ For each BLAST row, in order:
 5. **Subject ID parse**: legacy `~~~` rules above; native `gapit/v1` headers
    decode through `docs/databases.md` and are not part of the legacy grammar.
 6. **Product cleanup**: `stitle or "n/a"`; strip `,` and `\t`; if the product
-   contains `~~~` (or the subject is a gapit-tagged seqid), drop the leading
+   contains `~~~` (or the subject is a gspec-tagged seqid), drop the leading
    whitespace-delimited token (makeblastdb prefixes stitle with the ID).
 
 ### COVERAGE_MAP (minimap)
@@ -140,7 +140,7 @@ and must not be "fixed".
 | PRODUCT | cleaned stitle |
 
 Rows sort by SEQUENCE lexicographically, then START numerically, with a
-stable sort. Files are processed in argument order; `gapit screen --jobs N`
+stable sort. Files are processed in argument order; `gspec screen --jobs N`
 may screen concurrently but stdout stays in input order. The TSV header is
 printed once, and completed files stream out as they finish; a later failure
 leaves the already-emitted prefix plus the typed error envelope.
@@ -150,7 +150,7 @@ leaves the already-emitted prefix plus the typed error envelope.
 - Header unless `--noheader`:
   `#FILE SEQUENCE START END STRAND GENE COVERAGE COVERAGE_MAP GAPS %COVERAGE %IDENTITY DATABASE ACCESSION PRODUCT RESISTANCE`
 - Separator: tab, or comma via `--format csv`. The legacy abricate `--csv`
-  flag is not a gapit CLI option; `--format csv` is the gapit spelling.
+  flag is not a gspec CLI option; `--format csv` is the gspec spelling.
 - One line per hit: `join(separator, fields) + "\n"`. stdout carries data
   only; diagnostics, progress and the `Found N genes` note go to stderr.
 - `--nopath` applies to the FILE column. `RESISTANCE` is the display/resistance
@@ -158,53 +158,53 @@ leaves the already-emitted prefix plus the typed error envelope.
   documented in `docs/databases.md`.
 - `#`-prefixed lines after the header are skipped by table consumers; this
   allows concatenated screen tables.
-- JSON and Markdown are gapit extensions, not this 15-column contract; their
-  schemas and fields are in `docs/outputs.md` and `gapit schema report`.
+- JSON and Markdown are gspec extensions, not this 15-column contract; their
+  schemas and fields are in `docs/outputs.md` and `gspec schema report`.
 
 ## 6. Consuming legacy tables `[frozen shape]`
 
-### `gapit typing`
+### `gspec typing`
 
-`gapit typing` reads TSV or CSV screen tables from files or stdin. The contig
+`gspec typing` reads TSV or CSV screen tables from files or stdin. The contig
 shape needs `FILE`/`#FILE`, `GENE`, `DATABASE`, `%IDENTITY`, and `%COVERAGE`;
 the reads shape needs `#SAMPLE`, `GENE`, `DATABASE`, and `BREADTH%`. A table
 may contain rows for several FILE values but only one DATABASE value; mixed
 DATABASE values are a typed error. `#`-prefixed continuation header rows are
 skipped. Typing uses the values as given; it does not re-run BLAST. Current
 rule semantics, reads input details, and the output document are in
-`docs/typing.md` and `gapit schema typing_result`.
+`docs/typing.md` and `gspec schema typing_result`.
 
-### `gapit summary`
+### `gspec summary`
 
-`gapit summary` accepts one or more abricate-format report tables (TSV or CSV,
+`gspec summary` accepts one or more abricate-format report tables (TSV or CSV,
 auto-detected per file). The first line is the header map; later lines whose
 first cell starts with `#` are skipped. Rows are keyed by FILE (dutch mode) or
 input filename (multi-file); duplicate input filenames are warned and skipped.
 The gene universe is the sorted union of GENE values; `NUM_FOUND` counts
 distinct genes; cells are `;`-joined original metric strings in file order
 (`.` when absent). Current modes, formats, JSON, and Markdown are in
-`docs/summary.md`; the JSON document is `gapit schema summary`.
+`docs/summary.md`; the JSON document is `gspec schema summary`.
 
-## 7. Current gapit contract map
+## 7. Current gspec contract map
 
 | Surface | Current contract |
 |---|---|
-| CLI, exit codes, error envelope | `AGENTS.md` §5, `gapit --help`, `gapit schema error` |
+| CLI, exit codes, error envelope | `AGENTS.md` §5, `gspec --help`, `gspec schema error` |
 | Contig screening, formats, fragments | `docs/screen.md`, `docs/outputs.md` |
-| Reads (FASTQ/FASTA, minimap2) | `docs/reads.md`, `gapit schema reads` / `reads2` |
+| Reads (FASTQ/FASTA, minimap2) | `docs/reads.md`, `gspec schema reads` / `reads2` |
 | Cluster databases (`kind: cluster`) | `docs/screen.md#cluster-databases-kind-cluster` |
-| Typing (`gapit typing`) | `docs/typing.md`, `gapit schema typing` / `typing_result` |
+| Typing (`gspec typing`) | `docs/typing.md`, `gspec schema typing` / `typing_result` |
 | Databases, providers, bundles, headers | `docs/databases.md`, `docs/datadir.md` |
 | gseek engine | `docs/gseek-engine.md` |
 | MCP | `docs/mcp.md` |
-| Output schemas | `gapit schema <name>` (`gapit.schema` registry) |
+| Output schemas | `gspec schema <name>` (`gapit.schema` registry) |
 
 ## 8. Change policy
 
 - A change to §2–§6 (legacy header, field value, table shape, typing/summary
   input) is a compatibility change: update this file, the relevant
   tests/goldens, and the parity harness.
-- A change to a current gapit-only feature (new subcommand, reads/cluster
+- A change to a current gspec-only feature (new subcommand, reads/cluster
   behavior, typing rule, provider, bundle, gseek) updates its linked doc and
   tests; it does **not** require a SPEC.md rewrite.
 - JSON field or schema changes follow AGENTS.md §5/§10: bump the schema
@@ -215,7 +215,7 @@ distinct genes; cells are `;`-joined original metric strings in file order
 
 ## 9. License and provenance
 
-gapit is MIT-licensed; abricate is GPL-2.0. gapit is an independent behavioral
+gspec is MIT-licensed; abricate is GPL-2.0. gspec is an independent behavioral
 reimplementation and copies no Perl code. Legacy database content retains its
 upstream license. Bundled, provider, and native-database provenance rules live
 in `AGENTS.md` §6 and `docs/databases.md`; this file is documentation, not

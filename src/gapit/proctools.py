@@ -21,4 +21,4 @@ def run_tool(argv: list[str]) -> subprocess.CompletedProcess[str]:
 def note(quiet: bool, message: str) -> None:
     """Per-step progress on stderr when quiet is disabled (stdout stays pure)."""
     if not quiet:
-        print(f"gapit: {message}", file=sys.stderr)
+        print(f"gspec: {message}", file=sys.stderr)

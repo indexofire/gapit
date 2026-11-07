@@ -279,7 +279,7 @@ def test_fetch_provider_sends_gapit_user_agent(
 ) -> None:
     """Given a monkeypatched urlopen standing in for the network, When a
     provider is fetched, Then the outbound call receives a urllib Request
-    whose User-Agent identifies gapit (mgc.ac.cn 403s 'Python-urllib' UAs
+    whose User-Agent identifies gspec (mgc.ac.cn 403s 'Python-urllib' UAs
     specifically — Wave E diagnosis) and the pipeline still completes from
     the streamed body."""
     captured: dict[str, str] = {}
@@ -295,7 +295,7 @@ def test_fetch_provider_sends_gapit_user_agent(
 
     assert manifest.n_records == 3  # the fake body fed the whole pipeline
     assert captured["url"] == url
-    assert "gapit/" in captured["ua"]
+    assert "gspec/" in captured["ua"]
 
 
 def test_fetch_provider_bounds_urlopen_timeout(
@@ -303,7 +303,7 @@ def test_fetch_provider_bounds_urlopen_timeout(
 ) -> None:
     """Given a monkeypatched urlopen standing in for the network, When a
     provider is fetched, Then urlopen receives timeout=60 — an unbounded
-    fetch would hang `gapit db fetch` forever on a stalled connection
+    fetch would hang `gspec db fetch` forever on a stalled connection
     (review finding H1; the fake's -1 default makes a missing kwarg fail)."""
     captured: dict[str, float] = {}
 

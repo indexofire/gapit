@@ -1,4 +1,4 @@
-"""The `gapit db build --tsv` metadata sidecar: parse + merge.
+"""The `gspec db build --tsv` metadata sidecar: parse + merge.
 
 ``read_metadata`` parses the optional TSV (header row with a mandatory
 ``gene`` column; ``accession``/``function`` optional, extra columns

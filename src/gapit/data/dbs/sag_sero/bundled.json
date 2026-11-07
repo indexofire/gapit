@@ -24,11 +24,11 @@
       "III subtypes (I-IV) differ at SNP level (99.3-99.6% identity); serotype_iii scheme resolves with identity_floor 99.3%",
       "Screen minid 90 (not 95) to allow tuf cross-species detection; discrimination at typing identity_floor 95%",
       "Non-encapsulated GBS (cps-null) reports non-typeable",
-      "MIT license: CAN be bundled into the gapit wheel"
+      "MIT license: CAN be bundled into the gspec wheel"
     ],
     "usage": [
-      "gapit screen -d sag_sero assembly.fna -o gbs.tsv",
-      "gapit typing gbs.tsv"
+      "gspec screen -d sag_sero assembly.fna -o gbs.tsv",
+      "gspec typing gbs.tsv"
     ]
   }
 }

@@ -1,6 +1,6 @@
-"""The `gapit db build` command: click shell over the use-case
+"""The `gspec db build` command: click shell over the use-case
 (:mod:`gapit.db_build_ops`), which turns a user-supplied input into a
-fully built gapit-native database. FASTA inputs build gene databases
+fully built gspec-native database. FASTA inputs build gene databases
 (records.jsonl -> sequences + BLAST index + manifest, written last);
 GBK/GFF inputs build cluster databases (locus FASTA + gapit.features/1
 feature table + manifest ``kind: cluster``). Both branches accept a
@@ -109,7 +109,7 @@ def db_build_command(
     force: bool,
     quiet: bool,
 ) -> None:
-    """Build a custom gapit-native database, or re-project an installed one.
+    """Build a custom gspec-native database, or re-project an installed one.
 
     With an INPUT the database is built from that FASTA/GBK/GFF3. Without one,
     the installed NAME is rebuilt in place from its own records.jsonl — the

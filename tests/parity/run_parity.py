@@ -1,7 +1,7 @@
-"""Parity harness: byte-diff gapit against real abricate on the committed corpus.
+"""Parity harness: byte-diff gspec against real abricate on the committed corpus.
 
 Run with: pixi run -e parity parity
-Requires the parity environment (abricate) and the default environment (gapit);
+Requires the parity environment (abricate) and the default environment (gspec);
 the harness runs on the default env's python and merges both envs' PATHs so
 both tools share the same blast binaries. DB_NAMES covers the two nucl
 databases the corpus genes are drawn from (ncbi, card) plus one protein
@@ -31,7 +31,7 @@ def fail(message: str) -> NoReturn:
 
 
 def locate() -> tuple[Path, Path, Path]:
-    """(abricate binary, abricate datadir, gapit binary)."""
+    """(abricate binary, abricate datadir, gspec binary)."""
     abricate = shutil.which("abricate")
     if abricate is None:
         fail("abricate not on PATH (run via: pixi run -e parity parity)")
@@ -39,9 +39,9 @@ def locate() -> tuple[Path, Path, Path]:
     datadir = abricate_bin.parents[1] / "db"
     if not datadir.is_dir():
         fail(f"abricate datadir not found: {datadir}")
-    gapit_bin = DEFAULT_BIN / "gapit"
+    gapit_bin = DEFAULT_BIN / "gspec"
     if not gapit_bin.is_file():
-        fail(f"gapit CLI not found: {gapit_bin} (run: pixi install)")
+        fail(f"gspec CLI not found: {gapit_bin} (run: pixi install)")
     return abricate_bin, datadir, gapit_bin
 
 
@@ -98,7 +98,7 @@ def main() -> int:
                 failures += 1
                 print(
                     f"FAIL {db_name} {corpus.name}: "
-                    f"abricate rc={abricate_result.returncode}, gapit rc={gapit_result.returncode}"
+                    f"abricate rc={abricate_result.returncode}, gspec rc={gapit_result.returncode}"
                 )
                 continue
             identical = abricate_result.stdout == gapit_result.stdout
@@ -110,7 +110,7 @@ def main() -> int:
                         abricate_result.stdout.splitlines(True),
                         gapit_result.stdout.splitlines(True),
                         fromfile=f"abricate/{db_name}/{corpus.name}",
-                        tofile=f"gapit/{db_name}/{corpus.name}",
+                        tofile=f"gspec/{db_name}/{corpus.name}",
                     )
                 )
     total = len(DB_NAMES) * len(corpora)

@@ -1,6 +1,6 @@
 """Differential tests: native seqconvert vs the real any2fasta binary.
 
-Compares PARSED records (id, description, sequence) — not raw bytes: gapit
+Compares PARSED records (id, description, sequence) — not raw bytes: gspec
 re-wraps sequence at 60 columns while the perl keeps input wrapping, a
 difference blast cannot see. Skipped unless any2fasta is on PATH; the parity
 env supplies it transitively via abricate:

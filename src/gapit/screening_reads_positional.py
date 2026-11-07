@@ -1,6 +1,6 @@
 """The positional-FASTQ wildcard screening use-case (docs/reads.md extension).
 
-``gapit screen -d db *.fastq.gz``: when every positional file is FASTQ (by
+``gspec screen -d db *.fastq.gz``: when every positional file is FASTQ (by
 extension, or content sniff for ambiguous names — the classification lives
 in cmd_screen_reads_args.reads_positional), the command enters reads mode
 without ``--r1``/``--r2`` and gapit.readpairs infers samples from filename

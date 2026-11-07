@@ -8,7 +8,7 @@
 
     ---
 
-    对 FASTA、GenBank 和 EMBL 输入运行 `gapit screen`，使用与 abricate 兼容的
+    对 FASTA、GenBank 和 EMBL 输入运行 `gspec screen`，使用与 abricate 兼容的
     阈值和输出格式。
 
     [contig 筛查](../screen.zh.md)
@@ -50,7 +50,7 @@
 
     ---
 
-    用 `gapit typing` 做两阶段判定：规则与方案原语、完整示例和校准。
+    用 `gspec typing` 做两阶段判定：规则与方案原语、完整示例和校准。
 
     [分型方案](../typing.zh.md)
 

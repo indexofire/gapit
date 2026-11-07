@@ -1,13 +1,13 @@
 # 多后端分型架构
 
-本指南解释 gapit 如何在同一个分型体系中组合比对与 k-mer 后端，以及如何设计
+本指南解释 gspec 如何在同一个分型体系中组合比对与 k-mer 后端，以及如何设计
 利用正确后端解决各自判别问题的自定义数据库。构建机制见
 [自定义数据库](./custom-db.zh.md)；本页是架构配套文档。
 
 ## 总览
 
 ```text
-                        gapit screen
+                        gspec screen
                             │
               ┌─────────────┼─────────────┐
               │             │             │
@@ -22,7 +22,7 @@
               │             │             │
               └─────────────┼─────────────┘
                             │
-                     gapit typing
+                     gspec typing
                             │
                  ┌──────────┼──────────┐
                  │          │          │
@@ -146,16 +146,16 @@ absent）、插入/缺失图谱。`primary_secondary` 覆盖模式包含次级�
 # 3. 声明 k-mer 集（gapit.kmerdb/1）
 # 4. 构建
 
-gapit db build my_sero loci.gff3 \
+gspec db build my_sero loci.gff3 \
   --typing typing.json \
   --kmerdb kmer.json \
   --description "My organism serotyping"
 
 # 5. 筛查（FASTA）
-gapit screen -d my_sero -C 60 -G 90 assembly.fna
+gspec screen -d my_sero -C 60 -G 90 assembly.fna
 
 # 6. 筛查（FASTQ —— 免组装）
-gapit screen -d my_sero --r1 reads_R1.fastq --r2 reads_R2.fastq
+gspec screen -d my_sero --r1 reads_R1.fastq --r2 reads_R2.fastq
 ```
 
 `kmer.json` 声明一个 k 大小和命名集合：
@@ -170,7 +170,7 @@ gapit screen -d my_sero --r1 reads_R1.fastq --r2 reads_R2.fastq
 }
 ```
 
-构建时 gapit 计算每位点的全 k-mer 集和每个声明的差异集，以排序
+构建时 gspec 计算每位点的全 k-mer 集和每个声明的差异集，以排序
 uint64 数组存储于 `kmers/`。分型规则引用集合名；引擎在构建时校验
 （TYPING_UNKNOWN_KMERSET）。
 

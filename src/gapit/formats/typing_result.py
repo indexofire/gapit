@@ -1,4 +1,4 @@
-"""gapit.typing_result/1 — the `gapit typing` output document and renderers.
+"""gapit.typing_result/1 — the `gspec typing` output document and renderers.
 
 One result per (FILE, scheme): the designated phenotype with its
 explainable breakdown. TSV/MD flatten each call to the eight reporting
@@ -139,7 +139,7 @@ def render_typing_md(
     lines: list[str] = [
         "---",
         "schema: gapit.typing_result/1",
-        f"tool: gapit {__version__}",
+        f"tool: gspec {__version__}",
         f"created_at: {utc_timestamp(now)}",
         f"db: {yaml_scalar(db)}",
         "source:",
@@ -147,7 +147,7 @@ def render_typing_md(
         f"files: {len(files)}",
         "---",
         "",
-        "# gapit typing results",
+        "# gspec typing results",
         "",
         "| " + " | ".join(COLUMNS) + " |",
         "|" + "---|" * len(COLUMNS),

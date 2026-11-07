@@ -214,13 +214,13 @@ def test_db_outdated_empty_datadir_is_database_error(tmp_path: Path) -> None:
 def test_db_build_then_screen_full_agent_story(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given a local FASTA and a fresh datadir on $GAPIT_DATADIR, When
+    """Given a local FASTA and a fresh datadir on $GSPEC_DATADIR, When
     db_build, Then a JSON receipt returns and the native artifacts exist;
     and When screen runs against the new database in the SAME session, Then
     the gene is found — the self-provisioning agent story."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
-    monkeypatch.setenv("GAPIT_DATADIR", str(datadir))
+    monkeypatch.setenv("GSPEC_DATADIR", str(datadir))
     fasta = tmp_path / "my_genes.fa"
     fasta.write_text(f">demov2 demo beta-lactamase variant 2\n{SEQ_A}\n", encoding="utf-8")
     query = tmp_path / "query.fa"
@@ -298,7 +298,7 @@ def test_db_build_missing_fasta_is_input_error(tmp_path: Path) -> None:
 
 def test_db_list_honors_an_explicit_datadir(tmp_path: Path) -> None:
     """Given an explicit datadir argument, When db_list runs, Then it creates
-    and lists that path (not the ambient GAPIT_DATADIR)."""
+    and lists that path (not the ambient GSPEC_DATADIR)."""
     explicit = tmp_path / "explicit" / "db"
 
     is_error, text = call_tool("db_list", {"datadir": str(explicit)})
@@ -311,11 +311,11 @@ def test_db_list_honors_an_explicit_datadir(tmp_path: Path) -> None:
 def test_db_list_bootstraps_a_missing_datadir(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given a fresh GAPIT_DATADIR that does not exist, When db_list runs,
+    """Given a fresh GSPEC_DATADIR that does not exist, When db_list runs,
     Then the MCP tool creates it and returns the catalog instead of a
     DATADIR_NOT_FOUND error envelope."""
     missing = tmp_path / "fresh" / "machine" / "db"
-    monkeypatch.setenv("GAPIT_DATADIR", str(missing))
+    monkeypatch.setenv("GSPEC_DATADIR", str(missing))
 
     is_error, text = call_tool("db_list", {})
 
@@ -329,13 +329,13 @@ def test_db_list_bootstraps_a_missing_datadir(
 def test_db_list_surfaces_locally_built_databases(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Given a datadir on $GAPIT_DATADIR holding a db_build product, When
+    """Given a datadir on $GSPEC_DATADIR holding a db_build product, When
     db_list, Then the gapit.dblist/1 document gains that database as a
     providers entry with the additive source=local field — locally built
     databases are not invisible to MCP agents."""
     datadir = tmp_path / "datadir"
     datadir.mkdir()
-    monkeypatch.setenv("GAPIT_DATADIR", str(datadir))
+    monkeypatch.setenv("GSPEC_DATADIR", str(datadir))
     fasta = tmp_path / "my_genes.fa"
     fasta.write_text(f">demov2 demo beta-lactamase variant 2\n{SEQ_A}\n", encoding="utf-8")
     is_error, text = call_tool("db_build", {"name": "myamr", "fasta": str(fasta)})

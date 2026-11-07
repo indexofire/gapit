@@ -1,18 +1,18 @@
-# AGENTS.md — gapit
+# AGENTS.md — gspec
 
 > Python tool for mass screening of contigs and reads for known genes, with gene-cluster
 > typing and phenotype designation. An independent reimplementation of
-> [abricate](https://github.com/tseemann/abricate); **from v0.5.0 onward gapit pursues its
+> [abricate](https://github.com/tseemann/abricate); **from v0.5.0 onward gspec pursues its
 > own contract** — abricate parity is a regression reference for the legacy table, not a
 > design goal. **Agent-first**: outputs are machine-readable (JSON / Markdown) by design.
 
 ## 1. Mission
 
-`gapit` answers one question: **which known genes are present in this assembly, and how confident
+`gspec` answers one question: **which known genes are present in this assembly, and how confident
 are we?** A modern, typed, testable Python tool that:
 
 1. Ships the abricate-compatible 15-column contig TSV as a frozen baseline surface for existing
-   pipelines (`SPEC.md` §5), while new development follows gapit's own design.
+   pipelines (`SPEC.md` §5), while new development follows gspec's own design.
 2. Adds first-class **JSON** and **Markdown** outputs so LLM agents and humans can consume
    results without parsing tab-delimited text.
 3. Exposes stable, versioned output contracts (schemas, exit codes, error envelopes) that
@@ -31,7 +31,7 @@ are we?** A modern, typed, testable Python tool that:
   abricate's own `any2fasta` exists only inside the opt-in `parity` env, for the oracle.
 - **Core libraries**: `click` (CLI), `pydantic` v2 (data models / JSON schema), `rich` (terminal
   output). No biopython — FASTA I/O is a small streaming parser we own.
-- **Optional engine**: `gseek` (`gapit[gseek]`, Python 3.12) behind `GAPIT_ENGINE`;
+- **Optional engine**: `gseek` (`gspec[gseek]`, Python 3.12) behind `GSPEC_ENGINE`;
   `legacy` remains the default and needs no gseek import.
 - **Quality gates**: `ruff` (lint + format), `basedpyright` (strict mode), `pytest`.
 
@@ -43,7 +43,7 @@ pixi run fmt         # ruff format
 pixi run fmt-check   # ruff format --check
 pixi run typecheck   # basedpyright --strict
 pixi run test        # pytest (unit, offline)
-pixi run gapit       # the CLI itself
+pixi run gspec       # the CLI itself
 pixi run -e docs mkdocs build --strict     # bilingual docs site
 pixi run -e parity parity                  # byte-diff screening vs real abricate
 pixi run -e parity summary-parity          # byte-diff summary vs real abricate
@@ -57,7 +57,7 @@ the strict docs build. Parity is an opt-in regression check for the legacy surfa
 A grouped map, not an inventory — open a directory for its full file list.
 
 ```
-gapit/
+gspec/
 ├── AGENTS.md, CONTRIBUTING.md, SECURITY.md, CITATION.cff
 ├── SPEC.md              # frozen legacy table/header interop contract
 ├── PLAN.md              # historical development roadmap
@@ -99,10 +99,10 @@ orchestration modules (`cmd_screen.py`, `db_ops.py`, `gseek_engine.py`) are deli
 ## 5. The agent-facing output contract (design center)
 
 Treat this as a public API. Formats are detailed in `docs/outputs.md`, agent usage in
-`docs/agents.md`, and every JSON document is introspectable with `gapit schema`.
+`docs/agents.md`, and every JSON document is introspectable with `gspec schema`.
 
 - **Formats**: `--format tsv|csv|json|md` (default `tsv` for existing pipelines).
-- **JSON**: every document carries a top-level `"schema": "<name>/<version>"`; `gapit schema
+- **JSON**: every document carries a top-level `"schema": "<name>/<version>"`; `gspec schema
   --help` lists every registered document. Keys are snake_case and units explicit
   (`identity_pct`, `coverage_pct`). Semver the schema; never rename or retype a field in a
   minor bump.
@@ -111,13 +111,13 @@ Treat this as a public API. Formats are detailed in `docs/outputs.md`, agent usa
 - **Errors**: failures print a JSON envelope to stderr
   `{"schema": "gapit.error/1", "code": "...", "message": "...", "context": {...}}` and exit with a
   documented code (1 unexpected, 2 usage, 3 missing dependency, 4 db error, 5 input error).
-- **Typing** `[gapit-extension]`: two-stage designation — `gapit screen -o result.tsv --db NAME`
+- **Typing** `[gspec-extension]`: two-stage designation — `gspec screen -o result.tsv --db NAME`
   detects genes (screen output is phenotype-free; typed and untyped gene dbs screen
-  byte-identically), then `gapit typing result.tsv [-D|-f|-o|-q]` designates from the screen
+  byte-identically), then `gspec typing result.tsv [-D|-f|-o|-q]` designates from the screen
   table (`gapit.typing_result/1`; cluster dbs refuse — their typing rides the screen).
   The MCP `typing` tool accepts the screen table text and returns the same document.
-- **Databases** `[gapit-extension]`: `gapit db fetch|path|list|info|search|outdated|build|install|rename|setup`.
-  Providers download from upstream at fetch time; only the seven gapit-curated bundles under
+- **Databases** `[gspec-extension]`: `gspec db fetch|path|list|info|search|outdated|build|install|rename|setup`.
+  Providers download from upstream at fetch time; only the seven gspec-curated bundles under
   `src/gapit/data/dbs/` ship inside the wheel (policy in §6). `db build NAME` with no input
   re-projects an installed gene database from its edited `records.jsonl` (the curation path);
   `db rename OLD NEW` is the migration path for names that predate the convention. Anatomy,
@@ -125,16 +125,16 @@ Treat this as a public API. Formats are detailed in `docs/outputs.md`, agent usa
   **Naming**: species databases use the genus initial plus two species letters (`cje`, `eco`,
   `vch`); genus-level databases use the first three genus letters (`shi`, `cam`), followed by a
   content suffix (`cje_cps`, `shi_serotype`). Published names stay stable.
-  **Datadir precedence**: `--datadir`, `$GAPIT_DATADIR`, `$XDG_DATA_HOME/gapit/db` (absolute XDG
-  only), then `~/.local/share/gapit/db`; `gapit db path [--json]` introspects it without
+  **Datadir precedence**: `--datadir`, `$GSPEC_DATADIR`, `$XDG_DATA_HOME/gspec/db` (absolute XDG
+  only), then `~/.local/share/gspec/db`; `gspec db path [--json]` introspects it without
   creating, while `db list`/`db setup` bootstrap a missing root.
-- **MCP** `[gapit-extension]`: `gapit mcp` / `gapit-mcp` stdio server exposing twelve tools:
+- **MCP** `[gspec-extension]`: `gspec mcp` / `gspec-mcp` stdio server exposing twelve tools:
   read-only `screen` (incl. `aligner minimap2`), `screen_reads`, `summary`, `typing`, `schema`,
   `db_path`, `db_search`, `db_outdated`; `db_list` may create the empty datadir on first use;
   the datadir-mutating `db_setup`, `db_fetch`, and `db_build` complete the set. Failures carry
   the `gapit.error/1` envelope.
 - **stdout purity**: data on stdout, diagnostics on stderr, always. `--quiet` only affects stderr.
-- **Self-description**: `gapit --version --json`, `gapit db list --json`, `gapit schema --help` —
+- **Self-description**: `gspec --version --json`, `gspec db list --json`, `gspec schema --help` —
   an agent must be able to discover everything without reading docs.
 
 ## 6. Bundled-database policy (what may ride the wheel)
@@ -148,10 +148,10 @@ locus FASTA + resolved feature table — gene ids stay snapshot-resolved, the ty
 re-validates against them).
 Bundling stays the exception, not the pattern: every provider fetches from upstream at
 `db fetch` time. Third-party provider snapshots are never bundled, even under a
-permissive license — the wheel carries gapit-curated content only. Every new bundle
+permissive license — the wheel carries gspec-curated content only. Every new bundle
 passes three gates, in order:
 
-1. **Curation gate** (hard): the content must be gapit-owned or gapit-curated from
+1. **Curation gate** (hard): the content must be gspec-owned or gspec-curated from
    public-domain sources. A snapshot of a third-party provider database (ncbi, card,
    ecoh, resfinder, ...) does not qualify, regardless of its license.
 2. **License gate** (hard, independent of location): only public-domain or permissive
@@ -159,15 +159,15 @@ passes three gates, in order:
    non-commercial terms (CARD, VFDB) never ride the MIT distribution — moving files
    cannot fix this.
 3. **Size gate** (budget): the bundled-root total stays ≤ 30 MiB, mechanically enforced by
-   `tests/test_bundled.py` (every `pip install gapit` re-downloads all bundles; PyPI caps
+   `tests/test_bundled.py` (every `pip install gspec` re-downloads all bundles; PyPI caps
    one file at 100 MiB).
 
 Growth tiers past the budget — split rather than inflate the ceiling:
 
 - **≤ 30 MiB**: keep adding to `src/gapit/data/dbs/`. Atomic data-with-code versioning and
   zero packaging machinery.
-- **30–100 MiB**: split a separate `gapit-data` wheel with its own version (the
-  `spacy[lookups]` → `spacy-lookups-data` pattern), pulled via a `gapit[datasets]` extra;
+- **30–100 MiB**: split a separate `gspec-data` wheel with its own version (the
+  `spacy[lookups]` → `spacy-lookups-data` pattern), pulled via a `gspec[datasets]` extra;
   `bundled_databases()` grows a second discovery root.
 - **> 100 MiB, or fast-moving upstreams**: fetch-on-demand only. `db fetch` is the
   freshness path for every bundled name anyway — snapshots are point-in-time, and each
@@ -179,7 +179,7 @@ Growth tiers past the budget — split rather than inflate the ceiling:
 - **Golden files**: fixed tiny db + fixed contigs → expected TSV/JSON/MD committed; update the
   committed files deliberately and review diffs like code.
 - **Parity harness**: `pixi run -e parity parity` (and `summary-parity`) runs real abricate
-  (conda) and gapit over a small genome corpus and diffs the gene calls byte-for-byte (file,
+  (conda) and gspec over a small genome corpus and diffs the gene calls byte-for-byte (file,
   gene, %identity, %coverage). **It is a regression reference for the frozen legacy surface
   (`SPEC.md` §2–§6), not a release gate for new work** — new features need not check abricate
   and may diverge deliberately.
@@ -192,8 +192,8 @@ Growth tiers past the budget — split rather than inflate the ceiling:
 
 - **Databases** are directories `<datadir>/<dbname>/` holding `sequences` plus its BLAST index.
   Legacy headers are `>DB~~~GENE~~~ACCESSION~~~RESISTANCE` followed by a space and the product
-  (`SPEC.md` §2); gapit-native headers use the `gapit/v1` codec whose `func` key carries a
-  locked per-provider vocabulary (`docs/databases.md`). abricate cannot read gapit-native
+  (`SPEC.md` §2); gspec-native headers use the `gapit/v1` codec whose `func` key carries a
+  locked per-provider vocabulary (`docs/databases.md`). abricate cannot read gspec-native
   databases.
 - **Legacy screening** = native normalize (`seqconvert.py`) → `blastn` against one db → 15-field
   rows → identity/coverage filter → **dedup identical `(contig, qstart, qend)`** (first row
@@ -225,14 +225,14 @@ Growth tiers past the budget — split rather than inflate the ceiling:
 3. Do not add dependencies without checking this file's §2 first — the list is intentionally short.
 4. Verification is part of the task: `pixi run lint && pixi run fmt-check && pixi run typecheck
    && pixi run test` before declaring done; doc changes also run the strict docs build.
-5. **Custom databases built with `gapit db build` are not done until provenance is written into
+5. **Custom databases built with `gspec db build` are not done until provenance is written into
    the manifest** (`license`, `note`, `source_urls`, `upstream_version`): `note` must carry the
    literature citation + source software/version + accessions + build date; `license` must state
    the upstream license as declared (`unspecified` when the source states none); and whenever the
    content derives from a publication/third-party tool without explicit redistribution rights,
    `note` must append the objection clause ("if any author or rights holder objects to the use or
    redistribution of this database, please contact indexofire@gmail.com and the content will be
-   removed or adjusted promptly upon verification"). Verify with `gapit db info -d NAME`.
+   removed or adjusted promptly upon verification"). Verify with `gspec db info -d NAME`.
    Also write the `info.json` sidecar with a one-line `description` (vendor/references/caveats/usage
    as applicable) so `db list` stays brief while `db info` carries the detail.
    Full rule: `docs/custom-db.md` § "Provenance and license metadata".

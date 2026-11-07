@@ -76,7 +76,7 @@ def test_frontmatter_keys_and_values(reports: list[Report]) -> None:
         "threads",
     ]
     assert meta["schema"] == "gapit.report/1"
-    assert meta["tool"].startswith("gapit ")
+    assert meta["tool"].startswith("gspec ")
     assert meta["created_at"] == "2026-09-17T12:00:00Z"
     assert meta["db"] == "tinyamr"
 
@@ -84,7 +84,7 @@ def test_frontmatter_keys_and_values(reports: list[Report]) -> None:
 def test_table_header_row_is_exact(reports: list[Report]) -> None:
     output = render_markdown(reports, PARAMS, now=PINNED_NOW)
     assert HEADER_ROW in output.splitlines()
-    assert "# gapit screening report" in output.splitlines()
+    assert "# gspec screening report" in output.splitlines()
     assert "## `sort.fa`" in output.splitlines()
 
 

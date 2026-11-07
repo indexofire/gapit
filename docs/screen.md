@@ -1,6 +1,6 @@
 # Screening contigs
 
-`gapit screen` aligns contig files against a gene database with BLAST and reports which genes
+`gspec screen` aligns contig files against a gene database with BLAST and reports which genes
 are present, using the same pipeline and hit rules as abricate. Output is abricate-compatible
 TSV by default; JSON and Markdown are first-class alternatives (see [./outputs.md](./outputs.md)).
 
@@ -9,7 +9,7 @@ Database setup is covered in [./databases.md](./databases.md); a full walk-throu
 
 ## Options
 
-Transcribed from `gapit screen --help` (gapit 0.6.8). Flags marked *reads mode* apply only when
+Transcribed from `gspec screen --help` (gspec 0.8.0). Flags marked *reads mode* apply only when
 you pass `--r1`/`--r2`; they are documented in [./reads.md](./reads.md).
 
 Every option also accepts the single-dash short form listed in the **Short** column (e.g.
@@ -22,13 +22,13 @@ targeted usage error pointing at `--db`.
 | Flag | Short | Type | Default | Description |
 |---|---|---|---|---|
 | `FILE...` | — | path(s) | required* | Input contig file(s) to screen. An all-FASTQ wildcard enters reads mode with samples auto-paired from filenames (see [./reads.md](./reads.md)). |
-| `--db` | `-d`, `-db` | str | required | Database to screen against (datadir subdir). No default database; naming a bundled database auto-materializes it on first use (stderr note unless `--quiet`), while other names must already be fetched/built (`gapit db list`). |
-| `--datadir` | `-D` | path | `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db` | Database directory. |
+| `--db` | `-d`, `-db` | str | required | Database to screen against (datadir subdir). No default database; naming a bundled database auto-materializes it on first use (stderr note unless `--quiet`), while other names must already be fetched/built (`gspec db list`). |
+| `--datadir` | `-D` | path | `$GSPEC_DATADIR`, then `$XDG_DATA_HOME/gspec/db`, then `~/.local/share/gspec/db` | Database directory. |
 | `--minid` | `-i` | float | `80.0` | Minimum %identity, `0 < x <= 100`. Enforced inside BLAST via `-perc_identity`. |
 | `--mincov` | `-c` | float | `80.0` | Minimum %coverage, `0 <= x <= 100`. Post-filter on the unrounded float. |
 | `--threads` | `-t` | int | `1` | Alignment worker threads (BLAST `-num_threads` / minimap2 `-t`). |
 | `--jobs` | `-j` | int | `1` | Screen N input files concurrently (gene contigs, cluster assemblies, or wildcard reads samples). Output order is always input order. |
-| `--merge-fragments` | `-m` | flag | off | Merge gene fragments split across contigs (gapit extension; see below). |
+| `--merge-fragments` | `-m` | flag | off | Merge gene fragments split across contigs (gspec extension; see below). |
 | `--fofn` | `-F` | path | none | File of filenames; replaces the positional FILEs. |
 | `--quiet` | `-q` | flag | off | Silence stderr diagnostics. |
 | `--noheader` | `-n` | flag | off | Suppress the `#FILE ...` header row. |
@@ -63,11 +63,11 @@ did not pass are filled from the database sidecar. See
 Normalization is native (no external `any2fasta`): plain FASTA, gzipped and bzip2-compressed
 FASTA, FASTQ, GBK, and EMBL all work. The converted FASTA is buffered in memory (genome-scale
 assemblies are a few MB) and fed to blastn on stdin. If normalization fails (not a sequence
-file), gapit prints a `gapit.error/1` envelope on stderr and exits 5.
+file), gspec prints a `gapit.error/1` envelope on stderr and exits 5.
 
 One exception predates normalization: when **every** positional file is FASTQ (`.fastq`/`.fq`
 ± `.gz`, or content-sniffed FASTQ under an ambiguous extension) and no `--aligner` is given,
-the whole invocation routes to the reads engine — `gapit screen -d eco_dec *.gz` screens
+the whole invocation routes to the reads engine — `gspec screen -d eco_dec *.gz` screens
 the glob as auto-paired samples instead of contigs. Mixing FASTA and FASTQ positionals is a
 usage error naming the reads files. See [./reads.md](./reads.md) for the pairing
 conventions and the per-sample output.
@@ -77,21 +77,21 @@ A `--fofn` file lists one path per line and replaces positional arguments entire
 ## Worked example
 
 The `tinyamr` fixture db ships in the repo test data (three short AMR genes). Copy it to a
-temp datadir, index it, and point `$GAPIT_DATADIR` at it. Never write into
-`~/.local/share/gapit/db` for experiments.
+temp datadir, index it, and point `$GSPEC_DATADIR` at it. Never write into
+`~/.local/share/gspec/db` for experiments.
 
 ```console
-$ mkdir -p /tmp/gapit-demo/datadir/tinyamr
-$ cp tests/data/db/tinyamr/sequences /tmp/gapit-demo/datadir/tinyamr/sequences
-$ gapit db setup --datadir /tmp/gapit-demo/datadir
+$ mkdir -p /tmp/gspec-demo/datadir/tinyamr
+$ cp tests/data/db/tinyamr/sequences /tmp/gspec-demo/datadir/tinyamr/sequences
+$ gspec db setup --datadir /tmp/gspec-demo/datadir
 Indexed tinyamr (3 sequences, nucl)
-$ export GAPIT_DATADIR=/tmp/gapit-demo/datadir
+$ export GSPEC_DATADIR=/tmp/gspec-demo/datadir
 ```
 
 ### Default TSV
 
 ```console
-$ gapit screen tests/data/contigs/full.fa --db tinyamr
+$ gspec screen tests/data/contigs/full.fa --db tinyamr
 Processing: tests/data/contigs/full.fa
 Found 1 genes in tests/data/contigs/full.fa
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
@@ -102,7 +102,7 @@ tests/data/contigs/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.0
 stderr discarded the output is pure data:
 
 ```console
-$ gapit screen tests/data/contigs/full.fa --db tinyamr 2>/dev/null
+$ gspec screen tests/data/contigs/full.fa --db tinyamr 2>/dev/null
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 tests/data/contigs/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.00	100.00	tinyamr	NC_000913.3:100-900	tetracycline efflux pump TetA	TETRACYCLINE
 ```
@@ -110,12 +110,12 @@ tests/data/contigs/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.0
 ### JSON
 
 ```console
-$ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
+$ gspec screen tests/data/contigs/full.fa --db tinyamr --format json
 {
   "schema": "gapit.report/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T01:12:04Z",
   "params": {
@@ -151,7 +151,7 @@ $ gapit screen tests/data/contigs/full.fa --db tinyamr --format json
 ```
 
 Field names are snake_case with units explicit (`identity_pct`, `coverage_pct`). The schema is
-introspectable: `gapit schema report`. See [./outputs.md](./outputs.md).
+introspectable: `gspec schema report`. See [./outputs.md](./outputs.md).
 
 ### How `--mincov` filters
 
@@ -159,14 +159,14 @@ introspectable: `gapit schema report`. See [./outputs.md](./outputs.md).
 so coverage is 50%. The default threshold drops it:
 
 ```console
-$ gapit screen tests/data/contigs/partial.fa --db tinyamr --quiet
+$ gspec screen tests/data/contigs/partial.fa --db tinyamr --quiet
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 ```
 
 Lowering the threshold keeps it:
 
 ```console
-$ gapit screen tests/data/contigs/partial.fa --db tinyamr --mincov 50 --quiet
+$ gspec screen tests/data/contigs/partial.fa --db tinyamr --mincov 50 --quiet
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 tests/data/contigs/partial.fa	contig1	1	44	+	blaTEM-1	1-44/88	========.......	0/0	50.00	100.00	tinyamr	J01749.1:1-861	class A beta-lactamase TEM-1	BETA-LACTAM
 ```
@@ -174,11 +174,11 @@ tests/data/contigs/partial.fa	contig1	1	44	+	blaTEM-1	1-44/88	========.......	0/
 ### Compressed input, CSV, path and header control
 
 ```console
-$ gzip -c tests/data/contigs/gap.fa > /tmp/gapit-demo/gap.fa.gz
-$ gapit screen /tmp/gapit-demo/gap.fa.gz --db tinyamr --quiet --nopath
+$ gzip -c tests/data/contigs/gap.fa > /tmp/gspec-demo/gap.fa.gz
+$ gspec screen /tmp/gspec-demo/gap.fa.gz --db tinyamr --quiet --nopath
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 gap.fa.gz	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
-$ gapit screen tests/data/contigs/full.fa --db tinyamr --format csv --quiet --nopath
+$ gspec screen tests/data/contigs/full.fa --db tinyamr --format csv --quiet --nopath
 #FILE,SEQUENCE,START,END,STRAND,GENE,COVERAGE,COVERAGE_MAP,GAPS,%COVERAGE,%IDENTITY,DATABASE,ACCESSION,PRODUCT,RESISTANCE
 full.fa,contig1,1,79,+,tetA,1-79/79,===============,0/0,100.00,100.00,tinyamr,NC_000913.3:100-900,tetracycline efflux pump TetA,TETRACYCLINE
 ```
@@ -186,19 +186,19 @@ full.fa,contig1,1,79,+,tetA,1-79/79,===============,0/0,100.00,100.00,tinyamr,NC
 ### Many files: `--fofn` and `--jobs`
 
 ```console
-$ printf '%s\n' tests/data/contigs/full.fa tests/data/contigs/gap.fa > /tmp/gapit-demo/files.txt
-$ gapit screen --fofn /tmp/gapit-demo/files.txt --db tinyamr --quiet
+$ printf '%s\n' tests/data/contigs/full.fa tests/data/contigs/gap.fa > /tmp/gspec-demo/files.txt
+$ gspec screen --fofn /tmp/gspec-demo/files.txt --db tinyamr --quiet
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 tests/data/contigs/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.00	100.00	tinyamr	NC_000913.3:100-900	tetracycline efflux pump TetA	TETRACYCLINE
 tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
-$ gapit screen tests/data/contigs/full.fa tests/data/contigs/gap.fa --db tinyamr --jobs 2 --quiet
+$ gspec screen tests/data/contigs/full.fa tests/data/contigs/gap.fa --db tinyamr --jobs 2 --quiet
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 tests/data/contigs/full.fa	contig1	1	79	+	tetA	1-79/79	===============	0/0	100.00	100.00	tinyamr	NC_000913.3:100-900	tetracycline efflux pump TetA	TETRACYCLINE
 tests/data/contigs/gap.fa	contig1	1	97	+	sul1	1-94/94	========/======	1/3	100.00	96.91	tinyamr	U12338.4:1-940	sulfonamide-resistant dihydropteroate synthase Sul1	SULFONAMIDE
 ```
 
 With `--jobs 2` the two files are screened concurrently but stdout stays in input order, so the
-output is identical to the sequential run. In gseek mode with all-FASTA inputs, gapit
+output is identical to the sequential run. In gseek mode with all-FASTA inputs, gspec
 batches the work into at most `--jobs` chunks (one aligner invocation per chunk); output
 order is still input order.
 
@@ -216,21 +216,21 @@ full-width `─` rules as visual separators: one directly below the header, one 
 blocks, and one after the last sample (`--noheader` suppresses the header rule only). CSV,
 JSON, Markdown, piped output, and `--output FILE` never contain a rule: machine-readable
 bytes stay unchanged. The positional-FASTQ wildcard batch
-([./reads.md](./reads.md)) and `gapit db fetch -d all` carry the same bar.
+([./reads.md](./reads.md)) and `gspec db fetch -d all` carry the same bar.
 
 ### Typed gene databases: designation is a second command
 
 When `--db` names a gene database built with a `typing.json` (the bundled `eco_dec`, or
-any `gapit db build --typing` build), screening is pure gene detection: the output is the
+any `gspec db build --typing` build), screening is pure gene detection: the output is the
 frozen 15-column abricate table byte-identically in every format — typed and untyped gene
 databases are indistinguishable on the screen surface. Designations come from the
 two-stage pipeline's second stage: write the table with `--output` (or redirect), then run
-[`gapit typing`](./typing.md#the-two-stage-designation-workflow) on it — or pipe it
+[`gspec typing`](./typing.md#the-two-stage-designation-workflow) on it — or pipe it
 straight in, the canonical one-liner:
 
 ```console
-$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db eco_dec --output dec.tsv --nopath --quiet
-$ gapit typing dec.tsv --quiet
+$ gspec screen dec_s3_stx2a_escV_aggR_uidA.fasta dec_s2_pic_astA_uidA.fasta --db eco_dec --output dec.tsv --nopath --quiet
+$ gspec typing dec.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 dec_s3_stx2a_escV_aggR_uidA.fasta	gb4789_6	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
 dec_s3_stx2a_escV_aggR_uidA.fasta	risk_monitoring	EHEC	aggR;escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	GB 4789.6-2016: EHEC = stx (any subunit) + escV (LEE); severity order EHEC>STEC/EPEC>ETEC>EIEC>EAEC: rules are declared in severity order so hybrids surface as runner_up
@@ -242,20 +242,20 @@ The piped form skips the intermediate file entirely — screen's stdout is typin
 (stdout purity holds on both sides: data on the pipe, diagnostics on stderr):
 
 ```console
-$ gapit screen dec_s3_stx2a_escV_aggR_uidA.fasta --db eco_dec --nopath --quiet | gapit typing --quiet
+$ gspec screen dec_s3_stx2a_escV_aggR_uidA.fasta --db eco_dec --nopath --quiet | gspec typing --quiet
 ```
 
-`gapit typing` reads stdin whenever it is not a terminal; `gapit typing -` is the explicit
+`gspec typing` reads stdin whenever it is not a terminal; `gspec typing -` is the explicit
 stdin marker (valid with a terminal attached — it reads until EOF). The full input
 contract lives in the [typing page](./typing.md#the-two-stage-designation-workflow).
 
 The same pipe feeds the matrix view. Screening many assemblies in one call batched all
 their rows into one table (every row carries the same `DATABASE`; the `FILE` column spans
-the whole batch), so [`gapit summary`](./summary.md) summarizes it straight off the pipe
+the whole batch), so [`gspec summary`](./summary.md) summarizes it straight off the pipe
 into the gene×file presence matrix:
 
 ```console
-$ gapit screen -d eco_dec *.fna --quiet | gapit summary
+$ gspec screen -d eco_dec *.fna --quiet | gspec summary
 ```
 
 Cluster databases are the exception: their typing is integrated into the screen itself
@@ -292,7 +292,7 @@ Long batch runs give feedback as they go, and the report can go to a file:
 ### `--output`
 
 ```console
-$ gapit screen tests/data/contigs/full.fa tests/data/contigs/gap.fa --db tinyamr --output report.tsv
+$ gspec screen tests/data/contigs/full.fa tests/data/contigs/gap.fa --db tinyamr --output report.tsv
 Processing: tests/data/contigs/full.fa
 Found 1 genes in tests/data/contigs/full.fa
 Processing: tests/data/contigs/gap.fa
@@ -311,10 +311,10 @@ bytes the same run would print.
 Echoes the native normalization step and every external command line to stderr:
 
 ```console
-$ gapit screen tests/data/contigs/full.fa --db tinyamr --debug 2>&1 >/dev/null
+$ gspec screen tests/data/contigs/full.fa --db tinyamr --debug 2>&1 >/dev/null
 Processing: tests/data/contigs/full.fa
-gapit: normalize: tests/data/contigs/full.fa (fasta)
-gapit: run: blastn -task blastn -dust no -perc_identity 80.0 -db /tmp/gapit-demo/datadir/tinyamr/sequences -outfmt '6 qseqid qstart qend qlen sseqid sstart send slen sstrand evalue length pident gaps gapopen stitle' -num_threads 1 -evalue 1E-20 -culling_limit 1 -max_target_seqs 10000
+gspec: normalize: tests/data/contigs/full.fa (fasta)
+gspec: run: blastn -task blastn -dust no -perc_identity 80.0 -db /tmp/gspec-demo/datadir/tinyamr/sequences -outfmt '6 qseqid qstart qend qlen sseqid sstart send slen sstrand evalue length pident gaps gapopen stitle' -num_threads 1 -evalue 1E-20 -culling_limit 1 -max_target_seqs 10000
 Found 1 genes in tests/data/contigs/full.fa
 ```
 
@@ -324,11 +324,11 @@ stdout is unchanged by `--debug`; it is a stderr-only flag.
 
 Draft assemblies often break one gene across a contig boundary: each contig then carries only
 a partial fragment of the gene, every fragment fails `--mincov 80` on its own, and the gene
-goes unreported. `--merge-fragments` (a gapit extension, off by default; blastn contig mode
+goes unreported. `--merge-fragments` (a gspec extension, off by default; blastn contig mode
 only — it is a usage error in reads mode or with `--aligner minimap2`) rescues exactly those
 genes:
 
-- After the usual per-hit filtering, gapit groups the sub-`mincov` fragments of a gene that
+- After the usual per-hit filtering, gspec groups the sub-`mincov` fragments of a gene that
   were deduped on `(contig, start, end)` and passed `--minid`.
 - If the **union** of the fragments' subject intervals covers `>= mincov` of the gene
   (`100 * union_length / slen`, compared on the unrounded float, same boundary rule as the
@@ -356,8 +356,8 @@ abricate (the Notes below still apply in full).
 ## Cluster databases (`kind: cluster`)
 
 When `--db` names a cluster database — built from GBK/GFF via
-[`gapit db build`](./databases.md#cluster-databases-gbkgff) or fetched from a kaptive
-provider — `gapit screen` dispatches to the **cluster engine** instead of the blastn gene
+[`gspec db build`](./databases.md#cluster-databases-gbkgff) or fetched from a kaptive
+provider — `gspec screen` dispatches to the **cluster engine** instead of the blastn gene
 pipeline. Nothing about the gene path changes: cluster-kind dispatch is additive and
 gene-kind screening is byte-identical to the pre-cluster behavior.
 
@@ -405,7 +405,7 @@ are gene-engine options and are rejected on cluster databases; the three `--min-
 ### Phenotype calls (`typing.json`)
 
 A cluster database may carry a `gapit.typing/1` scoring spec (installed with
-`gapit db build --typing FILE`). When it does, each file's best call is annotated with a
+`gspec db build --typing FILE`). When it does, each file's best call is annotated with a
 **phenotype**:
 
 - Rules score independently — `weighted_genes` (gene presence with an identity floor and
@@ -436,11 +436,11 @@ kaptive-style output — with `phenotype` null.
   `--minid` is enforced inside blastn via `-perc_identity`.
 - **Dedup, no merging.** BLAST rows with an identical `(contig, start, end)` query span are
   collapsed and the first row wins. Overlapping hits at *different* spans are all reported;
-  gapit does not merge overlapping intervals. This matches abricate exactly and is a feature.
+  gspec does not merge overlapping intervals. This matches abricate exactly and is a feature.
   (The opt-in `--merge-fragments` mode above is the one sanctioned exception; the default
   path never merges.)
 - **Protein databases.** Databases with `dbtype prot` (for example `bacmet2`) screen through
-  `blastx`, which accepts no `-perc_identity`. gapit then prints
+  `blastx`, which accepts no `-perc_identity`. gspec then prints
   `--minid is not applied to protein databases (abricate parity)` on stderr and keeps going.
 - **Ordering.** Within a file, rows sort by SEQUENCE then START, stable. Rows for one file are
   printed (or flushed to `--output`) once that file finishes; files emit in input order even

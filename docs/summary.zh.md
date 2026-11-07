@@ -1,16 +1,16 @@
 # 汇总报告
 
-`gapit summary` 把一份或多份 abricate 格式报告表（包括 gapit screen 的输出）折叠成
+`gspec summary` 把一份或多份 abricate 格式报告表（包括 gspec screen 的输出）折叠成
 基因存在/缺失矩阵：每文件一行，每基因一列。它取代
 `abricate --summary`。
 
-输入报告是带标准 15 列表头（`#FILE  SEQUENCE  ...`）的 TSV 或 CSV，正是 `gapit
+输入报告是带标准 15 列表头（`#FILE  SEQUENCE  ...`）的 TSV 或 CSV，正是 `gspec
 screen` 写出的格式。如何产生报告见 [./screen.md](./screen.md)；输出 schema 见
 [./outputs.md](./outputs.md)。
 
 ## 选项
 
-转写自 `gapit summary --help`（gapit 0.6.8）：
+转写自 `gspec summary --help`（gspec 0.8.0）：
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
@@ -31,7 +31,7 @@ screen` 写出的格式。如何产生报告见 [./screen.md](./screen.md)；输
   带 `NUM_FOUND 0`。
 
 ```console
-$ gapit summary tests/data/summary/multi_sample.tsv
+$ gspec summary tests/data/summary/multi_sample.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
 aa_assembly.fa	1	+	-
 mm_assembly.fa	1	-	+
@@ -41,7 +41,7 @@ zz_assembly.fa	1	+	-
 同样的三个 assembly 若拆成三份独立报告再汇总，则按文件名取键：
 
 ```console
-$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv tests/data/summary/empty.tsv
+$ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv tests/data/summary/empty.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
 tests/data/summary/empty.tsv	0	-	-
 tests/data/summary/sample_a.tsv	2	+	+
@@ -54,25 +54,25 @@ tests/data/summary/sample_b.tsv	2	+	+
 
 ## 经管道送入 screen 输出
 
-只要 stdin 不是终端（管道或重定向），`gapit summary` 就从 stdin 读取表，因此筛查
+只要 stdin 不是终端（管道或重定向），`gspec summary` 就从 stdin 读取表，因此筛查
 阶段可以直接喂给它——规范的批量管道。一次 screen 调用筛查多个 assembly 会写出一张
 批量表（每行携带同一个 `DATABASE`；`FILE` 列横跨整个批次），而管道送入的表算作**一个
 输入**，于是 dutch 模式生效——每个 FILE 值一行，得到基因×文件存在矩阵：
 
 ```console
-$ gapit screen -d eco_dec *.fna --nopath --quiet | gapit summary
+$ gspec screen -d eco_dec *.fna --nopath --quiet | gspec summary
 #FILE	NUM_FOUND	aggR	astA	escV	pic	stx2a	uidA
 dec_s1_aggR_pic_uidA.fna	3	+	-	-	+	-	+
 dec_s2_pic_astA_uidA.fna	3	-	+	-	+	-	+
 dec_s3_stx2a_escV_aggR_uidA.fna	4	+	-	+	-	+	+
 ```
 
-这与先 `gapit screen -d eco_dec *.fna --output combined.tsv` 再
-`gapit summary combined.tsv` 打印的矩阵完全相同。规则：
+这与先 `gspec screen -d eco_dec *.fna --output combined.tsv` 再
+`gspec summary combined.tsv` 打印的矩阵完全相同。规则：
 
-- **在终端里裸调用 `gapit summary` 仍打印帮助**（退出码 2）；挂着管道或重定向时改为
+- **在终端里裸调用 `gspec summary` 仍打印帮助**（退出码 2）；挂着管道或重定向时改为
   读取 stdin。
-- **`gapit summary -`** 是显式 stdin 标记——即使挂着终端也从 stdin 读取，直到 EOF。
+- **`gspec summary -`** 是显式 stdin 标记——即使挂着终端也从 stdin 读取，直到 EOF。
 - **`-` 与文件参数混用是用法错误**（v1 只接受 stdin 或文件之一，绝不混用）。
 - **非 UTF-8 的 stdin** 以指明 `-` 的 `SUMMARY_MALFORMED` 信封退出码 5；畸形的管道行
   会指明 `-` 及其行号。
@@ -83,7 +83,7 @@ dec_s3_stx2a_escV_aggR_uidA.fna	4	+	-	+	-	+	+
 
 | 模式 | 调用方式 | 单元格 |
 |---|---|---|
-| 存在（默认） | `gapit summary a.tsv b.tsv` | `+` / `-` |
+| 存在（默认） | `gspec summary a.tsv b.tsv` | `+` / `-` |
 | 一致性 | `--identity` / `-i` | 各命中的 %IDENTITY，`;` 连接（`.` = 缺失） |
 | 覆盖度 | `--coverage` / `-c` | 各命中的 %COVERAGE，`;` 连接（`.` = 缺失） |
 | 两者 | `-ic`（组合） | 各命中 `identity/coverage`，`;` 连接（`.` = 缺失） |
@@ -92,7 +92,7 @@ dec_s3_stx2a_escV_aggR_uidA.fna	4	+	-	+	-	+	+
 `--coverage` 逐字节复现 abricate `--summary` 的经典单元格形态——parity 对比在该模式下运行。
 
 ```console
-$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv
+$ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
 sample_a.tsv	2	+	+
 sample_b.tsv	2	+	+
@@ -108,7 +108,7 @@ sample_b.tsv	2	+	+
   取，所以一次调用可以混用制表符与逗号报告，无需参数：
 
 ```console
-$ gapit summary tests/data/summary/sample_a.csv tests/data/summary/sample_b.csv --nopath
+$ gspec summary tests/data/summary/sample_a.csv tests/data/summary/sample_b.csv --nopath
 #FILE	NUM_FOUND	feature_a	feature_b
 sample_a.csv	2	+	+
 sample_b.csv	2	+	+
@@ -118,7 +118,7 @@ sample_b.csv	2	+	+
   stderr 警告且只处理一次：
 
 ```console
-$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_a.tsv
+$ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_a.tsv
 WARNING: Skipping duplicate file: tests/data/summary/sample_a.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
 tests/data/summary/sample_a.tsv	2	+	+
@@ -138,12 +138,12 @@ tests/data/summary/sample_a.tsv	2	+	+
 params：
 
 ```console
-$ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv --format json --quiet
+$ gspec summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv --format json --quiet
 {
   "schema": "gapit.summary/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T01:12:48Z",
   "params": {
@@ -187,7 +187,7 @@ $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv 
 }
 ```
 
-用 `gapit schema summary` 自省 schema；字段契约见
+用 `gspec schema summary` 自省 schema；字段契约见
 [./outputs.md](./outputs.md)。
 
 ## 注意事项
@@ -196,7 +196,7 @@ $ gapit summary tests/data/summary/sample_a.tsv tests/data/summary/sample_b.tsv 
   在不同目录时，文件名化后的标签因此可能显得未排序：
 
 ```console
-$ gapit summary /tmp/gapit-demo/sortdemo/1dir/zeta.tsv /tmp/gapit-demo/sortdemo/2dir/mid.tsv --nopath
+$ gspec summary /tmp/gspec-demo/sortdemo/1dir/zeta.tsv /tmp/gspec-demo/sortdemo/2dir/mid.tsv --nopath
 #FILE	NUM_FOUND	feature_a	feature_b
 zeta.tsv	1	+	-
 mid.tsv	1	-	+
@@ -206,10 +206,10 @@ mid.tsv	1	-	+
   按字母序更靠前。不带 `--nopath` 时完整键按显而易见的顺序打印：
 
 ```console
-$ gapit summary /tmp/gapit-demo/sortdemo/1dir/zeta.tsv /tmp/gapit-demo/sortdemo/2dir/mid.tsv
+$ gspec summary /tmp/gspec-demo/sortdemo/1dir/zeta.tsv /tmp/gspec-demo/sortdemo/2dir/mid.tsv
 #FILE	NUM_FOUND	feature_a	feature_b
-/tmp/gapit-demo/sortdemo/1dir/zeta.tsv	1	+	-
-/tmp/gapit-demo/sortdemo/2dir/mid.tsv	1	-	+
+/tmp/gspec-demo/sortdemo/1dir/zeta.tsv	1	+	-
+/tmp/gspec-demo/sortdemo/2dir/mid.tsv	1	-	+
 ```
 
 - **dutch 模式的键来自报告内部。** 只有一份输入时，行标签是报告内部找到的 `FILE`

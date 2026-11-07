@@ -74,7 +74,7 @@ class GeneCall(BaseModel, frozen=True):
     verdict: Verdict
     # Table-derived typing evidence: the alignment start as a percentage of
     # the reference marker (0.0 = the 5' end is covered).  Cluster screens
-    # and reads tables leave it None; only `gapit typing` populates it.
+    # and reads tables leave it None; only `gspec typing` populates it.
     alignment_start_pct: float | None = None
 
 
@@ -130,7 +130,7 @@ def load_features(database: Database) -> FeaturesDocument:
     path = database.path / "features.json"
     if not path.is_file():
         raise DatabaseError(
-            f"cluster database {database.name} lacks features.json (rebuild it: gapit db build)",
+            f"cluster database {database.name} lacks features.json (rebuild it: gspec db build)",
             code="FEATURES_MISSING",
             context={"db": database.name},
         )

@@ -119,7 +119,7 @@ def test_valid_no_arg_commands_do_not_print_help(tmp_path: Path) -> None:
 
 
 def test_mcp_bare_serves_without_help() -> None:
-    """Given the MCP stdio server, When `gapit mcp` runs bare with an
+    """Given the MCP stdio server, When `gspec mcp` runs bare with an
     immediately-closed stdin, Then it serves until EOF and exits 0 without
     printing help."""
     result = runner.invoke(app, ["mcp"], input="")

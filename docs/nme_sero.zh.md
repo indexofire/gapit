@@ -1,13 +1,13 @@
 # 脑膜炎奈瑟菌血清群分型（`nme_sero`）
 
-`gapit` 提供一个按需下载的 **`nme_sero`** 数据库，只覆盖脑膜炎奈瑟菌
+`gspec` 提供一个按需下载的 **`nme_sero`** 数据库，只覆盖脑膜炎奈瑟菌
 （*Neisseria meningitidis*）的**基因存在**层面：
 
 - 血清群 A / B / C / W / X / Y（W/Y 双扩增时输出 W/Y）
 - `ctrA` 胶囊位点标记
 - `sodC` 单拷贝深度内参
 
-这符合 gapit 的定位：**判断已知基因在不在**。MLST/CC 交给 gMLST。
+这符合 gspec 的定位：**判断已知基因在不在**。MLST/CC 交给 gMLST。
 PorA VR1/VR2、FetA、PorB、BAST/MenDeVAR 属于**等位基因级**序列分型，
 需要蛋白等位基因库和 BAST 组合查表，刻意**不放进**这个数据库；菌株分型交给
 gMLST 数据库，抗原等位基因 ID 交给外部分型流程。
@@ -15,9 +15,9 @@ gMLST 数据库，抗原等位基因 ID 交给外部分型流程。
 ## 安装
 
 ```bash
-gapit db fetch -d nme_sero
-gapit db list | grep nme_sero
-gapit db info -d nme_sero
+gspec db fetch -d nme_sero
+gspec db list | grep nme_sero
+gspec db info -d nme_sero
 ```
 
 数据库在 fetch 时下载（GPL-3.0 / PubMLST 条款），不随 MIT wheel 分发。
@@ -27,8 +27,8 @@ gapit db info -d nme_sero
 ## 从 contig 做血清群
 
 ```bash
-gapit screen isolate.fna -d nme_sero
-gapit typing isolate.tsv
+gspec screen isolate.fna -d nme_sero
+gspec typing isolate.tsv
 ```
 
 `nme_sero/typing.json` 提供 `men_serogroup` 方案，控制基因是 `sodC`；
@@ -51,23 +51,23 @@ gapit typing isolate.tsv
 因此直接跑：
 
 ```bash
-gapit screen -d nme_sero -1 R1.fastq.gz -2 R2.fastq.gz
+gspec screen -d nme_sero -1 R1.fastq.gz -2 R2.fastq.gz
 ```
 
 会按“基因深度 / sodC 深度 ≥10%”判定存在。`sodC` 是保守的单拷贝
 Neisseria Cu-Zn 超氧化物歧化酶，作为相对深度分母；它不是严格的种特异性
 标记。可用 `--min-relative-depth` 或 `--relative-to` 临时覆盖。
 
-## 为什么没有 `gapit meningotype` 子命令？
+## 为什么没有 `gspec meningotype` 子命令？
 
-`gapit typing` 是基于**基因存在/缺失**规则的判定引擎；PorA/FetA/PorB/BAST
+`gspec typing` 是基于**基因存在/缺失**规则的判定引擎；PorA/FetA/PorB/BAST
 是**等位基因级**调用，需要蛋白等位基因库、精确全长肽匹配和 BAST 组合查表，
 超出通用 `screen -> typing` 契约，因此不放进这个数据库。菌株分型交给
 gMLST 数据库；抗原等位基因 ID 交给外部分型流程。
 
-## `gapit typing` 能否判断 EX7E motif？
+## `gspec typing` 能否判断 EX7E motif？
 
-不能直接判断。`gapit typing` 读取的是筛查表（基因、覆盖度、一致性），看不到
+不能直接判断。`gspec typing` 读取的是筛查表（基因、覆盖度、一致性），看不到
 比对上的密码子，也不能翻译 synG 的 EX7E 窗口；通用规则引擎没有 motif/等位基因
 原语。
 
@@ -103,6 +103,6 @@ LLM 能理解这条指令并把样本路由到 `menwy`，但不应在没有比�
 
 ## 验证
 
-在上游 A/B/C/W/X/Y 测试基因组上，`gapit screen -d nme_sero` +
-`gapit typing` 分别返回 A、B、C、W、X、Y；`sodC` 和 `ctrA` 在六个基因组中
+在上游 A/B/C/W/X/Y 测试基因组上，`gspec screen -d nme_sero` +
+`gspec typing` 分别返回 A、B、C、W、X、Y；`sodC` 和 `ctrA` 在六个基因组中
 均检出。

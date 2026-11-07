@@ -1,4 +1,4 @@
-"""The `gapit db rename` command: click shell over the use-case.
+"""The `gspec db rename` command: click shell over the use-case.
 
 Renaming is a datadir maintenance operation, so it reuses the standard
 acquisition guards: a plain target name, an installed source (its manifest is
@@ -14,7 +14,7 @@ from gapit.db_rename_ops import perform_rename
 from gapit.dispatch import datadir_option, dispatch, quiet_option
 
 
-@click.argument("old", help="Installed database to rename (see: gapit db list).")
+@click.argument("old", help="Installed database to rename (see: gspec db list).")
 @click.argument("new", help="New database name (see the naming convention in docs/databases.md).")
 @datadir_option()
 @click.option("--force", "-f", is_flag=True, help="Replace the target if it already exists.")

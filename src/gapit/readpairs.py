@@ -1,7 +1,7 @@
-"""Positional-FASTQ sample auto-pairing for `gapit screen *.fastq.gz`.
+"""Positional-FASTQ sample auto-pairing for `gspec screen *.fastq.gz`.
 
 The wildcard workflow (rightsholder request): a shell glob hands many gz
-FASTQ files to ``screen`` and gapit infers samples from filename
+FASTQ files to ``screen`` and gspec infers samples from filename
 conventions. Pure filename arithmetic — no I/O, no sniffing (the reads
 engine owns content detection via ``gapit.reads.detect_read_kind``).
 

@@ -13,7 +13,7 @@ from the committed locus FASTA + resolved feature table via
 network, so a bundled database is ready at install time with no
 ``db fetch``.
 
-Only gapit-curated content with clean provenance may live here (the wheel
+Only gspec-curated content with clean provenance may live here (the wheel
 is MIT): our own panels and public-domain / permissive sources, never GPL,
 non-commercial, or third-party provider snapshots whose redistribution terms
 are uncertain. Every provider database — ncbi, card, ecoh, resfinder, ... —
@@ -58,7 +58,7 @@ class BundledMetadata(BaseModel, frozen=True):
     bundles additionally require ``features.json``). ``license`` and
     ``note`` carry content provenance into the materialized manifest
     (cluster bundles); they default to empty so the gene bundles'
-    metadata stays minimal. ``guidance`` is what `gapit db info` reports:
+    metadata stays minimal. ``guidance`` is what `gspec db info` reports:
     the literature references, the intended usage recipe, and the caveats
     a caller must not skip.
     """
@@ -230,7 +230,7 @@ def resolve_screen_datadir(cli_value: Path | None, db_name: str) -> Path:
     """``resolve_datadir`` for the screening lookup — except that a MISSING
     datadir is bootstrapped when (and only when) the requested database is
     bundled: the zero-network first-use path must work on a fresh machine
-    where ``~/.local/share/gapit/db`` does not exist yet. Every other
+    where ``~/.local/share/gspec/db`` does not exist yet. Every other
     missing-datadir case keeps the typed DATADIR_NOT_FOUND error."""
     try:
         return config.resolve_datadir(cli_value)

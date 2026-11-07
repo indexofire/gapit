@@ -1,6 +1,6 @@
-# gapit for agents
+# gspec for agents
 
-gapit is built to be driven by programs. Every output is machine-readable by
+gspec is built to be driven by programs. Every output is machine-readable by
 design, the whole contract is discoverable from the binary itself, and failures
 are typed JSON instead of prose. This page is the contract; you should not need
 any other documentation to integrate.
@@ -12,8 +12,8 @@ Three commands answer "what can this thing do" without reading a manual.
 Version, as one JSON line:
 
 ```console
-$ gapit --version --json
-{"schema":"gapit.version/1","name":"gapit","version":"0.6.8"}
+$ gspec --version --json
+{"schema":"gapit.version/1","name":"gspec","version":"0.8.0"}
 ```
 
 Output schemas. Eighteen documents are introspectable: `report`, `typing_result`,
@@ -22,27 +22,27 @@ Output schemas. Eighteen documents are introspectable: `report`, `typing_result`
 `typing`, `floors`, and `screen`. Each prints its full JSON Schema:
 
 ```console
-$ gapit schema report          # gapit.report/1 (contig screening)
-$ gapit schema typing_result   # gapit.typing_result/1 (gapit typing designation)
-$ gapit schema reads           # gapit.reads/1  (FASTQ screening)
-$ gapit schema reads2          # gapit.reads/2  (filtered FASTQ screening)
-$ gapit schema cluster         # gapit.cluster/1 (cluster-database screening)
-$ gapit schema cluster2        # gapit.cluster/2 (multi-scheme cluster screening)
-$ gapit schema summary         # gapit.summary/1
-$ gapit schema error           # gapit.error/1
-$ gapit schema version         # gapit.version/1
-$ gapit schema dblist          # gapit.dblist/1 (database catalog)
-$ gapit schema dbsetup         # gapit.dbsetup/1 (db setup receipt)
-$ gapit schema dbinfo          # gapit.dbinfo/1 (provenance + caveats of one database)
-$ gapit schema dboutdated      # gapit.dboutdated/1 (staleness report)
-$ gapit schema datadir         # gapit.datadir/1 (resolved path/source)
-$ gapit schema features        # gapit.features/1 (cluster db feature table)
-$ gapit schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
-$ gapit schema floors          # gapit.floors/1 (per-gene identity floors, reads mode)
-$ gapit schema screen          # gapit.screen/1 (per-database screening defaults)
+$ gspec schema report          # gapit.report/1 (contig screening)
+$ gspec schema typing_result   # gapit.typing_result/1 (gspec typing designation)
+$ gspec schema reads           # gapit.reads/1  (FASTQ screening)
+$ gspec schema reads2          # gapit.reads/2  (filtered FASTQ screening)
+$ gspec schema cluster         # gapit.cluster/1 (cluster-database screening)
+$ gspec schema cluster2        # gapit.cluster/2 (multi-scheme cluster screening)
+$ gspec schema summary         # gapit.summary/1
+$ gspec schema error           # gapit.error/1
+$ gspec schema version         # gapit.version/1
+$ gspec schema dblist          # gapit.dblist/1 (database catalog)
+$ gspec schema dbsetup         # gapit.dbsetup/1 (db setup receipt)
+$ gspec schema dbinfo          # gapit.dbinfo/1 (provenance + caveats of one database)
+$ gspec schema dboutdated      # gapit.dboutdated/1 (staleness report)
+$ gspec schema datadir         # gapit.datadir/1 (resolved path/source)
+$ gspec schema features        # gapit.features/1 (cluster db feature table)
+$ gspec schema typing          # gapit.typing/2 (db scoring spec; /1 still reads)
+$ gspec schema floors          # gapit.floors/1 (per-gene identity floors, reads mode)
+$ gspec schema screen          # gapit.screen/1 (per-database screening defaults)
 ```
 
-For example, `gapit schema version` (real output):
+For example, `gspec schema version` (real output):
 
 ```json
 {
@@ -55,7 +55,7 @@ For example, `gapit schema version` (real output):
       "type": "string"
     },
     "name": {
-      "default": "gapit",
+      "default": "gspec",
       "title": "Name",
       "type": "string"
     },
@@ -70,11 +70,11 @@ For example, `gapit schema version` (real output):
 }
 ```
 
-Databases: the database catalog and install state (`gapit db list --json`; real output,
+Databases: the database catalog and install state (`gspec db list --json`; real output,
 first two of twenty-three shown, trimmed):
 
 ```console
-$ gapit db list --json
+$ gspec db list --json
 {
   "schema": "gapit.dblist/1",
   "providers": [
@@ -136,7 +136,7 @@ Envelope details and error codes: `./outputs.md`.
   field; new fields may appear, so ignore unknown keys rather than rejecting
   them.
 - Keys are snake_case with explicit units (`identity_pct`, `coverage_pct`).
-- The authoritative machine contract is the schema itself: `gapit schema
+- The authoritative machine contract is the schema itself: `gspec schema
   <doc>` is always current, this page may lag.
 
 ## Error envelope parsing
@@ -150,7 +150,7 @@ Any failure prints exactly one JSON line to stderr:
 Real example, screening against a database that does not exist (exit 4):
 
 ```text
-{"schema":"gapit.error/1","code":"DATABASE_NOT_FOUND","message":"Database nosuchdb is not in /tmp/gapit-mcp-demo/datadir. Available: tinyamr","context":{"db":"nosuchdb","datadir":"/tmp/gapit-mcp-demo/datadir"}}
+{"schema":"gapit.error/1","code":"DATABASE_NOT_FOUND","message":"Database nosuchdb is not in /tmp/gspec-mcp-demo/datadir. Available: tinyamr","context":{"db":"nosuchdb","datadir":"/tmp/gspec-mcp-demo/datadir"}}
 ```
 
 And a missing external binary (exit 3):
@@ -176,15 +176,15 @@ Discover, screen, parse, summarize. Session below run against the repo's test
 fixture datadir (setup recipe in `./mcp.md`).
 
 1. Resolve the effective datadir if your environment may redirect it
-   (`gapit db path --json`; `gapit.datadir/1` names the path and its source),
-   then discover available databases (`gapit db list --json`, or the
+   (`gspec db path --json`; `gapit.datadir/1` names the path and its source),
+   then discover available databases (`gspec db list --json`, or the
    `db_list` MCP tool) and pick a `db` name.
 
 2. Screen each sample as JSON and parse hits straight out of the document:
 
    ```console
-   $ gapit screen sampleA.fa --db tinyamr --format json > sampleA.json
-   $ gapit screen sampleB.fa --db tinyamr --format json > sampleB.json
+   $ gspec screen sampleA.fa --db tinyamr --format json > sampleA.json
+   $ gspec screen sampleB.fa --db tinyamr --format json > sampleB.json
    ```
 
    ```python
@@ -205,12 +205,12 @@ fixture datadir (setup recipe in `./mcp.md`).
    ```
 
 3. For a cross-sample matrix, keep the default TSV reports and feed them to
-   `gapit summary`:
+   `gspec summary`:
 
    ```console
-   $ gapit screen sampleA.fa --db tinyamr > sampleA.tsv
-   $ gapit screen sampleB.fa --db tinyamr > sampleB.tsv
-   $ gapit summary sampleA.tsv sampleB.tsv
+   $ gspec screen sampleA.fa --db tinyamr > sampleA.tsv
+   $ gspec screen sampleB.fa --db tinyamr > sampleB.tsv
+   $ gspec summary sampleA.tsv sampleB.tsv
    #FILE	NUM_FOUND	tetA
    sampleA.tsv	1	100.00
    sampleB.tsv	0	.
@@ -220,7 +220,7 @@ Screening options: `./screen.md`. Summary semantics: `./summary.md`.
 
 ## Tool-runtime integration
 
-If your runtime speaks MCP, register gapit as a server and call `screen`,
+If your runtime speaks MCP, register gspec as a server and call `screen`,
 `screen_reads`, `summary`, `typing`, `schema`, and `db_list` as tools instead
 of subprocesses: `./mcp.md`. The server also exposes the `db` commands
 (`db_setup`, `db_fetch`, `db_build`, `db_search`, `db_outdated`), so an agent

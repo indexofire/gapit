@@ -1,6 +1,6 @@
 # Multi-backend typing architecture
 
-This guide explains how gapit combines alignment and k-mer backends in one
+This guide explains how gspec combines alignment and k-mer backends in one
 typing system, and how to design custom databases that exploit the right
 backend for each discrimination problem. Read [Custom databases](./custom-db.md)
 for the build mechanics; this page is the architectural companion.
@@ -8,7 +8,7 @@ for the build mechanics; this page is the architectural companion.
 ## The big picture
 
 ```text
-                        gapit screen
+                        gspec screen
                             │
               ┌─────────────┼─────────────┐
               │             │             │
@@ -23,7 +23,7 @@ for the build mechanics; this page is the architectural companion.
               │             │             │
               └─────────────┼─────────────┘
                             │
-                     gapit typing
+                     gspec typing
                             │
                  ┌──────────┼──────────┐
                  │          │          │
@@ -155,16 +155,16 @@ Binary separation — no ambiguity margin can swallow this.
 # 3. Declare the k-mer sets (gapit.kmerdb/1)
 # 4. Build
 
-gapit db build my_sero loci.gff3 \
+gspec db build my_sero loci.gff3 \
   --typing typing.json \
   --kmerdb kmer.json \
   --description "My organism serotyping"
 
 # 5. Screen (FASTA)
-gapit screen -d my_sero -C 60 -G 90 assembly.fna
+gspec screen -d my_sero -C 60 -G 90 assembly.fna
 
 # 6. Screen (FASTQ — no assembly needed)
-gapit screen -d my_sero --r1 reads_R1.fastq --r2 reads_R2.fastq
+gspec screen -d my_sero --r1 reads_R1.fastq --r2 reads_R2.fastq
 ```
 
 The `kmer.json` declares one k size and named sets:
@@ -179,7 +179,7 @@ The `kmer.json` declares one k size and named sets:
 }
 ```
 
-At build time gapit computes the full k-mer set of every locus and the
+At build time gspec computes the full k-mer set of every locus and the
 differential set of every declaration, storing them as sorted uint64
 arrays under `kmers/`. The typing rules reference set names; the engine
 validates them at build time (TYPING_UNKNOWN_KMERSET).

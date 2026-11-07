@@ -4,7 +4,7 @@
 The main generator (``scripts/generate_vp_typing.py``) only emits rules for
 typed ``OL*``/``KL*`` loci.  The current vpa_ok snapshot also carries
 ``KLU61``-``KLU100``: Kaptive treats these as typeable unknown loci, while
-gapit represents the same state as ``K_GROUP=KUT`` plus the detected locus
+gspec represents the same state as ``K_GROUP=KUT`` plus the detected locus
 and coverage.  This deterministic post-step installs one ``cluster_match``
 rule per KLU locus (phenotype ``KUT``, all locus genes as key genes) so the
 fallback evidence and ``unknown_locus`` status are available.

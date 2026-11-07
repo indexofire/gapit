@@ -1,4 +1,4 @@
-"""Summary parity harness: byte-diff `gapit summary` against real abricate
+"""Summary parity harness: byte-diff `gspec summary` against real abricate
 --summary over the committed synthetic report fixtures (SPEC.md §6).
 
 Opt-in, like run_parity.py: run with `pixi run -e parity summary-parity`.
@@ -29,9 +29,9 @@ def locate() -> tuple[Path, Path]:
     abricate = shutil.which("abricate")
     if abricate is None:
         fail("abricate not on PATH (run via: pixi run -e parity summary-parity)")
-    gapit_bin = DEFAULT_BIN / "gapit"
+    gapit_bin = DEFAULT_BIN / "gspec"
     if not gapit_bin.is_file():
-        fail(f"gapit CLI not found: {gapit_bin} (run: pixi install)")
+        fail(f"gspec CLI not found: {gapit_bin} (run: pixi install)")
     return Path(abricate), gapit_bin
 
 
@@ -52,7 +52,7 @@ def diff_case(
         ["abricate", *abricate_argv], cwd=cwd, env=env, capture_output=True, text=True, check=False
     )
     gapit_result = subprocess.run(
-        [str(DEFAULT_BIN / "gapit"), *gapit_argv],
+        [str(DEFAULT_BIN / "gspec"), *gapit_argv],
         cwd=cwd,
         env=env,
         capture_output=True,
@@ -62,7 +62,7 @@ def diff_case(
     if abricate_result.returncode != 0 or gapit_result.returncode != 0:
         print(
             f"FAIL {label}: abricate rc={abricate_result.returncode}, "
-            f"gapit rc={gapit_result.returncode}"
+            f"gspec rc={gapit_result.returncode}"
         )
         return False
     identical = abricate_result.stdout == gapit_result.stdout
@@ -73,7 +73,7 @@ def diff_case(
                 abricate_result.stdout.splitlines(True),
                 gapit_result.stdout.splitlines(True),
                 fromfile=f"abricate/{label}",
-                tofile=f"gapit/{label}",
+                tofile=f"gspec/{label}",
             )
         )
     return identical

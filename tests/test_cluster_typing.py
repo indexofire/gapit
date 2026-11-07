@@ -353,7 +353,7 @@ class TestEvalValidation:
         envelope = json.loads(result.stderr.splitlines()[-1])
         assert envelope["code"] == "TYPING_UNKNOWN_GENE"
         assert envelope["context"]["gene"] == "ghost_gene"
-        assert "gapit: run:" not in result.stderr  # failed before any minimap2 invocation
+        assert "gspec: run:" not in result.stderr  # failed before any minimap2 invocation
 
 
 class TestJobs:

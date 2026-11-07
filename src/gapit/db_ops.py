@@ -29,7 +29,7 @@ from gapit.providers.cluster_common import ClusterProvider, fetch_cluster_provid
 from gapit.providers.common import Dbtype, fetch_provider
 from gapit.records import read_manifest
 
-# `gapit db fetch -d all` installs these, in order — the two headline
+# `gspec db fetch -d all` installs these, in order — the two headline
 # databases (AMR + virulence). Like every provider they download on fetch:
 # card (McMaster) and vfdb (CC BY-NC) licenses forbid redistribution.
 DEFAULT_DBS = ("card", "vfdb")
@@ -67,8 +67,8 @@ class DbListEntry(BaseModel, frozen=True):
     # GBK/GFF-built db shadowing a provider name); the default is gene.
     kind: Literal["gene", "cluster"] = "gene"
     # Whether the database carries a typing scheme (typing.json). Gene-kind
-    # databases designate through `gapit typing`; cluster-kind databases are
-    # evaluated inside `gapit screen` (typing can only reformat their JSON).
+    # databases designate through `gspec typing`; cluster-kind databases are
+    # evaluated inside `gspec screen` (typing can only reformat their JSON).
     typing: bool = False
     # Upstream content license when the provider pins one (card, vfdb,
     # ecoli_vf, kaptive); omitted otherwise.
@@ -98,9 +98,9 @@ class DatadirDocument(BaseModel, frozen=True):
 
 
 class DbListDocument(BaseModel, frozen=True):
-    """gapit.dblist/1 — `gapit db list --json` output.
+    """gapit.dblist/1 — `gspec db list --json` output.
 
-    Registered as ``gapit schema dblist``; the schema is additive so agents can
+    Registered as ``gspec schema dblist``; the schema is additive so agents can
     introspect the database catalog without a live datadir.
     """
 
@@ -292,7 +292,7 @@ def _bundled_entries(bundled: Sequence[BundledDatabase], root: Path) -> list[DbL
     dbtype) from ``bundled.json``; installed state and record count from a
     materialized manifest under the datadir. A bundle whose directory exists
     but never finished materializing (no manifest) lists as not installed —
-    the next screen or `db setup` rebuilds it. Bundled names are gapit-curated
+    the next screen or `db setup` rebuilds it. Bundled names are gspec-curated
     only; provider-backed names (ncbi, resfinder, ...) never appear here."""
     entries: list[DbListEntry] = []
     for database in bundled:
@@ -385,8 +385,8 @@ def db_list_typing(entry: DbListEntry) -> str:
     """TYPING cell text: how the database designates, when it can.
 
     ``command`` — a gene-kind database: screen to a table, then run
-    ``gapit typing RESULT.tsv``. ``integrated`` — a typed cluster database:
-    the phenotype is evaluated by ``gapit screen`` itself; ``gapit typing``
+    ``gspec typing RESULT.tsv``. ``integrated`` — a typed cluster database:
+    the phenotype is evaluated by ``gspec screen`` itself; ``gspec typing``
     can reformat the cluster JSON but does not re-evaluate it. ``-`` — no
     typing.json, screen-only."""
     if not entry.typing:

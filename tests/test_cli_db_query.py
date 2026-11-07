@@ -1,4 +1,4 @@
-"""CLI integration tests: `gapit db outdated` and `gapit db search`.
+"""CLI integration tests: `gspec db outdated` and `gspec db search`.
 
 Offline by construction: fixtures are hand-written manifest + records.jsonl
 databases (no binaries run — neither command builds anything).
@@ -399,7 +399,7 @@ def test_db_search_limit_and_truncation_note(tmp_path: Path) -> None:
 
     assert truncated.exit_code == 0
     assert len(truncated.stdout.splitlines()) == 2
-    note_lines = [line for line in truncated.stderr.splitlines() if line.startswith("gapit:")]
+    note_lines = [line for line in truncated.stderr.splitlines() if line.startswith("gspec:")]
     assert any("truncated" in line for line in note_lines)
     assert exact.exit_code == 0
     assert len(exact.stdout.splitlines()) == 3
@@ -432,10 +432,10 @@ def test_db_search_skips_incomplete_db_with_warning(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     assert result.stdout.startswith("alpha\tsul1\t")
-    warnings = [line for line in result.stderr.splitlines() if line.startswith("gapit:")]
+    warnings = [line for line in result.stderr.splitlines() if line.startswith("gspec:")]
     assert any("gamma" in line for line in warnings)
     assert quiet.exit_code == 0
-    assert "gapit:" not in quiet.stderr
+    assert "gspec:" not in quiet.stderr
 
 
 def test_db_search_explicit_incomplete_db_errors(tmp_path: Path) -> None:

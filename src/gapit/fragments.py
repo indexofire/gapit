@@ -54,7 +54,7 @@ def union_coverage_map(spans: Iterable[Span], slen: int, *, broken: bool) -> str
 def _merged_hit(fragments: list[Hit], *, mincov: float) -> Hit | None:
     """Assemble one merged hit from >= 2 same-gene partials, or None.
 
-    Field rules (the gapit extension contract):
+    Field rules (the gspec extension contract):
     - coverage_pct: union subject coverage, unrounded; kept iff >= mincov.
     - identity_pct: aligned-length-weighted mean of fragment identities.
     - coverage_map: minimap binning over the union of subject intervals.

@@ -1,8 +1,8 @@
 # Screening reads and assemblies (FASTQ / FASTA)
 
-`gapit screen --r1/--r2` maps raw FASTQ reads, or whole assembly FASTA files, against a gene
+`gspec screen --r1/--r2` maps raw FASTQ reads, or whole assembly FASTA files, against a gene
 database with minimap2 and calls gene presence from alignment breadth. abricate cannot screen
-reads at all; this mode is a gapit extension — its presence threshold (`--min-breadth`)
+reads at all; this mode is a gspec extension — its presence threshold (`--min-breadth`)
 differs from the contig pipeline's identity/coverage floors, while the output-format default
 (tsv) is the same human default as everywhere else.
 
@@ -17,7 +17,7 @@ gene database keeps the reads mode described here.
 ## Invocation
 
 ```text
-gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map-ont|map-hifi]
+gspec screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map-ont|map-hifi]
 ```
 
 - `--r1` takes FASTQ reads or a FASTA assembly (see below); comma-separated, one entry per lane.
@@ -36,10 +36,10 @@ gapit screen --r1 R1[,R1b,...] [--r2 R2[,R2b,...]] --db NAME [--read-type sr|map
 ## Screening a wildcard of FASTQ files (auto-paired samples)
 
 `--r1`/`--r2` name the lanes yourself. For batch jobs it is simpler to hand `screen` the
-shell's glob and let gapit infer the samples:
+shell's glob and let gspec infer the samples:
 
 ```console
-$ gapit screen -d eco_dec *.gz
+$ gspec screen -d eco_dec *.gz
 ```
 
 When **every** positional file is FASTQ — a `.fastq`/`.fq` extension (optionally `.gz`/`.gzip`), or
@@ -100,7 +100,7 @@ Output streams per completed sample, head-of-line in sample order under `--jobs`
 - **tsv** (the default) streams: the `#SAMPLE` header line leads, then each sample's gene
   rows land the moment that sample's screening completes (one row per gene, sample key in
   the first column; a gene-less sample contributes none). `--format csv` is the comma
-  spelling of the same table. tsv is the human default on every gapit surface — the
+  spelling of the same table. tsv is the human default on every gspec surface — the
   single-sample `--r1`/`--r2` and `--aligner minimap2` paths default to it too; pass
   `--format json` instead when you want the single document for an agent.
 - **md** leads with a STATIC frontmatter (schema, tool, `created_at`, db, thresholds — no
@@ -119,7 +119,7 @@ time — replacing the per-sample `Screening sample …`/`Detected N present gen
 it runs. Piped or redirected stderr and `--quiet` keep the plain notes byte-identically.
 The bar never touches stdout: streaming bytes are identical with it on or off, and the
 lazy `#SAMPLE` header still leads. The contig path ([./screen.md](./screen.md)) and
-`gapit db fetch -d all` carry the same bar.
+`gspec db fetch -d all` carry the same bar.
 
 The single-sample `--r1`/`--r2` path differs on two points: no `--jobs`, and its Markdown
 frontmatter keeps the `files:`/`genes_found:` totals (its tsv default renders the same
@@ -127,8 +127,8 @@ table, one chunk for the one sample).
 
 ## Options
 
-Reads mode runs through the same `gapit screen` command; these are the flags that apply
-(transcribed from `gapit screen --help`, gapit 0.6.8). Contig-mode flags not listed here
+Reads mode runs through the same `gspec screen` command; these are the flags that apply
+(transcribed from `gspec screen --help`, gspec 0.8.0). Contig-mode flags not listed here
 (`--minid`, `--mincov`, `--fofn`, `--noheader`, `--nopath`) do not apply; `--jobs` applies
 to the wildcard path only.
 
@@ -143,8 +143,8 @@ to the wildcard path only.
 | `--min-depth` | float | `0.0` (off) | Minimum mean depth for presence. |
 | `--min-relative-depth` | float | `0.0` (off) | Minimum gene:control mean-depth ratio (0..1); see [relative-depth gate](#relative-depth). |
 | `--relative-to` | str | `lpxA` | Control gene for `--min-relative-depth`. |
-| `--db` | str | required | Database to screen against (datadir subdir). No default — pick one explicitly (`gapit db list`). |
-| `--datadir` | path | `$GAPIT_DATADIR`, then `$XDG_DATA_HOME/gapit/db`, then `~/.local/share/gapit/db` | Database directory. |
+| `--db` | str | required | Database to screen against (datadir subdir). No default — pick one explicitly (`gspec db list`). |
+| `--datadir` | path | `$GSPEC_DATADIR`, then `$XDG_DATA_HOME/gspec/db`, then `~/.local/share/gspec/db` | Database directory. |
 | `--threads` | int | `1` | minimap2 worker threads. |
 | `--jobs` | int | `1` | Wildcard path only: screen N samples concurrently (`--r1`/`--r2` rejects it). Output order is always sample order. |
 | `--quiet` | flag | off | Silence stderr diagnostics (including the assembly-FASTA note). |
@@ -193,17 +193,17 @@ therefore always `yes`); `--all-genes` / `-A` adds the absent calls (breadth bel
 the threshold). The table's last column is `PRODUCT` (the contig table keeps the
 abricate `RESISTANCE` column; reads tables do not carry it).
 
-Reads tables feed `gapit typing` directly — `gapit screen --r1 reads.fq --db NAME | gapit
+Reads tables feed `gspec typing` directly — `gspec screen --r1 reads.fq --db NAME | gspec
 typing` folds `#SAMPLE` as the FILE key and `BREADTH%` as coverage. Reads/1 has no identity
 column, so typing from it checks breadth only; add a nonzero `--min-identity` to emit
 reads/2's `IDENTITY%` when a scheme's identity floors matter. See
 [Typing schemes](./typing.md#the-two-stage-designation-workflow).
 
-The default is the streaming **tsv** table (tsv is the human default on every gapit surface;
+The default is the streaming **tsv** table (tsv is the human default on every gspec surface;
 `--format csv` is its comma spelling):
 
 ```console
-$ gapit screen --r1 tetx_full.fq --db tinyreads
+$ gspec screen --r1 tetx_full.fq --db tinyreads
 Screening reads: tetx_full.fq
 Detected 1 present genes in tetx_full.fq
 #SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
@@ -216,7 +216,7 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 
 - `files[]` mirrors the input: each entry lists the reads it screened and the genes found.
 - Gene entries sort by `breadth_pct` descending, then gene name.
-- Introspect the schema with `gapit schema reads`; details in
+- Introspect the schema with `gspec schema reads`; details in
   [./outputs.md](./outputs.md).
 
 `--format md` produces the Markdown form with YAML frontmatter.
@@ -242,7 +242,7 @@ reads over-call nearly everything). `--min-identity` and `--min-mapq` are the op
   and the minimap2 invocation is untouched. Any nonzero value switches the output to the
   **`gapit.reads/2`** document — same shape, plus `params.min_identity` / `params.min_mapq`
   and a per-gene `mean_identity_pct` (alignment-length-weighted mean identity of the kept
-  alignments). Introspect it with `gapit schema reads2`. Under `--format md` the frontmatter
+  alignments). Introspect it with `gspec schema reads2`. Under `--format md` the frontmatter
   gains the two thresholds and each gene row gains an `Identity%` column.
 - One subtlety: the `/2` invocation passes minimap2 `--cs` (the only PAF-side flag that emits
   `NM:i:`), and minimap2's emitted spans can differ slightly between the two geometries —
@@ -265,11 +265,11 @@ The repo fixtures reproduce the failure and the fix deterministically
 reads, unfiltered — both genes are called present:
 
 ```console
-$ mkdir -p /tmp/gapit-demo/readdb
-$ cp -r tests/data/reads2_db/homologs /tmp/gapit-demo/readdb/
-$ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
+$ mkdir -p /tmp/gspec-demo/readdb
+$ cp -r tests/data/reads2_db/homologs /tmp/gspec-demo/readdb/
+$ export GSPEC_DATADIR=/tmp/gspec-demo/readdb
 $ cd tests/data/reads2
-$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --format json --quiet
+$ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -308,7 +308,7 @@ $ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --format j
 the true gene's ~98% alignments:
 
 ```console
-$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format json --quiet
+$ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format json --quiet
 {
   "schema": "gapit.reads/2",
   ...
@@ -347,10 +347,10 @@ The short-read fixture behaves the same with one calibration: `sr` soft-clipping
 `geneB` gone). The Markdown form of a filtered run:
 
 ```console
-$ gapit screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format md --quiet
+$ gspec screen --r1 ont_homologs.fq --db homologs --read-type map-ont --min-identity 95 --format md --quiet
 ---
 schema: gapit.reads/2
-tool: gapit 0.6.8
+tool: gspec 0.8.0
 created_at: 2026-09-20T14:23:33Z
 db: homologs
 read_type: map-ont
@@ -362,7 +362,7 @@ files: 1
 genes_found: 1
 ---
 
-# gapit read screening report
+# gspec read screening report
 
 ## `ont_homologs.fq`
 
@@ -383,7 +383,7 @@ default floor 90, lpxA/HS12 80).
 database: a curated panel knows which of its genes sit inside a homologous family and
 what identity a true allele must carry. That knowledge ships as an optional
 `floors.json` sidecar beside the db `sequences` file — schema `gapit.floors/1`
-(introspect it with `gapit schema floors`):
+(introspect it with `gspec schema floors`):
 
 ```json
 {"schema": "gapit.floors/1", "default": null, "genes": {"pic": 90.0}}
@@ -402,7 +402,7 @@ what identity a true allele must carry. That knowledge ships as an optional
   contig pipeline never reads floors; its `--minid` already filters on identity.
 - Floors and `--min-identity` are conjunctive: when both apply, a row must clear the
   per-gene floor AND the global filter (the stricter of the two wins per row).
-- Installing floors: `gapit db build NAME genes.fa --floors floors.json` — validated
+- Installing floors: `gspec db build NAME genes.fa --floors floors.json` — validated
   (every listed gene must exist in the FASTA, values in [0, 100]) and copied into the db
   directory as `floors.json`. Dropping a floors.json into an existing db directory works
   too; it is read at screening time. Details in
@@ -432,11 +432,11 @@ partial-coverage `sulY`) and small FASTQ files. Copy the db to a temp datadir an
 reads directory:
 
 ```console
-$ mkdir -p /tmp/gapit-demo/readdb
-$ cp -r tests/data/reads_db/tinyreads /tmp/gapit-demo/readdb/
-$ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
+$ mkdir -p /tmp/gspec-demo/readdb
+$ cp -r tests/data/reads_db/tinyreads /tmp/gspec-demo/readdb/
+$ export GSPEC_DATADIR=/tmp/gspec-demo/readdb
 $ cd tests/data/reads
-$ gapit screen --r1 tetx_full.fq --db tinyreads
+$ gspec screen --r1 tetx_full.fq --db tinyreads
 Screening reads: tetx_full.fq
 Detected 1 present genes in tetx_full.fq
 #SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
@@ -447,12 +447,12 @@ tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determ
 table. `--format json` swaps in the versioned document:
 
 ```console
-$ gapit screen --r1 tetx_full.fq --db tinyreads --format json
+$ gspec screen --r1 tetx_full.fq --db tinyreads --format json
 {
   "schema": "gapit.reads/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T01:12:25Z",
   "params": {
@@ -491,7 +491,7 @@ One paired lane: pass both mates. Two single-end lanes as one sample: comma-join
 aggregate to the same result here:
 
 ```console
-$ gapit screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --quiet
+$ gspec screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -514,7 +514,7 @@ $ gapit screen --r1 tetx_R1.fq --r2 tetx_R2.fq --db tinyreads --format json --qu
     }
   ]
 }
-$ gapit screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --quiet
+$ gspec screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -544,10 +544,10 @@ $ gapit screen --r1 tetx_lane1.fq,tetx_lane2.fq --db tinyreads --format json --q
 ### Markdown output
 
 ```console
-$ gapit screen --r1 tetx_full.fq --db tinyreads --format md
+$ gspec screen --r1 tetx_full.fq --db tinyreads --format md
 ---
 schema: gapit.reads/1
-tool: gapit 0.6.8
+tool: gspec 0.8.0
 created_at: 2026-09-19T01:12:25Z
 db: tinyreads
 read_type: sr
@@ -557,7 +557,7 @@ files: 1
 genes_found: 1
 ---
 
-# gapit read screening report
+# gspec read screening report
 
 ## `tetx_full.fq`
 
@@ -573,7 +573,7 @@ reported with `present: false`; lowering the threshold flips the call without to
 metrics:
 
 ```console
-$ gapit screen --r1 suly_partial.fq --db tinyreads --format json --quiet
+$ gspec screen --r1 suly_partial.fq --db tinyreads --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -589,7 +589,7 @@ $ gapit screen --r1 suly_partial.fq --db tinyreads --format json --quiet
     }
   ]
 }
-$ gapit screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --format json --quiet
+$ gspec screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -609,11 +609,11 @@ $ gapit screen --r1 suly_partial.fq --db tinyreads --min-breadth 50 --format jso
 
 ### The default table
 
-The default run IS the table (tsv is the human default on every gapit surface; `--format
+The default run IS the table (tsv is the human default on every gspec surface; `--format
 csv` is the comma spelling):
 
 ```console
-$ gapit screen --r1 tetx_full.fq --db tinyreads
+$ gspec screen --r1 tetx_full.fq --db tinyreads
 #SAMPLE	GENE	BREADTH%	DEPTH	READS	PRESENT	DATABASE	ACCESSION	PRODUCT
 tetx_full.fq	tetX	97.70	2.09	12	yes	tinyreads	SYN-001	extended resistance determinant tetX	TETRACYCLINE
 ```
@@ -622,13 +622,13 @@ The sample key leads; pass `--format json` when an agent needs the versioned doc
 
 ## Screening assemblies (fast presence survey)
 
-The primary spelling is `gapit screen --aligner minimap2 assembly.fa`: the positional file is
+The primary spelling is `gspec screen --aligner minimap2 assembly.fa`: the positional file is
 routed through the minimap2 engine, and every input must be FASTA content, gzipped or plain —
 a FASTQ file there is a usage error (exit 2). The `--r1 assembly.fa` spelling is equivalent.
-minimap2 takes FASTA queries natively, so gapit passes the file through exactly as it does for
+minimap2 takes FASTA queries natively, so gspec passes the file through exactly as it does for
 FASTQ; what changes is the preset: content detection forces `map-ont` (a contiguous 522 nt
 contig, for example, aligns to only ~14% of its gene under `sr` because short-read soft-clipping
-wrecks long-query alignments), and gapit says so on stderr. Each contig acts as one long read:
+wrecks long-query alignments), and gspec says so on stderr. Each contig acts as one long read:
 `reads_mapped` counts contigs, `mean_depth` hovers around the covered fraction, and `present`
 still means `breadth_pct >= --min-breadth`. The document stays `gapit.reads/1`;
 `params.read_type` reports the resolved preset. The default output is the streaming tsv
@@ -637,19 +637,19 @@ table (one chunk, the one sample); `--format json` gives the document shown belo
 Using the tinyreads fixture as a stand-in assembly (any multi-contig FASTA behaves the same):
 
 ```console
-$ mkdir -p /tmp/gapit-demo/readdb
-$ cp -r tests/data/reads_db/tinyreads /tmp/gapit-demo/readdb/
-$ export GAPIT_DATADIR=/tmp/gapit-demo/readdb
-$ cp tests/data/reads_db/tinyreads/sequences /tmp/gapit-demo/assembly.fa
-$ gapit screen --aligner minimap2 /tmp/gapit-demo/assembly.fa --db tinyreads --format json
+$ mkdir -p /tmp/gspec-demo/readdb
+$ cp -r tests/data/reads_db/tinyreads /tmp/gspec-demo/readdb/
+$ export GSPEC_DATADIR=/tmp/gspec-demo/readdb
+$ cp tests/data/reads_db/tinyreads/sequences /tmp/gspec-demo/assembly.fa
+$ gspec screen --aligner minimap2 /tmp/gspec-demo/assembly.fa --db tinyreads --format json
 assembly FASTA detected; using map-ont
-Screening reads: /tmp/gapit-demo/assembly.fa
-Detected 2 present genes in /tmp/gapit-demo/assembly.fa
+Screening reads: /tmp/gspec-demo/assembly.fa
+Detected 2 present genes in /tmp/gspec-demo/assembly.fa
 {
   "schema": "gapit.reads/1",
   "tool": {
-    "name": "gapit",
-    "version": "0.6.8"
+    "name": "gspec",
+    "version": "0.8.0"
   },
   "created_at": "2026-09-19T14:23:00Z",
   "params": {
@@ -661,7 +661,7 @@ Detected 2 present genes in /tmp/gapit-demo/assembly.fa
   "files": [
     {
       "reads": [
-        "/tmp/gapit-demo/assembly.fa"
+        "/tmp/gspec-demo/assembly.fa"
       ],
       "genes": [
         {
@@ -708,11 +708,11 @@ cost of allele-level precision. That trade suggests a two-stage workflow over ma
    pipeline, which applies the identity and coverage floors at abricate parity.
 
 Real numbers, one K. pneumoniae RefSeq assembly (GCF_000240185.1, 5.3 Mb, `--db ncbi`,
-single-threaded, gapit 0.6.8):
+single-threaded, gspec 0.8.0):
 
 ```console
 $ # Stage 1: survey, ~0.9 s
-$ gapit screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 50 --format json --quiet
+$ gspec screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 50 --format json --quiet
 {
   "schema": "gapit.reads/1",
   ...
@@ -739,7 +739,7 @@ $ gapit screen --aligner minimap2 kpneu_mgh78578.fna.gz --db ncbi --min-breadth 
   ]
 }
 $ # Stage 2: confirm the positives with the contig pipeline, ~13.6 s
-$ gapit screen kpneu_mgh78578.fna.gz --db ncbi --quiet
+$ gspec screen kpneu_mgh78578.fna.gz --db ncbi --quiet
 #FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
 kpneu_mgh78578.fna.gz	NC_016838.1	31843	32718	-	blaCTX-M-14	1-876/876	===============	0/0	100.00	100.00	ncbi	NG_048929.1	extended-spectrum class A beta-lactamase CTX-M-14	CEPHALOSPORIN
 kpneu_mgh78578.fna.gz	NC_016838.1	108291	108766	-	dfrA50	2-477/477	===============	0/0	99.79	98.74	ncbi	NG_242637.1	trimethoprim-resistant dihydrofolate reductase DfrA50	TRIMETHOPRIM
@@ -793,7 +793,7 @@ The gate compares each gene's mean depth with a **control gene** (default
 `lpxA`, the panel's single-copy positive control):
 
 ```bash
-gapit screen -d cje_cps -1 R1.fq.gz -2 R2.fq.gz \
+gspec screen -d cje_cps -1 R1.fq.gz -2 R2.fq.gz \
   --min-relative-depth 0.10 --relative-to lpxA
 ```
 

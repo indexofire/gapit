@@ -184,7 +184,7 @@ def test_prs_control_gate_and_unrelated_sequence(tmp_path: Path) -> None:
 
 def test_typing_command_end_to_end_on_one_representative(tmp_path: Path) -> None:
     """Given one representative IIa isolate, When `screen -o table` writes
-    the gene table and `gapit typing <table>` designates from that file arg,
+    the gene table and `gspec typing <table>` designates from that file arg,
     Then the default TSV renders the eight columns with the IIa call and the
     file's sorted uppercase-carrying gene list."""
     datadir = tmp_path / "datadir"
@@ -283,7 +283,7 @@ def test_bundled_lmo_sero_auto_materializes_and_lists(tmp_path: Path) -> None:
     assert listing.exit_code == 0
     assert (
         "lmo_sero\tListeria monocytogenes serogrouping (Doumith 2004)\tinstalled (5)\tnucl\t"
-        "gene\tcommand\tgapit-curated (public-domain INSDC sources)" in listing.stdout
+        "gene\tcommand\tgspec-curated (public-domain INSDC sources)" in listing.stdout
     )
 
     table = tmp_path / "bundled.tsv"

@@ -1,4 +1,4 @@
-"""The `gapit db setup` command: bootstrap the datadir and rebuild indices.
+"""The `gspec db setup` command: bootstrap the datadir and rebuild indices.
 
 With no selection, creates a missing datadir, materializes bundled databases
 that are not installed, then rebuilds the BLAST index for every database under

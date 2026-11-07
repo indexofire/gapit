@@ -107,7 +107,7 @@ def _file_cases() -> tuple[tuple[str, str, str, Callable[[Path], object]], ...]:
 
 def test_mutated_text_parsers_never_raise_raw_exceptions() -> None:
     for name, text, parser in _text_cases():
-        rng = random.Random(f"gapit-parser-fuzz-{name}")
+        rng = random.Random(f"gspec-parser-fuzz-{name}")
         for _ in range(100):
             try:
                 parser(_mutate(rng, text))
@@ -119,7 +119,7 @@ def test_mutated_text_parsers_never_raise_raw_exceptions() -> None:
 
 def test_mutated_file_parsers_never_raise_raw_exceptions(tmp_path: Path) -> None:
     for name, text, suffix, parser in _file_cases():
-        rng = random.Random(f"gapit-parser-fuzz-{name}")
+        rng = random.Random(f"gspec-parser-fuzz-{name}")
         for _ in range(100):
             path = tmp_path / f"input{suffix}"
             path.write_text(_mutate(rng, text), encoding="utf-8")

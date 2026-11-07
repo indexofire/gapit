@@ -1,4 +1,4 @@
-"""The `gapit db search` command: click shell over the use-case
+"""The `gspec db search` command: click shell over the use-case
 (:mod:`gapit.db_query_ops`) — case-insensitive lookup across the
 ``records.jsonl`` truth stores of every installed database (docs/databases.md).
 

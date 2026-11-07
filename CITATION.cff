@@ -1,15 +1,18 @@
 cff-version: 1.2.0
-message: "If you use gapit in research, please cite this software."
-title: "gapit: mass screening of contigs and reads for known genes"
+message: "If you use gspec in research, please cite this software. Formerly released as gapit (<=0.7.3)."
+title: "gspec: declarative typing databases for bacterial genomes"
 type: software
 authors:
   - name: "indexofire"
-repository-code: "https://github.com/indexofire/gapit"
-url: "https://indexofire.github.io/gapit/"
+repository-code: "https://github.com/indexofire/gspec"
+url: "https://indexofire.github.io/gspec/"
 license: MIT
-version: "0.6.8"
-date-released: "2026-11-03"
+version: "0.8.0"
+date-released: "2026-11-07"
 keywords:
+  - bacterial typing
+  - serotyping
+  - typing database
   - bioinformatics
   - genomics
   - antimicrobial resistance

@@ -1,4 +1,4 @@
-"""Integration tests: gapit screen CLI over the real pipeline on tinyamr fixtures."""
+"""Integration tests: gspec screen CLI over the real pipeline on tinyamr fixtures."""
 
 import gzip
 import json
@@ -47,7 +47,7 @@ def datadir(tmp_path: Path) -> Path:
 
 
 def screen(datadir: Path, *extra: str) -> Result:
-    """Invoke `gapit screen ... --db tinyamr --datadir <dd> [extra]`."""
+    """Invoke `gspec screen ... --db tinyamr --datadir <dd> [extra]`."""
     return runner.invoke(app, ["screen", "--db", "tinyamr", "--datadir", str(datadir), *extra])
 
 
@@ -214,7 +214,7 @@ def test_missing_db_option_is_usage_error_exit_2(tmp_path: Path) -> None:
 
 
 def test_help_lists_output_flag_and_required_db() -> None:
-    """Given `gapit screen --help`, When inspected, Then --output is
+    """Given `gspec screen --help`, When inspected, Then --output is
     documented and --db is marked required (click renders [required])."""
     result = runner.invoke(app, ["screen", "--help"], env={"COLUMNS": "100"})
     assert result.exit_code == 0
@@ -409,11 +409,11 @@ def test_debug_echoes_normalize_and_blast_argv(datadir: Path) -> None:
     any2fasta pipe echo is gone)."""
     result = screen(datadir, "--debug", str(CONTIGS / "full.fa"))
     assert result.exit_code == 0
-    normalize_lines = [ln for ln in result.stderr.splitlines() if ln.startswith("gapit: normalize")]
-    run_lines = [ln for ln in result.stderr.splitlines() if ln.startswith("gapit: run:")]
-    assert normalize_lines == [f"gapit: normalize: {CONTIGS / 'full.fa'} (fasta)"]
+    normalize_lines = [ln for ln in result.stderr.splitlines() if ln.startswith("gspec: normalize")]
+    run_lines = [ln for ln in result.stderr.splitlines() if ln.startswith("gspec: run:")]
+    assert normalize_lines == [f"gspec: normalize: {CONTIGS / 'full.fa'} (fasta)"]
     assert len(run_lines) == 1
-    assert run_lines[0].startswith("gapit: run: blastn ")
+    assert run_lines[0].startswith("gspec: run: blastn ")
     assert "-perc_identity" in run_lines[0]
 
 
@@ -429,11 +429,11 @@ def test_debug_stdout_identical_to_plain_run(datadir: Path) -> None:
 
 def test_default_run_emits_no_argv_lines(datadir: Path) -> None:
     """Given a default (no --debug) run, When inspected, Then stderr carries
-    no `gapit: run:` argv echo or `gapit: normalize:` lines."""
+    no `gspec: run:` argv echo or `gspec: normalize:` lines."""
     result = screen(datadir, str(CONTIGS / "full.fa"))
     assert result.exit_code == 0
-    assert "gapit: run:" not in result.stderr
-    assert "gapit: normalize:" not in result.stderr
+    assert "gspec: run:" not in result.stderr
+    assert "gspec: normalize:" not in result.stderr
 
 
 def _screen_with_run_probe_recorder(

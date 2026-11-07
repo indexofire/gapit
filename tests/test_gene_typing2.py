@@ -5,7 +5,7 @@ exact_set table gated by the prs control gene, a two-wzx o_group scheme
 with the unique-group mixed override, a weighted k_group scheme, and the
 ``{o_group}:{k_group}`` compose scheme) built with ``db build --typing``
 and run through the two-stage pipeline: ``screen -o result.tsv`` (real
-blastn engine), then ``gapit typing result.tsv``.
+blastn engine), then ``gspec typing result.tsv``.
 
 Covers: the exact_set Doumith calls with surfaced notes, control-gate
 zeroing, mixed-infection output with the pair in ambiguous, compose with
@@ -241,7 +241,7 @@ class TestPurifiedScreen:
     ) -> None:
         """Given the same inputs against the typed and the untyped build,
         When screened in the default format, Then the outputs are
-        byte-identical 15-column tables — designation lives in `gapit
+        byte-identical 15-column tables — designation lives in `gspec
         typing` (the inverted former phenotype-column pin)."""
         inputs = [str(DATA / f"{sample}.fa") for sample in SAMPLES]
         typed = runner.invoke(

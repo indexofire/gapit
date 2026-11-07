@@ -227,9 +227,9 @@ def run_blastn(
     switch = engine()
     mode = switch.mode.value
     if debug:
-        sys.stderr.write(f"gapit: normalize: {query} ({fmt.value})\n")
+        sys.stderr.write(f"gspec: normalize: {query} ({fmt.value})\n")
         if mode in {"legacy", "shadow"}:
-            sys.stderr.write(f"gapit: run: {shlex.join(argv)}\n")
+            sys.stderr.write(f"gspec: run: {shlex.join(argv)}\n")
 
     def legacy_rows() -> list[BlastRow]:
         output = _pipeline(fasta_text, argv)
@@ -284,7 +284,7 @@ def screen_file(
 
     The caller owns the per-run gates (``ensure_blast`` and the one-shot
     ``dbtype`` resolution) so a multi-file run pays each probe once. With
-    ``merge_fragments`` (opt-in gapit extension), sub-mincov dedup survivors
+    ``merge_fragments`` (opt-in gspec extension), sub-mincov dedup survivors
     are folded into one hit per gene when their union coverage reaches mincov.
     """
     rows = run_blastn(query, database, params, dbtype=dbtype, debug=debug)

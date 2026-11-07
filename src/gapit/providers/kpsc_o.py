@@ -12,9 +12,9 @@ curated on ``main``; this provider tracks the raw GenBank file directly
 
 The repo also ships a ``.toml`` metadata file with upstream identity
 thresholds; it is NOT fetched in v1 — a future typing.json source. The
-database content is GPL-3.0, so NOTHING is bundled with gapit (MIT):
-`gapit db fetch -d kpsc_o` downloads the gbk at fetch time and builds a
-kind-cluster database. No typing model: `gapit screen --db kpsc_o` reports
+database content is GPL-3.0, so NOTHING is bundled with gspec (MIT):
+`gspec db fetch -d kpsc_o` downloads the gbk at fetch time and builds a
+kind-cluster database. No typing model: `gspec screen --db kpsc_o` reports
 best-locus (OL…) calls, phenotype null. Cite Kaptive when you use results.
 """
 
@@ -52,7 +52,7 @@ PROVIDER = ClusterProvider(
         caveats=(
             "Upstream GenBank files carry duplicate gene names within single loci"
             " (paralogous wzy/wza/wzb/wzc, repeated manC/gnd, generic"
-            " 'hypothetical'); gapit auto-deduplicates them with an @start suffix"
+            " 'hypothetical'); gspec auto-deduplicates them with an @start suffix"
             " (e.g. wzy@1234) at build time — the original names remain searchable"
             " as prefixes. Kpsc_O also reuses accession LT174602 for two different"
             " loci; the second builds as LT174602_2.",

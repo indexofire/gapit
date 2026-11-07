@@ -1,13 +1,13 @@
 # Meningococcal serogroup typing (`nme_sero`)
 
-`gapit` ships a fetch-on-demand **`nme_sero`** database for the
+`gspec` ships a fetch-on-demand **`nme_sero`** database for the
 gene-presence part of *Neisseria meningitidis* typing:
 
 - serogroup A / B / C / W / X / Y (W/Y when both amplicons are present)
 - `ctrA` capsule marker
 - `sodC` single-copy depth control
 
-This matches gapit's positioning: **which known genes are present**. MLST/cc
+This matches gspec's positioning: **which known genes are present**. MLST/cc
 is left to gMLST. Allele-level finetyping (PorA VR1/VR2, FetA, PorB,
 BAST/MenDeVAR) is a separate sequence-typing problem and is deliberately
 **not** part of this database; strain typing belongs to the gMLST database,
@@ -16,9 +16,9 @@ and antigen allele IDs to an external finetyping pipeline.
 ## Install
 
 ```bash
-gapit db fetch -d nme_sero
-gapit db list | grep nme_sero
-gapit db info -d nme_sero
+gspec db fetch -d nme_sero
+gspec db list | grep nme_sero
+gspec db info -d nme_sero
 ```
 
 The database is downloaded at fetch time (GPL-3.0 / PubMLST terms); it is not
@@ -28,8 +28,8 @@ upstream commit `35c4a5bff24fbc3625f92ce575d7c2e99ecd4378` (2026-02-19).
 ## Serogroup from contigs
 
 ```bash
-gapit screen isolate.fna -d nme_sero
-gapit typing isolate.tsv
+gspec screen isolate.fna -d nme_sero
+gspec typing isolate.tsv
 ```
 
 `nme_sero/typing.json` declares the `men_serogroup` scheme. Its control gene
@@ -53,25 +53,25 @@ silently assigned.
 so a plain run gates presence on the gene:sodC depth ratio:
 
 ```bash
-gapit screen -d nme_sero -1 R1.fastq.gz -2 R2.fastq.gz
+gspec screen -d nme_sero -1 R1.fastq.gz -2 R2.fastq.gz
 ```
 
 `sodC` is a conserved single-copy Neisseria Cu-Zn superoxide dismutase used as
 the relative depth denominator. It is not an absolute species-specific marker;
 use `--min-relative-depth` / `--relative-to` to override the gate per run.
 
-## Why no `gapit meningotype` subcommand?
+## Why no `gspec meningotype` subcommand?
 
-`gapit typing` designates a phenotype from **gene presence/absence** rules.
+`gspec typing` designates a phenotype from **gene presence/absence** rules.
 PorA/FetA/PorB/BAST are **allele-level** calls: they need a protein allele
 database, exact full-length peptide matching, and a BAST tuple lookup. That is
 outside the generic `screen -> typing` contract, so it is not part of this
 database. Use the gMLST database for strain typing and an external finetyping
 pipeline for antigen allele IDs.
 
-## Can `gapit typing` resolve the EX7E motif?
+## Can `gspec typing` resolve the EX7E motif?
 
-Not directly. `gapit typing` reads the screen table (gene, coverage, identity),
+Not directly. `gspec typing` reads the screen table (gene, coverage, identity),
 so it never sees the aligned codon and cannot translate the synG EX7E window.
 The generic rule engine has no motif/allele primitive.
 
@@ -120,6 +120,6 @@ from the W/Y co-detection. The same guidance is available through the MCP
 
 ## Validation
 
-On the upstream A/B/C/W/X/Y test genomes, `gapit screen -d nme_sero` +
-`gapit typing` returns A, B, C, W, X, Y respectively; `sodC` is present in all
+On the upstream A/B/C/W/X/Y test genomes, `gspec screen -d nme_sero` +
+`gspec typing` returns A, B, C, W, X, Y respectively; `sodC` is present in all
 six and `ctrA` in all six.

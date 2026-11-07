@@ -1,4 +1,4 @@
-"""The verified LOCAL-FILE install path: `gapit db install` (from cmd_db.py).
+"""The verified LOCAL-FILE install path: `gspec db install` (from cmd_db.py).
 
 ``db install`` checksum-verifies and atomically installs BYTES: SOURCE must
 be a path to an existing regular file; no network, no database names, no

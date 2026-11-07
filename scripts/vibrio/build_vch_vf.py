@@ -149,7 +149,7 @@ def main(argv: list[str] | None = None) -> int:
             {
                 "name": "vch_vf",
                 "description": ("V. cholerae CTX prophage core/RS2 genes + ctxB/tcpA allele panel"),
-                "vendor": "gapit-curated (INSDC)",
+                "vendor": "gspec-curated (INSDC)",
                 "dbtype": "nucl",
                 "kind": "gene",
                 "snapshotted": datetime.now(UTC).strftime("%Y-%m-%d"),

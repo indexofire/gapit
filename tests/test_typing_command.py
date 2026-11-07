@@ -1,4 +1,4 @@
-"""The `gapit typing` command suite: input parsing, typed errors, formats,
+"""The `gspec typing` command suite: input parsing, typed errors, formats,
 and the two-stage equivalence lock.
 
 Most parsing tests run over hand-written screen tables (the input contract
@@ -290,7 +290,7 @@ class TestCommand:
     ) -> None:
         """Given a table whose DATABASE names a cluster database, When
         typed, Then exit 4 with the typed error explaining cluster typing
-        rides `gapit screen` itself."""
+        rides `gspec screen` itself."""
         datadir = tmp_path_factory.mktemp("typing_cmd_cluster")
         built = runner.invoke(
             app,
@@ -309,7 +309,7 @@ class TestCommand:
         assert result.exit_code == 4
         envelope = json.loads(result.stderr.splitlines()[-1])
         assert envelope["code"] == "TYPING_CLUSTER_DB"
-        assert "gapit screen --db loci" in envelope["message"]
+        assert "gspec screen --db loci" in envelope["message"]
 
     def test_unknown_database_is_not_found(self, tmp_path: Path) -> None:
         """Given a table naming a database the datadir lacks, When typed,
@@ -390,7 +390,7 @@ class TestCommand:
         assert result.exit_code == 0, result.stderr
         document = json.loads(result.stdout)
         assert document["schema"] == "gapit.typing_result/1"
-        assert document["tool"]["name"] == "gapit"
+        assert document["tool"]["name"] == "gspec"
         assert document["source"] == [str(path)]
         assert document["db"] == DB
         assert [entry["file"] for entry in document["files"]] == ["s.fa", "t.fa"]
@@ -407,7 +407,7 @@ class TestCommand:
 
 
 class TestStdinInput:
-    """The piped table: `gapit screen 1.fna --db NAME | gapit typing` types
+    """The piped table: `gspec screen 1.fna --db NAME | gspec typing` types
     stdin with no file arguments; `-` is the explicit marker (it reads
     stdin even under a terminal, until EOF)."""
 
@@ -560,7 +560,7 @@ def markers_document(typed_db: Path):
 
 class TestEquivalence:
     """The two-stage pipeline against the inline engine: for each fixture
-    sample, `gapit typing` over the screened table must produce exactly the
+    sample, `gspec typing` over the screened table must produce exactly the
     calls evaluate_gene_calls produces over the screened Report's folded
     best hits (the pre-purification inline semantics)."""
 

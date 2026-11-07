@@ -1,6 +1,6 @@
-"""CLI tests for the positional-FASTQ wildcard workflow (gapit screen *.gz).
+"""CLI tests for the positional-FASTQ wildcard workflow (gspec screen *.gz).
 
-`gapit screen -d db *.fastq.gz` routes to the reads engine without --r1/--r2
+`gspec screen -d db *.fastq.gz` routes to the reads engine without --r1/--r2
 and auto-pairs samples from filenames (gapit.readpairs); one files[] entry
 per sample, keyed by the sample name. The --r1/--r2 path is untouched (its
 own tests in test_cli_reads.py / test_cli_reads2.py stay the parity proof).

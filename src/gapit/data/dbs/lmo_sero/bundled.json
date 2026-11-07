@@ -1,7 +1,7 @@
 {
   "name": "lmo_sero",
   "description": "Listeria monocytogenes serogrouping (Doumith 2004)",
-  "vendor": "gapit-curated (public-domain INSDC sources)",
+  "vendor": "gspec-curated (public-domain INSDC sources)",
   "dbtype": "nucl",
   "kind": "gene",
   "snapshotted": "2026-10-03",

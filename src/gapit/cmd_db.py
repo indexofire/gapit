@@ -1,9 +1,9 @@
-"""The `gapit db` command group: build, fetch, list, install, setup.
+"""The `gspec db` command group: build, fetch, list, install, setup.
 
 - ``db setup``: bootstrap a missing datadir, materialize bundled
   databases, and rebuild every BLAST index under the datadir (use-case:
   :mod:`gapit.db_setup_ops`, command: :mod:`gapit.cmd_db_setup`).
-- ``db build NAME FASTA``: build a custom gapit-native database from a
+- ``db build NAME FASTA``: build a custom gspec-native database from a
   user-supplied FASTA (+ optional TSV metadata) — the whole acquisition
   pipeline without a provider (use-case: :mod:`gapit.db_build_ops`,
   command: :mod:`gapit.cmd_db_build`).
@@ -95,7 +95,7 @@ def db_fetch_command(
     def run() -> None:
         if not selected:
             usage_fail(
-                "db fetch requires -d/--db NAME... (NAME 'all' = default set; see: gapit db list)"
+                "db fetch requires -d/--db NAME... (NAME 'all' = default set; see: gspec db list)"
             )
         names = (*selected, *extra_names)
         for _receipt in perform_fetch(

@@ -7,7 +7,7 @@ VARIANT: the TSV/CSV header gains a PHENOTYPE column after TYPE and the JSON
 best block gains ``phenotype``/``phenotype_detail`` values — untyped output
 stays byte-identical to the stage-2 documents (``phenotype_detail`` is
 serialized only on typed runs). The schema registry (formats/schemas.py)
-exposes the document as ``gapit schema cluster``.
+exposes the document as ``gspec schema cluster``.
 """
 
 from collections.abc import Iterable

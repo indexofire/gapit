@@ -1,6 +1,6 @@
 ---
 schema: gapit.report/1
-tool: gapit 0.6.8
+tool: gspec 0.8.0
 created_at: 2026-09-30T12:00:00Z
 db: markers
 minid: 80.0
@@ -8,7 +8,7 @@ mincov: 80.0
 threads: 1
 ---
 
-# gapit screening report
+# gspec screening report
 
 ## `exact.fa`
 

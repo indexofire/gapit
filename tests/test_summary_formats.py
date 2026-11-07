@@ -64,7 +64,7 @@ def test_json_is_gapit_summary_1(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(FIXTURES)
     document = summary_adapter.validate_json(render_summary_json(build(MULTI), now=PINNED_NOW))
     assert document.schema_name == "gapit.summary/1"
-    assert document.tool.name == "gapit"
+    assert document.tool.name == "gspec"
     assert document.created_at == "2026-09-17T12:00:00Z"
     assert document.params.metric == "%COVERAGE"
     assert document.params.metrics == ["%COVERAGE"]
@@ -111,7 +111,7 @@ def test_md_frontmatter_and_matrix(monkeypatch: pytest.MonkeyPatch) -> None:
     output = render_summary_md(build(MULTI), now=PINNED_NOW)
     assert output.startswith("---\n")
     assert "schema: gapit.summary/1" in output
-    assert "tool: gapit" in output
+    assert "tool: gspec" in output
     assert "created_at: 2026-09-17T12:00:00Z" in output
     assert "metric: '%COVERAGE'" in output
     assert "| File | Num found | feature_a | feature_b |" in output

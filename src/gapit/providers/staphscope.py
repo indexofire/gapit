@@ -11,7 +11,7 @@ Screen-only: no typing model. The ``tuf`` single-copy control is a
 committed wheel asset (INSDC NC_007296, public domain).
 
 The spa reference data originates from the Ridom spaServer (academic use);
-nothing is bundled with gapit (MIT) — `gapit db fetch -d sau_spa` downloads
+nothing is bundled with gspec (MIT) — `gspec db fetch -d sau_spa` downloads
 and builds locally.
 """
 
@@ -167,7 +167,7 @@ PROVIDER = Provider(
             " repeat order against spatypes.txt before reporting.",
             "spa-negative isolates report no hits.",
             "spa reference data is from the Ridom spaServer (academic use):"
-            " fetched on demand, never bundled into the gapit wheel.",
+            " fetched on demand, never bundled into the gspec wheel.",
         ),
     ),
 )

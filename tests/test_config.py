@@ -17,36 +17,36 @@ def make_datadir(path: Path) -> Path:
 def test_cli_value_wins_over_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     cli_dir = make_datadir(tmp_path / "cli")
     env_dir = make_datadir(tmp_path / "env")
-    monkeypatch.setenv("GAPIT_DATADIR", str(env_dir))
+    monkeypatch.setenv("GSPEC_DATADIR", str(env_dir))
     assert resolve_datadir(cli_dir) == cli_dir.resolve()
 
 
 def test_env_var_used_when_no_cli_value(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     env_dir = make_datadir(tmp_path / "env")
-    monkeypatch.setenv("GAPIT_DATADIR", str(env_dir))
+    monkeypatch.setenv("GSPEC_DATADIR", str(env_dir))
     assert resolve_datadir(None) == env_dir.resolve()
 
 
 def test_default_datadir_when_unset(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("GAPIT_DATADIR", raising=False)
+    monkeypatch.delenv("GSPEC_DATADIR", raising=False)
     monkeypatch.delenv("XDG_DATA_HOME", raising=False)
     monkeypatch.setenv("HOME", str(tmp_path))
-    default_dir = make_datadir(tmp_path / ".local" / "share" / "gapit" / "db")
+    default_dir = make_datadir(tmp_path / ".local" / "share" / "gspec" / "db")
     assert resolve_datadir(None) == default_dir.resolve()
 
 
 def test_xdg_data_home_used_when_unset(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Given XDG_DATA_HOME and no GAPIT_DATADIR, When resolved, Then the XDG
+    """Given XDG_DATA_HOME and no GSPEC_DATADIR, When resolved, Then the XDG
     user-data root wins over the hardcoded ~/.local/share fallback."""
-    monkeypatch.delenv("GAPIT_DATADIR", raising=False)
+    monkeypatch.delenv("GSPEC_DATADIR", raising=False)
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "xdg"))
     path, source = datadir_source(None)
-    assert path == (tmp_path / "xdg" / "gapit" / "db").resolve()
+    assert path == (tmp_path / "xdg" / "gspec" / "db").resolve()
     assert source == "xdg"
 
 
 def test_gapit_datadir_wins_over_xdg(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("GAPIT_DATADIR", str(tmp_path / "env"))
+    monkeypatch.setenv("GSPEC_DATADIR", str(tmp_path / "env"))
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "xdg"))
     path, source = datadir_source(None)
     assert path == (tmp_path / "env").resolve()
@@ -54,7 +54,7 @@ def test_gapit_datadir_wins_over_xdg(tmp_path: Path, monkeypatch: pytest.MonkeyP
 
 
 def test_cli_datadir_wins_and_is_reported(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("GAPIT_DATADIR", str(tmp_path / "env"))
+    monkeypatch.setenv("GSPEC_DATADIR", str(tmp_path / "env"))
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "xdg"))
     path, source = datadir_source(tmp_path / "cli")
     assert path == (tmp_path / "cli").resolve()
@@ -64,21 +64,21 @@ def test_cli_datadir_wins_and_is_reported(tmp_path: Path, monkeypatch: pytest.Mo
 def test_relative_xdg_data_home_is_ignored(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The XDG spec requires an absolute XDG_DATA_HOME; a relative value is
     ignored and the default fallback is used."""
-    monkeypatch.delenv("GAPIT_DATADIR", raising=False)
+    monkeypatch.delenv("GSPEC_DATADIR", raising=False)
     monkeypatch.setenv("XDG_DATA_HOME", "relative/data")
     monkeypatch.setenv("HOME", str(tmp_path))
     path, source = datadir_source(None)
-    assert path == (tmp_path / ".local" / "share" / "gapit" / "db").resolve()
+    assert path == (tmp_path / ".local" / "share" / "gspec" / "db").resolve()
     assert source == "default"
 
 
 def test_empty_gapit_datadir_falls_back_to_xdg(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("GAPIT_DATADIR", "")
+    monkeypatch.setenv("GSPEC_DATADIR", "")
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "xdg"))
     path, source = datadir_source(None)
-    assert path == (tmp_path / "xdg" / "gapit" / "db").resolve()
+    assert path == (tmp_path / "xdg" / "gspec" / "db").resolve()
     assert source == "xdg"
 
 
@@ -98,7 +98,7 @@ def test_ensure_datadir_creates_a_private_root(tmp_path: Path) -> None:
 def test_tilde_in_env_var_is_expanded(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("HOME", str(tmp_path))
     data_dir = make_datadir(tmp_path / "data")
-    monkeypatch.setenv("GAPIT_DATADIR", "~/data")
+    monkeypatch.setenv("GSPEC_DATADIR", "~/data")
     assert resolve_datadir(None) == data_dir.resolve()
 
 
@@ -107,3 +107,52 @@ def test_missing_datadir_raises_database_error(tmp_path: Path) -> None:
         resolve_datadir(tmp_path / "nope")
     assert excinfo.value.exit_code == 4
     assert excinfo.value.code == "DATADIR_NOT_FOUND"
+
+
+def test_legacy_datadir_env_is_still_honoured(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given only the pre-0.8 GAPIT_DATADIR, When resolved, Then it is used.
+
+    The rename must not break an environment that still exports the old name.
+    """
+    legacy_dir = make_datadir(tmp_path / "legacy")
+    monkeypatch.delenv("GSPEC_DATADIR", raising=False)
+    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
+    monkeypatch.setenv("GAPIT_DATADIR", str(legacy_dir))
+    assert resolve_datadir(None) == legacy_dir.resolve()
+
+
+def test_new_datadir_env_wins_over_legacy(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Given both names, When resolved, Then GSPEC_DATADIR wins."""
+    new_dir = make_datadir(tmp_path / "new")
+    legacy_dir = make_datadir(tmp_path / "legacy")
+    monkeypatch.setenv("GSPEC_DATADIR", str(new_dir))
+    monkeypatch.setenv("GAPIT_DATADIR", str(legacy_dir))
+    assert resolve_datadir(None) == new_dir.resolve()
+
+
+def test_legacy_home_datadir_is_kept_when_new_one_absent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given only a pre-0.8 ~/.local/share/gapit/db, When resolved, Then it is
+    used instead of an empty new default — an upgrade never orphans databases."""
+    monkeypatch.delenv("GSPEC_DATADIR", raising=False)
+    monkeypatch.delenv("GAPIT_DATADIR", raising=False)
+    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    legacy = make_datadir(tmp_path / ".local" / "share" / "gapit" / "db")
+    assert resolve_datadir(None) == legacy.resolve()
+
+
+def test_new_home_datadir_wins_once_it_exists(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Given both home directories, When resolved, Then the new one wins."""
+    monkeypatch.delenv("GSPEC_DATADIR", raising=False)
+    monkeypatch.delenv("GAPIT_DATADIR", raising=False)
+    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    make_datadir(tmp_path / ".local" / "share" / "gapit" / "db")
+    new = make_datadir(tmp_path / ".local" / "share" / "gspec" / "db")
+    assert resolve_datadir(None) == new.resolve()

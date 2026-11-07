@@ -28,7 +28,7 @@ def test_version_matches_pyproject() -> None:
 def test_cli_version_flag() -> None:
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert result.stdout == f"gapit {__version__}\n"
+    assert result.stdout == f"gspec {__version__}\n"
 
 
 def test_cli_version_json() -> None:
@@ -40,6 +40,17 @@ def test_cli_version_json() -> None:
     payload = json.loads(result.stdout)
     assert payload == {
         "schema": "gapit.version/1",
-        "name": "gapit",
+        "name": "gspec",
         "version": __version__,
     }
+
+
+def test_both_command_names_ship() -> None:
+    """Given the built metadata, When read, Then gspec and the pre-0.8 gapit
+    command are both declared — a rename must not break existing pipelines."""
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    document = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    scripts = document["project"]["scripts"]
+    assert scripts["gspec"] == "gapit.cli:app"
+    assert scripts["gapit"] == "gapit.cli:app"
+    assert document["project"]["name"] == "gspec"

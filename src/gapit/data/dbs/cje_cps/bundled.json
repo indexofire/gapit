@@ -1,7 +1,7 @@
 {
   "name": "cje_cps",
   "description": "Campylobacter jejuni Penner capsule (CPS) multiplex PCR panel",
-  "vendor": "gapit-curated (Poly 2015; CC0 + NCBI public domain)",
+  "vendor": "gspec-curated (Poly 2015; CC0 + NCBI public domain)",
   "dbtype": "nucl",
   "kind": "gene",
   "snapshotted": "2026-10-29",
@@ -32,9 +32,9 @@
       }
     ],
     "usage": [
-      "gapit screen isolate.fa --db cje_cps --output cps.tsv   # stage 1: detect CPS amplicons",
-      "gapit typing cps.tsv                                   # stage 2: penner_cps call",
-      "gapit screen isolate.fa --db cje_cps --format json      # single-shot agent-readable output"
+      "gspec screen isolate.fa --db cje_cps --output cps.tsv   # stage 1: detect CPS amplicons",
+      "gspec typing cps.tsv                                   # stage 2: penner_cps call",
+      "gspec screen isolate.fa --db cje_cps --format json      # single-shot agent-readable output"
     ],
     "caveats": [
       "HS45 89-94% alleles are curated into the panel so -I 90 detects them at ~100%; the 80.47% C. coli repeat is not an HS45 allele and is excluded by the 90% floor. HS37 83% hits are oxidoreductase cross-reactions, not HS37 alleles; the 90% default floor removes them.",

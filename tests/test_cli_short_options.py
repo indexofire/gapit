@@ -138,7 +138,7 @@ def test_every_option_has_a_unique_single_letter_short() -> None:
 
 
 def test_screen_help_renders_paired_shorts() -> None:
-    """Given `gapit screen -h`, When rendered, Then long and short forms
+    """Given `gspec screen -h`, When rendered, Then long and short forms
     appear side by side and the negative --no-merge-fragments half stays
     long-only."""
     result = runner.invoke(app, ["screen", "-h"])

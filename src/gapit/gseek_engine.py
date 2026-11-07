@@ -38,7 +38,10 @@ if TYPE_CHECKING:
     from gapit.paf import PafRecord
 
 _LOGGER = logging.getLogger("gapit.gseek")
-_ENGINE_ENV = "GAPIT_ENGINE"
+_ENGINE_ENV = "GSPEC_ENGINE"
+#: Pre-0.8 engine switch, still honoured (a gseek install that predates the
+#: rename exports this name).
+_LEGACY_ENGINE_ENV = "GAPIT_ENGINE"
 _VALID_MODES = frozenset({"legacy", "gseek", "shadow"})
 T = TypeVar("T")
 
@@ -205,7 +208,7 @@ class _LegacyEngine:
 
 
 class _GseekRecord(Protocol):
-    """The subset of a gseek AlignmentRecord used by gapit."""
+    """The subset of a gseek AlignmentRecord used by gspec."""
 
     query_id: str
     target_id: str
@@ -244,6 +247,10 @@ class _GseekModule(Protocol):
 
 def engine() -> _LegacyEngine | Engine:
     """Return the engine switch, importing gseek only for gseek/shadow modes."""
+    if os.environ.get(_LEGACY_ENGINE_ENV) and not os.environ.get(_ENGINE_ENV):
+        # gseek reads the canonical name itself, so project the legacy value
+        # into it for the rest of the process.
+        os.environ[_ENGINE_ENV] = os.environ[_LEGACY_ENGINE_ENV]
     raw = os.environ.get(_ENGINE_ENV, "legacy").strip().lower() or "legacy"
     if raw not in _VALID_MODES:
         raise GapitError(
@@ -257,7 +264,7 @@ def engine() -> _LegacyEngine | Engine:
         from gseek.compat import Engine
     except ImportError as exc:
         raise DependencyError(
-            f"{_ENGINE_ENV}={raw} requires the optional gseek package (install gapit[gseek])",
+            f"{_ENGINE_ENV}={raw} requires the optional gseek package (install gspec[gseek])",
             code="MISSING_DEPENDENCY",
             context={"package": "gseek"},
         ) from exc
@@ -275,7 +282,7 @@ def _gseek() -> _GseekModule:
     except ImportError as exc:
         raise DependencyError(
             f"{_ENGINE_ENV}=gseek requires the optional gseek package "
-            "(Python >= 3.12; install gapit[gseek])",
+            "(Python >= 3.12; install gspec[gseek])",
             code="MISSING_DEPENDENCY",
             context={"package": "gseek"},
         ) from exc
@@ -297,7 +304,7 @@ def _blast_row(record: _GseekRecord, *, protein: bool = False) -> BlastRow:
 
     gseek stores 0-based half-open, forward-strand coordinates; BLAST emits
     1-based inclusive coordinates and reports a minus subject as sstart > send.
-    gapit's dedup/swap logic depends on exactly that legacy representation.
+    gspec's dedup/swap logic depends on exactly that legacy representation.
     """
     from gapit.blast import BlastRow
 
@@ -365,7 +372,7 @@ def _minimap2_index_policy(database: Database) -> str:
 
 
 def _paf_record(record: _GseekRecord) -> PafRecord:
-    """Map one gseek minimap2 record to gapit's PAF boundary model."""
+    """Map one gseek minimap2 record to gspec's PAF boundary model."""
     from gapit.paf import PafRecord
 
     tags = record.tags
@@ -420,10 +427,10 @@ def run_blast_gseek(
         gseek_params["min_identity"] = params.minid
     if debug:
         print(
-            f"gapit: gseek blast: db={database.name} dbtype={dbtype}",
+            f"gspec: gseek blast: db={database.name} dbtype={dbtype}",
             file=sys.stderr,
         )
-    with tempfile.TemporaryDirectory(prefix="gapit-gseek-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="gspec-gseek-") as tmp:
         query_path = Path(tmp) / "query.fasta"
         query_path.write_text(fasta_text, encoding="utf-8")
         gseek = _gseek()
@@ -488,7 +495,7 @@ def run_blast_many_gseek(
     """Batch several FASTA queries through gseek.align_many.
 
     Returns one row list per input path in input order, or None when the
-    installed gseek lacks the batch API (gapit then falls back to per-file
+    installed gseek lacks the batch API (gspec then falls back to per-file
     screening). The records carry gseek's ``batch_index`` tag after the API
     restores the original query ids, which is what lets us split them back.
     """
@@ -524,15 +531,15 @@ def run_blast_many_gseek(
         ref_kwargs["target_refs"] = target_refs
     batch_kwargs: dict[str, object] = {}
     if _supports_batch_option(gseek, "compute_inputs"):
-        # gapit consumes records, not gseek's input provenance; skip the full
+        # gspec consumes records, not gseek's input provenance; skip the full
         # query-file hash when the newer batch API allows it.
         batch_kwargs["compute_inputs"] = False
     if _supports_batch_option(gseek, "sort_records"):
-        # report_from_rows() performs gapit's own stable hit ordering.
+        # report_from_rows() performs gspec's own stable hit ordering.
         batch_kwargs["sort_records"] = False
     if debug:
         print(
-            f"gapit: gseek batch blast: db={database.name} files={len(queries)} dbtype={dbtype}",
+            f"gspec: gseek batch blast: db={database.name} files={len(queries)} dbtype={dbtype}",
             file=sys.stderr,
         )
     from gseek.errors import ToolNotFoundError
@@ -593,9 +600,9 @@ def iter_paf_gseek(
     debug: bool = False,
     nm_tags: bool = False,
 ) -> Iterable[PafRecord]:
-    """Yield gapit PAF records from gseek minimap2 for every lane.
+    """Yield gspec PAF records from gseek minimap2 for every lane.
 
-    ``secondary="all"`` means "do not pass --secondary=no": gapit's legacy
+    ``secondary="all"`` means "do not pass --secondary=no": gspec's legacy
     invocation keeps minimap2's default secondary output and filters later.
     """
     gseek = _gseek()
@@ -626,7 +633,7 @@ def iter_paf_gseek(
             gseek_params.update({"k": 11, "w": 6, "B": 2})
         if debug:
             print(
-                f"gapit: gseek minimap2: preset={read_type} reads={r1}",
+                f"gspec: gseek minimap2: preset={read_type} reads={r1}",
                 file=sys.stderr,
             )
         try:

@@ -111,13 +111,13 @@ def _default_usage(name: str, kind: str, typed: bool) -> tuple[str, ...]:
     each provider restating the same two commands.
     """
     if kind == "cluster":
-        return (f"gapit screen -d {name} [FILE]... --format json",)
+        return (f"gspec screen -d {name} [FILE]... --format json",)
     if typed:
         return (
-            f"gapit screen -d {name} [FILE]... -o RESULT.tsv",
-            "gapit typing RESULT.tsv",
+            f"gspec screen -d {name} [FILE]... -o RESULT.tsv",
+            "gspec typing RESULT.tsv",
         )
-    return (f"gapit screen -d {name} [FILE]... --format json",)
+    return (f"gspec screen -d {name} [FILE]... --format json",)
 
 
 def _provider_guidance(name: str) -> DbGuidance:
@@ -148,7 +148,7 @@ def collect_db_info(name: str, datadir: Path | None) -> DbInfoDocument:
     entry = next((row for row in db_list_entries(root) if row.name == name), None)
     if entry is None:
         raise DatabaseError(
-            f"unknown database: {name} (see: gapit db list)",
+            f"unknown database: {name} (see: gspec db list)",
             code="DATABASE_NOT_FOUND",
             context={"db": name},
         )

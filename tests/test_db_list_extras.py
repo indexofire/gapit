@@ -1,4 +1,4 @@
-"""`gapit db list` visibility for databases the registry does not know.
+"""`gspec db list` visibility for databases the registry does not know.
 
 Databases installed into the datadir outside the provider catalog — `db
 build` products (gene + cluster kinds) and manifest-less abricate-style
@@ -154,7 +154,7 @@ def test_db_list_json_without_extras_carries_only_the_bundled_source_field(
         assert entry["dbtype"] in {"nucl", "prot"}
     assert (
         next(entry for entry in with_source if entry["name"] == "eco_dec")["vendor"]
-        == "gapit-curated (public-domain sources)"
+        == "gspec-curated (public-domain sources)"
     )
 
 
@@ -332,7 +332,7 @@ def test_db_list_reads_local_info_description_and_vendor(tmp_path: Path) -> None
         json.dumps(
             {
                 "description": "Local AMR panel",
-                "vendor": "gapit(Hangzhou CDC)",
+                "vendor": "gspec(Hangzhou CDC)",
             }
         ),
         encoding="utf-8",
@@ -342,10 +342,10 @@ def test_db_list_reads_local_info_description_and_vendor(tmp_path: Path) -> None
     assert result.exit_code == 0, result.stderr
     entry = next(item for item in json.loads(result.stdout)["providers"] if item["name"] == "myamr")
     assert entry["description"] == "Local AMR panel"
-    assert entry["vendor"] == "gapit(Hangzhou CDC)"
+    assert entry["vendor"] == "gspec(Hangzhou CDC)"
 
     rows = list_rows(datadir)
-    assert "myamr\tLocal AMR panel\tinstalled (2)\tnucl\tgene\t-\tgapit(Hangzhou CDC)" in rows
+    assert "myamr\tLocal AMR panel\tinstalled (2)\tnucl\tgene\t-\tgspec(Hangzhou CDC)" in rows
 
 
 def test_db_list_malformed_local_info_is_a_typed_error(tmp_path: Path) -> None:

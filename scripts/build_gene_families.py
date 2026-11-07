@@ -12,7 +12,7 @@ Usage::
         [--threads N] [--min-identity 90] [--min-coverage 80]
 
 The script expects ``features.json`` and ``sequences`` in ``DB_DIR`` and
-requires ``makeblastdb`` + ``blastp`` on PATH (BLAST+ is already a gapit
+requires ``makeblastdb`` + ``blastp`` on PATH (BLAST+ is already a gspec
 dependency).
 """
 
@@ -141,7 +141,7 @@ def main(argv: list[str] | None = None) -> int:
     if not proteins:
         raise RuntimeError(f"no translatable genes found in {db_dir}")
     started = time.perf_counter()
-    with tempfile.TemporaryDirectory(prefix="gapit-families.") as workdir:
+    with tempfile.TemporaryDirectory(prefix="gspec-families.") as workdir:
         work = Path(workdir)
         fasta = work / "genes.faa"
         mapping = _write_fasta(fasta, proteins)

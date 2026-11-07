@@ -1,4 +1,4 @@
-"""gapit command-line interface (click entrypoint)."""
+"""gspec command-line interface (click entrypoint)."""
 
 import json
 from collections.abc import Sequence
@@ -19,7 +19,7 @@ from gapit.mcp import register_mcp_command
 
 
 class GapitGroup(click.Group):
-    """Click group that renders click's own parse failures as gapit envelopes.
+    """Click group that renders click's own parse failures as gspec envelopes.
 
     Click validates options/arguments before the command body runs, so
     ``dispatch`` never sees unknown options or missing required options. The
@@ -35,7 +35,7 @@ class GapitGroup(click.Group):
         standalone_mode: bool = True,
         windows_expand_args: bool = True,
         # Any mirrors click's own **extra signature; this is the click interop
-        # boundary, not a gapit data model.
+        # boundary, not a gspec data model.
         **extra: Any,
     ) -> Any:
         try:
@@ -67,7 +67,7 @@ class GapitGroup(click.Group):
 
 @click.group(
     cls=GapitGroup,
-    name="gapit",
+    name="gspec",
     help="Mass screening of contigs and reads for known genes across reference databases.",
     no_args_is_help=True,
     invoke_without_command=True,
@@ -96,7 +96,7 @@ def main(ctx: click.Context, show_version: bool | None, as_json: bool) -> None:
         if as_json:
             click.echo(VersionDocument(version=__version__).model_dump_json(by_alias=True))
         else:
-            click.echo(f"gapit {__version__}")
+            click.echo(f"gspec {__version__}")
         ctx.exit(0)
     if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
@@ -120,9 +120,9 @@ register_mcp_command(app)
     help=f"Document to introspect: {', '.join(SCHEMA_MODELS)}.",
 )
 def schema(name: str) -> None:
-    """Print the JSON Schema of a gapit output document.
+    """Print the JSON Schema of a gspec output document.
 
-    The schema is gapit's machine-readable output contract: an agent can
+    The schema is gspec's machine-readable output contract: an agent can
     discover every field, type, and required key without parsing the docs,
     then validate a document before consuming it.
     """

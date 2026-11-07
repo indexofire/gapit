@@ -67,7 +67,7 @@ def _run(
     monkeypatch: pytest.MonkeyPatch,
     mode: str,
 ):
-    monkeypatch.setenv("GAPIT_ENGINE", mode)
+    monkeypatch.setenv("GSPEC_ENGINE", mode)
     return run_blastn(
         query,
         db,
@@ -108,11 +108,11 @@ def test_minimap2_parity(
     else:
         query = tmp_path / "q.fa"
         query.write_text(">contig1\n" + DNA + "\n")
-    monkeypatch.setenv("GAPIT_ENGINE", "legacy")
+    monkeypatch.setenv("GSPEC_ENGINE", "legacy")
     legacy = run_minimap2([(query, None)], db, read_type=read_type, threads=1, nm_tags=True)
-    monkeypatch.setenv("GAPIT_ENGINE", "gseek")
+    monkeypatch.setenv("GSPEC_ENGINE", "gseek")
     new = run_minimap2([(query, None)], db, read_type=read_type, threads=1, nm_tags=True)
-    # gseek returns a deterministic sorted view; gapit consumers aggregate/sort,
+    # gseek returns a deterministic sorted view; gspec consumers aggregate/sort,
     # so compare the PAF row sets rather than raw emission order.
     assert sorted(new, key=lambda row: row.model_dump_json()) == sorted(
         legacy, key=lambda row: row.model_dump_json()
@@ -126,8 +126,8 @@ def test_minimap2_paired_parity(tmp_path: Path, monkeypatch: pytest.MonkeyPatch)
     r2 = tmp_path / "r2.fq"
     r1.write_text("@read1\n" + DNA[30:130] + "\n+\n" + "I" * 100 + "\n")
     r2.write_text("@read1\n" + DNA[130:230] + "\n+\n" + "I" * 100 + "\n")
-    monkeypatch.setenv("GAPIT_ENGINE", "legacy")
+    monkeypatch.setenv("GSPEC_ENGINE", "legacy")
     legacy = run_minimap2([(r1, r2)], db, read_type="sr", threads=1, nm_tags=True)
-    monkeypatch.setenv("GAPIT_ENGINE", "gseek")
+    monkeypatch.setenv("GSPEC_ENGINE", "gseek")
     new = run_minimap2([(r1, r2)], db, read_type="sr", threads=1, nm_tags=True)
     assert new == legacy

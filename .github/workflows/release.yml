@@ -46,9 +46,12 @@ jobs:
       - name: Install the built wheel and smoke-test it
         run: |
           python -m pip install dist/*.whl
+          gspec --version
+          gspec schema report > /dev/null
+          gspec db path --json > /dev/null
+          # The pre-0.8 command name must keep working after the rename.
           gapit --version
           gapit schema report > /dev/null
-          gapit db path --json > /dev/null
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

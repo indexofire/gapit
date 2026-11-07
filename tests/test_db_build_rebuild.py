@@ -1,4 +1,4 @@
-"""`gapit db build NAME` (no INPUT): re-project a gene database from its records.
+"""`gspec db build NAME` (no INPUT): re-project a gene database from its records.
 
 `records.jsonl` is the editable truth, so gene curation (renaming a gene,
 merging alleles under one name) is a records edit plus a rebuild. The rebuild

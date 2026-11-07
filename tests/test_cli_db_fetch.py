@@ -1,4 +1,4 @@
-"""CLI integration tests: `gapit db fetch -d NAME` (provider path) + `db list`.
+"""CLI integration tests: `gspec db fetch -d NAME` (provider path) + `db list`.
 
 Offline by construction: ``gapit.db_ops.REGISTRY`` is monkeypatched down to
 two synthetic Providers whose source_urls point at a ``file://`` fasta fixture
@@ -216,16 +216,16 @@ def test_db_fetch_debug_echoes_index_argv(tmp_path: Path, monkeypatch: pytest.Mo
     """Given a registry provider backed by a file:// fasta, When
     `db fetch -d NAME --debug`, Then exit 0 with the SAME one-line stdout
     receipt as a plain fetch, the makeblastdb argv line is echoed to stderr
-    (`gapit: run:`), and no `minimap2 -d` line appears (no .mmi is built)."""
+    (`gspec: run:`), and no `minimap2 -d` line appears (no .mmi is built)."""
     datadir = patch_registry(tmp_path, monkeypatch)
     plain = fetch(SYN, "--datadir", str(datadir), "--force")
     assert plain.exit_code == 0
-    assert "gapit: run:" not in plain.stderr
+    assert "gspec: run:" not in plain.stderr
     result = fetch(SYN, "--datadir", str(datadir), "--force", "--debug")
     assert result.exit_code == 0
     assert result.stdout == plain.stdout
-    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gapit: run:")]
-    assert any(line.startswith("gapit: run: makeblastdb -in ") for line in run_lines)
+    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gspec: run:")]
+    assert any(line.startswith("gspec: run: makeblastdb -in ") for line in run_lines)
     assert not any("minimap2 -d " in line for line in run_lines)
 
 
@@ -363,11 +363,11 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
     assert fake.getvalue() == (
         "NAME\tDESCRIPTION\tSTATUS\tDBTYPE\tKIND\tTYPING\tPROVIDER\n"
         "cje_cps\tCampylobacter jejuni Penner capsule (CPS) multiplex PCR panel\tbundled"
-        "\tnucl\tgene\tcommand\tgapit-curated (Poly 2015; CC0 + NCBI public domain)\n"
+        "\tnucl\tgene\tcommand\tgspec-curated (Poly 2015; CC0 + NCBI public domain)\n"
         "eco_dec\tDiarrheagenic E. coli marker panel (GB 4789.6 + risk-monitoring designation)"
-        "\tbundled\tnucl\tgene\tcommand\tgapit-curated (public-domain sources)\n"
+        "\tbundled\tnucl\tgene\tcommand\tgspec-curated (public-domain sources)\n"
         "lmo_sero\tListeria monocytogenes serogrouping (Doumith 2004)\tbundled\tnucl\tgene\t"
-        "command\tgapit-curated (public-domain INSDC sources)\n"
+        "command\tgspec-curated (public-domain INSDC sources)\n"
         "lpn_sero\tL. pneumophila serogroup 1-15 LPS locus typing (Nakaue 2021)\tbundled\t"
         "nucl\tcluster\tintegrated\tNakaue 2021 (INSDC/DDBJ)\n"
         "lpn_vf\tL. pneumophila virulence factor proteins (LegionProfiler)\tbundled\tprot\t"
@@ -378,20 +378,20 @@ def test_db_list_non_tty_emits_exact_tsv(tmp_path: Path, monkeypatch: pytest.Mon
         "nucl\tgene\tcommand\tGBS-SBG 2021 (MIT)\n"
         "shi_sero\tShigella molecular serotype marker panel"
         " (ShigaTyper public-domain markers)\tbundled\tnucl\tgene\tcommand\t"
-        "gapit-curated (ShigaTyper public-domain markers)\n"
+        "gspec-curated (ShigaTyper public-domain markers)\n"
         "str_lancefield\tStreptococcus Lancefield groups A/B/C/G markers + tuf control\tbundled\t"
         "nucl\tgene\tcommand\tgac/gcc panel (INSDC/RefSeq)\n"
         f"{SYN}\t{SYN_DESCRIPTION}\tinstalled (2)\tnucl\tgene\t-\tSynthetica\n"
         f"{OTHER}\tavailable but never fetched in these tests\tavailable\tnucl\tgene"
         "\t-\tExample Org\n"
         "vch_oagc\tVibrio cholerae O-antigen gene clusters (OAGC, 190 OL loci) + ompW control"
-        "\tbundled\tnucl\tcluster\tintegrated\tgapit(Hangzhou CDC)\n"
+        "\tbundled\tnucl\tcluster\tintegrated\tgspec(Hangzhou CDC)\n"
         "vch_vf\tV. cholerae CTX prophage core/RS2 genes + ctxB/tcpA allele panel\tbundled"
-        "\tnucl\tgene\t-\tgapit-curated (INSDC)\n"
+        "\tnucl\tgene\t-\tgspec-curated (INSDC)\n"
         "vpa_ok\tV. parahaemolyticus O and K antigen loci (OAgc/CPSgc, vpasero)\tbundled\t"
-        "nucl\tcluster\tintegrated\tgapit-curated (vpasero)\n"
+        "nucl\tcluster\tintegrated\tgspec-curated (vpasero)\n"
         "vpa_pai\tV. parahaemolyticus VPaI-1..VPaI-10 pathogenicity islands\tbundled\t"
-        "nucl\tcluster\t-\tgapit-curated (Boyd et al. 2008; INSDC)\n"
+        "nucl\tcluster\t-\tgspec-curated (Boyd et al. 2008; INSDC)\n"
     )
 
 

@@ -1,4 +1,4 @@
-"""CLI integration tests: `gapit db build NAME FASTA` (custom databases).
+"""CLI integration tests: `gspec db build NAME FASTA` (custom databases).
 
 Real binaries (makeblastdb/blastn/minimap2 from the pixi env), synthetic
 fixtures only, everything local to tmp_path — the test_cli_db_fetch.py and
@@ -28,7 +28,7 @@ OTHER_DB = "myamr2"
 SEQ_A = "".join(random.Random(1).choice("ACGT") for _ in range(240))  # demov2
 SEQ_B = "".join(random.Random(2).choice("ACGT") for _ in range(240))  # demov3
 SEQ_C = "".join(random.Random(3).choice("ACGT") for _ in range(240))  # tilde gene
-SEQ_D = "".join(random.Random(4).choice("ACGT") for _ in range(240))  # gapit gene
+SEQ_D = "".join(random.Random(4).choice("ACGT") for _ in range(240))  # gspec gene
 AMINO = "".join(
     random.Random(5).choice("ACDEFGHIKLMNPQRSTVWY") for _ in range(80)
 )  # protein-looking

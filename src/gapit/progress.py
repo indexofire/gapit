@@ -2,7 +2,7 @@
 
 Modeled on gmlst's ``make_progress``: spinner, description, bar, M-of-N,
 percent, elapsed time — on a console bound to stderr so bar rendering can
-never pollute stdout data streams (gapit's stdout-purity law). One
+never pollute stdout data streams (gspec's stdout-purity law). One
 deliberate deviation from the gmlst constructor: rich's Live normally
 REDIRECTS the process's real stdout/stderr through the bar's console on a
 terminal, which would reroute streamed report bytes onto stderr here — so

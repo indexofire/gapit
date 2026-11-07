@@ -47,9 +47,9 @@ _DOWNLOAD_TIMEOUT_SECONDS = 60
 
 # mgc.ac.cn (vfdb) 403s "Python-urllib" UAs specifically while serving
 # browser-ish clients (Wave E diagnosis): the Mozilla compatibility token
-# passes those naive UA filters and the gapit/<version> suffix still
+# passes those naive UA filters and the gspec/<version> suffix still
 # identifies the tool to servers that log it.
-_USER_AGENT = f"Mozilla/5.0 (compatible; gapit/{__version__})"
+_USER_AGENT = f"Mozilla/5.0 (compatible; gspec/{__version__})"
 
 Dbtype = Literal["nucl", "prot"]
 
@@ -82,7 +82,7 @@ class Provider:
     transform: Callable[[Path], Iterable[Record]]
     license: str | None = None
     kind: Literal["gene"] = "gene"
-    # What `gapit db info` reports beyond the catalog row: the literature the
+    # What `gspec db info` reports beyond the catalog row: the literature the
     # content derives from and the caveats its interpretation depends on. The
     # usage recipe is synthesized from the database kind, so providers usually
     # declare references + caveats only.
@@ -114,7 +114,7 @@ def natural_key(text: str) -> tuple[object, ...]:
 
 def security_note(message: str) -> None:
     """A trust-boundary warning that survives ``--quiet`` (stderr only)."""
-    print(f"gapit: WARNING: {message}", file=sys.stderr)
+    print(f"gspec: WARNING: {message}", file=sys.stderr)
 
 
 def safe_extractall(archive: zipfile.ZipFile, destination: Path) -> None:

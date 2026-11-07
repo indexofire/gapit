@@ -1,6 +1,6 @@
-# Contributing to gapit
+# Contributing to gspec
 
-gapit is a typed, test-first Python project. Start with `AGENTS.md` for the
+gspec is a typed, test-first Python project. Start with `AGENTS.md` for the
 repository rules and `.github/workflows/ci.yml` for the exact gates.
 
 ## Development setup
@@ -17,7 +17,7 @@ pixi run test
 
 External BLAST+ and minimap2 binaries arrive through the pixi environment.
 The optional `gseek` engine is covered by the default environment; legacy
-(`GAPIT_ENGINE=legacy`) is always available.
+(`GSPEC_ENGINE=legacy`) is always available.
 
 ## Every change
 
@@ -39,7 +39,7 @@ The optional `gseek` engine is covered by the default environment; legacy
   treated as defects.
 - Prefer generated facts (database tables, schema lists, counts) over hand-copied
   values; update the generator/tests when a fact changes.
-- New public JSON documents should be registered in `gapit schema` where they are
+- New public JSON documents should be registered in `gspec schema` where they are
   intended as agent contracts.
 
 ## Commits and releases

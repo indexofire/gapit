@@ -1,6 +1,6 @@
 """The `db rename` use-case: re-home an installed database under a new name.
 
-gapit's naming convention (genus initial + first two species letters, or the
+gspec's naming convention (genus initial + first two species letters, or the
 first three genus letters) exists so database names read predictably — but the
 first generation of names (`cam`, `vpa`, `cdi`, `enterotoxin`) predates it.
 Renaming must not mean re-downloading or hand-editing a datadir, so this
@@ -117,7 +117,7 @@ def perform_rename(
 
     Guards, in order: both names must be plain names (no path separators or
     control characters); they must differ; the source must be an installed
-    gapit database (its manifest supplies the provenance the rebuild keeps —
+    gspec database (its manifest supplies the provenance the rebuild keeps —
     an abricate-style directory has no name to rewrite); the target must not
     already exist unless ``force``.
     """

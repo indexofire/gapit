@@ -1,4 +1,4 @@
-"""Kaptive cluster-provider suites (stage 3): `gapit db fetch` for the seven
+"""Kaptive cluster-provider suites (stage 3): `gspec db fetch` for the seven
 official-keyword providers.
 
 Offline by construction: the REGISTRY is monkeypatched so every kaptive

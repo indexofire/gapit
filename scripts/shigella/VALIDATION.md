@@ -21,8 +21,8 @@
 Commands:
 
 ```bash
-gapit screen -F shi_all.fofn -d shi_sero -D /tmp/shi-dd -j 16 -o screen.tsv
-gapit typing screen.tsv -D /tmp/shi-dd -o typing.tsv
+gspec screen -F shi_all.fofn -d shi_sero -D /tmp/shi-dd -j 16 -o screen.tsv
+gspec typing screen.tsv -D /tmp/shi-dd -o typing.tsv
 python scripts/shigella/validate_serotyper.py \
   typing.tsv ~/data/shi/boydii/analysis/shigatyper_result.tsv
 python scripts/shigella/validate_serotyper.py \
@@ -74,16 +74,16 @@ calls fail:
 | ShigeiFinder 1.3.5 | 90 | 75 (83.3%) | 0 | 4 (4.4%) | 11 (12.2%) |
 
 Of the 11 boydii/ShigeiFinder mismatches: 8 are SB6 vs SB10 (ShigaPass calls
-all 8 SB10, and gapit calls SB10 from the intact `wbaM` 5' end), 2 are
-SB1 vs SB20 (ShigaPass calls both SB20, and gapit calls SB20 from the
+all 8 SB10, and gspec calls SB10 from the intact `wbaM` 5' end), 2 are
+SB1 vs SB20 (ShigaPass calls both SB20, and gspec calls SB20 from the
 heparinase marker), and 1 is `SB13-atypical` vs SB13. The remaining
-ShigeiFinder disagreements are not evidence that gapit's marker call is wrong.
+ShigeiFinder disagreements are not evidence that gspec's marker call is wrong.
 
 ## Remaining differences
 
 ### S. boydii SB6 vs SB10
 
-ShigeiFinder calls eight genomes SB6; gapit calls SB10 from an intact 5'
+ShigeiFinder calls eight genomes SB6; gspec calls SB10 from an intact 5'
 `wbaM` alignment. ShigaPass also calls all eight SB10, matching the IS629
 mechanism (Senchenkova et al. 2005). `GCA_003573425` is the 3'-partial case
 (`wbaM 1-831/957`): its alignment starts at the 5' end, so it is SB10, not
@@ -91,15 +91,15 @@ an IS629 interruption.
 
 ### S. boydii SB1 vs SB20 (2)
 
-`GCA_000815705` and `GCA_001905945` carry `Sb1_wzx` + `heparinase`; gapit
+`GCA_000815705` and `GCA_001905945` carry `Sb1_wzx` + `heparinase`; gspec
 calls SB20, and ShigaPass also calls SB20. ShigeiFinder calls SB1 (it does
 not use the heparinase distinction), so this is a reference-definition
-difference rather than a gapit error.
+difference rather than a gspec error.
 
 ### S. boydii 13-atypical
 
 `GCA_001933075` is `SB13-atypical` in ShigeiFinder, `Not Shigella/EIEC` in
-ShigaPass, and `S. boydii 13` in gapit (the control-exempt SB13 rule inherited
+ShigaPass, and `S. boydii 13` in gspec (the control-exempt SB13 rule inherited
 from ShigaTyper). This is an atypical/controversial serotype; the call is
 reported as SB13 with the rule's note, not silently normalized to atypical.
 
@@ -114,13 +114,13 @@ upstream label error.
 ### S. flexneri 2av vs 2a (3 genomes)
 
 `GCF_056954245/485/565` carry `Xv` at ~99% identity with 70-86% coverage.
-gapit calls the finer 2av; ShigeiFinder calls 2a, and ShigaPass reports
+gspec calls the finer 2av; ShigeiFinder calls 2a, and ShigaPass reports
 `SF1-5` with an `Unknown` POAC subtype. The 2av call is kept as a refinement.
 
 ### S. sonnei ambiguous (6)
 
 These assemblies carry both S. flexneri (`Sf_wzx` + `gtrII`) and S. sonnei
-(`Ss_methylase` + `Ss_wzx`) marker sets. ShigeiFinder calls them SS; gapit
+(`Ss_methylase` + `Ss_wzx`) marker sets. ShigeiFinder calls them SS; gspec
 keeps the explicit mixed-marker ambiguity rather than guessing.
 
 ### S. sonnei form II fallback (2)
@@ -142,10 +142,10 @@ or control-limit cases, not mis-calls.
 ### S. dysenteriae 16 fallback (ShigaPass)
 
 Two genomes (`GCF_002949345/555`) are called SD16 by ShigaPass from MLST +
-fliC + CRISPR with only 2.8% rfb coverage. gapit has no Sd16 rule and its
+fliC + CRISPR with only 2.8% rfb coverage. gspec has no Sd16 rule and its
 `SdProv_wzx` marker does not match, so it reports unresolved. The other
 ShigaPass fallbacks are similar weak-rfb cases; for example,
-`GCF_000815515` is called SB1 from 12.2% rfb coverage, and gapit stays
+`GCF_000815515` is called SB1 from 12.2% rfb coverage, and gspec stays
 unresolved.
 
 ### ipaH control

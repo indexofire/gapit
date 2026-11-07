@@ -98,7 +98,7 @@ def render_summary_md(matrix: SummaryMatrix, *, now: datetime) -> str:
     lines: list[str] = [
         "---",
         "schema: gapit.summary/1",
-        f"tool: gapit {__version__}",
+        f"tool: gspec {__version__}",
         f"created_at: {utc_timestamp(now)}",
         f"metric: '{matrix.params.metric}'",
         f"metrics: {json.dumps(list(matrix.params.metrics))}",
@@ -107,7 +107,7 @@ def render_summary_md(matrix: SummaryMatrix, *, now: datetime) -> str:
         f"genes: {len(matrix.genes)}",
         "---",
         "",
-        "# gapit summary matrix",
+        "# gspec summary matrix",
         "",
         "| " + " | ".join(_md_cell(column) for column in columns) + " |",
         "|" + "---|" * len(columns),

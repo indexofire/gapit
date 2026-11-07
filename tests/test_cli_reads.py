@@ -342,17 +342,17 @@ def test_reads_flag_is_gone_from_help() -> None:
 
 def test_reads_debug_echoes_minimap2_argv(datadir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Given --r1 with --debug, When run, Then the minimap2 argv is echoed
-    to stderr as a `gapit: run:` line and stdout stays identical to the
+    to stderr as a `gspec: run:` line and stdout stays identical to the
     plain run (debug is stderr-only); the plain run emits no argv lines."""
     args = ["screen", "--r1", "tetx_full.fq", "--db", "tinyreads", "--datadir", str(datadir)]
     monkeypatch.chdir(READS)
     debug_run = runner.invoke(app, [*args, "--debug"])
     plain_run = runner.invoke(app, args)
     assert debug_run.exit_code == 0
-    run_lines = [line for line in debug_run.stderr.splitlines() if line.startswith("gapit: run:")]
-    assert run_lines and run_lines[0].startswith("gapit: run: minimap2 -x sr ")
+    run_lines = [line for line in debug_run.stderr.splitlines() if line.startswith("gspec: run:")]
+    assert run_lines and run_lines[0].startswith("gspec: run: minimap2 -x sr ")
     assert debug_run.stdout == plain_run.stdout
-    assert "gapit: run:" not in plain_run.stderr
+    assert "gspec: run:" not in plain_run.stderr
 
 
 def test_golden_reads_json(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -421,8 +421,8 @@ def test_fasta_assembly_screens_with_map_ont(datadir: Path, tmp_path: Path) -> N
         ],
     )
     assert result.exit_code == 0
-    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gapit: run:")]
-    assert run_lines and run_lines[0].startswith("gapit: run: minimap2 -x map-ont ")
+    run_lines = [line for line in result.stderr.splitlines() if line.startswith("gspec: run:")]
+    assert run_lines and run_lines[0].startswith("gspec: run: minimap2 -x map-ont ")
     document = reads_adapter.validate_json(result.stdout)
     assert document.schema_name == "gapit.reads/1"
     assert document.params.read_type == "map-ont"

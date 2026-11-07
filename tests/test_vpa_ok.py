@@ -6,7 +6,7 @@ typed cluster snapshot materializes on first use and one screen renders
 gapit.cluster/2. These tests pin the committed gapit.typing/2 asset's
 shape and, when local copies of the real vpautils GenBank files exist
 (private upstream), prove the snapshot is byte-identical to a
-`gapit db build` over the merged GBKs — the regeneration contract behind
+`gspec db build` over the merged GBKs — the regeneration contract behind
 `scripts/generate_vp_typing.py` and any future snapshot refresh. The
 offline bundled-path behavior (materialization, cluster/2 phenotypes)
 lives in test_bundled.py; the RIMD acceptance in test_vpa_ok_acceptance.py.
@@ -103,7 +103,7 @@ def loci_fasta(destination: Path, *loci: str) -> None:
 @REAL_DATA
 def test_bundle_is_byte_identical_to_a_db_build(tmp_path: Path) -> None:
     """Given the wheel's vpa_ok snapshot and the real vpautils GBKs it was
-    produced from, When one datadir is built by `gapit db build` over the
+    produced from, When one datadir is built by `gspec db build` over the
     concatenated GBKs (--typing the committed asset) and another by
     bundled materialization (one carrier screen), Then both sequences AND
     features.json are BYTE-identical — the cluster snapshot is precisely

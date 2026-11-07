@@ -70,11 +70,11 @@ def _database(tmp_path: Path) -> Database:
 
 
 def test_engine_mode_default_and_validation(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("GAPIT_ENGINE", raising=False)
+    monkeypatch.delenv("GSPEC_ENGINE", raising=False)
     assert engine_mode() == "legacy"
-    monkeypatch.setenv("GAPIT_ENGINE", "gseek")
+    monkeypatch.setenv("GSPEC_ENGINE", "gseek")
     assert engine_mode() == "gseek"
-    monkeypatch.setenv("GAPIT_ENGINE", "bogus")
+    monkeypatch.setenv("GSPEC_ENGINE", "bogus")
     with pytest.raises(Exception, match="unknown engine mode"):
         engine_mode()
 
@@ -286,7 +286,7 @@ def test_run_blastn_dispatches_to_gseek(tmp_path: Path, monkeypatch: pytest.Monk
         gapopen=0,
         stitle="x",
     )
-    monkeypatch.setenv("GAPIT_ENGINE", "gseek")
+    monkeypatch.setenv("GSPEC_ENGINE", "gseek")
 
     def _new(*args: object, **kwargs: object) -> list[blast.BlastRow]:
         return [sentinel]
@@ -308,7 +308,7 @@ def test_run_blastn_shadow_returns_legacy_and_logs(
     query.write_text(">contig1\nACGT\n")
     database = _database(tmp_path)
     params = ScreeningParams(db="test")
-    monkeypatch.setenv("GAPIT_ENGINE", "shadow")
+    monkeypatch.setenv("GSPEC_ENGINE", "shadow")
 
     def _legacy(*args: object, **kwargs: object) -> str:
         return _blast_line()
@@ -358,7 +358,7 @@ def test_iter_minimap2_dispatches_to_gseek(tmp_path: Path, monkeypatch: pytest.M
         alen=100,
         mapq=60,
     )
-    monkeypatch.setenv("GAPIT_ENGINE", "gseek")
+    monkeypatch.setenv("GSPEC_ENGINE", "gseek")
 
     def _rows(*args: object, **kwargs: object) -> object:
         return iter([expected])
@@ -391,7 +391,7 @@ def test_iter_minimap2_shadow_returns_legacy_and_logs(
         mapq=60,
     )
     new = legacy.model_copy(update={"mapq": 0})
-    monkeypatch.setenv("GAPIT_ENGINE", "shadow")
+    monkeypatch.setenv("GSPEC_ENGINE", "shadow")
 
     def _legacy(*args: object, **kwargs: object) -> object:
         return iter([legacy])
@@ -421,7 +421,7 @@ def test_run_blastn_shadow_falls_back_on_gseek_failure(
     query.write_text(">contig1\nACGT\n")
     database = _database(tmp_path)
     params = ScreeningParams(db="test")
-    monkeypatch.setenv("GAPIT_ENGINE", "shadow")
+    monkeypatch.setenv("GSPEC_ENGINE", "shadow")
 
     def _legacy(*args: object, **kwargs: object) -> str:
         return _blast_line()
@@ -457,7 +457,7 @@ def test_iter_minimap2_shadow_falls_back_on_gseek_failure(
         alen=100,
         mapq=60,
     )
-    monkeypatch.setenv("GAPIT_ENGINE", "shadow")
+    monkeypatch.setenv("GSPEC_ENGINE", "shadow")
 
     def _legacy(*args: object, **kwargs: object) -> object:
         return iter([expected])

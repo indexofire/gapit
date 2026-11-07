@@ -27,7 +27,7 @@ from gapit.errors import DatabaseError
 # Hidden sibling prefix for lock/staging/backup entries. Discovery skips only
 # this prefix, so a user database whose name happens to start with a dot is
 # still visible.
-TXN_PREFIX = ".gapit-txn."
+TXN_PREFIX = ".gspec-txn."
 
 
 def _lock_path(db_dir: Path) -> Path:

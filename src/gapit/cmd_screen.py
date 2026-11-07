@@ -1,4 +1,4 @@
-"""The `gapit screen` command: contig files (blastn) or reads and assemblies
+"""The `gspec screen` command: contig files (blastn) or reads and assemblies
 (minimap2) screening.
 
 Lives outside cli.py to keep that module small; cli.py registers it via
@@ -170,7 +170,7 @@ def _reject_reads_only_flags(
     default=1,
     help=(
         "Screen N input files concurrently (contig files, cluster-db"
-        " assemblies, or the wildcard FASTQ path's samples; gapit"
+        " assemblies, or the wildcard FASTQ path's samples; gspec"
         " extension; output order is always input order). Each worker runs"
         " its own aligner against the shared db — BLAST mmaps the index and"
         " minimap2 holds it in memory, so concurrent readers are fine."
@@ -187,7 +187,7 @@ def _reject_reads_only_flags(
     "-m",
     is_flag=True,
     help=(
-        "Merge gene fragments split across contigs (gapit extension): report one"
+        "Merge gene fragments split across contigs (gspec extension): report one"
         " hit when fragments of a gene that each fail --mincov jointly cover >= mincov"
         " of the subject. blastn contig mode only."
     ),

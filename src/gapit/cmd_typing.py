@@ -1,11 +1,11 @@
-"""The `gapit typing` command: designation from screen result tables.
+"""The `gspec typing` command: designation from screen result tables.
 
 Lives outside cli.py to keep that module small; cli.py registers it via
 ``register_typing_command``. The second stage of the designation pipeline:
-``gapit screen -o result.tsv --db NAME`` detects genes (contig or reads
-mode), then ``gapit typing result.tsv`` resolves NAME from the table's
+``gspec screen -o result.tsv --db NAME`` detects genes (contig or reads
+mode), then ``gspec typing result.tsv`` resolves NAME from the table's
 DATABASE column and designates (the use-case lives in gapit.typing_ops).
-The table also arrives on stdin: ``gapit screen 1.fna --db NAME | gapit
+The table also arrives on stdin: ``gspec screen 1.fna --db NAME | gspec
 typing`` types the piped output, and the explicit ``-`` marker reads stdin
 even under a terminal (until EOF).
 """
@@ -59,7 +59,7 @@ def _stdin_text(files: list[Path]) -> str | None:
     required=False,
     type=click.Path(path_type=Path),
     help=(
-        "gapit/abricate screen result TSV/CSV file(s) to type — contig"
+        "gspec/abricate screen result TSV/CSV file(s) to type — contig"
         " (FILE/%IDENTITY/%COVERAGE) and reads (#SAMPLE/BREADTH%) tables are"
         " accepted, plus cluster JSON (gapit.cluster/2 or gapit.locus_map/1);"
         " '-' = stdin."
@@ -96,7 +96,7 @@ def typing_command(
     """Designate phenotypes from screen result tables or cluster JSON.
 
     Gene databases evaluate the table; cluster JSON is already designated by
-    ``gapit screen`` and is rendered into the same concise typing result.
+    ``gspec screen`` and is rendered into the same concise typing result.
     """
     args = list(files or [])
     # Bare invocation at a terminal keeps the help-on-bare policy; with a

@@ -6,32 +6,59 @@ from typing import Literal
 
 from gapit.errors import DatabaseError
 
-ENV_DATADIR = "GAPIT_DATADIR"
+ENV_DATADIR = "GSPEC_DATADIR"
+#: Pre-0.8 name, still honoured so an existing environment keeps resolving.
+LEGACY_ENV_DATADIR = "GAPIT_DATADIR"
 ENV_XDG_DATA_HOME = "XDG_DATA_HOME"
-DEFAULT_DATADIR = Path("~/.local/share/gapit/db")
+DEFAULT_DATADIR = Path("~/.local/share/gspec/db")
+#: Pre-0.8 default. Used only when it exists and the new default does not, so
+#: a 0.7 install keeps finding its databases after the rename.
+LEGACY_DEFAULT_DATADIR = Path("~/.local/share/gapit/db")
 DatadirSource = Literal["cli", "env", "xdg", "default"]
+
+
+def _env_datadir() -> str | None:
+    """The configured datadir env value: ``GSPEC_DATADIR`` then the legacy
+    ``GAPIT_DATADIR``. An empty value falls through to the next name."""
+    for name in (ENV_DATADIR, LEGACY_ENV_DATADIR):
+        value = os.environ.get(name)
+        if value:
+            return value
+    return None
+
+
+def _default_datadir() -> Path:
+    """The home default, preferring the new path but never orphaning a 0.7
+    datadir: if only ``~/.local/share/gspec/db`` exists, keep using it."""
+    preferred = DEFAULT_DATADIR.expanduser()
+    legacy = LEGACY_DEFAULT_DATADIR.expanduser()
+    if preferred.is_dir() or not legacy.is_dir():
+        return preferred.resolve()
+    return legacy.resolve()
 
 
 def datadir_source(cli_value: Path | None) -> tuple[Path, DatadirSource]:
     """Resolve the datadir location and where the choice came from.
 
-    Precedence: ``--datadir`` > ``$GAPIT_DATADIR`` > ``$XDG_DATA_HOME/gapit/db``
-    > ``~/.local/share/gapit/db`` (the XDG default). An empty/relative
+    Precedence: ``--datadir`` > ``$GSPEC_DATADIR`` (or the legacy
+    ``$GAPIT_DATADIR``) > ``$XDG_DATA_HOME/gspec/db`` > ``~/.local/share/gspec/db``
+    (falling back to a pre-0.8 ``~/.local/share/gspec/db`` when that is the
+    only one present). An empty/relative
     ``$XDG_DATA_HOME`` is ignored per the XDG Base Directory specification
     (it must be an absolute path). The returned path is expanded and resolved
     but not required to exist.
     """
     if cli_value is not None:
         return Path(cli_value).expanduser().resolve(), "cli"
-    env_value = os.environ.get(ENV_DATADIR)
+    env_value = _env_datadir()
     if env_value:
         return Path(env_value).expanduser().resolve(), "env"
     xdg_value = os.environ.get(ENV_XDG_DATA_HOME)
     if xdg_value:
         xdg_path = Path(xdg_value).expanduser()
         if xdg_path.is_absolute():
-            return (xdg_path / "gapit" / "db").resolve(), "xdg"
-    return DEFAULT_DATADIR.expanduser().resolve(), "default"
+            return (xdg_path / "gspec" / "db").resolve(), "xdg"
+    return _default_datadir(), "default"
 
 
 def datadir_path(cli_value: Path | None) -> Path:

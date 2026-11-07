@@ -281,4 +281,4 @@ def test_db_info_exposes_the_serotype_schema(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.stderr
     document = json.loads(result.stdout)
     assert document["typing_schema"] == "gapit.serotype/1"
-    assert any("gapit typing" in line for line in document["usage"])
+    assert any("gspec typing" in line for line in document["usage"])

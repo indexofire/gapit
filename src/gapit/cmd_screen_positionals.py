@@ -1,4 +1,4 @@
-"""Positional-input confusion guard for the ``gapit screen`` command.
+"""Positional-input confusion guard for the ``gspec screen`` command.
 
 Lives beside :mod:`gapit.cmd_screen` (same layer as
 :mod:`gapit.cmd_screen_reads_args`): catches the word-style slip where a

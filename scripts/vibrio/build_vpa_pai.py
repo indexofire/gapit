@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the bundled V. parahaemolyticus VPaI-1..VPaI-10 cluster database.
 
-``vpa_pai`` is a gapit-curated cluster bundle: ten pathogenicity-island
+``vpa_pai`` is a gspec-curated cluster bundle: ten pathogenicity-island
 loci, each one island, with the CDS features used for gene-level evidence.
 Sources are the public INSDC records behind Boyd et al. 2008
 (PMID 18590559, BMC Microbiol 8:110):
@@ -219,7 +219,7 @@ def main(argv: list[str] | None = None) -> int:
             {
                 "name": "vpa_pai",
                 "description": "V. parahaemolyticus VPaI-1..VPaI-10 pathogenicity islands",
-                "vendor": "gapit-curated (Boyd et al. 2008; INSDC)",
+                "vendor": "gspec-curated (Boyd et al. 2008; INSDC)",
                 "dbtype": "nucl",
                 "kind": "cluster",
                 "snapshotted": datetime.now(UTC).strftime("%Y-%m-%d"),

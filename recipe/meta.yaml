@@ -1,10 +1,10 @@
-# Bioconda-ready recipe for gapit.
+# Bioconda-ready recipe for gspec.
 # Field sources: version/license/python/deps mirror pyproject.toml exactly; the
 # external binaries mirror pixi.toml's conda dependencies. sha256 below hashes
 # the official PyPI sdist (verified against the release-workflow upload log).
-# sha256 of dist/gapit-0.6.8.tar.gz built from this tree.
-{% set name = "gapit" %}
-{% set version = "0.6.8" %}
+# sha256 of dist/gspec-0.8.0.tar.gz built from this tree.
+{% set name = "gspec" %}
+{% set version = "0.8.0" %}
 
 package:
   name: {{ name|lower }}
@@ -12,7 +12,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 319cecb23cd24133a2eb7a9b6f13cc1782d99e76332c450634430bceb7ddd765
+  sha256: 89dbcf6c39ee7ecd0dda7e1da3ae754b3c9f3eb882dcc49b80498903f389a347
 
 build:
   number: 0
@@ -39,18 +39,18 @@ test:
   # installed console script end to end (no network: listing + schema only —
   # provider fetches download from upstream and are exercised in repo CI).
   imports:
-    - gapit
+    - gspec
     - gapit.providers
   commands:
-    - gapit --version
-    - gapit schema report > /dev/null
+    - gspec --version
+    - gspec schema report > /dev/null
     # db list exits 4 (DATADIR_NOT_FOUND) when the datadir does not exist,
     # so create it first.
-    - mkdir -p "${TMPDIR:-/tmp}/gapit-smoke-db"
-    - gapit db list --datadir "${TMPDIR:-/tmp}/gapit-smoke-db" > /dev/null
+    - mkdir -p "${TMPDIR:-/tmp}/gspec-smoke-db"
+    - gspec db list --datadir "${TMPDIR:-/tmp}/gspec-smoke-db" > /dev/null
 
 about:
-  home: https://github.com/indexofire/gapit
+  home: https://github.com/indexofire/gspec
   license: MIT
   license_family: MIT
   license_file: LICENSE
@@ -62,8 +62,8 @@ about:
     installs. Seven license-audited databases ship in the wheel; every other
     provider downloads from upstream at fetch time (CARD/VFDB terms forbid
     redistribution).
-  dev_url: https://github.com/indexofire/gapit
-  doc_url: https://indexofire.github.io/gapit/
+  dev_url: https://github.com/indexofire/gspec
+  doc_url: https://indexofire.github.io/gspec/
 
 extra:
   recipe-maintainers:

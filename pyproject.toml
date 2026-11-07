@@ -3,14 +3,15 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gapit"
-version = "0.7.3"
-description = "Mass screening of contigs and reads for known genes — agent-first Python reimplementation of abricate"
+name = "gspec"
+version = "0.8.0"
+description = "Declarative typing databases for bacterial genomes: gene-panel and locus screening, serotype/AMR/virulence designation, machine-readable contracts"
 readme = "README.md"
 authors = [{ name = "indexofire", email = "indexofire@gmail.com" }]
 requires-python = ">=3.12,<3.13"
 license = "MIT"
-keywords = ["bioinformatics", "gene-screening", "blast", "genomics", "abricate", "AMR", "virulence"]
+keywords = ["bioinformatics", "bacterial-typing", "serotyping", "gene-screening", "blast",
+            "minimap2", "genomics", "AMR", "virulence", "abricate"]
 dependencies = [
   "click>=8.2",
   "pydantic>=2.7",
@@ -29,13 +30,16 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/indexofire/gapit"
-Documentation = "https://indexofire.github.io/gapit/"
-Changelog = "https://github.com/indexofire/gapit/blob/main/CHANGELOG.md"
-Source = "https://github.com/indexofire/gapit"
-Issues = "https://github.com/indexofire/gapit/issues"
+Homepage = "https://github.com/indexofire/gspec"
+Documentation = "https://indexofire.github.io/gspec/"
+Changelog = "https://github.com/indexofire/gspec/blob/main/CHANGELOG.md"
+Source = "https://github.com/indexofire/gspec"
+Issues = "https://github.com/indexofire/gspec/issues"
 
 [project.scripts]
+gspec = "gapit.cli:app"
+gspec-mcp = "gapit.mcp:main"
+# Pre-0.8 names, kept as aliases so existing pipelines keep working.
 gapit = "gapit.cli:app"
 gapit-mcp = "gapit.mcp:main"
 
@@ -47,7 +51,7 @@ packages = ["src/gapit"]
 # Hatchling's `packages` selection ships every non-gitignored file under the
 # package dir (no setuptools-style package_data needed). The only database
 # content riding the wheel is the audited public-domain panel under
-# src/gapit/data/dbs/ (gapit.bundled; 30 MiB budget, AGENTS.md §6); every
+# src/gapit/data/dbs/ (gspec.bundled; 30 MiB budget, AGENTS.md §6); every
 # provider still downloads from upstream at fetch time (license compliance —
 # CARD/VFDB terms forbid redistribution).
 

@@ -1,6 +1,6 @@
 """Unit tests for positional-FASTQ sample auto-pairing (gapit.readpairs).
 
-The wildcard workflow: ``gapit screen -d db *.fastq.gz`` hands gapit a flat
+The wildcard workflow: ``gspec screen -d db *.fastq.gz`` hands gspec a flat
 glob of reads files; pair_samples infers per-sample lanes from filename
 conventions (rightsholder request: sample_1/2.fastq.gz, R1/R2 styles).
 """

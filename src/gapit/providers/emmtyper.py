@@ -8,7 +8,7 @@ gene database with dual typing schemes: emm_type (356 rules, identity_floor
 (50 rules, 95% floor). The tuf single-copy control gene is a committed
 wheel asset (from str_lancefield's INSDC-sourced tuf).
 
-GPL-3.0: nothing is bundled with gapit (MIT); `gapit db fetch spy_emm`
+GPL-3.0: nothing is bundled with gspec (MIT); `gspec db fetch spy_emm`
 downloads and builds locally. Cite CDC/emmtyper when using results.
 """
 
@@ -131,7 +131,7 @@ PROVIDER = Provider(
             " ~97% identity); subtypes with <98% identity to the reference may be missed",
             "GAS strains carry 1-3 emm-family genes; only the true emm allele reaches"
             " 100% identity",
-            "GPL-3.0: fetched on demand, never bundled into the gapit wheel",
+            "GPL-3.0: fetched on demand, never bundled into the gspec wheel",
         ),
     ),
 )

@@ -1,7 +1,7 @@
 """CLI tests for shell completions (click env-var activation model).
 
 Plain click injects no completion options: activation rides the
-``_GAPIT_COMPLETE`` environment variable (``bash_source`` prints the
+``_GSPEC_COMPLETE`` environment variable (``bash_source`` prints the
 script, ``bash_complete`` answers a COMP_WORDS/COMP_CWORD probe).
 """
 
@@ -48,15 +48,15 @@ def test_short_help_alias_works_on_every_level() -> None:
 
 
 def test_bash_source_emits_completion_script() -> None:
-    """Given the _GAPIT_COMPLETE=bash_source activation, When run, Then a
-    bash completion script is printed to stdout: it defines the gapit
-    completion function, calls back through _GAPIT_COMPLETE=bash_complete,
-    and registers itself for the gapit program name."""
-    result = runner.invoke(app, [], env={"_GAPIT_COMPLETE": "bash_source"})
+    """Given the _GSPEC_COMPLETE=bash_source activation, When run, Then a
+    bash completion script is printed to stdout: it defines the gspec
+    completion function, calls back through _GSPEC_COMPLETE=bash_complete,
+    and registers itself for the gspec program name."""
+    result = runner.invoke(app, [], env={"_GSPEC_COMPLETE": "bash_source"})
     assert result.exit_code == 0
-    assert "_gapit_completion() {" in result.stdout
-    assert "_GAPIT_COMPLETE=bash_complete" in result.stdout
-    assert "complete -o nosort -F _gapit_completion gapit" in result.stdout
+    assert "_gspec_completion() {" in result.stdout
+    assert "_GSPEC_COMPLETE=bash_complete" in result.stdout
+    assert "complete -o nosort -F _gspec_completion gspec" in result.stdout
 
 
 def test_bash_completion_lists_subcommands() -> None:
@@ -67,8 +67,8 @@ def test_bash_completion_lists_subcommands() -> None:
         app,
         [],
         env={
-            "_GAPIT_COMPLETE": "bash_complete",
-            "COMP_WORDS": "gapit ",
+            "_GSPEC_COMPLETE": "bash_complete",
+            "COMP_WORDS": "gspec ",
             "COMP_CWORD": "1",
         },
     )
@@ -88,8 +88,8 @@ def test_bash_completion_lists_db_subcommands() -> None:
         app,
         [],
         env={
-            "_GAPIT_COMPLETE": "bash_complete",
-            "COMP_WORDS": "gapit db ",
+            "_GSPEC_COMPLETE": "bash_complete",
+            "COMP_WORDS": "gspec db ",
             "COMP_CWORD": "2",
         },
     )
@@ -104,4 +104,4 @@ def test_completion_output_only_when_requested() -> None:
     version line (completion machinery stays silent unless invoked)."""
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert "_gapit_completion" not in result.stdout
+    assert "_gspec_completion" not in result.stdout

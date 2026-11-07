@@ -37,7 +37,7 @@ def transform(workdir: Path) -> Iterator[Record]:
 
     Documented deviation: upstream perl splits into six list variables and
     keeps records even when fields are missing (undef gene, empty product
-    pieces); gapit skips ids with fewer than 5 pipe-fields or an empty among
+    pieces); gspec skips ids with fewer than 5 pipe-fields or an empty among
     the 5 leading ones. ``split('|', 5)`` mirrors perl's implicit
     list-assignment limit: any pipes past the group fold into the note, and
     a folded note is non-empty, so over-long ids skip exactly like upstream.

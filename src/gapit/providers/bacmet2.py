@@ -71,7 +71,7 @@ PROVIDER = Provider(
             ),
         ),
         caveats=(
-            "This is a PROTEIN database: gapit runs blastx, and --minid is deliberately not"
+            "This is a PROTEIN database: gspec runs blastx, and --minid is deliberately not"
             " applied to protein databases (the baseline contract), so hits are filtered by"
             " coverage only.",
             "Biocide/metal resistance is not antibiotic resistance. Cross-resistance exists"

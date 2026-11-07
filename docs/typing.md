@@ -1,7 +1,7 @@
 # Typing schemes
 
 A typing document is the DATABASE-SIDE scoring spec that turns screening hits into phenotype
-calls — serotypes, serogroups, pathotypes. Install one with `gapit db build --typing FILE`
+calls — serotypes, serogroups, pathotypes. Install one with `gspec db build --typing FILE`
 and the database can designate any sample you screen against it. This page is the full
 `gapit.typing/2` reference plus a cookbook: six researched designation schemes encoded as
 validated, self-tested example documents.
@@ -9,16 +9,16 @@ validated, self-tested example documents.
 - For the database-side mechanics (`--typing`, validation, manifests), see
   [Databases](./databases.md#typingjson-declarative-phenotype-scoring).
 - For the designation output document (`gapit.typing_result/1`), see [Outputs](./outputs.md).
-- The JSON Schema of a typing document prints with `gapit schema typing`.
+- The JSON Schema of a typing document prints with `gspec schema typing`.
 
 ## The two-stage designation workflow
 
-Gene-kind designation is a two-stage pipeline (the rightsholder design): **`gapit screen`
-detects genes, `gapit typing` designates from the results.**
+Gene-kind designation is a two-stage pipeline (the rightsholder design): **`gspec screen`
+detects genes, `gspec typing` designates from the results.**
 
 ```console
-$ gapit screen contigs.fa --db eco_dec --output result.tsv --quiet
-$ gapit typing result.tsv --quiet
+$ gspec screen contigs.fa --db eco_dec --output result.tsv --quiet
+$ gspec typing result.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 contigs.fa	gb4789_6	EHEC	escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
 contigs.fa	risk_monitoring	EHEC	escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
@@ -26,31 +26,31 @@ contigs.fa	risk_monitoring	EHEC	escV;stx2a;uidA	high	1.0000	EAEC (1.0000)	...
 
 Stage 1 is pure gene detection: a typed gene database screens byte-identically to an
 untyped one — the frozen 15-column abricate table, in every format. Stage 2 reads one or
-more gapit/abricate screen result tables (TSV or CSV), resolves the database from the
+more gspec/abricate screen result tables (TSV or CSV), resolves the database from the
 rows' shared `DATABASE` column, folds every `(FILE, GENE)` to its best row by
 `(%IDENTITY, %COVERAGE)` (first row wins ties — the same per-gene fold the report hits
 got), and evaluates the database's `typing.json` over each FILE's genes.
 
-Reads-mode tables are accepted too: `gapit screen --r1/--r2 ... | gapit typing` folds the
+Reads-mode tables are accepted too: `gspec screen --r1/--r2 ... | gspec typing` folds the
 `#SAMPLE`/`BREADTH%` table with `#SAMPLE` as the FILE key and breadth as coverage, skipping
 the `PRESENT=no` rows `--all-genes` adds. Reads/1 does not carry identity, so its identity
-floors cannot be checked and gapit types from breadth alone; when a scheme depends on
+floors cannot be checked and gspec types from breadth alone; when a scheme depends on
 identity (allele probes, for example), pass a nonzero `--min-identity` so the table gains
 reads/2's `IDENTITY%` column and each rule's `identity_floor` is enforced.
 
 The two stages also compose straight through a pipe — the canonical one-liner:
 
 ```console
-$ gapit screen 1.fna --db eco_dec --quiet | gapit typing --quiet
+$ gspec screen 1.fna --db eco_dec --quiet | gspec typing --quiet
 ```
 
-`gapit typing` reads its table from stdin whenever stdin is not a terminal (piped or
+`gspec typing` reads its table from stdin whenever stdin is not a terminal (piped or
 redirected); a bare invocation at a terminal keeps printing help. The explicit `-` marker
-— `gapit typing -` — reads stdin even with a terminal attached, until EOF; mixing `-`
+— `gspec typing -` — reads stdin even with a terminal attached, until EOF; mixing `-`
 with file arguments is a usage error (v1 takes either stdin or files, never both). A
 piped table's JSON `source` renders as `["-"]`.
 
-Usage: `gapit typing RESULT.tsv [RESULT2.tsv ...] [-D datadir] [-f tsv|json|md] [-o FILE]
+Usage: `gspec typing RESULT.tsv [RESULT2.tsv ...] [-D datadir] [-f tsv|json|md] [-o FILE]
 [-q]`, or piped as above (`-` for explicit stdin). The default TSV carries one row per
 (FILE, scheme) with the columns `FILE`, `SCHEME`,
 `PHENOTYPE`, `GENES`, `CONFIDENCE`, `SCORE`, `RUNNER_UP`, `NOTES` — ambiguous calls render
@@ -58,7 +58,7 @@ Usage: `gapit typing RESULT.tsv [RESULT2.tsv ...] [-D datadir] [-f tsv|json|md] 
 follows the phenotype with the FILE's present gene names (sorted, `;`-joined), the same
 list on each of the FILE's scheme rows — the hits that drove the call, in the open. `json` emits
 `gapit.typing_result/1` (full score breakdowns plus the same per-file `genes` list;
-`gapit schema typing_result`); `md` renders
+`gspec schema typing_result`); `md` renders
 the same eight columns under a frontmatter naming the db and source tables. Typed errors:
 mixed `DATABASE` values are `DATABASE_MISMATCH`, a table with no data rows `TYPING_NO_DATA`
 (the database is only knowable from rows), a database without a `typing.json`
@@ -66,10 +66,10 @@ mixed `DATABASE` values are `DATABASE_MISMATCH`, a table with no data rows `TYPI
 through the command.
 
 **The cluster exception.** A cluster database's designation stays integrated in
-`gapit screen`: its unit of typing is the best *locus* call, which only the minimap2
+`gspec screen`: its unit of typing is the best *locus* call, which only the minimap2
 cluster engine can compute. The compact cluster TSV is not a gene table and does not
 carry the per-scheme metadata needed for re-typing; use cluster JSON instead:
-`gapit typing result.json` reads `gapit.cluster/2` or `gapit.locus_map/1` and renders
+`gspec typing result.json` reads `gapit.cluster/2` or `gapit.locus_map/1` and renders
 the already-evaluated phenotypes as `gapit.typing_result/1` without re-running the
 aligner. Screening a typed cluster database annotates the cluster document directly — a single-scheme db
 annotates `gapit.cluster/1` (the typed-only `PHENOTYPE` TSV column, `best.phenotype` +
@@ -104,9 +104,9 @@ Which engine evaluates the document depends on the database kind:
 
 | Database kind | Input | Engine | Where the calls appear |
 |---|---|---|---|
-| **gene** | marker FASTA | blastn gene path | `gapit typing` over the screen results: `gapit.typing_result/1` (JSON) and the eight-column TSV/MD table |
-| **cluster** (one scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gapit screen`: `best.phenotype` + `best.phenotype_detail` of `gapit.cluster/1`, plus the typed-only `PHENOTYPE` TSV column |
-| **cluster** (multi-scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gapit screen`: `files[].phenotypes` of `gapit.cluster/2` (one call per scheme, compose rendered from its ingredients), plus per-scheme winner-evidence TSV columns |
+| **gene** | marker FASTA | blastn gene path | `gspec typing` over the screen results: `gapit.typing_result/1` (JSON) and the eight-column TSV/MD table |
+| **cluster** (one scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gspec screen`: `best.phenotype` + `best.phenotype_detail` of `gapit.cluster/1`, plus the typed-only `PHENOTYPE` TSV column |
+| **cluster** (multi-scheme) | GBK/GFF loci | minimap2 locus path | integrated in `gspec screen`: `files[].phenotypes` of `gapit.cluster/2` (one call per scheme, compose rendered from its ingredients), plus per-scheme winner-evidence TSV columns |
 
 Two hard constraints by kind:
 
@@ -130,7 +130,7 @@ Two hard constraints by kind:
 
 ## Rule and scheme primitives
 
-Every rule is discriminated by its `model`. Full details live in `gapit schema typing`;
+Every rule is discriminated by its `model`. Full details live in `gspec schema typing`;
 this is the working reference.
 
 ### Rule models
@@ -167,7 +167,7 @@ two rows matched and the earlier-declared one wins). Non-exact ties stay ambiguo
 ## The cookbook
 
 Six example documents live in
-[`tests/data/typing/schemes/`](https://github.com/indexofire/gapit/tree/main/tests/data/typing/schemes),
+[`tests/data/typing/schemes/`](https://github.com/indexofire/gspec/tree/main/tests/data/typing/schemes),
 one marker FASTA or GBK loci file each. Every document validates against the current schema,
 and `tests/test_typing_schemes.py` / `tests/test_typing_schemes_cluster.py` build each fixture
 database and assert the phenotype calls below. **All sequences are synthetic** — they encode
@@ -226,8 +226,8 @@ ORF2819+ORF2110 profile carrying `lmo0737` resolves to the variant. Uppercase ge
 zero network (the bundle materializes on first screen):
 
 ```console
-$ gapit screen isolates.fa --db lmo_sero --output lm.tsv --quiet
-$ gapit typing lm.tsv --quiet
+$ gspec screen isolates.fa --db lmo_sero --output lm.tsv --quiet
+$ gspec typing lm.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 lmo_sero_iia.fa	doumith_serogroup	IIa	lmo0737;prs	high	1.0000	IVb-v (0.0000)	...
 lmo_sero_ivb.fa	doumith_serogroup	IVb	ORF2110;ORF2819;prs	high	1.0000	IVb-v (0.0000)	...
@@ -380,7 +380,7 @@ Two cookbook schemes discriminate alleles — not genes — using presence/absen
 
 Two practical constraints:
 
-- The probe records must **stand alone** in the database. gapit runs blastn with abricate's
+- The probe records must **stand alone** in the database. gspec runs blastn with abricate's
   `-culling_limit 1` (parity is a feature), and a long record containing the probe region
   would shadow the probe's alignment — so the meningotype fixture has no full-length synG
   record next to the probes.
@@ -395,7 +395,7 @@ single rule with explicit alleles.
 ## Calibration and the learned_linear outlook
 
 Tuning thresholds against labeled assemblies is what
-[`scripts/cluster_calibration.py`](https://github.com/indexofire/gapit/blob/main/scripts/cluster_calibration.py)
+[`scripts/cluster_calibration.py`](https://github.com/indexofire/gspec/blob/main/scripts/cluster_calibration.py)
 is for (developer tool): point it at a typed cluster database and a label TSV and it prints
 the per-expected-phenotype score distribution, the called×expected agreement matrix, and the
 divergence list:
@@ -411,33 +411,33 @@ calibration columns, so a trained model drops into the same scheme as one more r
 ## Building and typing a cookbook scheme
 
 ```console
-$ gapit db build doumith doumith.fa --typing doumith.json
+$ gspec db build doumith doumith.fa --typing doumith.json
 {"db":"doumith","records":5,"dbtype":"nucl","destination":".../doumith"}
 
-$ gapit screen lm_4b.fa --db doumith --output lm_4b.tsv --quiet
-$ gapit typing lm_4b.tsv --quiet
+$ gspec screen lm_4b.fa --db doumith --output lm_4b.tsv --quiet
+$ gspec typing lm_4b.tsv --quiet
 FILE	SCHEME	PHENOTYPE	GENES	CONFIDENCE	SCORE	RUNNER_UP	NOTES
 lm_4b.fa	doumith	4b-4d-4e	orf2110;orf2819;prs	high	1.0000	1/2a-3a (0.0000)	...
 
-$ gapit screen vc_inaba.fa --db vc_subserotype --quiet
+$ gspec screen vc_inaba.fa --db vc_subserotype --quiet
 FILE      BEST_LOCUS  TYPE  PHENOTYPE  COVERAGE  IDENTITY  PRESENT  PARTIAL  MISSING_IDS
 vc_inaba.fa  wbe      O1    inaba      100.00    99.44     3        0        -
 ```
 
 The second block is the cluster exception: a typed cluster database designates inside
-`gapit screen` (no second stage — there is no screen table to re-read).
+`gspec screen` (no second stage — there is no screen table to re-read).
 
 The cluster O/K pattern: the merged /2 install (one scan, every scheme) and the
 historical /1 split (one database per scheme):
 
 ```console
-$ gapit db build vpa_ok vpa_ok.gbk --typing vpa_ok.json   # ONE merged db → gapit.cluster/2
-$ gapit screen sample.fa --db vpa_ok --quiet
+$ gspec db build vpa_ok vpa_ok.gbk --typing vpa_ok.json   # ONE merged db → gapit.cluster/2
+$ gspec screen sample.fa --db vpa_ok --quiet
 FILE      SEROTYPE   O_GROUP  O_LOCUS     O_COVERAGE  ...  K_GROUP  K_LOCUS  K_COVERAGE  ...
 sample.fa O3/O13:K6  O3/O13   OL3_or_O13  100.00      ...  K6       KL6     100.00      ...
 
-$ gapit db build vp_o vpa_ok.gbk --typing vp_o_group.json   # /1 split (one scheme each)
-$ gapit db build vp_k vpa_ok.gbk --typing vp_k_group.json
-$ gapit screen sample.fa --db vp_o --quiet   # → O3/O13
-$ gapit screen sample.fa --db vp_k --quiet   # → K6
+$ gspec db build vp_o vpa_ok.gbk --typing vp_o_group.json   # /1 split (one scheme each)
+$ gspec db build vp_k vpa_ok.gbk --typing vp_k_group.json
+$ gspec screen sample.fa --db vp_o --quiet   # → O3/O13
+$ gspec screen sample.fa --db vp_k --quiet   # → K6
 ```

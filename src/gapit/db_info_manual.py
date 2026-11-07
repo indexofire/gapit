@@ -1,4 +1,4 @@
-"""The man-page rendering of ``gapit db info`` (plain text, no ANSI).
+"""The man-page rendering of ``gspec db info`` (plain text, no ANSI).
 
 A terminal reader wants the shape `man` taught everyone: a header rule with
 the section title, uppercase section headings, an indented body, and hanging
@@ -62,7 +62,7 @@ def _labelled(label: str, value: str, width: int, pad: int = 14) -> str:
 def _header(name: str, width: int) -> str:
     """The classic three-column man header: name(1), title, name(1)."""
     page = f"{name.upper()}(1)"
-    centre = "gapit database manual"
+    centre = "gspec database manual"
     gap = width - len(page) * 2 - len(centre)
     if gap < 2:  # too narrow for the centred title: keep the two page labels
         return f"{page}{' ' * max(2, width - len(page) * 2)}{page}"
@@ -74,13 +74,13 @@ def _synopsis(document: DbInfoDocument) -> tuple[str, ...]:
     """The commands this database actually participates in."""
     if document.kind == "cluster":
         return (
-            f"gapit screen -d {document.name} [FILE]...",
-            f"gapit db info -d {document.name}",
+            f"gspec screen -d {document.name} [FILE]...",
+            f"gspec db info -d {document.name}",
         )
     return (
-        f"gapit screen -d {document.name} [FILE]... -o RESULT.tsv",
-        "gapit typing RESULT.tsv",
-        f"gapit db info -d {document.name}",
+        f"gspec screen -d {document.name} [FILE]... -o RESULT.tsv",
+        "gspec typing RESULT.tsv",
+        f"gspec db info -d {document.name}",
     )
 
 
@@ -242,7 +242,7 @@ def render_db_manual(document: DbInfoDocument, width: int | None = None) -> str:
     lines += _heading("SEE ALSO")
     lines.append(
         _body(
-            "gapit db list(1), gapit db search(1), gapit screen(1), gapit typing(1), "
+            "gspec db list(1), gspec db search(1), gspec screen(1), gspec typing(1), "
             "docs/databases.md",
             columns,
         )

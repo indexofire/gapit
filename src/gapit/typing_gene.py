@@ -1,8 +1,8 @@
 """gapit.typing evaluation on the gene path — the DEC marker-panel pathway.
 
 A typed GENE database (a FASTA input built with ``db build --typing``)
-designates samples through the two-stage pipeline: ``gapit screen -o
-result.tsv`` detects the genes, then ``gapit typing result.tsv`` (the
+designates samples through the two-stage pipeline: ``gspec screen -o
+result.tsv`` detects the genes, then ``gspec typing result.tsv`` (the
 use-case in gapit.typing_ops) folds each FILE's rows into one present
 GeneCall per gene name and scores them here — for every scheme, each
 weighted_genes/exact_set rule scores over that gene presence, and the
@@ -109,7 +109,7 @@ def evaluate_gene_calls(
 ) -> dict[str, SchemeCall]:
     """One SchemeCall per scheme name for one file's gene calls (compose
     schemes evaluate after their ingredients, in document order) — the
-    evaluation core ``gapit typing`` runs over each FILE's folded rows."""
+    evaluation core ``gspec typing`` runs over each FILE's folded rows."""
     evaluated: dict[str, SchemeCall] = {}
     for scheme in document.schemes:
         if scheme.compose is not None:

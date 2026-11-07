@@ -1,4 +1,4 @@
-"""FASTQ/FASTA read screening via minimap2 (docs/reads.md — gapit extension)."""
+"""FASTQ/FASTA read screening via minimap2 (docs/reads.md — gspec extension)."""
 
 import enum
 import gzip
@@ -41,7 +41,7 @@ class ReadTypeEnum(enum.Enum):
 
 class ReadFileKind(enum.Enum):
     """Input file kind detected from content (minimap2 takes FASTA and FASTQ
-    queries natively; gapit detects to resolve the preset)."""
+    queries natively; gspec detects to resolve the preset)."""
 
     fasta = "fasta"
     fastq = "fastq"

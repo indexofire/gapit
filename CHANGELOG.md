@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.8.0] - 2026-11-07
+
+### Changed
+
+- **Renamed to gspec.** The distribution, version banner and documentation now
+  say `gspec`; the PyPI project is `gspec`. The rename removes the collision
+  with GAPIT (Genome Association and Prediction Integrated Tool), which made
+  the tool unfindable in literature and code search.
+- The migration is source-compatible by design:
+  - the import package is still `gapit`;
+  - both `gspec` and the pre-0.8 `gapit` console scripts ship (same entry
+    point); `gspec-mcp` joins `gapit-mcp`;
+  - `GSPEC_DATADIR` / `GSPEC_ENGINE` are preferred, and `GAPIT_DATADIR` /
+    `GAPIT_ENGINE` are still read;
+  - the home default is `~/.local/share/gspec/db` (XDG:
+    `$XDG_DATA_HOME/gspec/db`), falling back to an existing pre-0.8
+    `~/.local/share/gapit/db` so an upgrade never orphans databases.
+- `--version` prints `gspec <version>` and `--version --json` reports
+  `"name": "gspec"`.
+
+### Unchanged on purpose
+
+Frozen contracts keep their pre-0.8 spelling: every `gapit.<document>/<version>`
+JSON schema id, `gapit-manifest.json`, the native `gapit|` FASTA header prefix,
+the `gapit/v1` header-format value, and the `import gapit` package name.
+
+### Added
+
+- `docs/migration.md` / `docs/migration.zh.md` — the full what-changed /
+  what-did-not table, upgrade commands and the 1.0 timeline.
+- Tests pinning the compatibility surface: both command names, the legacy env
+  vars, and the legacy home datadir fallback.
+
 ## [0.7.3] - 2026-11-06
 
 ### Added
@@ -496,7 +529,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `--json` emits `gapit.datadir/1` (`datadir`, `exists`, `source` = `cli|env|xdg|default`).
 - **XDG Base Directory support.** Datadir precedence is now `--datadir`,
   `$GAPIT_DATADIR`, `$XDG_DATA_HOME/gapit/db` (absolute XDG only), then
-  `~/.local/share/gapit/db`.
+  `~/.local/share/gspec/db`.
 
 ### Changed
 

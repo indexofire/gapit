@@ -1,4 +1,4 @@
-"""Reads-mode CLI argument rules for `gapit screen`.
+"""Reads-mode CLI argument rules for `gspec screen`.
 
 Split from cmd_screen.py at the 250 pure-LOC ceiling (the engines.py
 precedent): the CLI surface stays there; this module owns the

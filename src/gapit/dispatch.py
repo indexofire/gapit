@@ -3,7 +3,7 @@
 ``--output`` delivery target (stdout chunks vs a lazily opened file).
 
 Imported by every command module (cli.py, cmd_*.py); imports nothing from
-gapit except :mod:`gapit.errors`, so it can never participate in a cycle.
+gspec except :mod:`gapit.errors`, so it can never participate in a cycle.
 """
 
 import enum
@@ -47,7 +47,7 @@ def datadir_option() -> Callable[[Decorated], Decorated]:
         "-D",
         "datadir",
         type=click.Path(path_type=Path),
-        help="Database directory (default: $GAPIT_DATADIR, then ~/.local/share/gapit/db).",
+        help="Database directory (default: $GSPEC_DATADIR, then ~/.local/share/gspec/db).",
     )
 
 

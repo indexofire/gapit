@@ -4,7 +4,7 @@
 (the ``sequences`` FASTA and its BLAST index are generated projections, built
 later in Wave A3); ``gapit-manifest.json`` is the provenance sidecar describing
 how that truth was obtained. Both are FILE contracts — they never appear on
-stdout and are not registered in ``gapit schema``.
+stdout and are not registered in ``gspec schema``.
 """
 
 import re
@@ -25,7 +25,7 @@ class Record(BaseModel, frozen=True):
     """One known gene — the unit of truth a database projection is built from.
 
     ``function`` carries functional categories (AMR classes, virulence,
-    O-antigen, replicon, biocide) — gapit answers presence/absence, so the
+    O-antigen, replicon, biocide) — gspec answers presence/absence, so the
     slot's old ``resistance`` name was a misnomer (Wave F1).
     """
 

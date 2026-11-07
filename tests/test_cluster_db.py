@@ -1,5 +1,5 @@
 """Cluster-kind surface tests: schema selectors, Database.kind discovery,
-and `gapit db list --json` kind exposure (stage 1 of the cluster feature).
+and `gspec db list --json` kind exposure (stage 1 of the cluster feature).
 """
 
 import json
@@ -21,7 +21,7 @@ runner = CliRunner()
 
 
 def test_schema_features_selector() -> None:
-    """Given the new features document, When `gapit schema features`, Then
+    """Given the new features document, When `gspec schema features`, Then
     its JSON Schema prints with the locus table property."""
     result = runner.invoke(app, ["schema", "features"])
     assert result.exit_code == 0
@@ -30,7 +30,7 @@ def test_schema_features_selector() -> None:
 
 
 def test_schema_typing_selector() -> None:
-    """Given the typing document, When `gapit schema typing`, Then its JSON
+    """Given the typing document, When `gspec schema typing`, Then its JSON
     Schema prints the gapit.typing/2 surface: named schemes (each carrying
     rules/cutoff/margin/fallback inside the TypingScheme definition), no
     flat document-level rule fields."""

@@ -1,6 +1,6 @@
 ---
 schema: gapit.cluster/2
-tool: gapit 0.6.8
+tool: gspec 0.8.0
 created_at: 2026-10-01T12:00:00Z
 db: vpa_ok
 preset: asm20
@@ -10,7 +10,7 @@ min_cluster_cov: 96.0
 threads: 1
 ---
 
-# gapit cluster screening report
+# gspec cluster screening report
 
 ## `vp_none.fa`
 
