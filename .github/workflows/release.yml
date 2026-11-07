@@ -49,9 +49,7 @@ jobs:
           gspec --version
           gspec schema report > /dev/null
           gspec db path --json > /dev/null
-          # The pre-0.8 command name must keep working after the rename.
-          gspec --version
-          gspec schema report > /dev/null
+          gspec db list --json > /dev/null
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
